@@ -100,12 +100,14 @@ sf create <type> [options]
 | `-a, --assignee <id>`     | Assignee entity ID                            |
 | `--tag <tag>`             | Add a tag (can be repeated)                   |
 | `--plan <id\|name>`       | Plan ID or name to attach this task to        |
+| `--no-auto-link`          | Skip auto-linking to external provider even when configured |
 
 ```bash
 sf create task --title "Fix login bug" --priority 1 --type bug
 sf create task -t "Add dark mode" --tag ui --tag feature
 sf create task -t "New feature" -d "Detailed description here"
 sf create task -t "Implement feature X" --plan "My Plan Name"
+sf create task -t "Internal task" --no-auto-link
 ```
 
 #### list
@@ -170,6 +172,8 @@ sf update <id> [options]
 | `-c, --complexity <1-5>`| New complexity (tasks only)                        |
 | `-s, --status <status>` | New status (tasks only: open, in_progress, closed, deferred) |
 | `-a, --assignee <id>`   | New assignee (tasks only, empty string to unassign) |
+| `-d, --description <text>` | Update description (tasks: updates linked doc; documents: updates content) |
+| `--metadata <json>`    | JSON metadata to merge into element (null values remove keys) |
 | `--tag <tag>`           | Replace all tags (can be repeated)                 |
 | `--add-tag <tag>`       | Add a tag (can be repeated)                        |
 | `--remove-tag <tag>`    | Remove a tag (can be repeated)                     |
@@ -180,6 +184,8 @@ sf update el-abc123 --priority 1 --status in_progress
 sf update el-abc123 --add-tag urgent --add-tag frontend
 sf update el-abc123 --remove-tag old-tag
 sf update el-abc123 --assignee ""  # Unassign
+sf update el-abc123 -d "Updated description text"
+sf update el-abc123 --metadata '{"custom_field": "value"}'
 ```
 
 #### delete
