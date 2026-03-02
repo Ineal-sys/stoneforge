@@ -2180,6 +2180,79 @@ Options:
   -l, --limit <n>        Maximum number of events to return (default: 50)
 ```
 
+## Log Command
+
+Show persistent operation log entries for system observability.
+
+```bash
+sf log [options]
+```
+
+The operation log captures key events from the orchestration system including dispatch, session, merge, rate-limit, steward, and recovery events.
+
+| Option                   | Description                                                              |
+| ------------------------ | ------------------------------------------------------------------------ |
+| `--level <level>`        | Filter by level: `info`, `warn`, `error`                                 |
+| `-c, --category <cat>`   | Filter by category: `dispatch`, `merge`, `session`, `rate-limit`, `steward`, `recovery` |
+| `-s, --since <time>`     | Show entries since time — relative (e.g., `2h`, `30m`, `1d`, `1w`) or ISO 8601 timestamp |
+| `-t, --task <id>`        | Filter by task ID                                                        |
+| `-a, --agent <id>`       | Filter by agent ID                                                       |
+| `-l, --limit <n>`        | Maximum entries to show (default: 20)                                    |
+
+```bash
+# Show last 20 entries
+sf log
+
+# Show only errors
+sf log --level error
+
+# Show session events
+sf log --category session
+
+# Show entries from last 2 hours
+sf log --since 2h
+
+# Filter by task
+sf log --task el-xxxx
+
+# Combine filters
+sf log --level error --since 1d
+
+# Output as JSON
+sf log --json
+```
+
+## Metrics Command
+
+Show LLM provider usage metrics including token counts, estimated costs, session counts, average duration, and error rates.
+
+```bash
+sf metrics [options]
+```
+
+| Option                    | Description                                    |
+| ------------------------- | ---------------------------------------------- |
+| `-r, --range <range>`     | Time range (e.g., `7d`, `14d`, `30d`). Default: `7d` |
+| `-p, --provider <name>`   | Filter by provider name (e.g., `claude-code`)  |
+| `-g, --group-by <group>`  | Group by: `provider` (default) or `model`      |
+
+```bash
+# Show metrics for last 7 days
+sf metrics
+
+# Show metrics for last 30 days
+sf metrics --range 30d
+
+# Filter by provider
+sf metrics --provider claude-code
+
+# Group by model
+sf metrics --group-by model
+
+# Output as JSON
+sf metrics --json
+```
+
 ## CLI Plugins
 
 The CLI supports plugins to extend functionality. Plugins can register new commands and aliases.
@@ -2708,79 +2781,6 @@ sf task sync el-abc123 --json
 ```
 
 When conflicts are detected, the `conflicts` array lists the affected files and `success` is `false`.
-
-### Log Command
-
-Show persistent operation log entries for system observability.
-
-```bash
-sf log [options]
-```
-
-The operation log captures key events from the orchestration system including dispatch, session, merge, rate-limit, steward, and recovery events.
-
-| Option                   | Description                                                              |
-| ------------------------ | ------------------------------------------------------------------------ |
-| `--level <level>`        | Filter by level: `info`, `warn`, `error`                                 |
-| `-c, --category <cat>`   | Filter by category: `dispatch`, `merge`, `session`, `rate-limit`, `steward`, `recovery` |
-| `-s, --since <time>`     | Show entries since time — relative (e.g., `2h`, `30m`, `1d`, `1w`) or ISO 8601 timestamp |
-| `-t, --task <id>`        | Filter by task ID                                                        |
-| `-a, --agent <id>`       | Filter by agent ID                                                       |
-| `-l, --limit <n>`        | Maximum entries to show (default: 20)                                    |
-
-```bash
-# Show last 20 entries
-sf log
-
-# Show only errors
-sf log --level error
-
-# Show session events
-sf log --category session
-
-# Show entries from last 2 hours
-sf log --since 2h
-
-# Filter by task
-sf log --task el-xxxx
-
-# Combine filters
-sf log --level error --since 1d
-
-# Output as JSON
-sf log --json
-```
-
-### Metrics Command
-
-Show LLM provider usage metrics including token counts, estimated costs, session counts, average duration, and error rates.
-
-```bash
-sf metrics [options]
-```
-
-| Option                    | Description                                    |
-| ------------------------- | ---------------------------------------------- |
-| `-r, --range <range>`     | Time range (e.g., `7d`, `14d`, `30d`). Default: `7d` |
-| `-p, --provider <name>`   | Filter by provider name (e.g., `claude-code`)  |
-| `-g, --group-by <group>`  | Group by: `provider` (default) or `model`      |
-
-```bash
-# Show metrics for last 7 days
-sf metrics
-
-# Show metrics for last 30 days
-sf metrics --range 30d
-
-# Filter by provider
-sf metrics --provider claude-code
-
-# Group by model
-sf metrics --group-by model
-
-# Output as JSON
-sf metrics --json
-```
 
 ## Short IDs
 
