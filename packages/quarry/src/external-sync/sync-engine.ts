@@ -92,6 +92,11 @@ export interface SyncOptions {
    * Set to true to include them.
    */
   readonly includeNoLibrary?: boolean;
+  /**
+   * Optional progress callback invoked after each batch completes during push.
+   * Receives the current count of processed elements and the total count.
+   */
+  readonly onProgress?: (current: number, total: number) => void;
 }
 
 /**
@@ -303,6 +308,10 @@ export class SyncEngine {
     }
 
     // Step 2: Process elements concurrently in batches
+    let processedCount = 0;
+    // Notify caller of total element count on first progress callback
+    options.onProgress?.(0, elements.length);
+
     for (let i = 0; i < elements.length; i += PUSH_CONCURRENCY) {
       const batch = elements.slice(i, i + PUSH_CONCURRENCY);
       const results = await Promise.allSettled(
@@ -333,6 +342,9 @@ export class SyncEngine {
           });
         }
       }
+
+      processedCount += batch.length;
+      options.onProgress?.(processedCount, elements.length);
     }
 
     return buildResult({
