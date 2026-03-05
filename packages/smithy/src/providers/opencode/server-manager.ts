@@ -268,12 +268,8 @@ class OpenCodeServerManager {
       env.STONEFORGE_ROOT = config.stoneforgeRoot;
     }
 
-    // Build opencode config for OPENCODE_CONFIG_CONTENT
-    const opencodeConfig: Record<string, unknown> = {};
-    if (config?.cwd) {
-      opencodeConfig.wd = config.cwd;
-    }
-    env.OPENCODE_CONFIG_CONTENT = JSON.stringify(opencodeConfig);
+    // Pass empty config — cwd is already handled via spawn's cwd option
+    env.OPENCODE_CONFIG_CONTENT = JSON.stringify({});
 
     // Use port 0 to let opencode pick a free port, or use configured port
     const port = config?.port ?? 0;
