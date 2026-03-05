@@ -410,6 +410,100 @@ describe('initCommand', () => {
     });
   });
 
+  describe('--demo flag', () => {
+    it('should create config.yaml with demo_mode: true', async () => {
+      const result = await initCommand.handler([], {
+        ...DEFAULT_GLOBAL_OPTIONS,
+        demo: true,
+      } as typeof DEFAULT_GLOBAL_OPTIONS);
+      expect(result.exitCode).toBe(ExitCode.SUCCESS);
+
+      const configPath = join(testDir, '.stoneforge', 'config.yaml');
+      const content = readFileSync(configPath, 'utf-8');
+      expect(content).toContain('demo_mode: true');
+      expect(content).toContain('Demo Mode');
+    });
+
+    it('should return demoMode: true in result data', async () => {
+      const result = await initCommand.handler([], {
+        ...DEFAULT_GLOBAL_OPTIONS,
+        demo: true,
+      } as typeof DEFAULT_GLOBAL_OPTIONS);
+      expect(result.exitCode).toBe(ExitCode.SUCCESS);
+
+      const data = result.data as { demoMode: boolean };
+      expect(data.demoMode).toBe(true);
+    });
+
+    it('should include demo mode notice in output message', async () => {
+      const result = await initCommand.handler([], {
+        ...DEFAULT_GLOBAL_OPTIONS,
+        demo: true,
+      } as typeof DEFAULT_GLOBAL_OPTIONS);
+      expect(result.exitCode).toBe(ExitCode.SUCCESS);
+      expect(result.message).toContain('Demo mode is active');
+      expect(result.message).toContain('opencode/minimax-m2.5-free');
+    });
+
+    it('should not enable demo mode without --demo flag', async () => {
+      const result = await initCommand.handler([], { ...DEFAULT_GLOBAL_OPTIONS });
+      expect(result.exitCode).toBe(ExitCode.SUCCESS);
+
+      const configPath = join(testDir, '.stoneforge', 'config.yaml');
+      const content = readFileSync(configPath, 'utf-8');
+      expect(content).not.toContain('demo_mode');
+
+      const data = result.data as { demoMode: boolean };
+      expect(data.demoMode).toBe(false);
+
+      expect(result.message).not.toContain('Demo mode');
+    });
+
+    it('should still create standard workspace files with --demo', async () => {
+      const result = await initCommand.handler([], {
+        ...DEFAULT_GLOBAL_OPTIONS,
+        demo: true,
+      } as typeof DEFAULT_GLOBAL_OPTIONS);
+      expect(result.exitCode).toBe(ExitCode.SUCCESS);
+
+      // All standard files should be created
+      expect(existsSync(join(testDir, '.stoneforge'))).toBe(true);
+      expect(existsSync(join(testDir, '.stoneforge', 'config.yaml'))).toBe(true);
+      expect(existsSync(join(testDir, '.stoneforge', '.gitignore'))).toBe(true);
+      expect(existsSync(join(testDir, '.stoneforge', 'stoneforge.db'))).toBe(true);
+      expect(existsSync(join(testDir, '.stoneforge', 'playbooks'))).toBe(true);
+    });
+
+    it('should include demo option in command definition', () => {
+      expect(initCommand.options?.some(o => o.name === 'demo')).toBe(true);
+      const demoOpt = initCommand.options?.find(o => o.name === 'demo');
+      expect(demoOpt?.hasValue).toBe(false);
+    });
+
+    it('should support --actor with --demo', async () => {
+      const result = await initCommand.handler([], {
+        ...DEFAULT_GLOBAL_OPTIONS,
+        demo: true,
+        actor: 'mybot',
+      } as typeof DEFAULT_GLOBAL_OPTIONS);
+      expect(result.exitCode).toBe(ExitCode.SUCCESS);
+
+      const configPath = join(testDir, '.stoneforge', 'config.yaml');
+      const content = readFileSync(configPath, 'utf-8');
+      expect(content).toContain('demo_mode: true');
+      expect(content).toContain('actor: mybot');
+    });
+
+    it('should mention demo provider in agents message', async () => {
+      const result = await initCommand.handler([], {
+        ...DEFAULT_GLOBAL_OPTIONS,
+        demo: true,
+      } as typeof DEFAULT_GLOBAL_OPTIONS);
+      expect(result.exitCode).toBe(ExitCode.SUCCESS);
+      expect(result.message).toContain('opencode/minimax-m2.5-free');
+    });
+  });
+
   describe('skills installation during init', () => {
     it('should attempt skills installation during init and succeed', async () => {
       const result = await initCommand.handler([], { ...DEFAULT_GLOBAL_OPTIONS });

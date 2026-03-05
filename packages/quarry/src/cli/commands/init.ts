@@ -74,6 +74,37 @@ identity:
   mode: soft
 `;
 
+const DEMO_CONFIG = `# Stoneforge Configuration (Demo Mode)
+# See https://github.com/stoneforge/stoneforge for documentation
+#
+# Demo mode is active: all agents use opencode/minimax-m2.5-free (free tier).
+# To disable demo mode, set demo_mode to false and reconfigure agents.
+
+# Default actor for operations (optional)
+# actor: my-agent
+
+# Database path (relative to .stoneforge/)
+database: stoneforge.db
+
+# Demo mode — agents use the free opencode/minimax-m2.5-free provider
+demo_mode: true
+
+# Sync settings
+sync:
+  auto_export: true
+  elements_file: elements.jsonl
+  dependencies_file: dependencies.jsonl
+
+# Playbook search paths
+playbooks:
+  paths:
+    - playbooks
+
+# Identity settings
+identity:
+  mode: soft
+`;
+
 const DEFAULT_GITIGNORE = `# Runtime data
 *.db
 *.db-journal
@@ -254,9 +285,13 @@ export const DEFAULT_AGENTS = [
 
 /**
  * Creates default agents if they don't already exist.
+ * When provider/model are specified (e.g. demo mode), they are set on each agent.
  * Returns the number of agents created (skips existing ones for idempotency).
  */
-async function createDefaultAgents(api: QuarryAPI): Promise<{ created: number; skipped: number }> {
+async function createDefaultAgents(
+  api: QuarryAPI,
+  agentOptions?: { provider?: string; model?: string }
+): Promise<{ created: number; skipped: number }> {
   let created = 0;
   let skipped = 0;
 
@@ -268,12 +303,21 @@ async function createDefaultAgents(api: QuarryAPI): Promise<{ created: number; s
       continue;
     }
 
+    // Build agent metadata, optionally adding provider/model
+    const agentMeta: Record<string, unknown> = { ...agentDef.metadata };
+    if (agentOptions?.provider) {
+      agentMeta.provider = agentOptions.provider;
+    }
+    if (agentOptions?.model) {
+      agentMeta.model = agentOptions.model;
+    }
+
     // Create the entity with agent metadata
     const entity = await createEntity({
       name: agentDef.name,
       entityType: EntityTypeValue.AGENT,
       createdBy: OPERATOR_ENTITY_ID,
-      metadata: { [AGENT_META_KEY]: agentDef.metadata },
+      metadata: { [AGENT_META_KEY]: agentMeta },
     });
 
     await api.create(entity as unknown as Record<string, unknown> & { createdBy: EntityId });
@@ -290,7 +334,15 @@ async function createDefaultAgents(api: QuarryAPI): Promise<{ created: number; s
 interface InitOptions {
   name?: string;
   actor?: string;
+  demo?: boolean;
 }
+
+// ============================================================================
+// Demo Mode Constants
+// ============================================================================
+
+const DEMO_PROVIDER = 'opencode';
+const DEMO_MODEL = 'minimax-m2.5-free';
 
 // ============================================================================
 // Handler
@@ -324,10 +376,12 @@ async function initHandler(
       mkdirSync(stoneforgeDir, { recursive: true });
     }
 
+    const isDemo = options.demo === true;
+
     // Create config file (skip if already present)
     const configPath = join(stoneforgeDir, CONFIG_FILENAME);
     if (!existsSync(configPath)) {
-      let config = DEFAULT_CONFIG;
+      let config = isDemo ? DEMO_CONFIG : DEFAULT_CONFIG;
       if (options.actor) {
         config = config.replace('# actor: my-agent', `actor: ${options.actor}`);
       }
@@ -377,7 +431,11 @@ async function initHandler(
     await api.create(operatorEntity as unknown as Record<string, unknown> & { createdBy: EntityId });
 
     // Create default agents (director, workers, steward)
-    const agentResult = await createDefaultAgents(api);
+    // In demo mode, configure all agents with the free opencode/minimax-m2.5-free provider
+    const agentResult = await createDefaultAgents(
+      api,
+      isDemo ? { provider: DEMO_PROVIDER, model: DEMO_MODEL } : undefined
+    );
 
     // Import from JSONL files if they exist (common after cloning a repo)
     let importMessage = '';
@@ -425,15 +483,20 @@ async function initHandler(
 
     let agentsMessage = '';
     if (agentResult.created > 0) {
-      agentsMessage = `\nCreated ${agentResult.created} default agent(s): ${DEFAULT_AGENTS.map(a => a.name).join(', ')}`;
+      const providerSuffix = isDemo ? ` (using ${DEMO_PROVIDER}/${DEMO_MODEL})` : '';
+      agentsMessage = `\nCreated ${agentResult.created} default agent(s): ${DEFAULT_AGENTS.map(a => a.name).join(', ')}${providerSuffix}`;
     }
     if (agentResult.skipped > 0) {
       agentsMessage += `\nSkipped ${agentResult.skipped} existing agent(s)`;
     }
 
+    const demoModeNotice = isDemo
+      ? `\n\n🎮 Demo mode is active!\n   All agents are configured to use the free ${DEMO_PROVIDER}/${DEMO_MODEL} provider.\n   No API keys required. To disable, set demo_mode: false in .stoneforge/config.yaml.`
+      : '';
+
     return success(
-      { path: stoneforgeDir, operatorId: OPERATOR_ENTITY_ID, agentsMdCreated, skillsInstalled, agentsCreated: agentResult.created },
-      `${baseMessage}\nCreated default operator entity: ${OPERATOR_ENTITY_ID}${agentsMessage}${agentsMdMessage}${importMessage}${skillsMessage}`
+      { path: stoneforgeDir, operatorId: OPERATOR_ENTITY_ID, agentsMdCreated, skillsInstalled, agentsCreated: agentResult.created, demoMode: isDemo },
+      `${baseMessage}\nCreated default operator entity: ${OPERATOR_ENTITY_ID}${agentsMessage}${agentsMdMessage}${importMessage}${skillsMessage}${demoModeNotice}`
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
@@ -448,7 +511,7 @@ async function initHandler(
 export const initCommand: Command = {
   name: 'init',
   description: 'Initialize a new Stoneforge workspace',
-  usage: 'sf init [--name <name>] [--actor <actor>]',
+  usage: 'sf init [--name <name>] [--actor <actor>] [--demo]',
   help: `Initialize a new Stoneforge workspace in the current directory.
 
 Creates a .stoneforge/ directory containing:
@@ -466,7 +529,11 @@ Default agents are automatically created:
   - e-worker-2      Ephemeral worker agent
   - m-steward-1     Merge steward agent
 
-Re-running init is safe — existing agents are not duplicated.`,
+Re-running init is safe — existing agents are not duplicated.
+
+Options:
+  --demo    Enable demo mode. Configures all agents to use the free
+            opencode/minimax-m2.5-free provider (no API keys required).`,
   options: [
     {
       name: 'name',
@@ -477,6 +544,11 @@ Re-running init is safe — existing agents are not duplicated.`,
       name: 'actor',
       description: 'Default actor for operations',
       hasValue: true,
+    },
+    {
+      name: 'demo',
+      description: 'Enable demo mode with free opencode/minimax-m2.5-free provider',
+      hasValue: false,
     },
   ],
   handler: initHandler as Command['handler'],

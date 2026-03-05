@@ -221,6 +221,7 @@ sf init [options]
 | ----------------- | -------------------------------- |
 | `--name <name>`   | Workspace name (optional)        |
 | `--actor <actor>`  | Default actor for operations    |
+| `--demo`          | Initialize in demo mode          |
 
 Creates a `.stoneforge/` directory containing:
 - `config.yaml` — Default configuration file
@@ -244,12 +245,25 @@ Re-running `sf init` is safe — existing agents are not duplicated (idempotent)
 
 If the `.stoneforge/` directory already exists (e.g., after cloning a repo) but no database is present, `sf init` will create the database and auto-import from any existing JSONL sync files. Claude skills are also installed automatically during init.
 
+### Demo Mode
+
+When `--demo` is passed, the workspace is initialized in demo mode:
+
+- Sets `demo_mode: true` in `config.yaml`
+- All auto-created agents are configured with the `opencode` provider and `minimax-m2.5-free` model
+- No API keys are required — uses a free, publicly available model
+
+Demo mode is ideal for trying out Stoneforge without configuring an LLM provider.
+
 ```bash
 # Initialize a new workspace
 sf init
 
 # Initialize with a specific default actor
 sf init --actor my-agent
+
+# Initialize in demo mode (no API keys needed)
+sf init --demo
 ```
 
 ## Stats Command
