@@ -43,13 +43,27 @@ describe('isRateLimitMessage', () => {
     expect(isRateLimitMessage('Weekly limit reached · resets Feb 22 at 9:30am')).toBe(true);
   });
 
-  it('detects generic "limit" + "resets" co-occurrence', () => {
-    expect(isRateLimitMessage('Your API limit will reset soon · resets 6pm')).toBe(true);
+  it('detects "Claude usage limit reached"', () => {
+    expect(isRateLimitMessage('Claude usage limit reached. Your limit will reset at 3pm')).toBe(true);
+  });
+
+  it('detects "Usage limit reached" (Codex)', () => {
+    expect(isRateLimitMessage('Usage limit reached')).toBe(true);
+  });
+
+  it('detects "API Error: Rate limit reached"', () => {
+    expect(isRateLimitMessage('API Error: Rate limit reached')).toBe(true);
+  });
+
+  it('detects "Your limit will reset at" pattern', () => {
+    expect(isRateLimitMessage('Your limit will reset at 3pm')).toBe(true);
   });
 
   it('is case-insensitive', () => {
     expect(isRateLimitMessage("YOU'VE HIT YOUR LIMIT · RESETS 12AM")).toBe(true);
     expect(isRateLimitMessage('WEEKLY LIMIT REACHED · RESETS FEB 22 AT 9:30AM')).toBe(true);
+    expect(isRateLimitMessage('USAGE LIMIT REACHED')).toBe(true);
+    expect(isRateLimitMessage('RATE LIMIT REACHED')).toBe(true);
   });
 
   it('returns false for non-rate-limit messages', () => {
@@ -59,8 +73,25 @@ describe('isRateLimitMessage', () => {
     expect(isRateLimitMessage('The sky is the limit!')).toBe(false);
   });
 
-  it('returns false for messages with "limit" but no "resets"', () => {
+  it('returns false for messages with "limit" but no known rate limit phrase', () => {
     expect(isRateLimitMessage('You are approaching your limit')).toBe(false);
+  });
+
+  it('returns false for long messages (>200 chars) even with rate limit words', () => {
+    const longMessage = 'Here is the code for rate limit handling: ' +
+      'if (response.status === 429) { console.log("rate limit reached"); ' +
+      'const resetTime = response.headers["x-ratelimit-reset"]; ' +
+      'console.log("limit resets at " + resetTime); } // This handles the usage limit reached scenario';
+    expect(longMessage.length).toBeGreaterThan(200);
+    expect(isRateLimitMessage(longMessage)).toBe(false);
+  });
+
+  it('returns false for assistant messages discussing rate limit code', () => {
+    const assistantMessage =
+      'I\'ll implement the rate limit handler. When the usage limit reached error occurs, ' +
+      'we should parse the reset time. The limit will reset at the time specified in the header. ' +
+      'Here\'s the implementation that checks if the rate limit reached status is returned...';
+    expect(isRateLimitMessage(assistantMessage)).toBe(false);
   });
 });
 

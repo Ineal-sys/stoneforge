@@ -50,17 +50,24 @@ const MONTH_NAMES: Record<string, number> = {
 };
 
 /**
- * Patterns to detect rate limit messages from Claude Code.
+ * Patterns to detect rate limit messages from Claude Code and other providers.
  *
- * Handles:
- * - "You've hit your limit" with straight (') or curly (\u2019) apostrophes
- * - "Weekly limit reached"
- * - Generic "limit" + "resets" co-occurrence in the same message
+ * Each pattern matches a specific known rate limit phrase to avoid false
+ * positives from assistant messages that happen to discuss rate limiting.
+ *
+ * Known formats:
+ * - "You've hit your limit · resets {time}"
+ * - "Weekly limit reached · resets {time}"
+ * - "Claude usage limit reached. Your limit will reset at {time}"
+ * - "API Error: Rate limit reached"
+ * - "Usage limit reached" (Codex)
  */
 export const RATE_LIMIT_PATTERNS: ReadonlyArray<RegExp> = [
   /you[\u2018\u2019''`]ve hit your limit/i,
   /weekly limit reached/i,
-  /limit\b.*\bresets?\b/i,
+  /usage limit reached/i,
+  /rate limit reached/i,
+  /limit will reset at\b/i,
 ];
 
 /**
@@ -83,8 +90,14 @@ const TIMEZONE_REGEX =
 
 /**
  * Returns `true` if the content matches any known rate limit pattern.
+ *
+ * Messages longer than 200 characters are rejected outright — genuine
+ * provider rate limit messages are short, structured strings. Assistant
+ * messages discussing rate limit code are much longer and would otherwise
+ * cause false positives.
  */
 export function isRateLimitMessage(content: string): boolean {
+  if (content.length > 200) return false;
   return RATE_LIMIT_PATTERNS.some((pattern) => pattern.test(content));
 }
 
