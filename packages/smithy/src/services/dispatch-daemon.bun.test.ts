@@ -4599,6 +4599,52 @@ describe('spawnRecoveryStewardForTask - rate limit session history guard', () =>
     expect(sessionManager.startSession).toHaveBeenCalled();
   });
 
+  test('does not detect stale rate limit pattern (rapid exits from 10 minutes ago)', async () => {
+    const worker = await createTestWorker('stale-pattern-worker');
+    const workerId = worker.id as unknown as EntityId;
+    await createTestRecoverySteward('recovery-steward-stale');
+
+    const task = await createTask({
+      title: 'Task with stale rate limit pattern',
+      createdBy: systemEntity,
+      status: TaskStatus.IN_PROGRESS,
+      assignee: workerId,
+    });
+    const saved = await api.create(task as unknown as Record<string, unknown> & { createdBy: EntityId }) as Task;
+
+    // Build session history: rapid exits that happened 10 minutes ago (stale pattern)
+    const tenMinutesAgo = Date.now() - 10 * 60 * 1000;
+    let metadata: Record<string, unknown> | undefined = undefined;
+    metadata = updateOrchestratorTaskMeta(metadata, {
+      assignedAgent: workerId,
+      branch: 'agent/test-worker/task-branch',
+      worktree: '/worktrees/test-worker/task',
+      sessionId: 'prev-session-stuck',
+      resumeCount: 3,
+    });
+
+    // Sessions 30s apart but all from ~10 minutes ago — pattern is stale
+    for (let i = 0; i < RATE_LIMIT_SESSION_PATTERN_COUNT; i++) {
+      const entry: TaskSessionHistoryEntry = {
+        sessionId: `session-stale-${i}`,
+        agentId: workerId,
+        agentName: 'test-worker',
+        agentRole: 'worker',
+        startedAt: new Date(tenMinutesAgo - (RATE_LIMIT_SESSION_PATTERN_COUNT - i) * 30_000).toISOString() as import('@stoneforge/core').Timestamp,
+        // No endedAt — session exited without proper completion
+      };
+      metadata = appendTaskSessionHistory(metadata, entry);
+    }
+
+    await api.update(saved.id, { metadata });
+
+    const result = await daemon.recoverOrphanedAssignments();
+
+    // Recovery steward SHOULD be spawned — pattern is stale (>5 min old)
+    expect(result.processed).toBe(1);
+    expect(sessionManager.startSession).toHaveBeenCalled();
+  });
+
   test('does not detect rate limit pattern when sessions are far apart', async () => {
     const worker = await createTestWorker('far-apart-worker');
     const workerId = worker.id as unknown as EntityId;

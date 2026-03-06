@@ -2372,6 +2372,13 @@ export class DispatchDaemonImpl implements DispatchDaemon {
       }
     }
 
+    // Check that the pattern is recent — if the last rapid-exit session
+    // was long ago, the rate limit has likely expired and recovery should proceed.
+    const mostRecentStart = new Date(recentSessions[recentSessions.length - 1].startedAt).getTime();
+    if (Date.now() - mostRecentStart > RATE_LIMIT_SESSION_GAP_MS) {
+      return false;
+    }
+
     // All recent sessions were rapid retries without proper completion
     return true;
   }
