@@ -1009,8 +1009,14 @@ export class SpawnerServiceImpl implements SpawnerService {
    */
   private convertAgentMessageToEvent(message: AgentMessage): SpawnedSessionEvent | null {
     const receivedAt = createTimestamp();
-    // Build a raw event from the AgentMessage
+    // Spread original SDK message data into raw so that fields like
+    // `usage`, `modelUsage`, and nested `message.model` are preserved
+    // for downstream consumers (e.g. metrics recording).
+    const sdkData = (typeof message.raw === 'object' && message.raw !== null)
+      ? message.raw as Record<string, unknown>
+      : {};
     const raw: StreamJsonEvent = {
+      ...sdkData,
       type: message.type,
       subtype: message.subtype,
       session_id: message.sessionId,

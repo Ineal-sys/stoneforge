@@ -303,6 +303,7 @@ export async function initializeServices(options: ServicesOptions = {}): Promise
       let sessionOutcome: MetricOutcome = 'completed';
       let sessionInputTokens = 0;
       let sessionOutputTokens = 0;
+      let sessionModel: string | undefined;
 
       // Helper to record metrics once on session completion
       const recordSessionMetrics = () => {
@@ -318,6 +319,7 @@ export async function initializeServices(options: ServicesOptions = {}): Promise
             const taskId = tasks.length > 0 ? tasks[0].taskId : undefined;
             metricsService.record({
               provider,
+              model: sessionModel,
               sessionId: session.id,
               taskId,
               inputTokens: sessionInputTokens,
@@ -330,6 +332,7 @@ export async function initializeServices(options: ServicesOptions = {}): Promise
             // If task lookup fails, record without task ID
             metricsService.record({
               provider,
+              model: sessionModel,
               sessionId: session.id,
               inputTokens: sessionInputTokens,
               outputTokens: sessionOutputTokens,
@@ -341,14 +344,41 @@ export async function initializeServices(options: ServicesOptions = {}): Promise
 
       // Auto-terminate sessions when they emit a 'result' event
       // This handles ephemeral worker sessions completing their tasks
-      const onResultEvent = (event: { type: string; raw?: { usage?: { input_tokens?: number; output_tokens?: number } } }) => {
+      const onResultEvent = (event: { type: string; subtype?: string; raw?: Record<string, unknown> }) => {
+        // Accumulate tokens from assistant events (each BetaMessage has usage)
+        // This provides a running total in case the session exits without a result event
+        if (event.type === 'assistant') {
+          const rawMsg = event.raw?.message as { usage?: { input_tokens?: number; output_tokens?: number }; model?: string } | undefined;
+          if (rawMsg?.usage) {
+            sessionInputTokens += rawMsg.usage.input_tokens ?? 0;
+            sessionOutputTokens += rawMsg.usage.output_tokens ?? 0;
+          }
+          // Capture model from the first assistant message that has it
+          if (rawMsg?.model && !sessionModel) {
+            sessionModel = rawMsg.model;
+          }
+          return;
+        }
+
         if (event.type === 'result') {
-          // Extract token counts from the result event if available
-          const usage = event.raw?.usage;
-          if (usage) {
+          // The SDK result event contains cumulative totals for the entire session.
+          // Prefer these over the accumulated per-turn values.
+          // The usage field is NonNullableUsage (BetaUsage shape: input_tokens, output_tokens)
+          const usage = event.raw?.usage as { input_tokens?: number; output_tokens?: number } | undefined;
+          if (usage && (usage.input_tokens || usage.output_tokens)) {
             sessionInputTokens = usage.input_tokens ?? 0;
             sessionOutputTokens = usage.output_tokens ?? 0;
           }
+
+          // Extract model from modelUsage keys (Record<string, ModelUsage>)
+          const modelUsage = event.raw?.modelUsage as Record<string, unknown> | undefined;
+          if (modelUsage) {
+            const models = Object.keys(modelUsage);
+            if (models.length > 0 && !sessionModel) {
+              sessionModel = models[0];
+            }
+          }
+
           sessionOutcome = 'completed';
           recordSessionMetrics();
 
