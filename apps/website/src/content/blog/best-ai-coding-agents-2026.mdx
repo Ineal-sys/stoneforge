@@ -1,0 +1,319 @@
+---
+title: "Best AI Coding Agents in 2026"
+description: "An honest roundup of the best AI coding agents available in 2026 — from CLI tools to full IDE agents, with real strengths and trade-offs for each."
+date: 2026-03-09
+tags: ["ai-agents", "tools", "comparison"]
+relatedContent:
+  - title: "How to Run Multiple AI Coding Agents in Parallel"
+    url: "/blog/how-to-run-multiple-ai-coding-agents-in-parallel/"
+    type: "blog"
+  - title: "The Case for Multi-Agent Software Development"
+    url: "/blog/the-case-for-multi-agent-software-development/"
+    type: "blog"
+  - title: "Getting Started with Stoneforge"
+    url: "https://docs.stoneforge.ai/getting-started"
+    type: "docs"
+---
+
+{/* SEO CHECKLIST
+    [x] Title tag <=60 chars with primary keyword
+    [x] Meta description <=160 chars
+    [x] H1 = title, H2s for each section
+    [x] 2-3 internal links to docs.stoneforge.ai
+    [x] 1-2 internal links to use case or comparison pages
+    [x] 3-5 FAQ items if applicable
+    [x] Image alt text with keywords */}
+
+AI coding agents have evolved fast. A year ago, most of them were glorified autocomplete. Today, the best ones can take a task description, plan an approach, write code across multiple files, run tests, and iterate on failures — with minimal hand-holding.
+
+But "best" depends on how you work. A solo developer hacking on a side project has different needs than a team running a TypeScript monorepo with CI pipelines and code review gates. Some agents shine in the terminal. Others are built into IDEs. A few are completely free and open source.
+
+This is an honest rundown of the best AI coding agents available right now, with real trade-offs for each. No hype, no affiliate links.
+
+## What Makes an AI Coding Agent Different from a Copilot?
+
+Before the list — a quick distinction. A **copilot** suggests code as you type. An **agent** takes a task and executes it: reads files, writes code, runs commands, iterates on errors. The line has blurred as most tools now offer both modes, but the agent capability is what we're evaluating here.
+
+The key things that separate a good agent from a mediocre one:
+
+- **Context awareness** — can it navigate a large codebase and find the relevant files?
+- **Multi-file editing** — can it make coordinated changes across multiple files?
+- **Tool use** — can it run tests, lint, build, and react to failures?
+- **Autonomy** — how much can it accomplish before needing your input?
+- **Transparency** — can you see what it's doing and why?
+
+## The Best AI Coding Agents in 2026
+
+### 1. Claude Code
+
+**Type:** CLI agent · **Pricing:** Usage-based (via Anthropic API or Claude Pro/Max subscription) · **Open source:** [Yes](https://github.com/anthropics/claude-code)
+
+Claude Code runs in your terminal and operates directly on your codebase. It reads files, writes code, runs shell commands, and iterates — all within a conversational loop. There's no IDE dependency. If you can access your project from a terminal, Claude Code works.
+
+**What it does well:**
+
+- Excels at complex, multi-file refactors. It builds up a mental model of your codebase through file reads and search, then makes coordinated changes.
+- Runs tests and reacts to failures. Give it a failing test and it'll dig into the error, fix the code, and re-run until it passes.
+- The CLI interface means it works everywhere — SSH sessions, remote dev boxes, CI pipelines.
+- Extended thinking gives it strong performance on tasks that require planning before execution.
+
+**Where it falls short:**
+
+- No inline code suggestions. This is a task-execution tool, not an autocomplete engine. You'll still want a copilot extension in your editor for moment-to-moment coding.
+- Usage-based pricing can add up quickly on large tasks, especially with extended thinking enabled.
+- Terminal-only may not appeal to developers who prefer visual interfaces.
+
+**Best for:** Developers comfortable in the terminal who want an agent that can handle substantial, multi-step tasks autonomously.
+
+### 2. GitHub Copilot (with Agent Mode)
+
+**Type:** IDE-integrated agent · **Pricing:** Free tier available, Pro from $10/month · **Open source:** No
+
+GitHub Copilot started as an autocomplete tool and has steadily grown into a full agent. The agent mode in VS Code can now take a task description, plan edits, modify multiple files, and run terminal commands. Its tight integration with GitHub — issues, PRs, Actions — gives it a unique advantage for teams already on that platform.
+
+**What it does well:**
+
+- Seamless IDE integration. It lives in VS Code and JetBrains IDEs with zero setup friction.
+- Copilot coding agent can work on GitHub Issues autonomously, creating PRs with proposed changes.
+- Access to multiple models including GPT-4.1 and Claude Sonnet, with the ability to switch per-task.
+- The free tier is generous enough for individual developers to get real work done.
+
+**Where it falls short:**
+
+- Agent mode is less effective on large codebases where it needs to discover relevant files across deeply nested directories.
+- Locked to GitHub's ecosystem. If you're on GitLab or Bitbucket, you lose the deepest integrations.
+- The autonomous coding agent (Copilot Workspace) is still maturing — results are inconsistent on complex multi-step tasks.
+
+**Best for:** Teams already on GitHub who want AI assistance that's deeply wired into their existing workflow.
+
+### 3. Cursor
+
+**Type:** IDE (forked VS Code) · **Pricing:** Free tier, Pro $20/month · **Open source:** No
+
+Cursor is a VS Code fork with AI baked into every interaction. It's not just an extension — the editor itself is designed around AI-assisted development. Agent mode lets you describe a task and watch Cursor plan and execute across files, with a diff view that makes reviewing changes fast.
+
+**What it does well:**
+
+- The best inline editing experience of any tool on this list. Cmd+K to edit, Tab to accept — it's fluid.
+- Agent mode handles multi-file changes well, with a clear plan-then-execute flow.
+- Codebase-wide context via indexing. It understands your project structure and can reference relevant code without you pointing it to specific files.
+- Strong model flexibility — supports Claude, GPT, and custom model endpoints.
+
+**Where it falls short:**
+
+- It's a separate editor. If your team is standardized on VS Code with specific extensions, switching has friction.
+- The free tier is limited. Serious use requires the Pro plan.
+- Being a VS Code fork means it lags behind VS Code upstream updates.
+
+**Best for:** Individual developers who want the tightest possible integration between their editor and AI, and are willing to switch editors to get it.
+
+### 4. Windsurf
+
+**Type:** IDE (forked VS Code) · **Pricing:** Free tier, Pro plans available · **Open source:** No
+
+Windsurf (formerly Codeium) takes a similar approach to Cursor — an AI-native editor forked from VS Code. Its Cascade agent can execute multi-step tasks across files with full awareness of your codebase context. It also offers a CLI agent for terminal-based workflows.
+
+**What it does well:**
+
+- Cascade flows feel natural — the agent explains its reasoning as it works, making it easy to follow along.
+- Strong autocomplete that considers the full codebase context, not just the current file.
+- Generous free tier with access to agent capabilities.
+- Memory features that persist context across sessions.
+
+**Where it falls short:**
+
+- Similar to Cursor, it's a separate editor with the trade-offs that entails.
+- Smaller community and extension ecosystem than Cursor.
+- Enterprise features and model access are gated behind paid tiers.
+
+**Best for:** Developers looking for an AI-native editor who want a more generous free tier than Cursor offers.
+
+### 5. OpenAI Codex
+
+**Type:** Cloud-based agent · **Pricing:** Included with ChatGPT Pro · **Open source:** [CLI is open source](https://github.com/openai/codex)
+
+OpenAI's Codex is a cloud-based coding agent that runs tasks in a sandboxed environment. You assign it a task — from a GitHub issue, a prompt, or a code review — and it spins up an isolated environment, clones your repo, and works through the problem. The open-source CLI client (codex-cli) provides a terminal-based alternative for local execution.
+
+**What it does well:**
+
+- Cloud execution means no local compute cost. Tasks run in sandboxed containers.
+- Strong integration with GitHub for issue-to-PR workflows.
+- The sandboxed environment means it can run arbitrary commands without risk to your local machine.
+- The open-source CLI (codex-cli) works locally with multi-provider support.
+
+**Where it falls short:**
+
+- Cloud-based execution introduces latency. You're waiting for a remote environment to spin up and process.
+- Limited visibility into what the agent is doing while it works — you mostly see the final result.
+- The local CLI is newer and less mature than Claude Code or Aider.
+
+**Best for:** Teams that want fire-and-forget task execution without tying up local resources, especially for issue triage and smaller PRs.
+
+### 6. Aider
+
+**Type:** CLI agent · **Pricing:** Free (bring your own API key) · **Open source:** [Yes](https://github.com/Aider-AI/aider)
+
+Aider is one of the original AI coding agents — a Python CLI tool that's been iterating since early 2023. It's model-agnostic, well-documented, and has a passionate community. It works by maintaining a "chat" about your code, with the ability to add files to context, make edits, and commit changes.
+
+**What it does well:**
+
+- Mature and battle-tested. It's been through thousands of real-world codebases.
+- Excellent model support — works with Claude, GPT, Gemini, DeepSeek, Ollama, and basically any OpenAI-compatible API.
+- Automatic git commits with sensible messages. Your change history stays clean.
+- The `/architect` mode separates planning from editing, which improves results on complex tasks.
+- Completely free and open source. You only pay for the API calls to your chosen model provider.
+
+**Where it falls short:**
+
+- Python dependency can be friction in non-Python environments.
+- Less effective at autonomous multi-step tasks compared to Claude Code — it works best as a conversational coding partner.
+- No built-in test running or iterative error correction (though you can configure lint/test commands).
+
+**Best for:** Developers who want a free, open-source, model-agnostic coding agent with a proven track record.
+
+### 7. Cline
+
+**Type:** VS Code extension · **Pricing:** Free (bring your own API key) · **Open source:** [Yes](https://github.com/cline/cline)
+
+Cline (originally Claude Dev) is a VS Code extension that turns your editor into an agentic coding environment. It can create and edit files, run terminal commands, use the browser, and even interact with UI elements — all within VS Code.
+
+**What it does well:**
+
+- Full agent capabilities inside VS Code. No need to switch to a terminal or separate editor.
+- Human-in-the-loop by default — it asks for approval before running commands or making changes, so you stay in control.
+- Browser use capability lets it test web applications and debug visual issues.
+- Supports multiple model providers including Claude, GPT, Gemini, and local models.
+
+**Where it falls short:**
+
+- The approval-based workflow can feel slow for experienced developers who want more autonomy.
+- Resource-heavy in VS Code — running an agent session alongside your normal workflow can be sluggish.
+- API costs are your responsibility, and agentic loops can consume tokens quickly.
+
+**Best for:** VS Code users who want agent capabilities without leaving their editor and prefer explicit control over what the agent does.
+
+### 8. Roo Code
+
+**Type:** VS Code extension · **Pricing:** Free (bring your own API key) · **Open source:** [Yes](https://github.com/RooVetGit/Roo-Code)
+
+Roo Code forked from Cline and took it in a more opinionated direction. It adds custom "modes" — specialized agent personas for different tasks like architecture, debugging, code review, and documentation. The mode system makes it easier to get focused output for specific types of work.
+
+**What it does well:**
+
+- Modes provide focused agent behavior. The architect mode plans without editing, the code mode implements, and the review mode critiques — each with appropriate system prompts and tool access.
+- Boomerang mode orchestrates sub-tasks across different modes, creating a mini multi-agent workflow within a single editor.
+- Active community with rapid iteration.
+- Same broad model support as Cline.
+
+**Where it falls short:**
+
+- The mode system adds complexity. For simple tasks, it's overhead.
+- As a Cline fork, it inherits the same resource overhead in VS Code.
+- Customizing modes requires editing configuration files — the UX for mode management could be smoother.
+
+**Best for:** Developers who want fine-grained control over agent behavior and like the idea of specialized modes for different coding tasks.
+
+### 9. OpenCode
+
+**Type:** CLI agent · **Pricing:** Free (bring your own API key) · **Open source:** [Yes](https://github.com/opencode-ai/opencode)
+
+OpenCode is a terminal-based coding agent built with Go. It's lightweight, fast to start, and provides a clean TUI (terminal user interface) for interacting with AI models while working on your codebase.
+
+**What it does well:**
+
+- Written in Go — single binary, fast startup, no runtime dependencies.
+- Clean TUI with conversation management and file context handling.
+- Multi-provider support including Claude, GPT, Gemini, and local models.
+- LSP integration for code intelligence features.
+
+**Where it falls short:**
+
+- Newer and less mature than Aider or Claude Code.
+- Smaller community and fewer battle-tested edge cases.
+- The TUI, while polished, is more constrained than a full terminal-based workflow.
+
+**Best for:** Developers who want a lightweight, dependency-free terminal agent and don't mind using a less established tool.
+
+### 10. Amazon Q Developer
+
+**Type:** IDE extension + CLI · **Pricing:** Free tier, Pro $19/month · **Open source:** No
+
+Amazon Q Developer (previously CodeWhisperer) has evolved from an autocomplete tool into a capable agent, particularly for AWS-centric workflows. It can transform code, generate tests, and handle infrastructure tasks.
+
+**What it does well:**
+
+- Deep AWS integration. If you're building on AWS, it understands CloudFormation, CDK, Lambda, and other AWS services at a level other agents don't match.
+- `/transform` can upgrade Java codebases across major version bumps — a genuinely useful capability for enterprise teams.
+- Security scanning built into the agent workflow.
+- Generous free tier with agent capabilities included.
+
+**Where it falls short:**
+
+- AWS-centric focus means it's less compelling for teams not on AWS.
+- Agent capabilities outside of AWS-specific tasks lag behind Cursor and Claude Code.
+- IDE support beyond VS Code and JetBrains is limited.
+
+**Best for:** Teams building on AWS who want an agent that deeply understands their infrastructure and cloud services.
+
+## Comparing the Best AI Coding Agents
+
+| Agent | Type | Open Source | Best For | Free Option |
+|-------|------|-------------|----------|-------------|
+| Claude Code | CLI | Yes | Complex multi-step tasks | API free tier |
+| GitHub Copilot | IDE extension | No | GitHub-integrated teams | Yes |
+| Cursor | IDE | No | Tight editor integration | Limited |
+| Windsurf | IDE | No | Budget-conscious devs | Yes |
+| Codex | Cloud/CLI | CLI only | Fire-and-forget tasks | With ChatGPT Pro |
+| Aider | CLI | Yes | Model-agnostic flexibility | Yes |
+| Cline | VS Code ext. | Yes | Controlled agent in VS Code | Yes |
+| Roo Code | VS Code ext. | Yes | Mode-based specialization | Yes |
+| OpenCode | CLI | Yes | Lightweight terminal agent | Yes |
+| Amazon Q | IDE ext. + CLI | No | AWS-centric development | Yes |
+
+## How to Choose the Right AI Coding Agent
+
+There's no single best agent. Here's how to narrow it down:
+
+**If you live in the terminal:** Claude Code or Aider. Claude Code for autonomous multi-step work, Aider if you want open-source flexibility with any model.
+
+**If you want an AI-native editor:** Cursor or Windsurf. Cursor has stronger agent mode and a larger community. Windsurf has a more generous free tier.
+
+**If you're locked into VS Code:** Cline or Roo Code. Both are free and open source. Roo Code if you want specialized modes, Cline for a simpler experience.
+
+**If you want fire-and-forget:** Codex or GitHub Copilot's coding agent. Both can work on tasks asynchronously and open PRs when done.
+
+**If you're building on AWS:** Amazon Q Developer. Nothing else matches its AWS-specific knowledge.
+
+## Going Beyond Single-Agent: Multi-Agent Orchestration
+
+There's one more dimension to consider: running multiple agents in parallel.
+
+Every agent on this list operates in a single-agent paradigm — one agent, one task, one thread of work. That's a bottleneck. If you have 10 tasks on your board, you're still processing them sequentially, even if each individual task completes in minutes.
+
+[Multi-agent orchestration](/blog/the-case-for-multi-agent-software-development/) changes this. Instead of running one agent at a time, orchestration tools like [Stoneforge](https://stoneforge.ai) let you run multiple AI coding agents in parallel — each on its own branch and worktree, with automated task dispatch, dependency tracking, and merge sequencing.
+
+This isn't about replacing any agent on this list. It's about multiplying their output. Stoneforge works with Claude Code, Codex, and OpenCode as worker agents, orchestrating them to complete a full sprint's worth of work in the time it normally takes to do a few tasks.
+
+If you're already productive with a single agent and want to scale up, check out our guide on [how to run multiple AI coding agents in parallel](/blog/how-to-run-multiple-ai-coding-agents-in-parallel/).
+
+## Frequently Asked Questions
+
+### What is the best free AI coding agent?
+
+For a completely free and open-source option, [Aider](https://github.com/Aider-AI/aider) is hard to beat — it supports virtually any model provider, including free and local models via Ollama. [Cline](https://github.com/cline/cline) and [Roo Code](https://github.com/RooVetGit/Roo-Code) are also fully free and open source if you prefer working inside VS Code. GitHub Copilot's free tier is the most accessible option that doesn't require bringing your own API key.
+
+### Are AI coding agents safe to use with proprietary code?
+
+It depends on the agent and how it's configured. CLI agents like Claude Code, Aider, and OpenCode send your code to an API provider for processing — check your provider's data retention policies. Self-hosted or local model options (available through Aider, Cline, and OpenCode) keep everything on your machine. GitHub Copilot and Cursor have enterprise plans with data privacy agreements. For highly sensitive code, running a local model is the safest option, though you'll trade off capability.
+
+### Can AI coding agents replace developers?
+
+No. AI coding agents are tools that amplify developer productivity, not replacements for developer judgment. They're excellent at well-defined, bounded tasks — implementing a function to spec, writing tests for existing code, refactoring with clear patterns. They struggle with ambiguous requirements, novel architecture decisions, and cross-cutting concerns that require deep domain knowledge. The best results come from developers who can precisely define tasks, review output critically, and course-correct when the agent goes off track.
+
+### What's the difference between AI coding agents and AI coding assistants?
+
+An **assistant** (or copilot) suggests code as you type — it's reactive and works at the line or function level. An **agent** takes a task and executes it autonomously — reading files, planning changes, writing code across multiple files, running commands, and iterating on errors. Most modern tools offer both modes. The agent capability is what lets you hand off a task like "add input validation to the signup form" and get back a working implementation.
+
+### Which AI coding agent is best for large codebases?
+
+For large codebases (100k+ lines), Claude Code and Cursor perform best. Claude Code's search-and-read approach scales well because it selectively loads relevant files rather than trying to fit everything into context. Cursor's codebase indexing provides similar benefits within the IDE. Aider works well too, especially with its repo map feature that provides structural awareness. The key factor isn't the agent itself — it's how well it can navigate and selectively read a large project without blowing its context window.
