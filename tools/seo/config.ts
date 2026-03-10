@@ -30,10 +30,6 @@ try {
 }
 
 export const config = {
-  keywordsEverywhere: {
-    apiKey: process.env.KEYWORDS_EVERYWHERE_API_KEY ?? "",
-    baseUrl: "https://api.keywordseverywhere.com/v1",
-  },
   dataForSeo: {
     login: process.env.DATAFORSEO_LOGIN ?? "",
     password: process.env.DATAFORSEO_PASSWORD ?? "",
