@@ -777,7 +777,7 @@ export const updateOptions: CommandOption[] = [
   {
     name: 'status',
     short: 's',
-    description: 'New status (for tasks: open, in_progress, closed, deferred)',
+    description: 'New status (for tasks: open, in_progress, blocked, deferred, backlog, review, closed, tombstone)',
     hasValue: true,
   },
   {
@@ -1054,7 +1054,7 @@ Options:
   -t, --title <text>       New title
   -p, --priority <1-5>     New priority (tasks only)
   -c, --complexity <1-5>   New complexity (tasks only)
-  -s, --status <status>    New status (tasks only: open, in_progress, closed, deferred)
+  -s, --status <status>    New status (tasks only: open, in_progress, blocked, deferred, backlog, review, closed, tombstone)
   -a, --assignee <id>      New assignee (tasks only, empty string to unassign)
   -d, --description <text> Update description (tasks: updates linked doc; documents: updates content)
       --metadata <json>    JSON metadata to merge into element (null values remove keys)
