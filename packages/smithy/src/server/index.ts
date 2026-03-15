@@ -9,6 +9,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import type { EntityId } from '@stoneforge/core';
 import { getAgentMetadata } from '../index.js';
+import type { AgentEntity } from '../api/orchestrator-api.js';
 import { createLogger, getLogLevel } from '../utils/logger.js';
 import { CORS_ORIGINS as DEFAULT_CORS_ORIGINS, PORT as DEFAULT_PORT, HOST as DEFAULT_HOST, PROJECT_ROOT as DEFAULT_PROJECT_ROOT, DB_PATH as DEFAULT_DB_PATH } from './config.js';
 import { initializeServices, type Services } from './services.js';
@@ -88,15 +89,15 @@ export async function startSmithyServer(options: SmithyServerOptions = {}): Prom
 
   const services = await initializeServices({ dbPath, projectRoot });
 
-  // Before reconciliation, capture director's session info if it was running
-  // This allows us to auto-resume the director after server restart
-  let directorSessionId: string | undefined;
-  const director = await services.agentRegistry.getDirector();
-  if (director) {
-    const meta = getAgentMetadata(director);
+  // Before reconciliation, capture all directors' session info if they were running
+  // This allows us to auto-resume all directors after server restart
+  const directorResumes: Array<{ agent: AgentEntity; sessionId: string }> = [];
+  const directors = await services.agentRegistry.getDirectors();
+  for (const dir of directors) {
+    const meta = getAgentMetadata(dir);
     if (meta?.sessionStatus === 'running' && meta?.sessionId) {
-      directorSessionId = meta.sessionId;
-      logger.debug(`Director was running with session ${directorSessionId} before restart`);
+      directorResumes.push({ agent: dir, sessionId: meta.sessionId });
+      logger.debug(`Director ${dir.name} was running with session ${meta.sessionId} before restart`);
     }
   }
 
@@ -188,14 +189,15 @@ export async function startSmithyServer(options: SmithyServerOptions = {}): Prom
     );
   }
 
-  // Auto-resume director session if it was running before server restart
+  // Auto-resume all director sessions that were running before server restart
   // This must happen after startServer() so HTTP/WS infrastructure is ready for clients
-  if (directorSessionId && director) {
+  // Resume sequentially to avoid overwhelming the spawner
+  for (const { agent: director, sessionId } of directorResumes) {
     const directorId = director.id as unknown as EntityId;
-    logger.debug(`Attempting to auto-resume director session ${directorSessionId}`);
+    logger.debug(`Attempting to auto-resume director ${director.name} session ${sessionId}`);
     try {
       const { session, events } = await services.sessionManager.resumeSession(directorId, {
-        providerSessionId: directorSessionId,
+        providerSessionId: sessionId,
         resumePrompt: 'Server restarted. You have been automatically reconnected to your previous session. Check your inbox for any pending messages.',
       });
 
@@ -213,11 +215,10 @@ export async function startSmithyServer(options: SmithyServerOptions = {}): Prom
         events,
       });
 
-      logger.info(`Director session auto-resumed successfully (session: ${session.id})`);
+      logger.info(`Director ${director.name} session auto-resumed successfully (session: ${session.id})`);
     } catch (error) {
       // Resume failed - director will stay idle and can be started manually via UI
-      logger.warn('Failed to auto-resume director session:', error instanceof Error ? error.message : String(error));
-      logger.info('Director will remain idle - can be started manually via UI');
+      logger.warn(`Failed to auto-resume director ${director.name}:`, error instanceof Error ? error.message : String(error));
     }
   }
 
