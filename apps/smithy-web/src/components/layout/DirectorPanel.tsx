@@ -8,6 +8,24 @@
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragStartEvent,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import {
   PanelRightClose,
   Terminal,
   Maximize2,
@@ -17,11 +35,12 @@ import {
   Users,
 } from 'lucide-react';
 import { Tooltip } from '@stoneforge/ui';
-import { useDirectors } from '../../api/hooks/useAgents';
+import { useDirectors, useDeleteAgent, useStopAgentSession } from '../../api/hooks/useAgents';
 import { useAgentInboxCount } from '../../api/hooks/useAgentInbox';
 import { DirectorTabBar } from './DirectorTabBar';
 import { DirectorTabContent } from './DirectorTabContent';
 import { CreateAgentDialog } from '../agent/CreateAgentDialog';
+import { DeleteAgentDialog } from '../agent/DeleteAgentDialog';
 
 // Panel width constraints
 const MIN_WIDTH = 280;
@@ -29,6 +48,7 @@ const MAX_WIDTH = 800;
 const DEFAULT_WIDTH = 384; // w-96
 const STORAGE_KEY = 'orchestrator-director-panel-width';
 const ACTIVE_TAB_STORAGE_KEY = 'orchestrator-director-active-tab';
+const TAB_ORDER_STORAGE_KEY = 'orchestrator-director-tab-order';
 
 interface DirectorPanelProps {
   collapsed?: boolean;
@@ -60,8 +80,238 @@ function useDirectorUnreadCounts(directorIds: string[]): Record<string, number> 
   }, [directorIds, q0.data, q1.data, q2.data, q3.data, q4.data]);
 }
 
+/**
+ * Load stored tab order from localStorage
+ */
+function loadTabOrder(): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const stored = localStorage.getItem(TAB_ORDER_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  return [];
+}
+
+/**
+ * Save tab order to localStorage
+ */
+function saveTabOrder(order: string[]): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(TAB_ORDER_STORAGE_KEY, JSON.stringify(order));
+}
+
+/**
+ * Sort directors according to stored order.
+ * - Directors in stored order keep their stored position.
+ * - New directors (not in stored order) appear at the end.
+ * - Removed directors are pruned from stored order.
+ */
+function sortDirectorsByStoredOrder<T extends { director: { id: string } }>(
+  directors: T[],
+  storedOrder: string[]
+): { sorted: T[]; cleanedOrder: string[] } {
+  const directorIds = new Set(directors.map((d) => d.director.id));
+
+  // Prune stored order of IDs that no longer exist
+  const cleanedOrder = storedOrder.filter((id) => directorIds.has(id));
+
+  // Directors in stored order
+  const ordered: T[] = [];
+  for (const id of cleanedOrder) {
+    const d = directors.find((dir) => dir.director.id === id);
+    if (d) ordered.push(d);
+  }
+
+  // New directors not in stored order
+  const orderedSet = new Set(cleanedOrder);
+  for (const d of directors) {
+    if (!orderedSet.has(d.director.id)) {
+      ordered.push(d);
+      cleanedOrder.push(d.director.id);
+    }
+  }
+
+  return { sorted: ordered, cleanedOrder };
+}
+
+// ============================================================================
+// Collapsed Sidebar Context Menu
+// ============================================================================
+
+interface CollapsedContextMenuState {
+  directorId: string;
+  x: number;
+  y: number;
+}
+
+function CollapsedContextMenu({
+  menu,
+  onClose,
+  onDelete,
+}: {
+  menu: CollapsedContextMenuState;
+  onClose: () => void;
+  onDelete: (directorId: string) => void;
+}) {
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-40"
+        onClick={onClose}
+        onContextMenu={(e) => { e.preventDefault(); onClose(); }}
+      />
+      <div
+        className="fixed z-50 min-w-[160px] bg-[var(--color-bg-elevated)] border border-[var(--color-border)] rounded-lg shadow-lg py-1"
+        style={{ left: menu.x, top: menu.y }}
+        data-testid="director-collapsed-context-menu"
+      >
+        <button
+          className="flex items-center w-full px-3 py-1.5 text-sm text-[var(--color-danger)] hover:bg-[var(--color-surface-hover)] cursor-pointer"
+          onClick={() => {
+            onDelete(menu.directorId);
+            onClose();
+          }}
+          data-testid="director-collapsed-context-delete"
+        >
+          Delete Director
+        </button>
+      </div>
+    </>
+  );
+}
+
+// ============================================================================
+// Sortable Collapsed Director Icon
+// ============================================================================
+
+function SortableCollapsedDirectorIcon({
+  info,
+  unreadCount,
+  onClick,
+  onContextMenu,
+}: {
+  info: { director: { id: string; name: string }; error?: unknown; isLoading: boolean; hasActiveSession: boolean };
+  unreadCount: number;
+  onClick: (id: string) => void;
+  onContextMenu: (e: React.MouseEvent, directorId: string) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: info.director.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const statusDotColor = info.error
+    ? 'bg-[var(--color-danger)]'
+    : info.isLoading
+      ? 'bg-[var(--color-warning)]'
+      : info.hasActiveSession
+        ? 'bg-[var(--color-success)]'
+        : 'bg-[var(--color-text-tertiary)]';
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <Tooltip content={info.director.name} side="left">
+        <button
+          onClick={() => onClick(info.director.id)}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            onContextMenu(e, info.director.id);
+          }}
+          className={`relative p-2 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors duration-150 ${isDragging ? 'opacity-50' : ''}`}
+          aria-label={`Open ${info.director.name}`}
+          data-testid={`director-collapsed-${info.director.id}`}
+        >
+          <Terminal className="w-5 h-5" />
+          {/* Status dot */}
+          <div
+            className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ${statusDotColor}`}
+          />
+          {/* Unread badge */}
+          {unreadCount > 0 && (
+            <span
+              className="absolute -bottom-1 -right-1 flex items-center justify-center min-w-[16px] h-4 px-1 text-[10px] font-bold rounded-full bg-[var(--color-primary)] text-white"
+              data-testid={`director-collapsed-unread-${info.director.id}`}
+            >
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </button>
+      </Tooltip>
+    </div>
+  );
+}
+
+// ============================================================================
+// Collapsed Director Icon (static, used in DragOverlay)
+// ============================================================================
+
+function CollapsedDirectorIconOverlay({
+  info,
+  unreadCount,
+}: {
+  info: { director: { id: string; name: string }; error?: unknown; isLoading: boolean; hasActiveSession: boolean };
+  unreadCount: number;
+}) {
+  const statusDotColor = info.error
+    ? 'bg-[var(--color-danger)]'
+    : info.isLoading
+      ? 'bg-[var(--color-warning)]'
+      : info.hasActiveSession
+        ? 'bg-[var(--color-success)]'
+        : 'bg-[var(--color-text-tertiary)]';
+
+  return (
+    <div className="relative p-2 rounded-md text-[var(--color-text-secondary)] bg-[var(--color-bg-secondary)]">
+      <Terminal className="w-5 h-5" />
+      <div className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ${statusDotColor}`} />
+      {unreadCount > 0 && (
+        <span className="absolute -bottom-1 -right-1 flex items-center justify-center min-w-[16px] h-4 px-1 text-[10px] font-bold rounded-full bg-[var(--color-primary)] text-white">
+          {unreadCount > 99 ? '99+' : unreadCount}
+        </span>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
+// Main DirectorPanel Component
+// ============================================================================
+
 export function DirectorPanel({ collapsed = false, onToggle, isMaximized = false, onToggleMaximize }: DirectorPanelProps) {
-  const { directors, isLoading } = useDirectors();
+  const { directors: rawDirectors, isLoading } = useDirectors();
+  const deleteAgentMutation = useDeleteAgent();
+  const stopSessionMutation = useStopAgentSession();
+
+  // Tab order state
+  const [tabOrder, setTabOrder] = useState<string[]>(loadTabOrder);
+
+  // Sort directors by stored order
+  const { sorted: directors, cleanedOrder } = useMemo(
+    () => sortDirectorsByStoredOrder(rawDirectors, tabOrder),
+    [rawDirectors, tabOrder]
+  );
+
+  // Sync cleaned order back to state/storage when directors change
+  useEffect(() => {
+    if (cleanedOrder.join(',') !== tabOrder.join(',')) {
+      setTabOrder(cleanedOrder);
+      saveTabOrder(cleanedOrder);
+    }
+  }, [cleanedOrder, tabOrder]);
 
   // Active tab state persisted to localStorage
   const [activeDirectorId, setActiveDirectorId] = useState<string | null>(() => {
@@ -71,6 +321,19 @@ export function DirectorPanel({ collapsed = false, onToggle, isMaximized = false
 
   // Agent creation dialog
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+
+  // Delete dialog state
+  const [deleteDialog, setDeleteDialog] = useState<{
+    directorId: string;
+    directorName: string;
+  } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Collapsed sidebar context menu
+  const [collapsedContextMenu, setCollapsedContextMenu] = useState<CollapsedContextMenuState | null>(null);
+
+  // Collapsed sidebar drag state
+  const [collapsedDraggedId, setCollapsedDraggedId] = useState<string | null>(null);
 
   // Persist active tab
   useEffect(() => {
@@ -201,6 +464,120 @@ export function DirectorPanel({ collapsed = false, onToggle, isMaximized = false
     onToggle?.();
   }, [onToggle]);
 
+  // ── Reorder callback ──────────────────────────────────────────────────────
+
+  const handleReorder = useCallback((orderedIds: string[]) => {
+    setTabOrder(orderedIds);
+    saveTabOrder(orderedIds);
+  }, []);
+
+  // ── Delete director flow ──────────────────────────────────────────────────
+
+  const handleDeleteDirectorRequest = useCallback((directorId: string) => {
+    const director = directors.find((d) => d.director.id === directorId);
+    if (!director) return;
+    setDeleteDialog({
+      directorId,
+      directorName: director.director.name,
+    });
+  }, [directors]);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!deleteDialog) return;
+    const { directorId } = deleteDialog;
+
+    setIsDeleting(true);
+    try {
+      // Stop the session first if running
+      const director = directors.find((d) => d.director.id === directorId);
+      if (director?.hasActiveSession) {
+        try {
+          await stopSessionMutation.mutateAsync({ agentId: directorId, graceful: true });
+        } catch {
+          // Continue with deletion even if stop fails
+        }
+      }
+
+      // Delete the agent
+      await deleteAgentMutation.mutateAsync({ agentId: directorId });
+
+      // Remove from tab order
+      const newOrder = tabOrder.filter((id) => id !== directorId);
+      setTabOrder(newOrder);
+      saveTabOrder(newOrder);
+
+      // Auto-select next tab
+      if (activeDirectorId === directorId) {
+        const currentIndex = directors.findIndex((d) => d.director.id === directorId);
+        const remaining = directors.filter((d) => d.director.id !== directorId);
+        if (remaining.length > 0) {
+          // Pick the next tab, or the previous if we were at the end
+          const nextIndex = Math.min(currentIndex, remaining.length - 1);
+          setActiveDirectorId(remaining[nextIndex].director.id);
+        } else {
+          setActiveDirectorId(null);
+        }
+      }
+
+      setDeleteDialog(null);
+    } catch (error) {
+      console.error('Failed to delete director:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [deleteDialog, directors, activeDirectorId, tabOrder, deleteAgentMutation, stopSessionMutation]);
+
+  const handleDeleteClose = useCallback(() => {
+    if (!isDeleting) {
+      setDeleteDialog(null);
+    }
+  }, [isDeleting]);
+
+  // ── Collapsed sidebar DnD ─────────────────────────────────────────────────
+
+  const collapsedSensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const collapsedDraggedDirector = collapsedDraggedId
+    ? directors.find((d) => d.director.id === collapsedDraggedId)
+    : null;
+
+  const handleCollapsedDragStart = useCallback((event: DragStartEvent) => {
+    setCollapsedDraggedId(event.active.id as string);
+  }, []);
+
+  const handleCollapsedDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    setCollapsedDraggedId(null);
+
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = directors.findIndex((d) => d.director.id === active.id);
+    const newIndex = directors.findIndex((d) => d.director.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newOrder = directors.map((d) => d.director.id);
+    const [movedId] = newOrder.splice(oldIndex, 1);
+    newOrder.splice(newIndex, 0, movedId);
+
+    handleReorder(newOrder);
+  }, [directors, handleReorder]);
+
+  const handleCollapsedContextMenu = useCallback((e: React.MouseEvent, directorId: string) => {
+    setCollapsedContextMenu({ directorId, x: e.clientX, y: e.clientY });
+  }, []);
+
+  const handleCloseCollapsedContextMenu = useCallback(() => {
+    setCollapsedContextMenu(null);
+  }, []);
+
   // ── Collapsed view ──────────────────────────────────────────────────────
 
   if (collapsed) {
@@ -212,47 +589,36 @@ export function DirectorPanel({ collapsed = false, onToggle, isMaximized = false
         data-testid="director-panel-collapsed"
       >
         {hasDirectors ? (
-          // Tiled per-director icons
-          directors.map((info) => {
-            const directorUnread = unreadCounts[info.director.id] ?? 0;
-            const statusDotColor = info.error
-              ? 'bg-[var(--color-danger)]'
-              : info.isLoading
-                ? 'bg-[var(--color-warning)]'
-                : info.hasActiveSession
-                  ? 'bg-[var(--color-success)]'
-                  : 'bg-[var(--color-text-tertiary)]';
+          <DndContext
+            sensors={collapsedSensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleCollapsedDragStart}
+            onDragEnd={handleCollapsedDragEnd}
+          >
+            <SortableContext
+              items={directors.map((d) => d.director.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {directors.map((info) => (
+                <SortableCollapsedDirectorIcon
+                  key={info.director.id}
+                  info={info}
+                  unreadCount={unreadCounts[info.director.id] ?? 0}
+                  onClick={handleCollapsedDirectorClick}
+                  onContextMenu={handleCollapsedContextMenu}
+                />
+              ))}
+            </SortableContext>
 
-            return (
-              <Tooltip
-                key={info.director.id}
-                content={info.director.name}
-                side="left"
-              >
-                <button
-                  onClick={() => handleCollapsedDirectorClick(info.director.id)}
-                  className="relative p-2 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors duration-150"
-                  aria-label={`Open ${info.director.name}`}
-                  data-testid={`director-collapsed-${info.director.id}`}
-                >
-                  <Terminal className="w-5 h-5" />
-                  {/* Status dot */}
-                  <div
-                    className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ${statusDotColor}`}
-                  />
-                  {/* Unread badge */}
-                  {directorUnread > 0 && (
-                    <span
-                      className="absolute -bottom-1 -right-1 flex items-center justify-center min-w-[16px] h-4 px-1 text-[10px] font-bold rounded-full bg-[var(--color-primary)] text-white"
-                      data-testid={`director-collapsed-unread-${info.director.id}`}
-                    >
-                      {directorUnread > 99 ? '99+' : directorUnread}
-                    </span>
-                  )}
-                </button>
-              </Tooltip>
-            );
-          })
+            <DragOverlay>
+              {collapsedDraggedDirector && (
+                <CollapsedDirectorIconOverlay
+                  info={collapsedDraggedDirector}
+                  unreadCount={unreadCounts[collapsedDraggedDirector.director.id] ?? 0}
+                />
+              )}
+            </DragOverlay>
+          </DndContext>
         ) : (
           // Zero-director state: (+) button to create
           <Tooltip content="Create Director" side="left">
@@ -267,12 +633,30 @@ export function DirectorPanel({ collapsed = false, onToggle, isMaximized = false
           </Tooltip>
         )}
 
+        {/* Collapsed context menu */}
+        {collapsedContextMenu && (
+          <CollapsedContextMenu
+            menu={collapsedContextMenu}
+            onClose={handleCloseCollapsedContextMenu}
+            onDelete={handleDeleteDirectorRequest}
+          />
+        )}
+
         {/* Create Agent Dialog */}
         <CreateAgentDialog
           isOpen={showCreateDialog}
           onClose={handleCloseCreateDialog}
           initialRole="director"
           onSuccess={handleCreateSuccess}
+        />
+
+        {/* Delete Agent Dialog */}
+        <DeleteAgentDialog
+          isOpen={deleteDialog !== null}
+          onClose={handleDeleteClose}
+          agentName={deleteDialog?.directorName ?? ''}
+          onConfirm={handleDeleteConfirm}
+          isDeleting={isDeleting}
         />
       </aside>
     );
@@ -345,6 +729,8 @@ export function DirectorPanel({ collapsed = false, onToggle, isMaximized = false
           activeDirectorId={activeDirectorId}
           onSelectDirector={handleSelectDirector}
           onCreateDirector={handleCreateDirector}
+          onReorder={handleReorder}
+          onDeleteDirector={handleDeleteDirectorRequest}
           unreadCounts={unreadCounts}
         />
       )}
@@ -420,6 +806,15 @@ export function DirectorPanel({ collapsed = false, onToggle, isMaximized = false
         onClose={handleCloseCreateDialog}
         initialRole="director"
         onSuccess={handleCreateSuccess}
+      />
+
+      {/* Delete Agent Dialog */}
+      <DeleteAgentDialog
+        isOpen={deleteDialog !== null}
+        onClose={handleDeleteClose}
+        agentName={deleteDialog?.directorName ?? ''}
+        onConfirm={handleDeleteConfirm}
+        isDeleting={isDeleting}
       />
     </aside>
   );
