@@ -412,6 +412,7 @@ async function taskMergeHandler(
     const { getOrchestratorTaskMeta, updateOrchestratorTaskMeta } = await import('../../types/task-meta.js');
     const orchestratorMeta = getOrchestratorTaskMeta(task.metadata as Record<string, unknown>);
     const sourceBranch = orchestratorMeta?.branch;
+    const targetBranch = orchestratorMeta?.targetBranch;
 
     if (!sourceBranch) {
       return failure(`Task ${taskId} has no branch in orchestrator metadata.`, ExitCode.GENERAL_ERROR);
@@ -434,6 +435,7 @@ async function taskMergeHandler(
     const mergeResult = await mergeBranch({
       workspaceRoot,
       sourceBranch,
+      targetBranch,
       commitMessage,
       syncLocal: false,
     });
@@ -488,11 +490,11 @@ async function taskMergeHandler(
     }
 
     // 6. Sync local target branch (best-effort, after all bookkeeping is done)
-    const targetBranch = await detectTargetBranch(workspaceRoot);
+    const effectiveTarget = targetBranch ?? await detectTargetBranch(workspaceRoot);
     try {
       await execAsync('git fetch origin', { cwd: workspaceRoot, encoding: 'utf8' });
     } catch { /* best-effort */ }
-    await syncLocalBranch(workspaceRoot, targetBranch);
+    await syncLocalBranch(workspaceRoot, effectiveTarget);
 
     // 7. Output result
     const mode = getOutputMode(options);
