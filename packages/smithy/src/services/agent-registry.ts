@@ -304,6 +304,7 @@ export class AgentRegistryImpl implements AgentRegistry {
       provider: input.provider,
       model: input.model,
       executablePath: input.executablePath,
+      targetBranch: input.targetBranch,
     };
 
     const entity = await createEntity({
