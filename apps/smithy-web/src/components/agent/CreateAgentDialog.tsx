@@ -167,6 +167,8 @@ interface FormState {
   model: string;
   // Custom executable path (empty string means use default)
   executablePath: string;
+  // Target branch for director (empty string means auto-detect)
+  targetBranch: string;
 }
 
 /** Default executable name per provider (used as placeholder text) */
@@ -187,6 +189,7 @@ const defaultState: FormState = {
   provider: 'claude-code',
   model: '',
   executablePath: '',
+  targetBranch: '',
 };
 
 export function CreateAgentDialog({
@@ -253,6 +256,13 @@ export function CreateAgentDialog({
     }
   }, [isOpen]);
 
+  // Reset targetBranch when role changes away from director
+  useEffect(() => {
+    if (form.role !== 'director') {
+      setForm(prev => prev.targetBranch ? { ...prev, targetBranch: '' } : prev);
+    }
+  }, [form.role]);
+
   // Apply agent default settings when dialog opens
   useEffect(() => {
     if (isOpen) {
@@ -314,6 +324,7 @@ export function CreateAgentDialog({
       })(),
       model: form.model || undefined, // Only include if not empty (not using default)
       executablePath: form.executablePath.trim() || undefined, // Only include if not empty (not using default)
+      targetBranch: form.role === 'director' && form.targetBranch.trim() ? form.targetBranch.trim() : undefined,
     };
 
     // Add role-specific fields
@@ -877,6 +888,34 @@ export function CreateAgentDialog({
                       Custom path to the provider CLI executable. Leave empty to use the default.
                     </p>
                   </div>
+                  {/* Target Branch (director only) */}
+                  {form.role === 'director' && (
+                    <div className="space-y-1">
+                      <label htmlFor="agent-target-branch" className="text-xs font-medium text-[var(--color-text-secondary)]">
+                        Target Branch (optional)
+                      </label>
+                      <input
+                        id="agent-target-branch"
+                        type="text"
+                        value={form.targetBranch}
+                        onChange={e => setForm(prev => ({ ...prev, targetBranch: e.target.value }))}
+                        placeholder="auto-detect (master/main)"
+                        className="
+                          w-full px-3 py-1.5
+                          text-sm
+                          bg-[var(--color-surface)]
+                          border border-[var(--color-border)]
+                          rounded-lg
+                          placeholder:text-[var(--color-text-tertiary)]
+                          focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30
+                        "
+                        data-testid="agent-target-branch"
+                      />
+                      <p className="text-xs text-[var(--color-text-tertiary)]">
+                        Branch to use as the base for task branches. Leave empty to auto-detect.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

@@ -205,6 +205,8 @@ export interface CreateAgentInput {
   model?: string;
   // Custom executable path for the provider CLI (if not set, uses default)
   executablePath?: string;
+  // Target branch for director agents (if not set, auto-detects master/main)
+  targetBranch?: string;
 }
 
 // ============================================================================
