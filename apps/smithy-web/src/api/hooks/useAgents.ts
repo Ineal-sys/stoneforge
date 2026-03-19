@@ -431,6 +431,26 @@ export function useChangeAgentProvider() {
 }
 
 /**
+ * Hook to change a director's target branch
+ */
+export function useChangeTargetBranch() {
+  const queryClient = useQueryClient();
+
+  return useMutation<AgentResponse, Error, { agentId: string; targetBranch: string | null }>({
+    mutationFn: async ({ agentId, targetBranch }) => {
+      return fetchApi<AgentResponse>(`/agents/${agentId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ targetBranch }),
+      });
+    },
+    onSuccess: (_, { agentId }) => {
+      queryClient.invalidateQueries({ queryKey: ['agents'] });
+      queryClient.invalidateQueries({ queryKey: ['agent', agentId] });
+    },
+  });
+}
+
+/**
  * Hook to change an agent's model
  */
 export function useChangeAgentModel() {
