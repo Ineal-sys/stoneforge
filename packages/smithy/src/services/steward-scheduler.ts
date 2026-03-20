@@ -1505,6 +1505,10 @@ export function createStewardExecutor(deps: StewardExecutorDeps): StewardExecuto
             ? renderPromptTemplate(roleResult.prompt, { baseBranch })
             : '';
 
+          // Add per-task branch override note for scheduled stewards
+          // The global baseBranch may not match individual tasks' target branches
+          initialPrompt += `\n\n> **Per-task target branch:** The instructions above use \`${baseBranch}\` as the default target branch. However, individual tasks may target a different branch (e.g., staging). Before reviewing or merging each task, check its target branch by running \`sf show <task-id>\` — look for targetBranch in the orchestrator metadata. If a task has a different targetBranch, use that instead of \`${baseBranch}\` for all git diff, git log, and merge commands. The \`sf task merge\` command handles this automatically.`;
+
           // Add workflow preset context
           const schedulerPresetSection = getWorkflowPresetSection();
           if (schedulerPresetSection && initialPrompt) {
@@ -1598,9 +1602,13 @@ export function createStewardExecutor(deps: StewardExecutorDeps): StewardExecuto
           });
           // Render template variables (e.g. {{baseBranch}}) in the base prompt
           const customBaseBranch = await detectTargetBranch(deps.projectRoot);
-          const basePrompt = roleResult?.prompt
+          let basePrompt = roleResult?.prompt
             ? renderPromptTemplate(roleResult.prompt, { baseBranch: customBaseBranch })
             : '';
+
+          // Add per-task branch override note for scheduled custom stewards
+          // The global baseBranch may not match individual tasks' target branches
+          basePrompt += `\n\n> **Per-task target branch:** The instructions above use \`${customBaseBranch}\` as the default target branch. However, individual tasks may target a different branch (e.g., staging). Before reviewing or merging each task, check its target branch by running \`sf show <task-id>\` — look for targetBranch in the orchestrator metadata. If a task has a different targetBranch, use that instead of \`${customBaseBranch}\` for all git diff, git log, and merge commands. The \`sf task merge\` command handles this automatically.`;
 
           // Add workflow preset context to base prompt
           const customPresetSection = getWorkflowPresetSection();
