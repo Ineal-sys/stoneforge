@@ -53,7 +53,7 @@ Start the Stoneforge server and web dashboard.
 
 ### `sf doctor`
 
-Check system health and diagnose issues. Runs 9 diagnostic checks: workspace, database, connection, schema version, schema tables, integrity, foreign keys, blocked cache consistency, and storage size.
+Check system health and diagnose issues. Runs diagnostic checks including: workspace, database, connection, schema version, schema tables, integrity, foreign keys, blocked cache consistency, and storage size. When the orchestrator server is running, additional runtime health checks are performed (rate limit status, stuck tasks, merge queue health, error rate, agent pool utilization).
 
 ```bash
 sf doctor [--fix] [--verbose] [--json]
@@ -189,10 +189,10 @@ Displays detailed information about any element. Supports short IDs (prefix matc
 ### `sf update`
 
 ```bash
-sf update <id> [--title <text>] [--status <s>] [--priority <1-5>] [--add-tag <tag>] [--remove-tag <tag>] [--assignee <id>]
+sf update <id> [--title <text>] [--status <s>] [--priority <1-5>] [--complexity <1-5>] [--description <text>] [--metadata <json>] [--tag <tag>] [--add-tag <tag>] [--remove-tag <tag>] [--assignee <id>]
 ```
 
-Pass `--assignee ""` to unassign.
+Pass `--assignee ""` to unassign. Use `--tag` to replace all tags, or `--add-tag`/`--remove-tag` for incremental changes. Use `--description` to update a task's linked document or a document's content. Use `--metadata` to merge JSON into the element's metadata (null values remove keys).
 
 ### `sf delete`
 
