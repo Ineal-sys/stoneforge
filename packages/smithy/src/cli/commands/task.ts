@@ -44,7 +44,9 @@ async function createTaskAssignmentService(options: GlobalOptions): Promise<{
     initializeSchema(backend);
     const api = new QuarryAPIImpl(backend);
     const mergeProvider = createLocalMergeProvider();
-    const service = createService(api, mergeProvider);
+    const { dirname } = await import('node:path');
+    const workspaceRoot = dirname(stoneforgeDir);
+    const service = createService(api, mergeProvider, workspaceRoot);
 
     return { service };
   } catch (err) {

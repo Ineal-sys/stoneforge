@@ -177,7 +177,7 @@ export async function initializeServices(options: ServicesOptions = {}): Promise
   }
   logger.info(`Loaded session state for ${agents.length} agents`);
 
-  const taskAssignmentService = createTaskAssignmentService(api);
+  const taskAssignmentService = createTaskAssignmentService(api, undefined, projectRoot);
   const dispatchService = createDispatchService(api, taskAssignmentService, agentRegistry);
   const roleDefinitionService = createRoleDefinitionService(api);
 
