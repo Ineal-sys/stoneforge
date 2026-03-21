@@ -341,7 +341,10 @@ export async function mergeBranch(options: MergeBranchOptions): Promise<MergeBra
   // If count is 0, the branch is already fully merged — nothing to do.
   try {
     const targetRef = localOnly ? targetBranch : `origin/${targetBranch}`;
-    const sourceRef = localOnly ? sourceBranch : `origin/${sourceBranch}`;
+    // Always use local source ref — the actual merge (squash or no-ff) at line ~416
+    // operates on the local sourceBranch, so the pre-check must match.
+    // Using origin/${sourceBranch} would miss unpushed local commits.
+    const sourceRef = sourceBranch;
     const { stdout: countStr } = await execAsync(
       `git rev-list --count ${targetRef}..${sourceRef}`,
       { cwd: workspaceRoot, encoding: 'utf8' }
