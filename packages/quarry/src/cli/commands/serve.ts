@@ -8,6 +8,7 @@
  */
 
 import { existsSync } from 'node:fs';
+import { exec } from 'node:child_process';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Command, GlobalOptions, CommandResult } from '../types.js';
@@ -56,6 +57,27 @@ function smithyWebRoot(): string | undefined {
   return undefined;
 }
 
+/**
+ * Open a URL in the user's default browser.
+ * Fire-and-forget — failures are logged but never crash the server.
+ */
+function openInBrowser(url: string): void {
+  const platform = process.platform;
+  let cmd: string;
+  if (platform === 'darwin') {
+    cmd = `open "${url}"`;
+  } else if (platform === 'win32') {
+    cmd = `start "" "${url}"`;
+  } else {
+    cmd = `xdg-open "${url}"`;
+  }
+  exec(cmd, (err) => {
+    if (err) {
+      console.log(`[stoneforge] Could not open browser automatically. Visit ${url}`);
+    }
+  });
+}
+
 async function startQuarry(options: GlobalOptions): Promise<CommandResult> {
   const { startQuarryServer } = await import('../../server/index.js');
 
@@ -69,7 +91,11 @@ async function startQuarry(options: GlobalOptions): Promise<CommandResult> {
     webRoot: quarryWebRoot(),
   });
 
-  console.log(`[stoneforge] Quarry server running at http://${host}:${port}`);
+  const quarryUrl = `http://${host}:${port}`;
+  console.log(`[stoneforge] Quarry server running at ${quarryUrl}`);
+  if (!options['no-open']) {
+    openInBrowser(quarryUrl);
+  }
   return await new Promise<never>(() => {});
 }
 
@@ -106,7 +132,11 @@ async function startSmithy(options: GlobalOptions): Promise<CommandResult> {
   });
 
   const actualPort = (result && typeof result === 'object' && 'port' in result) ? (result as { port: number }).port : port;
-  console.log(`[orchestrator] Smithy server running at http://${host}:${actualPort}`);
+  const smithyUrl = `http://${host}:${actualPort}`;
+  console.log(`[orchestrator] Smithy server running at ${smithyUrl}`);
+  if (!options['no-open']) {
+    openInBrowser(smithyUrl);
+  }
   return await new Promise<never>(() => {});
 }
 
@@ -117,6 +147,7 @@ export const serveCommand: Command = {
   options: [
     { name: 'port', short: 'p', description: 'Port to listen on', hasValue: true },
     { name: 'host', short: 'H', description: 'Host to bind to', hasValue: true, defaultValue: 'localhost' },
+    { name: 'no-open', description: 'Do not open browser automatically', hasValue: false },
   ],
   handler: async (args: string[], options: GlobalOptions): Promise<CommandResult> => {
     const target = args[0];
