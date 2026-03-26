@@ -1,5 +1,11 @@
 # @stoneforge/core
 
+## 1.23.0
+
+### Patch Changes
+
+- d9137d7: Replace unique symbol branded types with string literal brands for all ID types (ElementId, EntityId, ChannelId, etc.) to fix cross-compilation-unit type incompatibility
+
 ## 1.22.0
 
 ## 1.21.0

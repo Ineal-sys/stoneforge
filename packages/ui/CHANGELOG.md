@@ -1,5 +1,11 @@
 # @stoneforge/ui
 
+## 1.23.0
+
+### Patch Changes
+
+- b074b03: Fix document tags unreadable in dark mode by replacing Tailwind dark: prefix classes with CSS variable-based styling
+
 ## 1.22.0
 
 ## 1.21.0
