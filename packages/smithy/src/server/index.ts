@@ -72,6 +72,10 @@ export interface SmithyServerOptions {
 export interface SmithyServerResult {
   services: Services;
   port: number;
+  /** Number of agents loaded in the registry */
+  agentCount: number;
+  /** Status of the dispatch daemon */
+  daemonStatus: 'running' | 'disabled' | 'no-git' | 'stopped-by-user';
 }
 
 export async function startSmithyServer(options: SmithyServerOptions = {}): Promise<SmithyServerResult> {
@@ -228,17 +232,22 @@ export async function startSmithyServer(options: SmithyServerOptions = {}): Prom
   const envDisabled = process.env.DAEMON_AUTO_START === 'false';
   const persistedShouldRun = shouldDaemonAutoStart();
 
+  let daemonStatus: SmithyServerResult['daemonStatus'];
   if (!services.dispatchDaemon) {
     logger.info('Dispatch daemon not available (no git repository)');
+    daemonStatus = 'no-git';
   } else if (envDisabled) {
     logger.info('Dispatch daemon auto-start disabled (DAEMON_AUTO_START=false)');
+    daemonStatus = 'disabled';
   } else if (!persistedShouldRun) {
     logger.info('Dispatch daemon not started (was stopped by user, state persisted)');
+    daemonStatus = 'stopped-by-user';
   } else {
     services.dispatchDaemon.start();
     saveDaemonState(true, 'server-startup');
     markDaemonAsServerManaged();
     logger.info('Dispatch daemon auto-started');
+    daemonStatus = 'running';
   }
 
   // Conditionally start external sync daemon
@@ -251,5 +260,9 @@ export async function startSmithyServer(options: SmithyServerOptions = {}): Prom
     logger.info('External sync daemon auto-started');
   }
 
-  return { services, port: actualPort };
+  // Count loaded agents for the startup summary
+  const allAgents = await services.agentRegistry.listAgents();
+  const agentCount = allAgents.length;
+
+  return { services, port: actualPort, agentCount, daemonStatus };
 }
