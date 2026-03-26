@@ -1,5 +1,19 @@
 # @stoneforge/smithy-web
 
+## 1.23.0
+
+### Minor Changes
+
+- 337769a: Add onboarding tour step: Workflow Template editor with pre-populated example steps
+
+### Patch Changes
+
+- 7657d9d: Fix onboarding tour agent settings step to expand Settings & Tags section in Create Agent dialog, making Provider and Model dropdowns visible and highlighted
+- 1ef2d97: Fix onboarding tour: inject individual item query keys for detail panels, retarget agent settings step to Create Agent dialog, persist overlay during transitions, and disable auto-advance on detail steps
+- 455fcf7: Fix two cosmetic onboarding tour issues: add mock merge request data to the Merge Requests step and set Activity page as background for Director section steps
+- Updated dependencies [b074b03]
+  - @stoneforge/ui@1.23.0
+
 ## 1.22.0
 
 ### Minor Changes

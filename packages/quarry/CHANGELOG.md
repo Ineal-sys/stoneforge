@@ -1,5 +1,17 @@
 # @stoneforge/quarry
 
+## 1.23.0
+
+### Patch Changes
+
+- d9137d7: Add ts-ignore for optional smithy dependency callsites where StorageBackend types may differ across compilation units
+- 99e75d8: Add missing short flag `-V` for `--visibility` option in channel create command to match documented help text
+- f365a2d: Fix sf reset daemon stop targeting wrong port (3456 instead of 3457)
+- Updated dependencies [d9137d7]
+  - @stoneforge/core@1.23.0
+  - @stoneforge/shared-routes@1.23.0
+  - @stoneforge/storage@1.23.0
+
 ## 1.22.0
 
 ### Minor Changes
