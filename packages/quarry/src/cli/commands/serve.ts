@@ -337,7 +337,22 @@ async function startSmithy(options: GlobalOptions): Promise<CommandResult> {
   }
 
   if (!options['no-open']) {
-    openInBrowser(smithyUrl);
+    // Check if a dashboard tab is already connected via WebSocket.
+    // After a server restart, existing tabs automatically reconnect to /ws/events.
+    // Wait briefly for reconnection, then only open a new tab if no clients connected.
+    const hasClients = (result && typeof result === 'object' && 'hasConnectedClients' in result)
+      ? (result as { hasConnectedClients: () => boolean }).hasConnectedClients
+      : null;
+
+    if (hasClients) {
+      // Give existing tabs time to reconnect after server restart
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      if (!hasClients()) {
+        openInBrowser(smithyUrl);
+      }
+    } else {
+      openInBrowser(smithyUrl);
+    }
   }
   return await new Promise<never>(() => {});
 }

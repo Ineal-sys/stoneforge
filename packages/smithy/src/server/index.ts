@@ -57,6 +57,7 @@ import { createLspManager } from './services/lsp-manager.js';
 import { createLspRoutes } from './routes/lsp.js';
 import { initializeBroadcaster } from '@stoneforge/shared-routes';
 import { registerStaticMiddleware } from './static.js';
+import { getEventsClientCount } from './events-websocket.js';
 
 const logger = createLogger('orchestrator');
 
@@ -76,6 +77,8 @@ export interface SmithyServerResult {
   agentCount: number;
   /** Status of the dispatch daemon */
   daemonStatus: 'running' | 'disabled' | 'no-git' | 'stopped-by-user';
+  /** Check if any dashboard clients are connected via WebSocket */
+  hasConnectedClients: () => boolean;
 }
 
 export async function startSmithyServer(options: SmithyServerOptions = {}): Promise<SmithyServerResult> {
@@ -264,5 +267,5 @@ export async function startSmithyServer(options: SmithyServerOptions = {}): Prom
   const allAgents = await services.agentRegistry.listAgents();
   const agentCount = allAgents.length;
 
-  return { services, port: actualPort, agentCount, daemonStatus };
+  return { services, port: actualPort, agentCount, daemonStatus, hasConnectedClients: () => getEventsClientCount() > 0 };
 }
