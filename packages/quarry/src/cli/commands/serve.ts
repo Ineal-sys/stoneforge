@@ -7,12 +7,13 @@
  *   sf serve smithy    - Start the smithy server
  */
 
-import { existsSync } from 'node:fs';
+import { existsSync, writeFileSync, unlinkSync, mkdirSync } from 'node:fs';
 import { exec } from 'node:child_process';
-import { resolve, dirname } from 'node:path';
+import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Command, GlobalOptions, CommandResult } from '../types.js';
 import { failure, ExitCode } from '../types.js';
+import { findStoneforgeDir } from '../../config/file.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -206,6 +207,112 @@ function openInBrowser(url: string): void {
 }
 
 // ============================================================================
+// Dashboard Marker File
+// ============================================================================
+
+const DASHBOARD_MARKER = '.dashboard-opened';
+
+/**
+ * Resolve the path to the dashboard marker file inside .stoneforge/.
+ * Returns null if no .stoneforge directory can be found.
+ */
+function getDashboardMarkerPath(): string | null {
+  const sfDir = findStoneforgeDir(process.cwd());
+  if (!sfDir) return null;
+  return join(sfDir, DASHBOARD_MARKER);
+}
+
+/**
+ * Write a marker file indicating a dashboard tab has been opened.
+ * This persists across server restarts so we know a tab likely exists.
+ */
+function writeDashboardMarker(): void {
+  const markerPath = getDashboardMarkerPath();
+  if (!markerPath) return;
+  try {
+    mkdirSync(dirname(markerPath), { recursive: true });
+    writeFileSync(markerPath, `${process.pid}\n${Date.now()}\n`, 'utf-8');
+  } catch {
+    // Non-critical — ignore write failures
+  }
+}
+
+/**
+ * Check whether a dashboard marker file exists, indicating a tab
+ * was previously opened.
+ */
+function hasDashboardMarker(): boolean {
+  const markerPath = getDashboardMarkerPath();
+  return markerPath !== null && existsSync(markerPath);
+}
+
+/**
+ * Remove the dashboard marker file on process exit.
+ */
+function removeDashboardMarker(): void {
+  const markerPath = getDashboardMarkerPath();
+  if (!markerPath) return;
+  try {
+    unlinkSync(markerPath);
+  } catch {
+    // File may not exist — ignore
+  }
+}
+
+/**
+ * Register process exit handlers to clean up the dashboard marker.
+ * Handles SIGINT, SIGTERM, and normal exit.
+ */
+function registerMarkerCleanup(): void {
+  const cleanup = () => {
+    removeDashboardMarker();
+  };
+  process.on('exit', cleanup);
+  process.on('SIGINT', () => { cleanup(); process.exit(0); });
+  process.on('SIGTERM', () => { cleanup(); process.exit(0); });
+}
+
+/**
+ * Determine whether to open a browser tab, using a combination of:
+ * 1. Marker file — if no marker exists, this is a first-time start → open immediately
+ * 2. WebSocket client polling — if marker exists, poll for reconnecting clients
+ *    (existing tabs reconnect after server restart)
+ *
+ * @param hasClients Function that returns true if WebSocket clients are connected
+ * @returns true if a new browser tab should be opened
+ */
+async function shouldOpenBrowser(
+  hasClients: (() => boolean) | null,
+): Promise<boolean> {
+  // First-time start — no previous dashboard was ever opened
+  if (!hasDashboardMarker()) {
+    return true;
+  }
+
+  // Marker exists — a tab was previously opened. Poll for WebSocket reconnection.
+  if (hasClients) {
+    // Poll every 500ms for up to 5 seconds to allow client reconnection.
+    // The frontend WebSocket client reconnects with 1000ms initial delay
+    // and exponential backoff, so 5s gives ample time.
+    const POLL_INTERVAL = 500;
+    const MAX_WAIT = 5000;
+    let elapsed = 0;
+
+    while (elapsed < MAX_WAIT) {
+      await new Promise(r => setTimeout(r, POLL_INTERVAL));
+      elapsed += POLL_INTERVAL;
+      if (hasClients()) {
+        // A dashboard tab reconnected — no need to open a new one
+        return false;
+      }
+    }
+  }
+
+  // No clients reconnected within the window — the tab was likely closed
+  return true;
+}
+
+// ============================================================================
 // Server Starters
 // ============================================================================
 
@@ -253,7 +360,12 @@ async function startQuarry(options: GlobalOptions): Promise<CommandResult> {
   }
 
   if (!options['no-open']) {
-    openInBrowser(quarryUrl);
+    // Quarry mode has no WebSocket client tracking, so just use marker file
+    if (!hasDashboardMarker()) {
+      openInBrowser(quarryUrl);
+      writeDashboardMarker();
+      registerMarkerCleanup();
+    }
   }
   return await new Promise<never>(() => {});
 }
@@ -339,20 +451,18 @@ async function startSmithy(options: GlobalOptions): Promise<CommandResult> {
   if (!options['no-open']) {
     // Check if a dashboard tab is already connected via WebSocket.
     // After a server restart, existing tabs automatically reconnect to /ws/events.
-    // Wait briefly for reconnection, then only open a new tab if no clients connected.
+    // Use marker file + WebSocket polling to reliably detect existing tabs.
     const hasClients = (result && typeof result === 'object' && 'hasConnectedClients' in result)
       ? (result as { hasConnectedClients: () => boolean }).hasConnectedClients
       : null;
 
-    if (hasClients) {
-      // Give existing tabs time to reconnect after server restart
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      if (!hasClients()) {
-        openInBrowser(smithyUrl);
-      }
-    } else {
+    const shouldOpen = await shouldOpenBrowser(hasClients);
+    if (shouldOpen) {
       openInBrowser(smithyUrl);
     }
+    // Always write marker & register cleanup so future restarts know a tab was opened
+    writeDashboardMarker();
+    registerMarkerCleanup();
   }
   return await new Promise<never>(() => {});
 }
