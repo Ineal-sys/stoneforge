@@ -63,6 +63,7 @@ interface DirectorPanelProps {
   onToggle?: () => void;
   isMaximized?: boolean;
   onToggleMaximize?: () => void;
+  onWidthChange?: (width: number) => void;
 }
 
 /**
@@ -299,7 +300,7 @@ function CollapsedDirectorIconOverlay({
 // Main DirectorPanel Component
 // ============================================================================
 
-export function DirectorPanel({ collapsed = false, onToggle, isMaximized = false, onToggleMaximize }: DirectorPanelProps) {
+export function DirectorPanel({ collapsed = false, onToggle, isMaximized = false, onToggleMaximize, onWidthChange }: DirectorPanelProps) {
   const { directors: rawDirectors, isLoading } = useDirectors();
   const deleteAgentMutation = useDeleteAgent();
   const stopSessionMutation = useStopAgentSession();
@@ -421,10 +422,11 @@ export function DirectorPanel({ collapsed = false, onToggle, isMaximized = false
   const [isResizing, setIsResizing] = useState(false);
   const resizeRef = useRef<{ startX: number; startWidth: number } | null>(null);
 
-  // Persist width to localStorage
+  // Persist width to localStorage and notify parent
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, String(width));
-  }, [width]);
+    onWidthChange?.(width);
+  }, [width, onWidthChange]);
 
   // Handle resize drag
   const handleResizeStart = useCallback((e: React.MouseEvent) => {

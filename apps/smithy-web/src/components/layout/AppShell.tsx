@@ -19,7 +19,6 @@ import { useNotifications } from '../../api/hooks/useNotifications';
 import { usePendingApprovalCount, useApprovalRequestWatcher } from '../../api/hooks/useApprovalRequests';
 import { useGlobalKeyboardShortcuts, useOnboardingTour } from '../../hooks';
 import { useContainerWidthObserver, ContainerWidthProvider } from '../../hooks/useContainerBreakpoint';
-import { useIsMobile } from '@stoneforge/ui';
 import { BREAKPOINTS, useWindowSize } from '../../hooks/useBreakpoint';
 import { toast } from 'sonner';
 import {
@@ -248,12 +247,6 @@ const DIRECTOR_COLLAPSED_KEY = 'orchestrator-director-collapsed';
 const DIRECTOR_MAXIMIZED_KEY = 'orchestrator-director-maximized';
 
 function useSidebarState() {
-  const isMobile = useIsMobile(); // viewport < 768 (BREAKPOINTS.md)
-  const { width: viewportWidth } = useWindowSize();
-  // Sidebar uses BREAKPOINTS.xl (1280) as the tablet/desktop boundary,
-  // aligned with Tailwind 4's @xl: container query breakpoint.
-  const isTablet = viewportWidth >= BREAKPOINTS.md && viewportWidth < BREAKPOINTS.xl;
-
   const [desktopCollapsed, setDesktopCollapsed] = useState(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true';
@@ -265,15 +258,7 @@ function useSidebarState() {
     localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(desktopCollapsed));
   }, [desktopCollapsed]);
 
-  useEffect(() => {
-    if (!isMobile) {
-      setMobileDrawerOpen(false);
-    }
-  }, [isMobile]);
-
   return {
-    isMobile,
-    isTablet,
     desktopCollapsed,
     setDesktopCollapsed,
     mobileDrawerOpen,
@@ -282,8 +267,6 @@ function useSidebarState() {
 }
 
 function useDirectorPanelState() {
-  const isMobile = useIsMobile();
-
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window === 'undefined') return true;
     // Default to collapsed on initial load
@@ -304,15 +287,11 @@ function useDirectorPanelState() {
     localStorage.setItem(DIRECTOR_MAXIMIZED_KEY, String(isMaximized));
   }, [isMaximized]);
 
-  // Always collapse on mobile
-  const effectiveCollapsed = isMobile ? true : collapsed;
-
   return {
-    collapsed: effectiveCollapsed,
+    collapsed,
     setCollapsed,
-    isMaximized: isMobile ? false : isMaximized,
+    isMaximized,
     setIsMaximized,
-    isMobile,
   };
 }
 
@@ -674,10 +653,15 @@ const ONBOARDING_STEPS: TourStep[] = [
   },
 ];
 
+// Director panel dimension constants (must match DirectorPanel.tsx)
+const DIRECTOR_PANEL_COLLAPSED_WIDTH = 48; // w-12
+const DIRECTOR_PANEL_DEFAULT_WIDTH = 384;
+const DIRECTOR_PANEL_MIN_WIDTH = 280;
+const DIRECTOR_PANEL_MAX_WIDTH = 800;
+const DIRECTOR_PANEL_WIDTH_KEY = 'orchestrator-director-panel-width';
+
 export function AppShell() {
   const {
-    isMobile,
-    isTablet,
     desktopCollapsed,
     setDesktopCollapsed,
     mobileDrawerOpen,
@@ -685,11 +669,48 @@ export function AppShell() {
   } = useSidebarState();
 
   const {
-    collapsed: directorCollapsed,
+    collapsed: directorUserCollapsed,
     setCollapsed: setDirectorCollapsed,
-    isMaximized: directorMaximized,
+    isMaximized: directorUserMaximized,
     setIsMaximized: setDirectorMaximized,
   } = useDirectorPanelState();
+
+  // ── Content-area-aware responsive computation ────────────────────────
+  const { width: viewportWidth } = useWindowSize();
+  const viewportIsMobile = viewportWidth < BREAKPOINTS.md; // hides director panel entirely
+
+  // Read director expanded width from localStorage (synced via onWidthChange callback)
+  const [directorExpandedWidth, setDirectorExpandedWidth] = useState(() => {
+    if (typeof window === 'undefined') return DIRECTOR_PANEL_DEFAULT_WIDTH;
+    const stored = localStorage.getItem(DIRECTOR_PANEL_WIDTH_KEY);
+    if (stored) {
+      const p = parseInt(stored, 10);
+      if (!isNaN(p) && p >= DIRECTOR_PANEL_MIN_WIDTH && p <= DIRECTOR_PANEL_MAX_WIDTH) return p;
+    }
+    return DIRECTOR_PANEL_DEFAULT_WIDTH;
+  });
+
+  // Effective director state (viewport-level: director hidden on mobile)
+  const directorCollapsed = viewportIsMobile ? true : directorUserCollapsed;
+  const directorMaximized = viewportIsMobile ? false : directorUserMaximized;
+
+  // Director panel rendered width
+  const directorPanelWidth = viewportIsMobile ? 0
+    : (directorMaximized && !directorCollapsed) ? viewportWidth
+    : directorCollapsed ? DIRECTOR_PANEL_COLLAPSED_WIDTH
+    : directorExpandedWidth;
+
+  // THE KEY COMPUTATION: content area width drives all responsive decisions
+  const contentAreaWidth = viewportWidth - directorPanelWidth;
+  const isMobile = contentAreaWidth < BREAKPOINTS.md;   // < 768
+  const isTablet = contentAreaWidth >= BREAKPOINTS.md && contentAreaWidth < BREAKPOINTS.xl; // 768-1280
+
+  // Close mobile drawer when transitioning out of mobile mode
+  useEffect(() => {
+    if (!isMobile) {
+      setMobileDrawerOpen(false);
+    }
+  }, [isMobile, setMobileDrawerOpen]);
 
   // Container-width tracking for responsive hooks inside <main>
   const { containerRef, width: containerWidth } = useContainerWidthObserver();
@@ -1360,13 +1381,14 @@ export function AppShell() {
         </main>
       </div>
 
-      {/* Director Panel (right sidebar) - hidden on mobile */}
-      {!isMobile && (
+      {/* Director Panel (right sidebar) - hidden on viewport mobile */}
+      {!viewportIsMobile && (
         <DirectorPanel
           collapsed={directorCollapsed}
           onToggle={toggleDirectorPanel}
           isMaximized={directorMaximized}
           onToggleMaximize={toggleDirectorMaximize}
+          onWidthChange={setDirectorExpandedWidth}
         />
       )}
 
