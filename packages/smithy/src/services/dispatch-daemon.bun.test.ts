@@ -121,6 +121,7 @@ function createMockWorktreeManager(): WorktreeManager {
     worktreeExists: mock(async () => true), // Default to true for handoff tests
     getWorkspaceRoot: mock(() => '/workspace'),
     getDefaultBranch: mock(async () => 'master'),
+    ensureWorktreeRemote: mock(async () => true),
   } as unknown as WorktreeManager;
 }
 
