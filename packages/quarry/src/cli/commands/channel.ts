@@ -64,7 +64,6 @@ const channelCreateOptions: CommandOption[] = [
   },
   {
     name: 'visibility',
-    short: 'V',
     description: 'Visibility: public or private (default)',
     hasValue: true,
   },
@@ -209,7 +208,7 @@ Options:
 
 Examples:
   sf channel create --name general --description "General discussion"
-  sf channel create -n announcements -V public -p open
+  sf channel create -n announcements --visibility public -p open
   sf channel create --type direct --direct el-user123
   sf channel create -n team -m el-user1 -m el-user2`,
   options: channelCreateOptions,
