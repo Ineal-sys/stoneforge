@@ -10,6 +10,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, UserPlus, UserMinus, Users, Crown, LogOut, Loader2, AlertCircle, Trash2, AlertTriangle } from 'lucide-react';
 import { useDeleteChannel } from './useDeleteChannel';
 import { EntityLink } from './EntityLink';
+import { useTranslation } from '@stoneforge/i18n';
 
 // ============================================================================
 // Types
@@ -226,6 +227,7 @@ function MemberRow({
   isRemoving: boolean;
 }) {
   const [showConfirm, setShowConfirm] = useState(false);
+  const { t } = useTranslation('ui');
   const entityType = 'entityType' in member ? member.entityType : undefined;
   const isNotFound = 'notFound' in member && member.notFound;
 
@@ -260,7 +262,7 @@ function MemberRow({
             </EntityLink>
           )}
           {isCreator && (
-            <span title="Channel creator">
+            <span title={t('channel.channelCreator')}>
               <Crown className="w-4 h-4 text-amber-500 flex-shrink-0" />
             </span>
           )}
@@ -269,7 +271,7 @@ function MemberRow({
           <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">{entityType}</span>
         )}
         {isNotFound && (
-          <span className="text-xs text-gray-400 dark:text-gray-500">Entity not found</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500">{t('channel.entityNotFound')}</span>
         )}
       </div>
       {canModify && canRemove && !showConfirm && (
@@ -277,7 +279,7 @@ function MemberRow({
           onClick={handleRemoveClick}
           disabled={isRemoving}
           className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
-          title="Remove member"
+          title={t('channel.removeMember')}
           data-testid={`remove-member-${member.id}`}
         >
           {isRemoving ? (
@@ -297,14 +299,14 @@ function MemberRow({
             className="px-2 py-1 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded disabled:opacity-50"
             data-testid={`confirm-remove-yes-${member.id}`}
           >
-            {isRemoving ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Remove'}
+            {isRemoving ? <Loader2 className="w-3 h-3 animate-spin" /> : t('channel.remove')}
           </button>
           <button
             onClick={() => setShowConfirm(false)}
             className="px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded"
             data-testid={`confirm-remove-cancel-${member.id}`}
           >
-            Cancel
+            {t('channel.cancel')}
           </button>
         </div>
       )}
@@ -324,6 +326,7 @@ function AddMemberForm({
   onSuccess: () => void;
 }) {
   const [selectedEntity, setSelectedEntity] = useState('');
+  const { t } = useTranslation('ui');
   const { data: entities } = useEntities();
   const addMember = useAddMember();
 
@@ -351,7 +354,7 @@ function AddMemberForm({
   return (
     <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
       <label className="block text-sm font-medium text-gray-700 mb-2">
-        Add Member
+        {t('channel.addMember')}
       </label>
       <div className="flex gap-2">
         <select
@@ -360,7 +363,7 @@ function AddMemberForm({
           className="flex-1 min-w-0 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           data-testid="add-member-select"
         >
-          <option value="">Select entity...</option>
+          <option value="">{t('channel.selectEntity')}</option>
           {availableEntities?.map((entity) => (
             <option key={entity.id} value={entity.id}>
               {entity.name} ({entity.entityType})
@@ -378,7 +381,7 @@ function AddMemberForm({
           ) : (
             <UserPlus className="w-4 h-4" />
           )}
-          Add
+          {t('channel.add')}
         </button>
       </div>
       {addMember.isError && (
@@ -389,7 +392,7 @@ function AddMemberForm({
       )}
       {availableEntities?.length === 0 && (
         <p className="mt-2 text-xs text-gray-500">
-          No more entities available to add
+          {t('channel.noMoreEntities')}
         </p>
       )}
     </div>
@@ -408,6 +411,7 @@ export function ChannelMembersPanel({
 }: ChannelMembersPanelProps) {
   const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const { t } = useTranslation('ui');
   const { data: membersData, isLoading, error } = useChannelMembers(channel.id);
   const removeMember = useRemoveMember();
   const leaveChannel = useLeaveChannel();
@@ -437,7 +441,7 @@ export function ChannelMembersPanel({
   };
 
   const handleLeaveChannel = async () => {
-    if (!confirm('Are you sure you want to leave this channel?')) return;
+    if (!confirm(t('channel.leaveConfirm'))) return;
 
     try {
       await leaveChannel.mutateAsync({
@@ -473,7 +477,7 @@ export function ChannelMembersPanel({
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-[var(--color-border)]">
         <div className="flex items-center gap-2">
           <Users className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-          <h3 className="font-medium text-gray-900 dark:text-[var(--color-text)]">Members</h3>
+          <h3 className="font-medium text-gray-900 dark:text-[var(--color-text)]">{t('channel.members')}</h3>
           {membersData && (
             <span className="text-sm text-gray-500 dark:text-gray-400">
               ({membersData.members.length})
@@ -493,7 +497,7 @@ export function ChannelMembersPanel({
       {isDirect && (
         <div className="px-4 py-3 bg-amber-50 border-b border-amber-100">
           <p className="text-sm text-amber-800">
-            Direct message channels have fixed membership and cannot be modified.
+            {t('channel.directFixedMembership')}
           </p>
         </div>
       )}
@@ -503,12 +507,12 @@ export function ChannelMembersPanel({
         {isLoading ? (
           <div className="flex items-center justify-center py-8 text-gray-500">
             <Loader2 className="w-5 h-5 animate-spin mr-2" />
-            Loading members...
+            {t('channel.loadingMembers')}
           </div>
         ) : error ? (
           <div className="flex items-center justify-center py-8 text-red-500">
             <AlertCircle className="w-5 h-5 mr-2" />
-            Failed to load members
+            {t('channel.loadMembersFailed')}
           </div>
         ) : (
           <div data-testid="members-list">
@@ -551,7 +555,7 @@ export function ChannelMembersPanel({
             ) : (
               <LogOut className="w-4 h-4" />
             )}
-            Leave Channel
+            {t('channel.leaveChannel')}
           </button>
           {leaveChannel.isError && (
             <p className="mt-2 text-sm text-red-600 text-center">
@@ -575,7 +579,7 @@ export function ChannelMembersPanel({
             ) : (
               <Trash2 className="w-4 h-4" />
             )}
-            Delete Channel
+            {t('channel.deleteChannel')}
           </button>
         </div>
       )}
@@ -603,9 +607,9 @@ export function ChannelMembersPanel({
                     <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-[var(--color-text)]">Delete Channel</h2>
+                    <h2 className="text-lg font-semibold text-[var(--color-text)]">{t('channel.deleteChannel')}</h2>
                     <p className="text-sm text-[var(--color-text-secondary)]">
-                      This action cannot be undone.
+                      {t('channel.actionCannotBeUndone')}
                     </p>
                   </div>
                 </div>
@@ -614,7 +618,7 @@ export function ChannelMembersPanel({
               {/* Body */}
               <div className="px-5 py-4">
                 <p className="text-sm text-[var(--color-text-secondary)] mb-3">
-                  All messages and data in this channel will be permanently deleted.
+                  {t('channel.deleteWarning')}
                 </p>
                 <div className="p-3 bg-[var(--color-surface-elevated)] rounded-md border border-[var(--color-border)]">
                   <p className="text-sm font-medium text-[var(--color-text)] truncate" title={channel.name}>
@@ -634,7 +638,7 @@ export function ChannelMembersPanel({
                   className="px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-surface-elevated)] hover:bg-[var(--color-surface-hover)] rounded-md transition-colors disabled:opacity-50"
                   data-testid="delete-channel-cancel"
                 >
-                  Cancel
+                  {t('channel.cancel')}
                 </button>
                 <button
                   onClick={handleDeleteChannel}
@@ -643,7 +647,7 @@ export function ChannelMembersPanel({
                   data-testid="delete-channel-confirm"
                 >
                   {deleteChannel.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                  Delete
+                  {t('channel.delete')}
                 </button>
               </div>
 

@@ -9,13 +9,15 @@ export type SortDirection = 'asc' | 'desc';
 
 export interface DocumentSortOption {
   value: DocumentSortField;
-  label: string;
+  label?: string;
+  labelKey?: string;
   defaultDirection: SortDirection;
 }
 
 export interface ContentTypeFilterOption {
   value: string;
-  label: string;
+  label?: string;
+  labelKey?: string;
   color: string;
 }
 

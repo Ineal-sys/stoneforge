@@ -5,6 +5,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { i18n } from '@stoneforge/i18n';
 import type {
   WorkflowStatus,
   WorkflowFilter,
@@ -37,7 +38,7 @@ async function fetchApi<T>(path: string, options?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
+    const error = await response.json().catch(() => ({ error: { message: i18n.t('ui:workflow.api.unknownError') } }));
     throw new Error(error.error?.message || `HTTP ${response.status}`);
   }
 

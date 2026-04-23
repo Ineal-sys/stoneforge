@@ -6,6 +6,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   BarChart,
   Bar,
@@ -60,13 +61,16 @@ export function HorizontalBarChart({
   testId = 'horizontal-bar-chart',
   isLoading = false,
   isError = false,
-  errorMessage = 'Failed to load chart data',
-  emptyMessage = 'No data to display',
+  errorMessage,
+  emptyMessage,
   height = 192,
   isMobile = false,
   isTouchDevice = false,
   className = '',
 }: HorizontalBarChartProps) {
+  const { t } = useTranslation('ui');
+  const resolvedErrorMessage = errorMessage ?? t('chart.errorLoading');
+  const resolvedEmptyMessage = emptyMessage ?? t('chart.noData');
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   // Limit to maxBars and prepare display data
@@ -107,7 +111,7 @@ export function HorizontalBarChart({
         )}
         <div className="flex items-center justify-center" style={{ height }}>
           <div className="animate-pulse text-muted-foreground text-sm">
-            Loading chart...
+            {t('chart.loading')}
           </div>
         </div>
       </div>
@@ -127,7 +131,7 @@ export function HorizontalBarChart({
           </h4>
         )}
         <div className="flex items-center justify-center" style={{ height }}>
-          <div className="text-error text-sm">{errorMessage}</div>
+          <div className="text-error text-sm">{resolvedErrorMessage}</div>
         </div>
       </div>
     );
@@ -146,7 +150,7 @@ export function HorizontalBarChart({
           </h4>
         )}
         <div className="flex items-center justify-center" style={{ height }}>
-          <div className="text-muted-foreground text-sm">{emptyMessage}</div>
+          <div className="text-muted-foreground text-sm">{resolvedEmptyMessage}</div>
         </div>
       </div>
     );
@@ -215,11 +219,11 @@ export function HorizontalBarChart({
             {data[activeIndex].name}
           </span>
           <span className="text-muted-foreground ml-2">
-            {data[activeIndex].value} items
+            {t('chart.items', { count: data[activeIndex].value })}
           </span>
           {onBarClick && (
             <p className="text-xs text-muted-foreground mt-1">
-              Tap again to view details
+              {t('chart.tapAgainToView')}
             </p>
           )}
         </div>

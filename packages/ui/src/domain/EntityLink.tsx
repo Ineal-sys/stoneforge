@@ -14,6 +14,7 @@ import * as HoverCard from '@radix-ui/react-hover-card';
 import { useQuery } from '@tanstack/react-query';
 import { Bot, User, Server, Loader2, ExternalLink, Clock } from 'lucide-react';
 import { type ReactNode } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { Entity, EntityType } from './types';
 
 /**
@@ -181,6 +182,7 @@ export function EntityLink({
   renderProfileLink,
   'data-testid': testId,
 }: EntityLinkProps) {
+  const { t } = useTranslation('ui');
   const { data: entity, isLoading: entityLoading } = useEntityByRef(entityRef);
   const { data: stats, isLoading: statsLoading } = useEntityStats(
     showHoverCard && showStats ? (entity?.id ?? null) : null
@@ -260,7 +262,7 @@ export function EntityLink({
             />
           ) : (
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              Entity not found: {entityRef}
+              {t('domain.entityLink.notFound', { ref: entityRef })}
             </div>
           )}
           <HoverCard.Arrow className="fill-white dark:fill-gray-900" />
@@ -283,6 +285,7 @@ function EntityPreviewContent({
   onNavigate?: (entity: Entity | null, entityRef: string) => void;
   renderProfileLink?: (entity: Entity) => ReactNode;
 }) {
+  const { t } = useTranslation('ui');
   const styles = getEntityStyles(entity.entityType);
   const Icon = styles.icon;
 
@@ -307,7 +310,7 @@ function EntityPreviewContent({
       {statsLoading ? (
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Loader2 className="w-3 h-3 animate-spin" />
-          Loading stats...
+          {t('domain.entityLink.loadingStats')}
         </div>
       ) : stats ? (
         <div className="grid grid-cols-3 gap-2 text-center">
@@ -315,19 +318,19 @@ function EntityPreviewContent({
             <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               {stats.openTasks}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Open</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{t('domain.entityLink.stats.open')}</div>
           </div>
           <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded">
             <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               {stats.completedTasks}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Done</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{t('domain.entityLink.stats.done')}</div>
           </div>
           <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded">
             <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               {stats.totalTasks}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Total</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{t('domain.entityLink.stats.total')}</div>
           </div>
         </div>
       ) : null}
@@ -337,7 +340,7 @@ function EntityPreviewContent({
         <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded border border-blue-100 dark:border-blue-800">
           <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 mb-1">
             <Clock className="w-3 h-3" />
-            Currently working on
+            {t('domain.entityLink.currentlyWorkingOn')}
           </div>
           <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
             {stats.currentTask.title}
@@ -358,7 +361,7 @@ function EntityPreviewContent({
           ))}
           {entity.tags.length > 3 && (
             <span className="text-xs text-gray-500 dark:text-gray-400">
-              +{entity.tags.length - 3} more
+              {t('domain.entityLink.moreTags', { count: entity.tags.length - 3 })}
             </span>
           )}
         </div>
@@ -373,7 +376,7 @@ function EntityPreviewContent({
           className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
           data-testid={`entity-preview-link-${entity.id}`}
         >
-          View full profile
+          {t('domain.entityLink.viewFullProfile')}
           <ExternalLink className="w-3 h-3" />
         </button>
       ) : null}

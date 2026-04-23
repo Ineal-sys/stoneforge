@@ -5,6 +5,7 @@
  */
 
 import { ChevronRight } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { Workflow } from '../types';
 import { formatRelativeTime, formatDate } from '../utils';
 import { StatusBadge } from './StatusBadge';
@@ -20,6 +21,7 @@ export function WorkflowListItem({
   isSelected = false,
   onClick,
 }: WorkflowListItemProps) {
+  const { t } = useTranslation('ui');
   return (
     <div
       data-testid={`workflow-item-${workflow.id}`}
@@ -44,11 +46,11 @@ export function WorkflowListItem({
         <StatusBadge status={workflow.status} />
         {workflow.ephemeral && (
           <span className="text-xs text-gray-600 dark:text-[var(--color-text-secondary)] bg-gray-100 dark:bg-[var(--color-surface-hover)] px-1.5 py-0.5 rounded">
-            Ephemeral
+            {t('workflow.listItem.ephemeral')}
           </span>
         )}
         <span className="text-xs text-gray-500 dark:text-[var(--color-text-tertiary)]" title={formatDate(workflow.updatedAt)}>
-          Updated {formatRelativeTime(workflow.updatedAt)}
+          {t('workflow.listItem.updated')} {formatRelativeTime(workflow.updatedAt, t)}
         </span>
       </div>
 

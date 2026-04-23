@@ -4,6 +4,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Tag, X, Plus } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 
 interface DocumentTagInputProps {
   tags: string[];
@@ -16,8 +17,10 @@ export function DocumentTagInput({
   tags,
   onTagsChange,
   disabled = false,
-  placeholder = 'Add tag...',
+  placeholder,
 }: DocumentTagInputProps) {
+  const { t } = useTranslation('ui');
+  const resolvedPlaceholder = placeholder ?? t('documents.tags.addPlaceholder');
   const [inputValue, setInputValue] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -67,7 +70,7 @@ export function DocumentTagInput({
     <div data-testid="document-tag-input">
       <div className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2 flex items-center gap-1">
         <Tag className="w-3 h-3" />
-        Tags
+        {t('documents.tags.label')}
       </div>
       <div className="flex flex-wrap items-center gap-1.5">
         {/* Existing tags */}
@@ -83,7 +86,7 @@ export function DocumentTagInput({
                 onClick={() => handleRemoveTag(tag)}
                 className="hover:opacity-70 transition-opacity"
                 data-testid={`remove-tag-${tag}`}
-                aria-label={`Remove tag ${tag}`}
+                aria-label={t('documents.tags.removeAriaLabel', { tag })}
               >
                 <X className="w-3 h-3" />
               </button>
@@ -101,7 +104,7 @@ export function DocumentTagInput({
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               onBlur={handleBlur}
-              placeholder={placeholder}
+              placeholder={resolvedPlaceholder}
               className="px-2 py-0.5 text-xs border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] rounded focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] min-w-[80px]"
               data-testid="tag-input"
             />
@@ -112,14 +115,14 @@ export function DocumentTagInput({
               data-testid="add-tag-button"
             >
               <Plus className="w-3 h-3" />
-              Add tag
+              {t('documents.tags.add')}
             </button>
           )
         )}
 
         {/* Empty state when no tags and disabled */}
         {tags.length === 0 && disabled && (
-          <span className="text-xs text-[var(--color-text-muted)]">No tags</span>
+          <span className="text-xs text-[var(--color-text-muted)]">{t('documents.tags.empty')}</span>
         )}
       </div>
     </div>

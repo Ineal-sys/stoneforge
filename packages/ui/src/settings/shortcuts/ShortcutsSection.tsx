@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { RotateCcw, X, AlertCircle, Check } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   getCurrentBinding,
   checkShortcutConflict,
@@ -17,7 +18,7 @@ import {
   type ShortcutDefinition,
   type ShortcutCategory,
 } from '../../hooks/useKeyboardShortcuts';
-import { formatShortcutDisplay, CATEGORY_LABELS, groupShortcutsByCategory } from './utils';
+import { formatShortcutDisplay, CATEGORY_LABELS, getCategoryLabel, groupShortcutsByCategory } from './utils';
 
 interface ShortcutEditModalProps {
   actionId: string;
@@ -40,6 +41,7 @@ function ShortcutEditModal({
   onCancel,
   isMobile,
 }: ShortcutEditModalProps) {
+  const { t } = useTranslation('ui');
   const [capturedKeys, setCapturedKeys] = useState<string[]>([]);
   const [isCapturing, setIsCapturing] = useState(false);
   const [conflict, setConflict] = useState<string | null>(null);
@@ -129,7 +131,7 @@ function ShortcutEditModal({
         }
       `}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Edit Shortcut</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">{t('shortcuts.editTitle')}</h3>
           <button
             onClick={onCancel}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 min-h-[44px] min-w-[44px] flex items-center justify-center"
@@ -157,7 +159,7 @@ function ShortcutEditModal({
           data-testid="shortcut-capture-area"
         >
           {isCapturing && capturedKeys.length === 0 ? (
-            <span className="text-gray-400">Press keys...</span>
+            <span className="text-gray-400">{t('shortcuts.pressKeys')}</span>
           ) : (
             <span className="text-gray-900 dark:text-gray-100">{displayKeys}</span>
           )}
@@ -165,7 +167,7 @@ function ShortcutEditModal({
 
         {isCapturing && (
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
-            Press a key combination. For sequential shortcuts, press keys one after another.
+            {t('shortcuts.pressKeyCombination')}
           </p>
         )}
 
@@ -173,7 +175,7 @@ function ShortcutEditModal({
           <div className="flex items-center gap-2 mt-3 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
             <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
             <p className="text-xs sm:text-sm text-red-600 dark:text-red-400" data-testid="shortcut-conflict-warning">
-              Conflicts with: {conflict}
+              {t('shortcuts.conflictsWith', { conflict })}
             </p>
           </div>
         )}
@@ -185,7 +187,7 @@ function ShortcutEditModal({
             data-testid="shortcut-reset-default"
           >
             <RotateCcw className="w-4 h-4" />
-            Reset to Default
+            {t('shortcuts.resetToDefault')}
           </button>
           <div className={`flex gap-2 ${isMobile ? 'flex-col-reverse' : ''}`}>
             <button
@@ -193,7 +195,7 @@ function ShortcutEditModal({
               className={`px-4 py-3 sm:py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg min-h-[44px] ${isMobile ? 'w-full border border-gray-200 dark:border-gray-700' : ''}`}
               data-testid="shortcut-edit-cancel"
             >
-              Cancel
+              {t('shortcuts.cancel')}
             </button>
             <button
               onClick={handleSave}
@@ -202,7 +204,7 @@ function ShortcutEditModal({
               data-testid="shortcut-edit-save"
             >
               <Check className="w-4 h-4" />
-              Save
+              {t('shortcuts.save')}
             </button>
           </div>
         </div>
@@ -221,6 +223,7 @@ interface ShortcutRowProps {
 }
 
 function ShortcutRow({ actionId, description, currentKeys, isCustomized, onEdit, isMobile }: ShortcutRowProps) {
+  const { t } = useTranslation('ui');
   return (
     <button
       onClick={onEdit}
@@ -234,7 +237,7 @@ function ShortcutRow({ actionId, description, currentKeys, isCustomized, onEdit,
         <span className="text-xs sm:text-sm text-gray-900 dark:text-gray-100">{description}</span>
         {isCustomized && (
           <span className="ml-2 text-xs px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded">
-            Customized
+            {t('shortcuts.customized')}
           </span>
         )}
       </div>
@@ -245,7 +248,7 @@ function ShortcutRow({ actionId, description, currentKeys, isCustomized, onEdit,
         <span
           className={`text-xs sm:text-sm text-blue-600 dark:text-blue-400 ${isMobile ? '' : 'opacity-0 group-hover:opacity-100 transition-opacity'}`}
         >
-          {isMobile ? 'Edit' : 'Customize'}
+          {isMobile ? t('shortcuts.edit') : t('shortcuts.customize')}
         </span>
       </div>
     </button>
@@ -263,6 +266,7 @@ export interface ShortcutsSectionProps {
  * Keyboard shortcuts settings section with customization support
  */
 export function ShortcutsSection({ defaults, isMobile }: ShortcutsSectionProps) {
+  const { t } = useTranslation('ui');
   const [customShortcuts, setCustomShortcutsState] = useState<Record<string, string>>({});
   const [editingShortcut, setEditingShortcut] = useState<{
     actionId: string;
@@ -300,7 +304,7 @@ export function ShortcutsSection({ defaults, isMobile }: ShortcutsSectionProps) 
   return (
     <div data-testid="settings-shortcuts-section">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-        <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">Keyboard Shortcuts</h3>
+        <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">{t('shortcuts.keyboardShortcuts')}</h3>
         {hasCustomizations && (
           <button
             onClick={() => setShowResetConfirm(true)}
@@ -308,12 +312,12 @@ export function ShortcutsSection({ defaults, isMobile }: ShortcutsSectionProps) 
             data-testid="shortcuts-reset-all"
           >
             <RotateCcw className="w-4 h-4" />
-            Reset to Defaults
+            {t('shortcuts.resetToDefaults')}
           </button>
         )}
       </div>
       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 sm:mb-6">
-        View and customize keyboard shortcuts. {isMobile ? 'Tap' : 'Click "Customize"'} to change a shortcut.
+        {t('shortcuts.viewAndCustomize', { action: isMobile ? t('shortcuts.tap') : t('shortcuts.clickCustomize') })}
       </p>
 
       {/* Shortcut Categories */}
@@ -324,7 +328,7 @@ export function ShortcutsSection({ defaults, isMobile }: ShortcutsSectionProps) 
           return (
             <div key={category}>
               <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 px-4">
-                {CATEGORY_LABELS[category]}
+                {getCategoryLabel(category, t)}
               </h4>
               <div className="border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
                 {shortcuts.map(({ actionId, description, defaultKeys }) => {
@@ -370,9 +374,9 @@ export function ShortcutsSection({ defaults, isMobile }: ShortcutsSectionProps) 
             bg-white dark:bg-gray-800 shadow-xl w-full p-4 sm:p-6
             ${isMobile ? 'rounded-t-2xl' : 'rounded-lg max-w-sm'}
           `}>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Reset All Shortcuts?</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{t('shortcuts.resetAllTitle')}</h3>
             <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 sm:mb-6">
-              This will reset all keyboard shortcuts to their default values. This action cannot be undone.
+              {t('shortcuts.resetAllWarning')}
             </p>
             <div className={`flex gap-2 ${isMobile ? 'flex-col-reverse' : 'justify-end'}`}>
               <button
@@ -380,14 +384,14 @@ export function ShortcutsSection({ defaults, isMobile }: ShortcutsSectionProps) 
                 className={`px-4 py-3 sm:py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg min-h-[44px] ${isMobile ? 'w-full border border-gray-200 dark:border-gray-700' : ''}`}
                 data-testid="reset-confirm-cancel"
               >
-                Cancel
+                {t('shortcuts.cancel')}
               </button>
               <button
                 onClick={handleResetAll}
                 className={`px-4 py-3 sm:py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg min-h-[44px] ${isMobile ? 'w-full' : ''}`}
                 data-testid="reset-confirm-yes"
               >
-                Reset All
+                {t('shortcuts.resetAll')}
               </button>
             </div>
           </div>
@@ -396,7 +400,7 @@ export function ShortcutsSection({ defaults, isMobile }: ShortcutsSectionProps) 
 
       {/* Note about shortcuts */}
       <p className="text-xs text-gray-400 dark:text-gray-500 mt-6 text-center">
-        Changes to keyboard shortcuts take effect immediately.
+        {t('shortcuts.changesTakeEffect')}
       </p>
     </div>
   );

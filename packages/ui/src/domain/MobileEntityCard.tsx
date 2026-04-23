@@ -16,6 +16,7 @@
 
 import { useMemo } from 'react';
 import { Bot, User, Server, ChevronRight } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { Entity, EntityType } from './types';
 import { getEntityTypeConfig } from './types';
 
@@ -106,6 +107,7 @@ export function MobileEntityCard({
   onClick,
   searchQuery,
 }: MobileEntityCardProps) {
+  const { t } = useTranslation('ui');
   const config = getEntityTypeConfig(entity.entityType);
   const Icon = getEntityTypeIcon(entity.entityType);
   const isActive = entity.active !== false;
@@ -151,7 +153,7 @@ export function MobileEntityCard({
           </div>
           {!isActive && (
             <span className="px-1.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 rounded flex-shrink-0">
-              Inactive
+              {t('domain.mobileEntityCard.inactive')}
             </span>
           )}
         </div>

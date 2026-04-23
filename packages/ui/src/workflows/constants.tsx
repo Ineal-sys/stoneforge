@@ -30,35 +30,35 @@ export interface WorkflowStatusConfig {
  */
 export const WORKFLOW_STATUS_CONFIG: Record<WorkflowStatus, WorkflowStatusConfig> = {
   pending: {
-    label: 'Pending',
+    label: 'workflow.status.pending',
     icon: Clock,
     color: 'text-gray-600 dark:text-gray-400',
     bgColor: 'bg-gray-100 dark:bg-gray-900/30',
     borderColor: 'border-gray-300 dark:border-gray-700',
   },
   running: {
-    label: 'Running',
+    label: 'workflow.status.running',
     icon: Play,
     color: 'text-blue-600 dark:text-blue-400',
     bgColor: 'bg-blue-100 dark:bg-blue-900/30',
     borderColor: 'border-blue-300 dark:border-blue-700',
   },
   completed: {
-    label: 'Completed',
+    label: 'workflow.status.completed',
     icon: CheckCircle,
     color: 'text-green-600 dark:text-green-400',
     bgColor: 'bg-green-100 dark:bg-green-900/30',
     borderColor: 'border-green-300 dark:border-green-700',
   },
   failed: {
-    label: 'Failed',
+    label: 'workflow.status.failed',
     icon: XCircle,
     color: 'text-red-600 dark:text-red-400',
     bgColor: 'bg-red-100 dark:bg-red-900/30',
     borderColor: 'border-red-300 dark:border-red-700',
   },
   cancelled: {
-    label: 'Cancelled',
+    label: 'workflow.status.cancelled',
     icon: Ban,
     color: 'text-yellow-600 dark:text-yellow-400',
     bgColor: 'bg-yellow-100 dark:bg-yellow-900/30',
@@ -80,70 +80,70 @@ export const PROGRESS_COLORS = {
  * Task type labels
  */
 export const TASK_TYPES = [
-  { value: 'task', label: 'Task' },
-  { value: 'bug', label: 'Bug' },
-  { value: 'feature', label: 'Feature' },
-  { value: 'chore', label: 'Chore' },
+  { value: 'task', label: 'workflow.taskType.task' },
+  { value: 'bug', label: 'workflow.taskType.bug' },
+  { value: 'feature', label: 'workflow.taskType.feature' },
+  { value: 'chore', label: 'workflow.taskType.chore' },
 ] as const;
 
 /**
  * Priority labels
  */
 export const PRIORITIES = [
-  { value: 5, label: '5 - Critical' },
-  { value: 4, label: '4 - High' },
-  { value: 3, label: '3 - Medium' },
-  { value: 2, label: '2 - Low' },
-  { value: 1, label: '1 - Lowest' },
+  { value: 5, label: 'workflow.priority.5' },
+  { value: 4, label: 'workflow.priority.4' },
+  { value: 3, label: 'workflow.priority.3' },
+  { value: 2, label: 'workflow.priority.2' },
+  { value: 1, label: 'workflow.priority.1' },
 ] as const;
 
 /**
  * Complexity labels
  */
 export const COMPLEXITIES = [
-  { value: 1, label: '1 - Trivial' },
-  { value: 2, label: '2 - Simple' },
-  { value: 3, label: '3 - Medium' },
-  { value: 4, label: '4 - Complex' },
-  { value: 5, label: '5 - Very Complex' },
+  { value: 1, label: 'workflow.complexity.1' },
+  { value: 2, label: 'workflow.complexity.2' },
+  { value: 3, label: 'workflow.complexity.3' },
+  { value: 4, label: 'workflow.complexity.4' },
+  { value: 5, label: 'workflow.complexity.5' },
 ] as const;
 
 /**
  * Variable type labels
  */
 export const VARIABLE_TYPES = [
-  { value: 'string', label: 'String' },
-  { value: 'number', label: 'Number' },
-  { value: 'boolean', label: 'Boolean' },
+  { value: 'string', label: 'workflow.variableType.string' },
+  { value: 'number', label: 'workflow.variableType.number' },
+  { value: 'boolean', label: 'workflow.variableType.boolean' },
 ] as const;
 
 /**
  * Step type options
  */
 export const STEP_TYPES = [
-  { value: 'task', label: 'Task', description: 'Agent-executed task' },
-  { value: 'function', label: 'Function', description: 'Execute code directly' },
+  { value: 'task', label: 'workflow.stepType.task', description: 'workflow.stepType.taskDescription' },
+  { value: 'function', label: 'workflow.stepType.function', description: 'workflow.stepType.functionDescription' },
 ] as const;
 
 /**
  * Function runtime options
  */
 export const FUNCTION_RUNTIMES = [
-  { value: 'typescript', label: 'TypeScript', description: 'Execute TypeScript/JavaScript code' },
-  { value: 'python', label: 'Python', description: 'Execute Python code' },
-  { value: 'shell', label: 'Shell', description: 'Execute shell commands' },
+  { value: 'typescript', label: 'workflow.runtime.typescript', description: 'workflow.runtime.typescriptDescription' },
+  { value: 'python', label: 'workflow.runtime.python', description: 'workflow.runtime.pythonDescription' },
+  { value: 'shell', label: 'workflow.runtime.shell', description: 'workflow.runtime.shellDescription' },
 ] as const;
 
 /**
  * Status filter options for workflow list
  */
 export const STATUS_FILTER_OPTIONS = [
-  { value: null, label: 'All' },
-  { value: 'running', label: 'Running' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'failed', label: 'Failed' },
-  { value: 'cancelled', label: 'Cancelled' },
+  { value: null, label: 'workflow.filter.all' },
+  { value: 'running', label: 'workflow.filter.running' },
+  { value: 'pending', label: 'workflow.filter.pending' },
+  { value: 'completed', label: 'workflow.filter.completed' },
+  { value: 'failed', label: 'workflow.filter.failed' },
+  { value: 'cancelled', label: 'workflow.filter.cancelled' },
 ] as const;
 
 /**

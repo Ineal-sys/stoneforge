@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import { BookOpen, Play, Settings, Trash2, MoreVertical, FileText } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { Playbook } from '../types';
 
 interface PlaybookCardProps {
@@ -22,6 +23,7 @@ export function PlaybookCard({
   onDelete,
 }: PlaybookCardProps) {
   const [showMenu, setShowMenu] = useState(false);
+  const { t } = useTranslation('ui');
 
   return (
     <div
@@ -42,7 +44,7 @@ export function PlaybookCard({
           <button
             onClick={() => setShowMenu(!showMenu)}
             className="p-1 rounded hover:bg-[var(--color-surface-hover)] transition-colors"
-            aria-label="Playbook actions"
+            aria-label={t('workflow.playbookCard.actions')}
           >
             <MoreVertical className="w-4 h-4 text-[var(--color-text-secondary)]" />
           </button>
@@ -56,7 +58,7 @@ export function PlaybookCard({
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]"
               >
                 <Play className="w-4 h-4" />
-                Create Workflow
+                {t('workflow.playbookCard.createWorkflow')}
               </button>
               {onEdit && (
                 <button
@@ -68,7 +70,7 @@ export function PlaybookCard({
                   data-testid={`playbook-edit-${playbook.id}`}
                 >
                   <Settings className="w-4 h-4" />
-                  Edit
+                  {t('workflow.playbookCard.edit')}
                 </button>
               )}
               {onDelete && (
@@ -80,7 +82,7 @@ export function PlaybookCard({
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
                 >
                   <Trash2 className="w-4 h-4" />
-                  Delete
+                  {t('workflow.playbookCard.delete')}
                 </button>
               )}
             </div>
@@ -91,11 +93,11 @@ export function PlaybookCard({
       <div className="mt-3 flex items-center gap-4 text-xs text-[var(--color-text-secondary)]">
         <span className="flex items-center gap-1">
           <FileText className="w-3 h-3" />
-          {playbook.steps.length} steps
+          {t('workflow.playbookCard.stepsCount', { count: playbook.steps.length })}
         </span>
         <span>v{playbook.version}</span>
         {playbook.variables.length > 0 && (
-          <span>{playbook.variables.length} variables</span>
+          <span>{t('workflow.playbookCard.variablesCount', { count: playbook.variables.length })}</span>
         )}
       </div>
 
@@ -106,7 +108,7 @@ export function PlaybookCard({
           data-testid={`playbook-create-${playbook.id}`}
         >
           <Play className="w-4 h-4" />
-          Create Workflow
+          {t('workflow.playbookCard.createWorkflow')}
         </button>
       </div>
     </div>

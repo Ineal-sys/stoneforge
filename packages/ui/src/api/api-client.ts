@@ -19,6 +19,8 @@
  * ```
  */
 
+import { i18n } from '@stoneforge/i18n';
+
 /**
  * API error with status code and message
  */
@@ -195,7 +197,7 @@ export class ApiClient {
       }
 
       if (error instanceof Error && error.name === 'AbortError') {
-        throw new ApiError(408, 'Request Timeout');
+        throw new ApiError(408, i18n.t('ui:api.requestTimeout'));
       }
 
       throw error;

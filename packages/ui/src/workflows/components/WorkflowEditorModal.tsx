@@ -44,6 +44,7 @@ import {
   FUNCTION_RUNTIMES,
 } from '../constants';
 import { generateStepId } from '../utils';
+import { useTranslation } from '@stoneforge/i18n';
 
 // ============================================================================
 // Types
@@ -315,6 +316,7 @@ function StepListItem({
   isFirst,
   isLast,
 }: StepListItemProps) {
+  const { t } = useTranslation('ui');
   const isFunctionStep = step.stepType === 'function';
 
   return (
@@ -339,13 +341,13 @@ function StepListItem({
               ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
               : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
           }`}
-          title={isFunctionStep ? 'Function step' : 'Task step'}
+          title={isFunctionStep ? t('workflow.editor.functionStepTitle') : t('workflow.editor.taskStepTitle')}
         >
           {isFunctionStep ? <Terminal className="w-3.5 h-3.5" /> : <ClipboardList className="w-3.5 h-3.5" />}
         </span>
         <div className="flex-1 min-w-0">
           <div className="text-sm font-medium text-[var(--color-text)] truncate">
-            {step.title || 'Untitled step'}
+            {step.title || t('workflow.editor.untitledStep')}
           </div>
           <div className="text-xs text-[var(--color-text-tertiary)] font-mono truncate">
             {step.id}
@@ -365,7 +367,7 @@ function StepListItem({
           onClick={(e) => { e.stopPropagation(); onMoveUp(); }}
           disabled={isFirst}
           className="p-1 rounded hover:bg-[var(--color-surface-hover)] disabled:opacity-30 disabled:cursor-not-allowed"
-          title="Move up"
+          title={t('workflow.editor.moveUp')}
         >
           <ArrowUp className="w-4 h-4 text-[var(--color-text-secondary)]" />
         </button>
@@ -373,14 +375,14 @@ function StepListItem({
           onClick={(e) => { e.stopPropagation(); onMoveDown(); }}
           disabled={isLast}
           className="p-1 rounded hover:bg-[var(--color-surface-hover)] disabled:opacity-30 disabled:cursor-not-allowed"
-          title="Move down"
+          title={t('workflow.editor.moveDown')}
         >
           <ArrowDown className="w-4 h-4 text-[var(--color-text-secondary)]" />
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(); }}
           className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500"
-          title="Delete step"
+          title={t('workflow.editor.deleteStep')}
         >
           <Trash2 className="w-4 h-4" />
         </button>
@@ -401,6 +403,7 @@ interface StepFormProps {
 }
 
 function StepForm({ step, onChange, allStepIds, onClose }: StepFormProps) {
+  const { t } = useTranslation('ui');
   const availableDependencies = allStepIds.filter(id => id !== step.id);
   const isFunctionStep = step.stepType === 'function';
 
@@ -418,7 +421,7 @@ function StepForm({ step, onChange, allStepIds, onClose }: StepFormProps) {
   return (
     <div className="space-y-4 max-h-[500px] overflow-y-auto" data-testid="step-form">
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-medium text-[var(--color-text)]">Edit Step</h4>
+        <h4 className="text-sm font-medium text-[var(--color-text)]">{t('workflow.editor.editStep')}</h4>
         <button onClick={onClose} className="p-1 rounded hover:bg-[var(--color-surface-hover)]">
           <X className="w-4 h-4 text-[var(--color-text-secondary)]" />
         </button>
@@ -426,32 +429,32 @@ function StepForm({ step, onChange, allStepIds, onClose }: StepFormProps) {
 
       {/* Step Type Toggle */}
       <div className="space-y-1">
-        <label className="text-xs font-medium text-[var(--color-text-secondary)]">Step Type</label>
+        <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t('workflow.editor.stepType')}</label>
         <div className="flex gap-2">
-          {STEP_TYPES.map(t => (
+          {STEP_TYPES.map(st => (
             <button
-              key={t.value}
-              onClick={() => handleChange('stepType', t.value)}
+              key={st.value}
+              onClick={() => handleChange('stepType', st.value)}
               className={`flex-1 px-3 py-2 text-sm rounded-lg border transition-colors ${
-                step.stepType === t.value
+                step.stepType === st.value
                   ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]'
                   : 'bg-[var(--color-surface)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:border-[var(--color-primary)]'
               }`}
-              data-testid={`step-type-${t.value}`}
+              data-testid={`step-type-${st.value}`}
             >
-              {t.label}
+              {t(st.label)}
             </button>
           ))}
         </div>
         <p className="text-xs text-[var(--color-text-tertiary)]">
-          {step.stepType === 'function' ? 'Execute code directly' : 'Create an agent task'}
+          {step.stepType === 'function' ? t('workflow.editor.executeCodeDirectly') : t('workflow.editor.createAgentTask')}
         </p>
       </div>
 
       {/* Step ID */}
       <div className="space-y-1">
         <label className="text-xs font-medium text-[var(--color-text-secondary)]">
-          Step ID
+          {t('workflow.editor.stepId')}
         </label>
         <input
           type="text"
@@ -466,13 +469,13 @@ function StepForm({ step, onChange, allStepIds, onClose }: StepFormProps) {
       {/* Title */}
       <div className="space-y-1">
         <label className="text-xs font-medium text-[var(--color-text-secondary)]">
-          Title <span className="text-red-500">*</span>
+          {t('workflow.editor.title')} <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
           value={step.title}
           onChange={(e) => handleChange('title', e.target.value)}
-          placeholder="Step title"
+          placeholder={t('workflow.editor.stepTitlePlaceholder')}
           className="w-full px-3 py-2 text-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
           data-testid="step-title-input"
         />
@@ -481,12 +484,12 @@ function StepForm({ step, onChange, allStepIds, onClose }: StepFormProps) {
       {/* Description */}
       <div className="space-y-1">
         <label className="text-xs font-medium text-[var(--color-text-secondary)]">
-          Description
+          {t('workflow.editor.description')}
         </label>
         <textarea
           value={step.description}
           onChange={(e) => handleChange('description', e.target.value)}
-          placeholder="Step description"
+          placeholder={t('workflow.editor.stepDescriptionPlaceholder')}
           rows={2}
           className="w-full px-3 py-2 text-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30 resize-none"
           data-testid="step-description-input"
@@ -499,7 +502,7 @@ function StepForm({ step, onChange, allStepIds, onClose }: StepFormProps) {
           {/* Runtime */}
           <div className="space-y-1">
             <label className="text-xs font-medium text-[var(--color-text-secondary)]">
-              Runtime <span className="text-red-500">*</span>
+              {t('workflow.editor.runtime')} <span className="text-red-500">*</span>
             </label>
             <select
               value={step.runtime}
@@ -508,7 +511,7 @@ function StepForm({ step, onChange, allStepIds, onClose }: StepFormProps) {
               data-testid="step-runtime-select"
             >
               {FUNCTION_RUNTIMES.map(r => (
-                <option key={r.value} value={r.value}>{r.label}</option>
+                <option key={r.value} value={r.value}>{t(r.label)}</option>
               ))}
             </select>
             <p className="text-xs text-[var(--color-text-tertiary)]">
@@ -520,7 +523,7 @@ function StepForm({ step, onChange, allStepIds, onClose }: StepFormProps) {
           {step.runtime !== 'shell' && (
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">
-                Code <span className="text-red-500">*</span>
+                {t('workflow.editor.code')} <span className="text-red-500">*</span>
               </label>
               <textarea
                 value={step.code}
@@ -539,7 +542,7 @@ function StepForm({ step, onChange, allStepIds, onClose }: StepFormProps) {
           {step.runtime === 'shell' && (
             <div className="space-y-1">
               <label className="text-xs font-medium text-[var(--color-text-secondary)]">
-                Command <span className="text-red-500">*</span>
+                {t('workflow.editor.command')} <span className="text-red-500">*</span>
               </label>
               <textarea
                 value={step.command}
@@ -555,7 +558,7 @@ function StepForm({ step, onChange, allStepIds, onClose }: StepFormProps) {
           {/* Timeout */}
           <div className="space-y-1">
             <label className="text-xs font-medium text-[var(--color-text-secondary)]">
-              Timeout (ms)
+              {t('workflow.editor.timeoutMs')}
             </label>
             <input
               type="number"
@@ -568,7 +571,7 @@ function StepForm({ step, onChange, allStepIds, onClose }: StepFormProps) {
               data-testid="step-timeout-input"
             />
             <p className="text-xs text-[var(--color-text-tertiary)]">
-              Default: 30000ms (30 seconds). Max: 600000ms (10 minutes)
+              {t('workflow.editor.timeoutHint')}
             </p>
           </div>
         </>
@@ -580,44 +583,44 @@ function StepForm({ step, onChange, allStepIds, onClose }: StepFormProps) {
           {/* Task Type, Priority, Complexity */}
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-[var(--color-text-secondary)]">Task Type</label>
+              <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t('workflow.editor.taskType')}</label>
               <select
                 value={step.taskType}
                 onChange={(e) => handleChange('taskType', e.target.value)}
                 className="w-full px-3 py-2 text-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
                 data-testid="step-tasktype-select"
               >
-                <option value="">None</option>
-                {TASK_TYPES.map(t => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
+                <option value="">{t('workflow.editor.none')}</option>
+                {TASK_TYPES.map(tt => (
+                  <option key={tt.value} value={tt.value}>{t(tt.label)}</option>
                 ))}
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-[var(--color-text-secondary)]">Priority</label>
+              <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t('workflow.editor.priority')}</label>
               <select
                 value={step.priority}
                 onChange={(e) => handleChange('priority', e.target.value ? Number(e.target.value) : '')}
                 className="w-full px-3 py-2 text-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
                 data-testid="step-priority-select"
               >
-                <option value="">None</option>
+                <option value="">{t('workflow.editor.none')}</option>
                 {PRIORITIES.map(p => (
-                  <option key={p.value} value={p.value}>{p.label}</option>
+                  <option key={p.value} value={p.value}>{t(p.label)}</option>
                 ))}
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-[var(--color-text-secondary)]">Complexity</label>
+              <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t('workflow.editor.complexity')}</label>
               <select
                 value={step.complexity}
                 onChange={(e) => handleChange('complexity', e.target.value ? Number(e.target.value) : '')}
                 className="w-full px-3 py-2 text-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
                 data-testid="step-complexity-select"
               >
-                <option value="">None</option>
+                <option value="">{t('workflow.editor.none')}</option>
                 {COMPLEXITIES.map(c => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
+                  <option key={c.value} value={c.value}>{t(c.label)}</option>
                 ))}
               </select>
             </div>
@@ -625,12 +628,12 @@ function StepForm({ step, onChange, allStepIds, onClose }: StepFormProps) {
 
           {/* Assignee */}
           <div className="space-y-1">
-            <label className="text-xs font-medium text-[var(--color-text-secondary)]">Assignee</label>
+            <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t('workflow.editor.assignee')}</label>
             <input
               type="text"
               value={step.assignee}
               onChange={(e) => handleChange('assignee', e.target.value)}
-              placeholder="{{variable}} or entity name"
+              placeholder={t('workflow.editor.assigneePlaceholder')}
               className="w-full px-3 py-2 text-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
               data-testid="step-assignee-input"
             />
@@ -641,11 +644,11 @@ function StepForm({ step, onChange, allStepIds, onClose }: StepFormProps) {
       {/* Dependencies */}
       <div className="space-y-1">
         <label className="text-xs font-medium text-[var(--color-text-secondary)]">
-          Dependencies
+          {t('workflow.editor.dependencies')}
         </label>
         {availableDependencies.length === 0 ? (
           <p className="text-xs text-[var(--color-text-tertiary)] italic">
-            No other steps available
+            {t('workflow.editor.noOtherSteps')}
           </p>
         ) : (
           <div className="flex flex-wrap gap-2" data-testid="step-dependencies">
@@ -680,6 +683,7 @@ interface VariableFormProps {
 }
 
 function VariableForm({ variable, onChange, onClose }: VariableFormProps) {
+  const { t } = useTranslation('ui');
   const handleChange = (field: keyof VariableFormData, value: unknown) => {
     onChange({ ...variable, [field]: value });
   };
@@ -701,7 +705,7 @@ function VariableForm({ variable, onChange, onClose }: VariableFormProps) {
   return (
     <div className="space-y-4" data-testid="variable-form">
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-medium text-[var(--color-text)]">Edit Variable</h4>
+        <h4 className="text-sm font-medium text-[var(--color-text)]">{t('workflow.editor.editVariable')}</h4>
         <button onClick={onClose} className="p-1 rounded hover:bg-[var(--color-surface-hover)]">
           <X className="w-4 h-4 text-[var(--color-text-secondary)]" />
         </button>
@@ -710,7 +714,7 @@ function VariableForm({ variable, onChange, onClose }: VariableFormProps) {
       {/* Name */}
       <div className="space-y-1">
         <label className="text-xs font-medium text-[var(--color-text-secondary)]">
-          Name <span className="text-red-500">*</span>
+          {t('workflow.editor.variableName')} <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
@@ -725,7 +729,7 @@ function VariableForm({ variable, onChange, onClose }: VariableFormProps) {
       {/* Type */}
       <div className="space-y-1">
         <label className="text-xs font-medium text-[var(--color-text-secondary)]">
-          Type <span className="text-red-500">*</span>
+          {t('workflow.editor.variableType')} <span className="text-red-500">*</span>
         </label>
         <select
           value={variable.type}
@@ -733,8 +737,8 @@ function VariableForm({ variable, onChange, onClose }: VariableFormProps) {
           className="w-full px-3 py-2 text-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
           data-testid="variable-type-select"
         >
-          {VARIABLE_TYPES.map(t => (
-            <option key={t.value} value={t.value}>{t.label}</option>
+          {VARIABLE_TYPES.map(vt => (
+            <option key={vt.value} value={vt.value}>{t(vt.label)}</option>
           ))}
         </select>
       </div>
@@ -748,17 +752,17 @@ function VariableForm({ variable, onChange, onClose }: VariableFormProps) {
           className="w-4 h-4 rounded border-[var(--color-border)] text-[var(--color-primary)]"
           data-testid="variable-required-checkbox"
         />
-        <span className="text-sm text-[var(--color-text)]">Required</span>
+        <span className="text-sm text-[var(--color-text)]">{t('workflow.editor.required')}</span>
       </label>
 
       {/* Description */}
       <div className="space-y-1">
-        <label className="text-xs font-medium text-[var(--color-text-secondary)]">Description</label>
+        <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t('workflow.editor.variableDescription')}</label>
         <input
           type="text"
           value={variable.description}
           onChange={(e) => handleChange('description', e.target.value)}
-          placeholder="What this variable is for"
+          placeholder={t('workflow.editor.variableDescriptionPlaceholder')}
           className="w-full px-3 py-2 text-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
           data-testid="variable-description-input"
         />
@@ -766,7 +770,7 @@ function VariableForm({ variable, onChange, onClose }: VariableFormProps) {
 
       {/* Default Value */}
       <div className="space-y-1">
-        <label className="text-xs font-medium text-[var(--color-text-secondary)]">Default Value</label>
+        <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t('workflow.editor.defaultValue')}</label>
         {variable.type === 'boolean' ? (
           <select
             value={variable.default}
@@ -774,7 +778,7 @@ function VariableForm({ variable, onChange, onClose }: VariableFormProps) {
             className="w-full px-3 py-2 text-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
             data-testid="variable-default-input"
           >
-            <option value="">No default</option>
+            <option value="">{t('workflow.editor.noDefault')}</option>
             <option value="true">true</option>
             <option value="false">false</option>
           </select>
@@ -783,7 +787,7 @@ function VariableForm({ variable, onChange, onClose }: VariableFormProps) {
             type={variable.type === 'number' ? 'number' : 'text'}
             value={variable.default}
             onChange={(e) => handleChange('default', e.target.value)}
-            placeholder={variable.type === 'number' ? '0' : 'default value'}
+            placeholder={variable.type === 'number' ? t('workflow.editor.defaultNumberPlaceholder') : t('workflow.editor.defaultStringPlaceholder')}
             className="w-full px-3 py-2 text-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
             data-testid="variable-default-input"
           />
@@ -793,13 +797,13 @@ function VariableForm({ variable, onChange, onClose }: VariableFormProps) {
       {/* Enum Values */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-medium text-[var(--color-text-secondary)]">Allowed Values</label>
+          <label className="text-xs font-medium text-[var(--color-text-secondary)]">{t('workflow.editor.allowedValues')}</label>
           <button
             onClick={addEnumValue}
             className="flex items-center gap-1 px-2 py-1 text-xs text-[var(--color-primary)] hover:bg-[var(--color-primary-muted)] rounded"
           >
             <Plus className="w-3 h-3" />
-            Add
+            {t('workflow.editor.addValue')}
           </button>
         </div>
         {variable.enum.length > 0 ? (
@@ -824,7 +828,7 @@ function VariableForm({ variable, onChange, onClose }: VariableFormProps) {
           </div>
         ) : (
           <p className="text-xs text-[var(--color-text-tertiary)] italic">
-            No enum values. Variable accepts any value of its type.
+            {t('workflow.editor.noEnumValues')}
           </p>
         )}
       </div>
@@ -842,6 +846,7 @@ interface YamlPreviewProps {
 }
 
 function YamlPreview({ yaml, onImport }: YamlPreviewProps) {
+  const { t } = useTranslation('ui');
   const [importMode, setImportMode] = useState(false);
   const [importText, setImportText] = useState('');
   const [copied, setCopied] = useState(false);
@@ -886,7 +891,7 @@ function YamlPreview({ yaml, onImport }: YamlPreviewProps) {
           data-testid="yaml-import-toggle"
         >
           <Upload className="w-4 h-4" />
-          Import
+          {t('workflow.editor.import')}
         </button>
         <button
           onClick={handleCopy}
@@ -894,7 +899,7 @@ function YamlPreview({ yaml, onImport }: YamlPreviewProps) {
           data-testid="yaml-copy"
         >
           {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-          {copied ? 'Copied!' : 'Copy'}
+          {copied ? t('workflow.editor.copied') : t('workflow.editor.copy')}
         </button>
         <button
           onClick={handleDownload}
@@ -902,7 +907,7 @@ function YamlPreview({ yaml, onImport }: YamlPreviewProps) {
           data-testid="yaml-download"
         >
           <Download className="w-4 h-4" />
-          Download
+          {t('workflow.editor.download')}
         </button>
       </div>
 
@@ -912,7 +917,7 @@ function YamlPreview({ yaml, onImport }: YamlPreviewProps) {
           <div className="flex items-center gap-2">
             <label className="flex items-center gap-2 px-3 py-2 text-sm bg-[var(--color-primary)] text-white rounded-lg cursor-pointer hover:bg-[var(--color-primary-hover)]">
               <FileText className="w-4 h-4" />
-              Upload File
+              {t('workflow.editor.uploadFile')}
               <input
                 type="file"
                 accept=".yaml,.yml"
@@ -932,12 +937,12 @@ function YamlPreview({ yaml, onImport }: YamlPreviewProps) {
                 data-testid="yaml-file-input"
               />
             </label>
-            <span className="text-sm text-[var(--color-text-tertiary)]">or paste YAML below</span>
+            <span className="text-sm text-[var(--color-text-tertiary)]">{t('workflow.editor.orPasteYaml')}</span>
           </div>
           <textarea
             value={importText}
             onChange={(e) => setImportText(e.target.value)}
-            placeholder="Paste YAML content here..."
+            placeholder={t('workflow.editor.pasteYamlPlaceholder')}
             rows={10}
             className="w-full px-3 py-2 text-sm font-mono bg-[var(--color-bg)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30 resize-none"
             data-testid="yaml-import-textarea"
@@ -947,7 +952,7 @@ function YamlPreview({ yaml, onImport }: YamlPreviewProps) {
               onClick={() => { setImportMode(false); setImportText(''); }}
               className="px-3 py-1.5 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] rounded-lg"
             >
-              Cancel
+              {t('workflow.editor.cancel')}
             </button>
             <button
               onClick={handleImport}
@@ -956,7 +961,7 @@ function YamlPreview({ yaml, onImport }: YamlPreviewProps) {
               data-testid="yaml-import-confirm"
             >
               <Check className="w-4 h-4" />
-              Import
+              {t('workflow.editor.importConfirm')}
             </button>
           </div>
         </div>
@@ -983,6 +988,7 @@ export function WorkflowEditorModal({
   playbookId,
   onSuccess,
 }: WorkflowEditorModalProps) {
+  const { t } = useTranslation('ui');
   const isEditing = Boolean(playbookId);
 
   // Form state
@@ -1067,17 +1073,17 @@ export function WorkflowEditorModal({
   // Validation
   const validationErrors = useMemo(() => {
     const errors: string[] = [];
-    if (!name.trim()) errors.push('Name is required');
-    if (!title.trim()) errors.push('Title is required');
+    if (!name.trim()) errors.push(t('workflow.editor.validation.nameRequired'));
+    if (!title.trim()) errors.push(t('workflow.editor.validation.titleRequired'));
     if (!/^[a-zA-Z_][a-zA-Z0-9_-]*$/.test(name) && name.trim()) {
-      errors.push('Name must start with letter/underscore');
+      errors.push(t('workflow.editor.validation.nameFormat'));
     }
     for (const step of steps) {
-      if (!step.id.trim()) errors.push('All steps must have an ID');
-      if (!step.title.trim()) errors.push('All steps must have a title');
+      if (!step.id.trim()) errors.push(t('workflow.editor.validation.stepIdRequired'));
+      if (!step.title.trim()) errors.push(t('workflow.editor.validation.stepTitleRequired'));
     }
     for (const variable of variables) {
-      if (!variable.name.trim()) errors.push('All variables must have a name');
+      if (!variable.name.trim()) errors.push(t('workflow.editor.validation.variableNameRequired'));
     }
     return errors;
   }, [name, title, steps, variables]);
@@ -1286,7 +1292,7 @@ export function WorkflowEditorModal({
       setActiveTab('steps');
       setError(null);
     } catch (err) {
-      setError('Failed to parse YAML. Please check the format and try again.');
+      setError(t('workflow.editor.yamlParseError'));
     }
   }, []);
 
@@ -1321,7 +1327,7 @@ export function WorkflowEditorModal({
       }
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save playbook');
+      setError(err instanceof Error ? err.message : t('workflow.editor.saveFailed'));
     }
   };
 
@@ -1353,13 +1359,13 @@ export function WorkflowEditorModal({
             <div className="flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-[var(--color-primary)]" />
               <h2 id="workflow-editor-title" className="text-lg font-semibold text-[var(--color-text)]">
-                {isEditing ? 'Edit Template' : 'Create Template'}
+                {isEditing ? t('workflow.editor.editTemplate') : t('workflow.editor.createTemplate')}
               </h2>
             </div>
             <button
               onClick={onClose}
               className="p-1.5 rounded-lg text-[var(--color-text-tertiary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors"
-              aria-label="Close dialog"
+              aria-label={t('workflow.editor.closeDialog')}
               data-testid="workflow-editor-close"
             >
               <X className="w-5 h-5" />
@@ -1377,7 +1383,7 @@ export function WorkflowEditorModal({
           {(error || playbookError) && (
             <div className="mx-4 mt-4 flex items-center gap-2 px-3 py-2 text-sm text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              {error || playbookError?.message || 'An error occurred'}
+              {error || playbookError?.message || t('workflow.editor.errorOccurred')}
             </div>
           )}
 
@@ -1389,13 +1395,13 @@ export function WorkflowEditorModal({
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-[var(--color-text-secondary)]">
-                      Name <span className="text-red-500">*</span>
+                      {t('workflow.editor.playbookName')} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ''))}
-                      placeholder="my_playbook"
+                      placeholder={t('workflow.editor.playbookNamePlaceholder')}
                       disabled={isEditing}
                       className="w-full px-3 py-2 text-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30 font-mono disabled:opacity-50"
                       data-testid="playbook-name-input"
@@ -1403,13 +1409,13 @@ export function WorkflowEditorModal({
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-[var(--color-text-secondary)]">
-                      Title <span className="text-red-500">*</span>
+                      {t('workflow.editor.playbookTitle')} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      placeholder="My Playbook"
+                      placeholder={t('workflow.editor.playbookTitlePlaceholder')}
                       className="w-full px-3 py-2 text-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
                       data-testid="playbook-title-input"
                     />
@@ -1430,7 +1436,7 @@ export function WorkflowEditorModal({
                     data-testid="tab-steps"
                   >
                     <List className="w-4 h-4" />
-                    Steps
+                    {t('workflow.editor.tabs.steps')}
                     <span className="px-1.5 py-0.5 text-xs rounded-full bg-[var(--color-surface)]">
                       {steps.length}
                     </span>
@@ -1445,7 +1451,7 @@ export function WorkflowEditorModal({
                     data-testid="tab-variables"
                   >
                     <Variable className="w-4 h-4" />
-                    Variables
+                    {t('workflow.editor.tabs.variables')}
                     <span className="px-1.5 py-0.5 text-xs rounded-full bg-[var(--color-surface)]">
                       {variables.length}
                     </span>
@@ -1460,7 +1466,7 @@ export function WorkflowEditorModal({
                     data-testid="tab-yaml"
                   >
                     <Code className="w-4 h-4" />
-                    YAML
+                    {t('workflow.editor.tabs.yaml')}
                   </button>
                 </nav>
               </div>
@@ -1473,14 +1479,14 @@ export function WorkflowEditorModal({
                     {/* Step List */}
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-medium text-[var(--color-text)]">Steps</h3>
+                        <h3 className="text-sm font-medium text-[var(--color-text)]">{t('workflow.editor.steps')}</h3>
                         <div className="relative group">
                           <button
                             className="flex items-center gap-1 px-2 py-1 text-sm text-[var(--color-primary)] hover:bg-[var(--color-primary-muted)] rounded"
                             data-testid="add-step-button"
                           >
                             <Plus className="w-4 h-4" />
-                            Add Step
+                            {t('workflow.editor.addStep')}
                             <ChevronDown className="w-3 h-3 ml-0.5" />
                           </button>
                           {/* Dropdown menu */}
@@ -1492,8 +1498,8 @@ export function WorkflowEditorModal({
                             >
                               <ClipboardList className="w-4 h-4 text-blue-500" />
                               <div className="text-left">
-                                <div className="font-medium">Task Step</div>
-                                <div className="text-xs text-[var(--color-text-tertiary)]">Agent-executed task</div>
+                                <div className="font-medium">{t('workflow.editor.taskStep')}</div>
+                                <div className="text-xs text-[var(--color-text-tertiary)]">{t('workflow.editor.agentExecutedTask')}</div>
                               </div>
                             </button>
                             <button
@@ -1503,8 +1509,8 @@ export function WorkflowEditorModal({
                             >
                               <Terminal className="w-4 h-4 text-purple-500" />
                               <div className="text-left">
-                                <div className="font-medium">Function Step</div>
-                                <div className="text-xs text-[var(--color-text-tertiary)]">Execute code directly</div>
+                                <div className="font-medium">{t('workflow.editor.functionStep')}</div>
+                                <div className="text-xs text-[var(--color-text-tertiary)]">{t('workflow.editor.executeCode')}</div>
                               </div>
                             </button>
                           </div>
@@ -1514,7 +1520,7 @@ export function WorkflowEditorModal({
                         {steps.length === 0 ? (
                           <div className="text-center py-8 text-sm text-[var(--color-text-tertiary)]">
                             <List className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                            No steps yet. Click &quot;Add Step&quot; to begin.
+                            {t('workflow.editor.noStepsYet')}
                           </div>
                         ) : (
                           steps.map((step, index) => (
@@ -1548,7 +1554,7 @@ export function WorkflowEditorModal({
                         <div className="flex items-center justify-center h-full text-sm text-[var(--color-text-tertiary)]">
                           <div className="text-center">
                             <Edit3 className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                            Select a step to edit
+                            {t('workflow.editor.selectStepToEdit')}
                           </div>
                         </div>
                       )}
@@ -1562,21 +1568,21 @@ export function WorkflowEditorModal({
                     {/* Variable List */}
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-medium text-[var(--color-text)]">Variables</h3>
+                        <h3 className="text-sm font-medium text-[var(--color-text)]">{t('workflow.editor.variables')}</h3>
                         <button
                           onClick={handleAddVariable}
                           className="flex items-center gap-1 px-2 py-1 text-sm text-[var(--color-primary)] hover:bg-[var(--color-primary-muted)] rounded"
                           data-testid="add-variable-button"
                         >
                           <Plus className="w-4 h-4" />
-                          Add Variable
+                          {t('workflow.editor.addVariable')}
                         </button>
                       </div>
                       <div className="space-y-2 max-h-[400px] overflow-auto" data-testid="variable-list">
                         {variables.length === 0 ? (
                           <div className="text-center py-8 text-sm text-[var(--color-text-tertiary)]">
                             <Variable className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                            No variables yet. Click &quot;Add Variable&quot; to begin.
+                            {t('workflow.editor.noVariablesYet')}
                           </div>
                         ) : (
                           variables.map((variable, index) => (
@@ -1597,7 +1603,7 @@ export function WorkflowEditorModal({
                                     {variable.name || 'unnamed'}
                                   </span>
                                   {variable.required && (
-                                    <span className="text-red-500 text-xs">required</span>
+                                    <span className="text-red-500 text-xs">{t('workflow.editor.requiredBadge')}</span>
                                   )}
                                 </div>
                                 <div className="text-xs text-[var(--color-text-tertiary)]">
@@ -1608,7 +1614,7 @@ export function WorkflowEditorModal({
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleDeleteVariable(index); }}
                                 className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500"
-                                title="Delete variable"
+                                title={t('workflow.editor.deleteVariable')}
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
@@ -1630,7 +1636,7 @@ export function WorkflowEditorModal({
                         <div className="flex items-center justify-center h-full text-sm text-[var(--color-text-tertiary)]">
                           <div className="text-center">
                             <Edit3 className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                            Select a variable to edit
+                            {t('workflow.editor.selectVariableToEdit')}
                           </div>
                         </div>
                       )}
@@ -1662,7 +1668,7 @@ export function WorkflowEditorModal({
                 className="px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] rounded-lg transition-colors"
                 data-testid="cancel-button"
               >
-                Cancel
+                {t('workflow.editor.cancel')}
               </button>
               <button
                 onClick={handleSave}
@@ -1673,12 +1679,12 @@ export function WorkflowEditorModal({
                 {isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Saving...
+                    {t('workflow.editor.saving')}
                   </>
                 ) : (
                   <>
                     <Save className="w-4 h-4" />
-                    {isEditing ? 'Save Changes' : 'Create Template'}
+                    {isEditing ? t('workflow.editor.saveChanges') : t('workflow.editor.createTemplateButton')}
                   </>
                 )}
               </button>

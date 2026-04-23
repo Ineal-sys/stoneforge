@@ -3,6 +3,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   Clock,
   CheckCircle2,
@@ -56,18 +57,21 @@ interface StatusTransition {
   color: string;
 }
 
-function getStatusTransitions(currentStatus: string): StatusTransition[] {
+function getStatusTransitions(
+  currentStatus: string,
+  t: (key: string, options?: Record<string, unknown>) => string,
+): StatusTransition[] {
   switch (currentStatus) {
     case 'draft':
-      return [{ status: 'active', label: 'Activate', icon: Play, color: 'bg-blue-500 hover:bg-blue-600' }];
+      return [{ status: 'active', label: t('plans.action.activate'), icon: Play, color: 'bg-blue-500 hover:bg-blue-600' }];
     case 'active':
       return [
-        { status: 'completed', label: 'Complete', icon: CheckCircle2, color: 'bg-green-500 hover:bg-green-600' },
-        { status: 'cancelled', label: 'Cancel', icon: Ban, color: 'bg-red-500 hover:bg-red-600' },
+        { status: 'completed', label: t('plans.action.complete'), icon: CheckCircle2, color: 'bg-green-500 hover:bg-green-600' },
+        { status: 'cancelled', label: t('plans.action.cancel'), icon: Ban, color: 'bg-red-500 hover:bg-red-600' },
       ];
     case 'completed':
     case 'cancelled':
-      return [{ status: 'draft', label: 'Reopen as Draft', icon: FileEdit, color: 'bg-gray-500 hover:bg-gray-600' }];
+      return [{ status: 'draft', label: t('plans.action.reopenAsDraft'), icon: FileEdit, color: 'bg-gray-500 hover:bg-gray-600' }];
     default:
       return [];
   }
@@ -82,6 +86,7 @@ export function PlanDetailPanel({
   onDeleteSuccess,
   onDeleteError,
 }: PlanDetailPanelProps) {
+  const { t } = useTranslation('ui');
   const { data: plan, isLoading, isError, error } = usePlan(planId);
   const { data: tasks = [] } = usePlanTasks(planId);
   const { data: progress } = usePlanProgress(planId);
@@ -182,7 +187,7 @@ export function PlanDetailPanel({
       }
       onClose();
     } catch (err) {
-      const message = (err as Error).message || 'Failed to delete plan';
+      const message = (err as Error).message || t('plans.error.failedToDelete');
       if (onDeleteError) {
         onDeleteError(message);
       } else {
@@ -197,7 +202,7 @@ export function PlanDetailPanel({
         data-testid="plan-detail-loading"
         className="h-full flex items-center justify-center bg-white"
       >
-        <div className="text-gray-500">Loading plan...</div>
+        <div className="text-gray-500">{t('plans.loading')}</div>
       </div>
     );
   }
@@ -208,7 +213,7 @@ export function PlanDetailPanel({
         data-testid="plan-detail-error"
         className="h-full flex flex-col items-center justify-center bg-white"
       >
-        <div className="text-red-600 mb-2">Failed to load plan</div>
+        <div className="text-red-600 mb-2">{t('plans.error.failedToLoad')}</div>
         <div className="text-sm text-gray-500">{(error as Error)?.message}</div>
       </div>
     );
@@ -220,12 +225,12 @@ export function PlanDetailPanel({
         data-testid="plan-detail-not-found"
         className="h-full flex items-center justify-center bg-white"
       >
-        <div className="text-gray-500">Plan not found</div>
+        <div className="text-gray-500">{t('plans.notFound')}</div>
       </div>
     );
   }
 
-  const statusTransitions = getStatusTransitions(plan.status);
+  const statusTransitions = getStatusTransitions(plan.status, t);
 
   return (
     <>
@@ -261,7 +266,7 @@ export function PlanDetailPanel({
                   onClick={handleSaveTitle}
                   disabled={updatePlan.isPending}
                   className="p-1 text-green-600 hover:bg-green-50 rounded"
-                  title="Save"
+                  title={t('plans.action.save')}
                 >
                   <Check className="w-5 h-5" />
                 </button>
@@ -269,7 +274,7 @@ export function PlanDetailPanel({
                   data-testid="cancel-edit-btn"
                   onClick={handleCancelEdit}
                   className="p-1 text-gray-400 hover:bg-gray-100 rounded"
-                  title="Cancel"
+                  title={t('plans.action.cancelEdit')}
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -286,7 +291,7 @@ export function PlanDetailPanel({
                   data-testid="edit-title-btn"
                   onClick={() => setIsEditMode(true)}
                   className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Edit title"
+                  title={t('plans.action.editTitle')}
                 >
                   <Pencil className="w-4 h-4" />
                 </button>
@@ -303,9 +308,9 @@ export function PlanDetailPanel({
             <button
               onClick={() => setShowDeleteConfirm(true)}
               className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
-              aria-label="Delete plan"
+              aria-label={t('plans.action.deletePlan')}
               data-testid="plan-detail-delete"
-              title="Delete plan"
+              title={t('plans.action.deletePlan')}
             >
               <Trash2 className="w-5 h-5" />
             </button>
@@ -346,7 +351,7 @@ export function PlanDetailPanel({
           {/* Progress Section with Progress Ring */}
           {progress && (
             <div className="mb-6" data-testid="plan-progress-section">
-              <div className="text-sm font-medium text-gray-700 mb-4">Progress</div>
+              <div className="text-sm font-medium text-gray-700 mb-4">{t('plans.progress.title')}</div>
               <div className="flex flex-col items-center gap-4">
                 {/* Large Progress Ring (80px) */}
                 {renderProgressRing ? (
@@ -375,7 +380,7 @@ export function PlanDetailPanel({
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <div className="text-sm font-medium text-gray-700">
-                Tasks ({tasks.length})
+                {t('plans.tasks.title', { count: tasks.length })}
               </div>
               <button
                 data-testid="add-task-btn"
@@ -383,7 +388,7 @@ export function PlanDetailPanel({
                 className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded transition-colors"
               >
                 <Plus className="w-3 h-3" />
-                Add Task
+                {t('plans.tasks.addTask')}
               </button>
             </div>
             <PlanTaskList
@@ -402,25 +407,25 @@ export function PlanDetailPanel({
               <div>
                 <div className="flex items-center gap-1 mb-1">
                   <Clock className="w-3 h-3" />
-                  <span className="font-medium">Created:</span>
+                  <span className="font-medium">{t('plans.metadata.created')}</span>
                 </div>
                 <span title={formatDate(plan.createdAt)}>
-                  {formatRelativeTime(plan.createdAt)}
+                  {formatRelativeTime(plan.createdAt, t)}
                 </span>
               </div>
               <div>
                 <div className="flex items-center gap-1 mb-1">
                   <Clock className="w-3 h-3" />
-                  <span className="font-medium">Updated:</span>
+                  <span className="font-medium">{t('plans.metadata.updated')}</span>
                 </div>
                 <span title={formatDate(plan.updatedAt)}>
-                  {formatRelativeTime(plan.updatedAt)}
+                  {formatRelativeTime(plan.updatedAt, t)}
                 </span>
               </div>
               <div className="col-span-2">
                 <div className="flex items-center gap-1 mb-1">
                   <User className="w-3 h-3" />
-                  <span className="font-medium">Created by:</span>
+                  <span className="font-medium">{t('plans.metadata.createdBy')}</span>
                 </div>
                 <span className="font-mono">{plan.createdBy}</span>
               </div>
@@ -428,7 +433,7 @@ export function PlanDetailPanel({
                 <div className="col-span-2">
                   <div className="flex items-center gap-1 mb-1">
                     <CheckCircle2 className="w-3 h-3 text-green-500" />
-                    <span className="font-medium">Completed:</span>
+                    <span className="font-medium">{t('plans.metadata.completed')}</span>
                   </div>
                   <span>{formatDate(plan.completedAt)}</span>
                 </div>
@@ -437,7 +442,7 @@ export function PlanDetailPanel({
                 <div className="col-span-2">
                   <div className="flex items-center gap-1 mb-1">
                     <XCircle className="w-3 h-3 text-red-500" />
-                    <span className="font-medium">Cancelled:</span>
+                    <span className="font-medium">{t('plans.metadata.cancelled')}</span>
                   </div>
                   <span>{formatDate(plan.cancelledAt)}</span>
                   {plan.cancelReason && (
@@ -451,7 +456,7 @@ export function PlanDetailPanel({
             {plan.tags && plan.tags.length > 0 && (
               <div className="mt-4">
                 <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-                  Tags
+                  {t('plans.metadata.tags')}
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {plan.tags.map((tag: string) => (
@@ -494,13 +499,12 @@ export function PlanDetailPanel({
                   <AlertTriangle className="w-5 h-5 text-red-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Delete Plan</h3>
-                  <p className="text-sm text-gray-500">This action cannot be undone.</p>
+                  <h3 className="text-lg font-semibold text-gray-900">{t('plans.delete.title')}</h3>
+                  <p className="text-sm text-gray-500">{t('plans.delete.warning')}</p>
                 </div>
               </div>
               <p className="text-gray-700 mb-6">
-                Are you sure you want to delete <span className="font-semibold">"{plan.title}"</span>?
-                Tasks in this plan will be unlinked but not deleted.
+                {t('plans.delete.confirmMessage', { title: plan.title })}
               </p>
               <div className="flex justify-end gap-3">
                 <button
@@ -508,7 +512,7 @@ export function PlanDetailPanel({
                   className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                   data-testid="delete-plan-cancel"
                 >
-                  Cancel
+                  {t('plans.action.cancel')}
                 </button>
                 <button
                   onClick={handleDeletePlan}
@@ -516,7 +520,7 @@ export function PlanDetailPanel({
                   className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50"
                   data-testid="delete-plan-confirm"
                 >
-                  {deletePlan.isPending ? 'Deleting...' : 'Delete Plan'}
+                  {deletePlan.isPending ? t('plans.delete.deleting') : t('plans.delete.confirm')}
                 </button>
               </div>
             </div>

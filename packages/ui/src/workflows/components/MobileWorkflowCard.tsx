@@ -5,6 +5,7 @@
  */
 
 import { ChevronRight } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { Workflow, WorkflowProgress } from '../types';
 import { formatRelativeTime } from '../utils';
 import { StatusBadge } from './StatusBadge';
@@ -21,6 +22,7 @@ export function MobileWorkflowCard({
   progress,
   onClick,
 }: MobileWorkflowCardProps) {
+  const { t } = useTranslation('ui');
   return (
     <div
       data-testid={`mobile-workflow-card-${workflow.id}`}
@@ -34,7 +36,7 @@ export function MobileWorkflowCard({
             {workflow.title}
           </h3>
           <p className="text-xs text-[var(--color-text-tertiary)] mt-0.5">
-            Updated {formatRelativeTime(workflow.updatedAt)}
+            {t('workflow.mobileCard.updated')} {formatRelativeTime(workflow.updatedAt, t)}
           </p>
         </div>
         <ChevronRight className="w-5 h-5 text-[var(--color-text-tertiary)] flex-shrink-0 ml-2" />
@@ -45,7 +47,7 @@ export function MobileWorkflowCard({
         <StatusBadge status={workflow.status} size="sm" />
         {workflow.ephemeral && (
           <span className="text-xs text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded">
-            Ephemeral
+            {t('workflow.mobileCard.ephemeral')}
           </span>
         )}
         {workflow.tags?.slice(0, 2).map((tag) => (

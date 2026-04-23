@@ -28,6 +28,7 @@ import {
   FileText,
   Smile,
 } from 'lucide-react';
+import { useTranslation, i18n } from '@stoneforge/i18n';
 
 // Embed picker callbacks
 export interface MessageEmbedCallbacks {
@@ -51,8 +52,8 @@ const getMessageSlashCommands = (embedCallbacks?: MessageEmbedCallbacks): Messag
   // Formatting
   {
     id: 'bold',
-    title: 'Bold',
-    description: 'Make text bold',
+    title: i18n.t('ui:channel.slashBold'),
+    description: i18n.t('ui:channel.slashBoldDesc'),
     icon: <Bold className="w-4 h-4" />,
     category: 'formatting',
     action: ({ editor, range }) => {
@@ -61,8 +62,8 @@ const getMessageSlashCommands = (embedCallbacks?: MessageEmbedCallbacks): Messag
   },
   {
     id: 'italic',
-    title: 'Italic',
-    description: 'Make text italic',
+    title: i18n.t('ui:channel.slashItalic'),
+    description: i18n.t('ui:channel.slashItalicDesc'),
     icon: <Italic className="w-4 h-4" />,
     category: 'formatting',
     action: ({ editor, range }) => {
@@ -71,8 +72,8 @@ const getMessageSlashCommands = (embedCallbacks?: MessageEmbedCallbacks): Messag
   },
   {
     id: 'code',
-    title: 'Inline Code',
-    description: 'Format as inline code',
+    title: i18n.t('ui:channel.slashInlineCode'),
+    description: i18n.t('ui:channel.slashInlineCodeDesc'),
     icon: <Code className="w-4 h-4" />,
     category: 'formatting',
     action: ({ editor, range }) => {
@@ -82,8 +83,8 @@ const getMessageSlashCommands = (embedCallbacks?: MessageEmbedCallbacks): Messag
   // Blocks
   {
     id: 'codeblock',
-    title: 'Code Block',
-    description: 'Insert a code block',
+    title: i18n.t('ui:channel.slashCodeBlock'),
+    description: i18n.t('ui:channel.slashCodeBlockDesc'),
     icon: <FileCode className="w-4 h-4" />,
     category: 'blocks',
     action: ({ editor, range }) => {
@@ -92,8 +93,8 @@ const getMessageSlashCommands = (embedCallbacks?: MessageEmbedCallbacks): Messag
   },
   {
     id: 'quote',
-    title: 'Quote',
-    description: 'Insert a block quote',
+    title: i18n.t('ui:channel.slashQuote'),
+    description: i18n.t('ui:channel.slashQuoteDesc'),
     icon: <Quote className="w-4 h-4" />,
     category: 'blocks',
     action: ({ editor, range }) => {
@@ -102,8 +103,8 @@ const getMessageSlashCommands = (embedCallbacks?: MessageEmbedCallbacks): Messag
   },
   {
     id: 'bullet',
-    title: 'Bullet List',
-    description: 'Create a simple bullet list',
+    title: i18n.t('ui:channel.slashBulletList'),
+    description: i18n.t('ui:channel.slashBulletListDesc'),
     icon: <List className="w-4 h-4" />,
     category: 'blocks',
     action: ({ editor, range }) => {
@@ -112,8 +113,8 @@ const getMessageSlashCommands = (embedCallbacks?: MessageEmbedCallbacks): Messag
   },
   {
     id: 'numbered',
-    title: 'Numbered List',
-    description: 'Create a numbered list',
+    title: i18n.t('ui:channel.slashNumberedList'),
+    description: i18n.t('ui:channel.slashNumberedListDesc'),
     icon: <ListOrdered className="w-4 h-4" />,
     category: 'blocks',
     action: ({ editor, range }) => {
@@ -123,8 +124,8 @@ const getMessageSlashCommands = (embedCallbacks?: MessageEmbedCallbacks): Messag
   // Media
   {
     id: 'emoji',
-    title: 'Emoji',
-    description: 'Insert an emoji',
+    title: i18n.t('ui:channel.slashEmoji'),
+    description: i18n.t('ui:channel.slashEmojiDesc'),
     icon: <Smile className="w-4 h-4" />,
     category: 'media',
     action: ({ editor, range }) => {
@@ -139,8 +140,8 @@ const getMessageSlashCommands = (embedCallbacks?: MessageEmbedCallbacks): Messag
   // Embeds
   {
     id: 'task',
-    title: 'Task',
-    description: 'Reference a task',
+    title: i18n.t('ui:channel.slashTask'),
+    description: i18n.t('ui:channel.slashTaskDesc'),
     icon: <CheckSquare className="w-4 h-4" />,
     category: 'embeds',
     action: ({ editor, range }) => {
@@ -154,8 +155,8 @@ const getMessageSlashCommands = (embedCallbacks?: MessageEmbedCallbacks): Messag
   },
   {
     id: 'doc',
-    title: 'Document',
-    description: 'Reference a document',
+    title: i18n.t('ui:channel.slashDocument'),
+    description: i18n.t('ui:channel.slashDocumentDesc'),
     icon: <FileText className="w-4 h-4" />,
     category: 'embeds',
     action: ({ editor, range }) => {
@@ -213,17 +214,21 @@ function groupByCategory(items: MessageSlashCommandItem[]) {
 }
 
 // Category labels
-const categoryLabels: Record<string, string> = {
-  formatting: 'Formatting',
-  blocks: 'Blocks',
-  media: 'Media',
-  embeds: 'Embeds',
-};
+function getCategoryLabel(category: string): string {
+  switch (category) {
+    case 'formatting': return i18n.t('ui:channel.slashCategoryFormatting');
+    case 'blocks': return i18n.t('ui:channel.slashCategoryBlocks');
+    case 'media': return i18n.t('ui:channel.slashCategoryMedia');
+    case 'embeds': return i18n.t('ui:channel.slashCategoryEmbeds');
+    default: return category;
+  }
+}
 
 // The menu component that renders the slash command list
 export const MessageSlashCommandMenu = forwardRef<MessageSlashCommandMenuRef, MessageSlashCommandMenuProps>(
   ({ items, command }, ref) => {
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const { t } = useTranslation('ui');
 
     // Reset selection when items change
     useEffect(() => {
@@ -273,7 +278,7 @@ export const MessageSlashCommandMenu = forwardRef<MessageSlashCommandMenuRef, Me
           data-testid="message-slash-command-menu"
           className="bg-white rounded-lg shadow-lg border border-gray-200 p-3 min-w-[240px]"
         >
-          <div className="text-sm text-gray-500">No matching commands</div>
+          <div className="text-sm text-gray-500">{t('channel.slashNoMatch')}</div>
         </div>
       );
     }
@@ -292,7 +297,7 @@ export const MessageSlashCommandMenu = forwardRef<MessageSlashCommandMenuRef, Me
           return (
             <div key={category} data-testid={`message-slash-category-${category}`}>
               <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                {categoryLabels[category]}
+                {getCategoryLabel(category)}
               </div>
               {categoryItems.map((item) => {
                 const currentIndex = flatIndex++;

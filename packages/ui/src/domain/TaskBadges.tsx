@@ -10,6 +10,7 @@ import {
   CircleDot,
   Wrench,
 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { TaskStatus, Priority, TaskType, MergeStatus } from './types';
 import {
   getStatusDisplayName,
@@ -39,12 +40,13 @@ export function TaskStatusBadge({
   status,
   className = '',
 }: TaskStatusBadgeProps): React.ReactElement {
+  const { t } = useTranslation('ui');
   return (
     <span
       className={`inline-flex items-center whitespace-nowrap px-2 py-0.5 text-xs font-medium rounded-full ${getStatusColor(status)} ${className}`}
       data-testid="task-status-badge"
     >
-      {getStatusDisplayName(status)}
+      {getStatusDisplayName(status, t)}
     </span>
   );
 }
@@ -86,6 +88,7 @@ export function TaskPriorityBadge({
   showIcon = true,
   className = '',
 }: TaskPriorityBadgeProps): React.ReactElement {
+  const { t } = useTranslation('ui');
   const Icon = getPriorityIcon(priority);
 
   return (
@@ -94,7 +97,7 @@ export function TaskPriorityBadge({
       data-testid="task-priority-badge"
     >
       {showIcon && <Icon className="w-3 h-3" />}
-      {getPriorityDisplayName(priority)}
+      {getPriorityDisplayName(priority, t)}
     </span>
   );
 }
@@ -132,6 +135,7 @@ export function TaskTypeBadge({
   taskType,
   className = '',
 }: TaskTypeBadgeProps): React.ReactElement {
+  const { t } = useTranslation('ui');
   const Icon = getTaskTypeIcon(taskType);
 
   return (
@@ -140,7 +144,7 @@ export function TaskTypeBadge({
       data-testid="task-type-badge"
     >
       <Icon className="w-3 h-3" />
-      {getTaskTypeDisplayName(taskType)}
+      {getTaskTypeDisplayName(taskType, t)}
     </span>
   );
 }
@@ -162,12 +166,13 @@ export function MergeStatusBadge({
   status,
   className = '',
 }: MergeStatusBadgeProps): React.ReactElement {
+  const { t } = useTranslation('ui');
   return (
     <span
       className={`inline-flex items-center whitespace-nowrap px-2 py-0.5 text-xs font-medium rounded-full ${getMergeStatusColor(status)} ${className}`}
       data-testid="merge-status-badge"
     >
-      {getMergeStatusDisplayName(status)}
+      {getMergeStatusDisplayName(status, t)}
     </span>
   );
 }

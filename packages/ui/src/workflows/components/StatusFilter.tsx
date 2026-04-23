@@ -5,6 +5,7 @@
  */
 
 import { STATUS_FILTER_OPTIONS } from '../constants';
+import { useTranslation } from '@stoneforge/i18n';
 
 interface StatusFilterProps {
   selectedStatus: string | null;
@@ -15,6 +16,7 @@ export function StatusFilter({
   selectedStatus,
   onStatusChange,
 }: StatusFilterProps) {
+  const { t } = useTranslation('ui');
   return (
     <div data-testid="workflow-status-filter" className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
       {STATUS_FILTER_OPTIONS.map((status) => (
@@ -28,7 +30,7 @@ export function StatusFilter({
               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
           }`}
         >
-          {status.label}
+          {t(status.label)}
         </button>
       ))}
     </div>

@@ -6,6 +6,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { i18n } from '@stoneforge/i18n';
 import type { HydratedPlan, PlanProgress, PlanType, PlanTaskType } from '../types';
 
 /**
@@ -22,7 +23,7 @@ export function usePlans(status?: string) {
       }
       const response = await fetch(`/api/plans?${params.toString()}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch plans');
+        throw new Error(i18n.t('ui:plans.error.failedToFetchPlans'));
       }
       return response.json();
     },
@@ -40,7 +41,7 @@ export function usePlan(planId: string | null) {
       const response = await fetch(`/api/plans/${planId}?hydrate.progress=true`);
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error?.message || 'Failed to fetch plan');
+        throw new Error(error.error?.message || i18n.t('ui:plans.error.failedToFetchPlan'));
       }
       return response.json();
     },
@@ -59,7 +60,7 @@ export function usePlanTasks(planId: string | null) {
       const response = await fetch(`/api/plans/${planId}/tasks`);
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error?.message || 'Failed to fetch plan tasks');
+        throw new Error(error.error?.message || i18n.t('ui:plans.error.failedToFetchPlanTasks'));
       }
       return response.json();
     },
@@ -78,7 +79,7 @@ export function usePlanProgress(planId: string | null) {
       const response = await fetch(`/api/plans/${planId}/progress`);
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error?.message || 'Failed to fetch plan progress');
+        throw new Error(error.error?.message || i18n.t('ui:plans.error.failedToFetchProgress'));
       }
       return response.json();
     },
@@ -100,7 +101,7 @@ export function useUpdatePlan() {
       });
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error?.message || 'Failed to update plan');
+        throw new Error(error.error?.message || i18n.t('ui:plans.error.failedToUpdate'));
       }
       return response.json();
     },
@@ -125,7 +126,7 @@ export function useAddTaskToPlan() {
       });
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error?.message || 'Failed to add task to plan');
+        throw new Error(error.error?.message || i18n.t('ui:plans.error.failedToAddTask'));
       }
       return response.json();
     },
@@ -149,7 +150,7 @@ export function useRemoveTaskFromPlan() {
       });
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error?.message || 'Failed to remove task from plan');
+        throw new Error(error.error?.message || i18n.t('ui:plans.error.failedToRemoveTask'));
       }
       return response.json();
     },
@@ -173,7 +174,7 @@ export function useAvailableTasks(planId: string | null, searchQuery: string) {
       // Get all tasks not in this plan
       const tasksResponse = await fetch('/api/tasks?limit=500');
       if (!tasksResponse.ok) {
-        throw new Error('Failed to fetch tasks');
+        throw new Error(i18n.t('ui:plans.error.failedToFetchTasks'));
       }
       const tasksResult = await tasksResponse.json();
       // Handle different response formats: { tasks: [...] }, { items: [...] }, or array
@@ -182,7 +183,7 @@ export function useAvailableTasks(planId: string | null, searchQuery: string) {
       // Get tasks already in the plan
       const planTasksResponse = await fetch(`/api/plans/${planId}/tasks`);
       if (!planTasksResponse.ok) {
-        throw new Error('Failed to fetch plan tasks');
+        throw new Error(i18n.t('ui:plans.error.failedToFetchPlanTasks'));
       }
       const planTasks = await planTasksResponse.json() as PlanTaskType[];
       const planTaskIds = new Set(planTasks.map(t => t.id));
@@ -217,7 +218,7 @@ export function useDeletePlan() {
       });
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error?.message || 'Failed to delete plan');
+        throw new Error(error.error?.message || i18n.t('ui:plans.error.failedToDelete'));
       }
       return response.json();
     },
@@ -264,7 +265,7 @@ export function useCreatePlan() {
       });
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error?.message || 'Failed to create plan');
+        throw new Error(error.error?.message || i18n.t('ui:plans.create.error'));
       }
       const plan = await response.json();
 
@@ -282,7 +283,7 @@ export function useCreatePlan() {
               if (!response.ok) {
                 const error = await response.json().catch(() => ({}));
                 console.error('Failed to add existing task to plan:', error);
-                throw new Error(error.error?.message || 'Failed to add task to plan');
+                throw new Error(error.error?.message || i18n.t('ui:plans.error.failedToAddTask'));
               }
             } else {
               // Create new task and add to plan
@@ -298,7 +299,7 @@ export function useCreatePlan() {
               if (!taskResponse.ok) {
                 const error = await taskResponse.json().catch(() => ({}));
                 console.error('Failed to create task:', error);
-                throw new Error(error.error?.message || 'Failed to create task');
+                throw new Error(error.error?.message || i18n.t('ui:plans.error.failedToCreateTask'));
               }
               const taskResult = await taskResponse.json();
               // Handle response format: { task: {...} } or direct task object
@@ -312,7 +313,7 @@ export function useCreatePlan() {
               if (!addResponse.ok) {
                 const error = await addResponse.json().catch(() => ({}));
                 console.error('Failed to add new task to plan:', error);
-                throw new Error(error.error?.message || 'Failed to add task to plan');
+                throw new Error(error.error?.message || i18n.t('ui:plans.error.failedToAddTask'));
               }
             }
           });

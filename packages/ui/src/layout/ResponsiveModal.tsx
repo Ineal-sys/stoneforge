@@ -17,6 +17,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { X, ChevronLeft } from 'lucide-react';
 import { useIsMobile } from '../hooks/useBreakpoint';
+import { useTranslation } from '@stoneforge/i18n';
 
 export interface ResponsiveModalProps {
   open: boolean;
@@ -56,6 +57,7 @@ export function ResponsiveModal({
   footer,
   hideClose = false,
 }: ResponsiveModalProps) {
+  const { t } = useTranslation('ui');
   const isMobile = useIsMobile();
   const sheetRef = useRef<HTMLDivElement>(null);
   const startYRef = useRef<number | null>(null);
@@ -199,7 +201,7 @@ export function ResponsiveModal({
               <button
                 onClick={onClose}
                 className="p-2 -ml-2 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors duration-150 touch-target"
-                aria-label="Close"
+                aria-label={t('responsiveModal.close')}
                 data-testid={`${testId}-close`}
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -271,7 +273,7 @@ export function ResponsiveModal({
               <button
                 onClick={onClose}
                 className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                aria-label="Close"
+                aria-label={t('responsiveModal.close')}
                 data-testid={`${testId}-close`}
               >
                 <X className="w-5 h-5" />

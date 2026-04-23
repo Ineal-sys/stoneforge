@@ -6,6 +6,7 @@
  */
 
 import type { ShortcutCategory, ShortcutDefinition } from '../../hooks/useKeyboardShortcuts';
+import type { TFunction } from '@stoneforge/i18n';
 
 /**
  * Detect if the current platform is macOS
@@ -28,15 +29,22 @@ export function formatShortcutDisplay(keys: string): string {
 }
 
 /**
- * Category labels for display
+ * Category labels for display (i18n keys)
  */
 export const CATEGORY_LABELS: Record<ShortcutCategory, string> = {
-  navigation: 'Navigation',
-  actions: 'Actions',
-  views: 'Views',
-  editing: 'Editing',
-  other: 'Other',
+  navigation: 'shortcuts.category.navigation',
+  actions: 'shortcuts.category.actions',
+  views: 'shortcuts.category.views',
+  editing: 'shortcuts.category.editing',
+  other: 'shortcuts.category.other',
 };
+
+/**
+ * Get translated category label
+ */
+export function getCategoryLabel(category: ShortcutCategory, t: TFunction): string {
+  return t(CATEGORY_LABELS[category]);
+}
 
 /**
  * Shortcut item for display

@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Users } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { Card } from '../components/Card';
 import { Badge } from '../components/Badge';
 import type { Team } from './types';
@@ -44,6 +45,7 @@ export const TeamCard = React.forwardRef<HTMLDivElement, TeamCardProps>(
     },
     ref
   ) => {
+    const { t } = useTranslation('ui');
     const isActive = team.status !== 'tombstone';
     const memberCount = team.members?.length || 0;
 
@@ -80,7 +82,7 @@ export const TeamCard = React.forwardRef<HTMLDivElement, TeamCardProps>(
               <h3 className="font-medium text-[var(--color-text)] truncate">{team.name}</h3>
               {!isActive && (
                 <Badge variant="outline" size="sm">
-                  Deleted
+                  {t('domain.teamCard.deleted')}
                 </Badge>
               )}
             </div>
@@ -98,7 +100,7 @@ export const TeamCard = React.forwardRef<HTMLDivElement, TeamCardProps>(
             className="flex-shrink-0"
             data-testid={`team-member-count-${team.id}`}
           >
-            {memberCount} {memberCount === 1 ? 'member' : 'members'}
+            {t('domain.teamCard.member', { count: memberCount })}
           </Badge>
         </div>
 
@@ -127,7 +129,7 @@ export const TeamCard = React.forwardRef<HTMLDivElement, TeamCardProps>(
         {/* Timestamp */}
         {showTimestamp && (
           <div className="mt-3 text-[11px] text-[var(--color-text-tertiary)]">
-            Created {new Date(team.createdAt).toLocaleDateString()}
+            {t('domain.teamCard.created')} {new Date(team.createdAt).toLocaleDateString()}
           </div>
         )}
       </Card>

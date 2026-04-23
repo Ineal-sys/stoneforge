@@ -4,14 +4,16 @@
  * Utility functions for workflow data formatting and manipulation.
  */
 
+import type { TFunction } from '@stoneforge/i18n';
 import type { Workflow, WorkflowStatus } from './types';
 import { WORKFLOW_STATUS_CONFIG } from './constants';
 
 /**
  * Get display name for workflow status
  */
-export function getWorkflowStatusDisplayName(status: WorkflowStatus): string {
-  return WORKFLOW_STATUS_CONFIG[status]?.label ?? status;
+export function getWorkflowStatusDisplayName(status: WorkflowStatus, t: TFunction): string {
+  const key = WORKFLOW_STATUS_CONFIG[status]?.label;
+  return key ? t(key) : status;
 }
 
 /**
@@ -65,7 +67,10 @@ export function formatWorkflowDuration(workflow: Workflow): string | undefined {
 /**
  * Format relative time from a timestamp
  */
-export function formatRelativeTime(timestamp: string): string {
+export function formatRelativeTime(
+  timestamp: string,
+  t: (key: string, options?: Record<string, unknown>) => string,
+): string {
   const now = Date.now();
   const time = new Date(timestamp).getTime();
   const diff = now - time;
@@ -75,10 +80,10 @@ export function formatRelativeTime(timestamp: string): string {
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
-  if (seconds < 60) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
+  if (seconds < 60) return t('workflow.time.justNow');
+  if (minutes < 60) return t('workflow.time.minutesAgo', { count: minutes });
+  if (hours < 24) return t('workflow.time.hoursAgo', { count: hours });
+  if (days < 7) return t('workflow.time.daysAgo', { count: days });
 
   return new Date(timestamp).toLocaleDateString();
 }

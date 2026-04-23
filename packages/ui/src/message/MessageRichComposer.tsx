@@ -37,6 +37,7 @@ import {
   forwardRef,
   useImperativeHandle,
 } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   prepareContentForEditor,
   prepareContentForStorage,
@@ -136,7 +137,7 @@ export const MessageRichComposer = forwardRef<
     content,
     onChange,
     onSubmit,
-    placeholder = 'Message...',
+    placeholder,
     disabled = false,
     maxHeight = 200,
     minHeight = 60,
@@ -150,6 +151,7 @@ export const MessageRichComposer = forwardRef<
   const [showToolbar, setShowToolbar] = useState(false);
   const [showLinkPopover, setShowLinkPopover] = useState(false);
   const [linkAnchorRect, setLinkAnchorRect] = useState<DOMRect | null>(null);
+  const { t } = useTranslation('ui');
   const linkButtonRef = useRef<HTMLButtonElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -201,7 +203,7 @@ export const MessageRichComposer = forwardRef<
         },
       }),
       Placeholder.configure({
-        placeholder: channelName ? `Message ${channelName}...` : placeholder,
+        placeholder: channelName ? t('channel.messageChannelPlaceholder', { channelName }) : (placeholder || t('channel.messagePlaceholder')),
       }),
       CodeBlockLowlight.configure({
         lowlight,
@@ -331,7 +333,7 @@ export const MessageRichComposer = forwardRef<
         data-testid="message-rich-composer-loading"
         className="px-3 py-2 text-gray-400 text-sm"
       >
-        Loading editor...
+        {t('channel.loadingEditor')}
       </div>
     );
   }
@@ -340,28 +342,28 @@ export const MessageRichComposer = forwardRef<
     {
       id: 'bold',
       icon: <Bold className="w-4 h-4" />,
-      title: `Bold (${modKey}B)`,
+      title: t('channel.toolbarBold', { mod: modKey }),
       action: () => editor.chain().focus().toggleBold().run(),
       isActive: editor.isActive('bold'),
     },
     {
       id: 'italic',
       icon: <Italic className="w-4 h-4" />,
-      title: `Italic (${modKey}I)`,
+      title: t('channel.toolbarItalic', { mod: modKey }),
       action: () => editor.chain().focus().toggleItalic().run(),
       isActive: editor.isActive('italic'),
     },
     {
       id: 'underline',
       icon: <UnderlineIcon className="w-4 h-4" />,
-      title: `Underline (${modKey}U)`,
+      title: t('channel.toolbarUnderline', { mod: modKey }),
       action: () => editor.chain().focus().toggleUnderline().run(),
       isActive: editor.isActive('underline'),
     },
     {
       id: 'strike',
       icon: <Strikethrough className="w-4 h-4" />,
-      title: 'Strikethrough',
+      title: t('channel.toolbarStrikethrough'),
       action: () => editor.chain().focus().toggleStrike().run(),
       isActive: editor.isActive('strike'),
     },
@@ -369,14 +371,14 @@ export const MessageRichComposer = forwardRef<
     {
       id: 'code',
       icon: <Code className="w-4 h-4" />,
-      title: `Inline Code (${modKey}E)`,
+      title: t('channel.toolbarInlineCode', { mod: modKey }),
       action: () => editor.chain().focus().toggleCode().run(),
       isActive: editor.isActive('code'),
     },
     {
       id: 'codeBlock',
       icon: <FileCode className="w-4 h-4" />,
-      title: 'Code Block',
+      title: t('channel.toolbarCodeBlock'),
       action: () => editor.chain().focus().toggleCodeBlock().run(),
       isActive: editor.isActive('codeBlock'),
     },
@@ -384,14 +386,14 @@ export const MessageRichComposer = forwardRef<
     {
       id: 'bulletList',
       icon: <List className="w-4 h-4" />,
-      title: 'Bullet List',
+      title: t('channel.toolbarBulletList'),
       action: () => editor.chain().focus().toggleBulletList().run(),
       isActive: editor.isActive('bulletList'),
     },
     {
       id: 'orderedList',
       icon: <ListOrdered className="w-4 h-4" />,
-      title: 'Numbered List',
+      title: t('channel.toolbarNumberedList'),
       action: () => editor.chain().focus().toggleOrderedList().run(),
       isActive: editor.isActive('orderedList'),
     },
@@ -399,7 +401,7 @@ export const MessageRichComposer = forwardRef<
     {
       id: 'blockquote',
       icon: <Quote className="w-4 h-4" />,
-      title: 'Block Quote',
+      title: t('channel.toolbarBlockQuote'),
       action: () => editor.chain().focus().toggleBlockquote().run(),
       isActive: editor.isActive('blockquote'),
     },
@@ -407,7 +409,7 @@ export const MessageRichComposer = forwardRef<
     {
       id: 'link',
       icon: <Link2 className="w-4 h-4" />,
-      title: `Link (${modKey}K)`,
+      title: t('channel.toolbarLink', { mod: modKey }),
       action: () => openLinkPopover(),
       isActive: editor.isActive('link'),
       ref: linkButtonRef,
@@ -464,7 +466,7 @@ export const MessageRichComposer = forwardRef<
                 onClick={() => editor.chain().focus().toggleBold().run()}
                 isActive={editor.isActive('bold')}
                 disabled={disabled}
-                title={`Bold (${modKey}B)`}
+                title={t('channel.toolbarBold', { mod: modKey })}
                 testId="message-toolbar-bold"
               >
                 <Bold className="w-4 h-4" />
@@ -473,7 +475,7 @@ export const MessageRichComposer = forwardRef<
                 onClick={() => editor.chain().focus().toggleItalic().run()}
                 isActive={editor.isActive('italic')}
                 disabled={disabled}
-                title={`Italic (${modKey}I)`}
+                title={t('channel.toolbarItalic', { mod: modKey })}
                 testId="message-toolbar-italic"
               >
                 <Italic className="w-4 h-4" />
@@ -482,7 +484,7 @@ export const MessageRichComposer = forwardRef<
                 onClick={() => editor.chain().focus().toggleCode().run()}
                 isActive={editor.isActive('code')}
                 disabled={disabled}
-                title={`Inline Code (${modKey}E)`}
+                title={t('channel.toolbarInlineCode', { mod: modKey })}
                 testId="message-toolbar-code"
               >
                 <Code className="w-4 h-4" />
@@ -496,7 +498,7 @@ export const MessageRichComposer = forwardRef<
           type="button"
           onClick={() => setShowToolbar(!showToolbar)}
           className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
-          title={showToolbar ? 'Hide formatting options' : 'Show more formatting options'}
+          title={showToolbar ? t('channel.toolbarHideFormatting') : t('channel.toolbarShowFormatting')}
           data-testid="message-toolbar-toggle"
         >
           {showToolbar ? (

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 
 /**
  * Dialog Component
@@ -84,7 +85,9 @@ const sizeStyles = {
 const DialogContent = React.forwardRef<
   HTMLDivElement,
   DialogContentProps
->(({ className = '', children, size = 'md', hideClose = false, ...props }, ref) => (
+>(({ className = '', children, size = 'md', hideClose = false, ...props }, ref) => {
+  const { t } = useTranslation('ui');
+  return (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -130,14 +133,15 @@ const DialogContent = React.forwardRef<
             'transition-colors duration-[var(--duration-fast)]',
             'disabled:pointer-events-none',
           ].join(' ')}
-          aria-label="Close"
+          aria-label={t('dialog.close')}
         >
           <X className="h-4 w-4" />
         </DialogPrimitive.Close>
       )}
     </DialogPrimitive.Content>
   </DialogPortal>
-));
+  );
+});
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
 /**

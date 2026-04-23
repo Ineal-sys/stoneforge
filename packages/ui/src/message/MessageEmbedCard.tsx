@@ -20,6 +20,7 @@ import {
   Ban,
   CircleX,
 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 
 // Task status icons and colors
 const STATUS_CONFIG: Record<string, { icon: React.ReactNode; className: string }> = {
@@ -59,6 +60,7 @@ interface TaskEmbedCardProps {
 }
 
 export function TaskEmbedCard({ taskId }: TaskEmbedCardProps) {
+  const { t } = useTranslation('ui');
   const { data: task, isLoading, isError } = useQuery({
     queryKey: ['task', taskId],
     queryFn: async () => {
@@ -77,7 +79,7 @@ export function TaskEmbedCard({ taskId }: TaskEmbedCardProps) {
         className="inline-flex items-center gap-2 px-2 py-1 bg-gray-100 rounded border border-gray-200 text-sm"
       >
         <Loader2 className="w-3 h-3 animate-spin text-gray-400" />
-        <span className="text-gray-500">Loading task...</span>
+        <span className="text-gray-500">{t('channel.embedLoadingTask')}</span>
       </div>
     );
   }
@@ -89,7 +91,7 @@ export function TaskEmbedCard({ taskId }: TaskEmbedCardProps) {
         className="inline-flex items-center gap-2 px-2 py-1 bg-red-50 rounded border border-red-200 text-sm"
       >
         <AlertCircle className="w-3 h-3 text-red-500" />
-        <span className="text-red-600">Task not found: {taskId}</span>
+        <span className="text-red-600">{t('channel.embedTaskNotFound', { taskId })}</span>
       </div>
     );
   }
@@ -141,6 +143,7 @@ interface DocumentEmbedCardProps {
 }
 
 export function DocumentEmbedCard({ documentId }: DocumentEmbedCardProps) {
+  const { t } = useTranslation('ui');
   const { data: doc, isLoading, isError } = useQuery({
     queryKey: ['document', documentId],
     queryFn: async () => {
@@ -159,7 +162,7 @@ export function DocumentEmbedCard({ documentId }: DocumentEmbedCardProps) {
         className="inline-flex items-center gap-2 px-2 py-1 bg-gray-100 rounded border border-gray-200 text-sm"
       >
         <Loader2 className="w-3 h-3 animate-spin text-gray-400" />
-        <span className="text-gray-500">Loading document...</span>
+        <span className="text-gray-500">{t('channel.embedLoadingDocument')}</span>
       </div>
     );
   }
@@ -171,7 +174,7 @@ export function DocumentEmbedCard({ documentId }: DocumentEmbedCardProps) {
         className="inline-flex items-center gap-2 px-2 py-1 bg-red-50 rounded border border-red-200 text-sm"
       >
         <AlertCircle className="w-3 h-3 text-red-500" />
-        <span className="text-red-600">Document not found: {documentId}</span>
+        <span className="text-red-600">{t('channel.embedDocumentNotFound', { documentId })}</span>
       </div>
     );
   }

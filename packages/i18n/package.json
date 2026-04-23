@@ -17,6 +17,12 @@
       "bun": "./locales/fr/common.json",
       "import": "./dist/locales/fr/common.json",
       "default": "./dist/locales/fr/common.json"
+    },
+    "./locales/fr/ui": {
+      "types": "./locales/fr/ui.json",
+      "bun": "./locales/fr/ui.json",
+      "import": "./dist/locales/fr/ui.json",
+      "default": "./dist/locales/fr/ui.json"
     }
   },
   "files": [

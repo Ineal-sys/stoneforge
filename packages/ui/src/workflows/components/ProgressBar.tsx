@@ -6,6 +6,7 @@
  */
 
 import type { WorkflowProgress } from '../types';
+import { useTranslation } from '@stoneforge/i18n';
 import { PROGRESS_COLORS } from '../constants';
 
 interface ProgressBarProps {
@@ -25,6 +26,7 @@ export function ProgressBar({
   size = 'md',
   showSegments = false,
 }: ProgressBarProps) {
+  const { t } = useTranslation('ui');
   const { percentage, completed, inProgress, blocked, open, total } = progress;
 
   const heightClasses = {
@@ -48,21 +50,21 @@ export function ProgressBar({
             <div
               className={`${PROGRESS_COLORS.completed} transition-all duration-500`}
               style={{ width: `${completedWidth}%` }}
-              title={`Completed: ${completed}`}
+              title={t('workflow.progressBar.completed', { count: completed })}
             />
           )}
           {inProgressWidth > 0 && (
             <div
               className={`${PROGRESS_COLORS.inProgress} transition-all duration-500`}
               style={{ width: `${inProgressWidth}%` }}
-              title={`In Progress: ${inProgress}`}
+              title={t('workflow.progressBar.inProgress', { count: inProgress })}
             />
           )}
           {blockedWidth > 0 && (
             <div
               className={`${PROGRESS_COLORS.blocked} transition-all duration-500`}
               style={{ width: `${blockedWidth}%` }}
-              title={`Blocked: ${blocked}`}
+              title={t('workflow.progressBar.blocked', { count: blocked })}
             />
           )}
         </div>
@@ -71,25 +73,25 @@ export function ProgressBar({
             <div className="flex items-center gap-1.5">
               <div className={`w-3 h-3 rounded-full ${PROGRESS_COLORS.completed}`} />
               <span className="text-[var(--color-text-secondary)]">
-                Completed ({completed})
+                {t('workflow.progressBar.completedLabel')} ({completed})
               </span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className={`w-3 h-3 rounded-full ${PROGRESS_COLORS.inProgress}`} />
               <span className="text-[var(--color-text-secondary)]">
-                In Progress ({inProgress})
+                {t('workflow.progressBar.inProgressLabel')} ({inProgress})
               </span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className={`w-3 h-3 rounded-full ${PROGRESS_COLORS.blocked}`} />
               <span className="text-[var(--color-text-secondary)]">
-                Blocked ({blocked})
+                {t('workflow.progressBar.blockedLabel')} ({blocked})
               </span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className={`w-3 h-3 rounded-full ${PROGRESS_COLORS.open}`} />
               <span className="text-[var(--color-text-secondary)]">
-                Open ({open})
+                {t('workflow.progressBar.openLabel')} ({open})
               </span>
             </div>
           </div>

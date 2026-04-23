@@ -4,6 +4,7 @@ import { Loader2, Plus, Hash, Users } from 'lucide-react';
 import { TagInput } from '../components/TagInput';
 import { ResponsiveModal } from '../layout/ResponsiveModal';
 import { useCurrentUser } from '../contexts';
+import { useTranslation } from '@stoneforge/i18n';
 
 interface Entity {
   id: string;
@@ -91,6 +92,7 @@ export function CreateChannelModal({
   const [entityB, setEntityB] = useState('');
   const [tags, setTags] = useState<string[]>([]);
 
+  const { t } = useTranslation('ui');
   const nameInputRef = useRef<HTMLInputElement>(null);
   const createChannel = useCreateChannel();
   const { data: entities } = useEntities();
@@ -185,7 +187,7 @@ export function CreateChannelModal({
         className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors touch-target"
         data-testid="create-channel-cancel-button"
       >
-        Cancel
+        {t('channel.cancel')}
       </button>
       <button
         type="button"
@@ -197,12 +199,12 @@ export function CreateChannelModal({
         {createChannel.isPending ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin" />
-            Creating...
+            {t('channel.creating')}
           </>
         ) : (
           <>
             <Plus className="w-4 h-4" />
-            Create
+            {t('channel.create')}
           </>
         )}
       </button>
@@ -213,7 +215,7 @@ export function CreateChannelModal({
     <ResponsiveModal
       open={isOpen}
       onClose={onClose}
-      title="Create Channel"
+      title={t('channel.createChannel')}
       icon={<Hash className="w-5 h-5 text-blue-500" />}
       size="md"
       data-testid="create-channel-modal"
@@ -224,7 +226,7 @@ export function CreateChannelModal({
         {/* Channel Type Toggle */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Channel Type
+            {t('channel.channelType')}
           </label>
           <div className="flex gap-2" data-testid="create-channel-type-toggle">
             <button
@@ -238,7 +240,7 @@ export function CreateChannelModal({
               data-testid="create-channel-type-group"
             >
               <Hash className="w-4 h-4" />
-              Group
+              {t('channel.group')}
             </button>
             <button
               type="button"
@@ -251,7 +253,7 @@ export function CreateChannelModal({
               data-testid="create-channel-type-direct"
             >
               <Users className="w-4 h-4" />
-              Direct
+              {t('channel.direct')}
             </button>
           </div>
         </div>
@@ -262,7 +264,7 @@ export function CreateChannelModal({
             {/* Name */}
             <div className="mb-4">
               <label htmlFor="channel-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Name <span className="text-red-500">*</span>
+                {t('channel.name')} <span className="text-red-500">*</span>
               </label>
               <input
                 ref={nameInputRef}
@@ -270,19 +272,19 @@ export function CreateChannelModal({
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter channel name..."
+                placeholder={t('channel.namePlaceholder')}
                 className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent touch-target"
                 data-testid="create-channel-name-input"
                 required
                 maxLength={100}
               />
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Alphanumeric, hyphens, underscores only</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t('channel.nameHint')}</p>
             </div>
 
             {/* Visibility */}
             <div className="mb-4">
               <label htmlFor="channel-visibility" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Visibility
+                {t('channel.visibility')}
               </label>
               <select
                 id="channel-visibility"
@@ -291,15 +293,15 @@ export function CreateChannelModal({
                 className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent touch-target"
                 data-testid="create-channel-visibility-select"
               >
-                <option value="private">Private - Only members can see</option>
-                <option value="public">Public - Anyone can see</option>
+                <option value="private">{t('channel.visibilityPrivate')}</option>
+                <option value="public">{t('channel.visibilityPublic')}</option>
               </select>
             </div>
 
             {/* Join Policy */}
             <div className="mb-4">
               <label htmlFor="channel-join-policy" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Join Policy
+                {t('channel.joinPolicy')}
               </label>
               <select
                 id="channel-join-policy"
@@ -308,16 +310,16 @@ export function CreateChannelModal({
                 className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent touch-target"
                 data-testid="create-channel-join-policy-select"
               >
-                <option value="invite-only">Invite Only</option>
-                <option value="open">Open - Anyone can join</option>
-                <option value="request">Request - Approval required</option>
+                <option value="invite-only">{t('channel.joinPolicyInviteOnly')}</option>
+                <option value="open">{t('channel.joinPolicyOpen')}</option>
+                <option value="request">{t('channel.joinPolicyRequest')}</option>
               </select>
             </div>
 
             {/* Members */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Members <span className="text-gray-400 dark:text-gray-500 text-xs font-normal">(optional)</span>
+                {t('channel.members')} <span className="text-gray-400 dark:text-gray-500 text-xs font-normal">{t('channel.optional')}</span>
               </label>
               <div
                 className="border border-gray-300 dark:border-gray-600 rounded-lg max-h-32 overflow-y-auto bg-white dark:bg-gray-800"
@@ -341,11 +343,11 @@ export function CreateChannelModal({
                 ))}
                 {(!entities || entities.length <= 1) && (
                   <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                    No other entities available
+                    {t('channel.noOtherEntities')}
                   </div>
                 )}
               </div>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Creator is automatically added</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t('channel.creatorAutoAdded')}</p>
             </div>
           </>
         )}
@@ -356,7 +358,7 @@ export function CreateChannelModal({
             {/* Entity A */}
             <div className="mb-4">
               <label htmlFor="channel-entity-a" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                First Entity <span className="text-red-500">*</span>
+                {t('channel.firstEntity')} <span className="text-red-500">*</span>
               </label>
               <select
                 id="channel-entity-a"
@@ -366,7 +368,7 @@ export function CreateChannelModal({
                 data-testid="create-channel-entity-a-select"
                 required
               >
-                <option value="">Select entity...</option>
+                <option value="">{t('channel.selectEntity')}</option>
                 {entities?.map((entity) => (
                   <option key={entity.id} value={entity.id}>
                     {entity.name} ({entity.entityType})
@@ -378,7 +380,7 @@ export function CreateChannelModal({
             {/* Entity B */}
             <div className="mb-4">
               <label htmlFor="channel-entity-b" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Second Entity <span className="text-red-500">*</span>
+                {t('channel.secondEntity')} <span className="text-red-500">*</span>
               </label>
               <select
                 id="channel-entity-b"
@@ -388,7 +390,7 @@ export function CreateChannelModal({
                 data-testid="create-channel-entity-b-select"
                 required
               >
-                <option value="">Select entity...</option>
+                <option value="">{t('channel.selectEntity')}</option>
                 {entities?.filter((e) => e.id !== entityA).map((entity) => (
                   <option key={entity.id} value={entity.id}>
                     {entity.name} ({entity.entityType})
@@ -396,7 +398,7 @@ export function CreateChannelModal({
                 ))}
               </select>
               {entityA && entityB && entityA === entityB && (
-                <p className="mt-1 text-xs text-red-500">Entities must be different</p>
+                <p className="mt-1 text-xs text-red-500">{t('channel.entitiesMustDiffer')}</p>
               )}
             </div>
           </>
@@ -405,12 +407,12 @@ export function CreateChannelModal({
         {/* Tags */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Tags <span className="text-gray-400 dark:text-gray-500 text-xs font-normal">(optional)</span>
+            {t('channel.tags')} <span className="text-gray-400 dark:text-gray-500 text-xs font-normal">{t('channel.optional')}</span>
           </label>
           <TagInput
             tags={tags}
             onChange={setTags}
-            placeholder="Type and press comma to add tags"
+            placeholder={t('channel.tagsPlaceholder')}
             data-testid="create-channel-tags-input"
           />
         </div>
@@ -421,7 +423,7 @@ export function CreateChannelModal({
             className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-400"
             data-testid="create-channel-error"
           >
-            {(createChannel.error as Error)?.message || 'Failed to create channel'}
+            {(createChannel.error as Error)?.message || t('channel.createFailed')}
           </div>
         )}
       </form>

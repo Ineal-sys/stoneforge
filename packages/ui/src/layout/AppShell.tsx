@@ -21,6 +21,7 @@ import {
   Menu,
   Search,
 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 
 export interface AppShellProps {
   /** Sidebar content (typically a Sidebar component) */
@@ -141,6 +142,7 @@ export function AppShell({
   beforeContent,
   afterContent,
 }: AppShellProps) {
+  const { t } = useTranslation('ui');
   const {
     isMobile,
     mobileDrawerOpen,
@@ -187,7 +189,7 @@ export function AppShell({
               <button
                 onClick={openMobileDrawer}
                 className="p-2 -ml-2 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors duration-150 touch-target"
-                aria-label="Open navigation menu"
+                aria-label={t('appShell.openNavigation')}
                 aria-expanded={mobileDrawerOpen}
                 data-testid={`${testId}-mobile-menu-button`}
               >
@@ -200,7 +202,7 @@ export function AppShell({
                 <button
                   onClick={handleSearchClick}
                   className="p-2 -mr-2 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors duration-150 touch-target"
-                  aria-label="Search"
+                  aria-label={t('appShell.search')}
                   data-testid={`${testId}-mobile-search-button`}
                 >
                   <Search className="w-5 h-5" />

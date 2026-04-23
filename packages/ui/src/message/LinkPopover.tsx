@@ -14,6 +14,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link2Off, ExternalLink } from 'lucide-react';
 import type { Editor } from '@tiptap/core';
+import { useTranslation } from '@stoneforge/i18n';
 
 interface LinkPopoverProps {
   editor: Editor;
@@ -50,6 +51,7 @@ function isValidUrl(url: string): boolean {
 }
 
 export function LinkPopover({ editor, onClose, anchorRect }: LinkPopoverProps) {
+  const { t } = useTranslation('ui');
   const isExistingLink = editor.isActive('link');
   const currentUrl = isExistingLink
     ? (editor.getAttributes('link').href || '')
@@ -142,7 +144,7 @@ export function LinkPopover({ editor, onClose, anchorRect }: LinkPopoverProps) {
         value={url}
         onChange={(e) => setUrl(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Enter URL (e.g., https://example.com)"
+        placeholder={t('channel.linkEnterUrl')}
         data-testid="link-popover-input"
         className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
       />
@@ -151,10 +153,10 @@ export function LinkPopover({ editor, onClose, anchorRect }: LinkPopoverProps) {
         onClick={applyLink}
         disabled={!url.trim()}
         data-testid="link-popover-apply"
-        title="Apply link"
+        title={t('channel.linkApply')}
         className="px-2 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        {isExistingLink ? 'Update' : 'Apply'}
+        {isExistingLink ? t('channel.linkUpdate') : t('channel.linkApplyButton')}
       </button>
       {isExistingLink && (
         <>
@@ -162,7 +164,7 @@ export function LinkPopover({ editor, onClose, anchorRect }: LinkPopoverProps) {
             type="button"
             onClick={removeLink}
             data-testid="link-popover-remove"
-            title="Remove link"
+            title={t('channel.linkRemove')}
             className="p-1 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
           >
             <Link2Off className="w-4 h-4" />
@@ -171,7 +173,7 @@ export function LinkPopover({ editor, onClose, anchorRect }: LinkPopoverProps) {
             href={currentUrl}
             target="_blank"
             rel="noopener noreferrer"
-            title="Open link in new tab"
+            title={t('channel.linkOpenInNewTab')}
             data-testid="link-popover-open"
             className="p-1 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
           >

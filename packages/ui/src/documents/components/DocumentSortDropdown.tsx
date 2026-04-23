@@ -4,6 +4,7 @@
 
 import { useState } from 'react';
 import { ArrowUpDown, ArrowUp, ArrowDown, Check, ChevronDown } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { DocumentSortField, SortDirection } from '../types';
 import { DOCUMENT_SORT_OPTIONS } from '../constants';
 import { getDefaultDirection } from '../utils';
@@ -21,6 +22,7 @@ export function DocumentSortDropdown({
   onSortFieldChange,
   onSortDirectionChange,
 }: DocumentSortDropdownProps) {
+  const { t } = useTranslation('ui');
   const [isOpen, setIsOpen] = useState(false);
   const currentOption = DOCUMENT_SORT_OPTIONS.find((o) => o.value === sortField);
 
@@ -50,7 +52,7 @@ export function DocumentSortDropdown({
           data-testid="sort-field-trigger"
         >
           <ArrowUpDown className="w-4 h-4" />
-          <span>Sort: {currentOption?.label || 'Updated'}</span>
+          <span>{t('documents.sort.label')} {currentOption?.labelKey ? t(currentOption.labelKey) : (currentOption?.label || t('documents.sort.updated'))}</span>
           <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
 
@@ -70,7 +72,7 @@ export function DocumentSortDropdown({
                   className="flex items-center justify-between w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   data-testid={`sort-option-${option.value}`}
                 >
-                  <span>{option.label}</span>
+                  <span>{option.labelKey ? t(option.labelKey) : option.label}</span>
                   {sortField === option.value && (
                     <Check className="w-4 h-4 text-blue-600" />
                   )}
@@ -85,7 +87,7 @@ export function DocumentSortDropdown({
       <button
         onClick={toggleDirection}
         className="p-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
-        title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
+        title={sortDirection === 'asc' ? t('documents.sort.ascending') : t('documents.sort.descending')}
         data-testid="sort-direction-toggle"
       >
         {sortDirection === 'asc' ? (

@@ -16,6 +16,7 @@ import {
   Settings,
   UserCog,
 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 
 // ============================================================================
 // Types
@@ -116,13 +117,15 @@ export function ChannelSearchInput({
   searchQuery,
   onSearchChange,
   onClear,
-  placeholder = 'Search messages...',
+  placeholder,
   isMobile = false,
   inputRef,
   className = '',
 }: ChannelSearchInputProps) {
+  const { t } = useTranslation('ui');
   const localRef = useRef<HTMLInputElement>(null);
   const ref = inputRef || localRef;
+  const resolvedPlaceholder = placeholder ?? t('domain.channelHeader.searchPlaceholder');
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -144,7 +147,7 @@ export function ChannelSearchInput({
         value={searchQuery}
         onChange={(e) => onSearchChange(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
         className={`w-full border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-[var(--color-surface)] text-[var(--color-text)] ${
           isMobile
             ? 'pl-10 pr-10 py-2.5 text-base'
@@ -185,9 +188,10 @@ export function ChannelHeader({
   membersButtonLabel,
   useSettingsIcon = false,
 }: ChannelHeaderProps) {
+  const { t } = useTranslation('ui');
   const memberCount = channel.members?.length || 0;
   const defaultMembersLabel = (count: number) =>
-    `${count} ${count === 1 ? 'member' : 'members'}`;
+    t('domain.channelHeader.member', { count });
 
   const IconComponent = useSettingsIcon ? Settings : UserCog;
 
@@ -205,7 +209,7 @@ export function ChannelHeader({
             onClick={onBack}
             className="p-2 -ml-2 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors touch-target"
             data-testid="channel-back-button"
-            aria-label="Back to channels"
+            aria-label={t('domain.channelHeader.backToChannels')}
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -255,7 +259,7 @@ export function ChannelHeader({
             onClick={onOpenMembers}
             className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors touch-target"
             data-testid="channel-members-button"
-            aria-label="View members"
+            aria-label={t('domain.channelHeader.viewMembers')}
           >
             {useSettingsIcon ? (
               <Settings className="w-5 h-5" />

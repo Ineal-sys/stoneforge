@@ -6,6 +6,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   PieChart,
   Pie,
@@ -72,8 +73,8 @@ export function StatusPieChart({
   testId = 'status-pie-chart',
   isLoading = false,
   isError = false,
-  errorMessage = 'Failed to load chart data',
-  emptyMessage = 'No data to display',
+  errorMessage,
+  emptyMessage,
   height = 192,
   innerRadius,
   outerRadius,
@@ -83,6 +84,9 @@ export function StatusPieChart({
   onLegendClick,
   className = '',
 }: StatusPieChartProps) {
+  const { t } = useTranslation('ui');
+  const resolvedErrorMessage = errorMessage ?? t('chart.errorLoading');
+  const resolvedEmptyMessage = emptyMessage ?? t('chart.noData');
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   // Handle touch interactions for mobile tooltips
@@ -123,7 +127,7 @@ export function StatusPieChart({
         )}
         <div className="flex items-center justify-center" style={{ height }}>
           <div className="animate-pulse text-muted-foreground text-sm">
-            Loading chart...
+            {t('chart.loading')}
           </div>
         </div>
       </div>
@@ -143,7 +147,7 @@ export function StatusPieChart({
           </h4>
         )}
         <div className="flex items-center justify-center" style={{ height }}>
-          <div className="text-error text-sm">{errorMessage}</div>
+          <div className="text-error text-sm">{resolvedErrorMessage}</div>
         </div>
       </div>
     );
@@ -163,7 +167,7 @@ export function StatusPieChart({
           </h4>
         )}
         <div className="flex items-center justify-center" style={{ height }}>
-          <div className="text-muted-foreground text-sm">{emptyMessage}</div>
+          <div className="text-muted-foreground text-sm">{resolvedEmptyMessage}</div>
         </div>
       </div>
     );
@@ -226,7 +230,7 @@ export function StatusPieChart({
         <div className="mt-2 text-center text-sm text-foreground" data-testid="mobile-tooltip">
           <span className="font-medium">{data[activeIndex].name}</span>
           <span className="text-muted-foreground ml-2">
-            {data[activeIndex].value} items
+            {t('chart.items', { count: data[activeIndex].value })}
           </span>
         </div>
       )}

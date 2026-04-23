@@ -122,7 +122,10 @@ export function formatDate(dateString: string): string {
   });
 }
 
-export function formatRelativeTime(dateString: string): string {
+export function formatRelativeTime(
+  dateString: string,
+  t: (key: string, options?: Record<string, unknown>) => string,
+): string {
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -130,9 +133,9 @@ export function formatRelativeTime(dateString: string): string {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffMins < 1) return t('plans.time.justNow');
+  if (diffMins < 60) return t('plans.time.minutesAgo', { count: diffMins });
+  if (diffHours < 24) return t('plans.time.hoursAgo', { count: diffHours });
+  if (diffDays < 7) return t('plans.time.daysAgo', { count: diffDays });
   return formatDate(dateString);
 }

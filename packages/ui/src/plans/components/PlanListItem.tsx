@@ -3,6 +3,7 @@
  */
 
 import { ChevronRight } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { StatusBadge } from './StatusBadge';
 import { highlightMatches, formatRelativeTime, formatDate } from '../utils';
 import type { HydratedPlan } from '../types';
@@ -23,6 +24,7 @@ export function PlanListItem({
   searchMatchIndices,
   progressRing,
 }: PlanListItemProps) {
+  const { t } = useTranslation('ui');
   const progress = plan._progress;
   const hasProgress = progress && progress.totalTasks > 0;
 
@@ -56,7 +58,7 @@ export function PlanListItem({
           <div className="flex items-center gap-2 mb-2">
             <StatusBadge status={plan.status} />
             <span className="text-xs text-gray-500 dark:text-[var(--color-text-tertiary)]" title={formatDate(plan.updatedAt)}>
-              Updated {formatRelativeTime(plan.updatedAt)}
+              {t('plans.metadata.updatedPrefix')} {formatRelativeTime(plan.updatedAt, t)}
             </span>
           </div>
 
@@ -84,7 +86,7 @@ export function PlanListItem({
           ) : hasProgress ? (
             <div
               className="w-8 h-8 rounded-full border-2 border-blue-500 flex items-center justify-center"
-              title={`${progress.completionPercentage}% complete`}
+              title={t('plans.progress.percentComplete', { percentage: progress.completionPercentage })}
               data-testid={`plan-progress-${plan.id}`}
             >
               <span className="text-[10px] text-blue-500 font-medium">{progress.completionPercentage}%</span>
@@ -92,7 +94,7 @@ export function PlanListItem({
           ) : (
             <div
               className="w-8 h-8 rounded-full border-2 border-dashed border-gray-200 dark:border-gray-600 flex items-center justify-center"
-              title="No tasks in plan"
+              title={t('plans.progress.noTasks')}
               data-testid={`plan-progress-empty-${plan.id}`}
             >
               <span className="text-[8px] text-gray-400 dark:text-gray-500">--</span>

@@ -13,6 +13,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { User, ChevronDown } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { useTranslation } from '@stoneforge/i18n';
 import { useCurrentUser } from '../contexts';
 
 const ITEM_HEIGHT = 36;
@@ -21,6 +22,7 @@ const DROPDOWN_MAX_HEIGHT = ITEM_HEIGHT * MAX_VISIBLE_ITEMS + 8; // +8 for paddi
 
 export function UserSelector() {
   const { currentUser, setCurrentUserId, humanEntities, isLoading } = useCurrentUser();
+  const { t } = useTranslation('ui');
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -156,7 +158,7 @@ export function UserSelector() {
     return (
       <div className="flex items-center gap-2 px-2 py-1 text-sm text-[var(--color-text-tertiary)]">
         <User className="w-4 h-4" />
-        <span>Loading...</span>
+        <span>{t('domain.userSelector.loading')}</span>
       </div>
     );
   }
@@ -165,7 +167,7 @@ export function UserSelector() {
     return (
       <div className="flex items-center gap-2 px-2 py-1 text-sm text-[var(--color-text-tertiary)]">
         <User className="w-4 h-4" />
-        <span>No users</span>
+        <span>{t('domain.userSelector.noUsers')}</span>
       </div>
     );
   }
@@ -187,7 +189,7 @@ export function UserSelector() {
         aria-expanded={isOpen}
       >
         <User className="w-4 h-4" />
-        <span className="truncate max-w-[120px]">{currentUser?.name ?? 'Select user'}</span>
+        <span className="truncate max-w-[120px]">{currentUser?.name ?? t('domain.userSelector.selectUser')}</span>
         <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
@@ -263,7 +265,7 @@ export function UserSelector() {
             {/* Scroll indicator */}
             {needsScroll && (
               <div className="px-2 py-1 text-xs text-center text-[var(--color-text-tertiary)] border-t border-[var(--color-border)]">
-                {humanEntities.length} users
+                {t('domain.userSelector.userCount', { count: humanEntities.length })}
               </div>
             )}
           </div>,

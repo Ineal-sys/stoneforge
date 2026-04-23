@@ -11,6 +11,7 @@
 
 import { type ReactNode, type ComponentType } from 'react';
 import { ChevronRight } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 
 /**
  * Breadcrumb item for navigation
@@ -44,12 +45,13 @@ export interface BreadcrumbsProps {
  * Breadcrumbs component for navigation hierarchy display
  */
 export function Breadcrumbs({ items, LinkComponent, testId = 'breadcrumbs' }: BreadcrumbsProps) {
+  const { t } = useTranslation('ui');
   if (items.length === 0) {
     return null;
   }
 
   return (
-    <nav aria-label="Breadcrumb" data-testid={testId}>
+    <nav aria-label={t('breadcrumbs.navLabel')} data-testid={testId}>
       <ol className="flex items-center gap-1 text-sm">
         {items.map((crumb, index) => {
           const Icon = crumb.icon;
@@ -156,41 +158,42 @@ export interface ConnectionStatusProps {
  * Connection status indicator for header
  */
 export function ConnectionStatus({ state, label }: ConnectionStatusProps) {
+  const { t } = useTranslation('ui');
   const stateConfig = {
     connecting: {
       color: 'var(--color-warning)',
       textColor: 'var(--color-warning-text)',
-      label: 'Connecting...',
+      label: t('connectionStatus.connecting'),
       pulse: true,
     },
     connected: {
       color: 'var(--color-success)',
       textColor: 'var(--color-success-text)',
-      label: 'Live',
+      label: t('connectionStatus.live'),
       pulse: false,
     },
     disconnected: {
       color: 'var(--color-danger)',
       textColor: 'var(--color-danger-text)',
-      label: 'Disconnected',
+      label: t('connectionStatus.disconnected'),
       pulse: false,
     },
     reconnecting: {
       color: 'var(--color-warning)',
       textColor: 'var(--color-warning-text)',
-      label: 'Reconnecting...',
+      label: t('connectionStatus.reconnecting'),
       pulse: true,
     },
     polling: {
       color: 'var(--color-warning)',
       textColor: 'var(--color-warning-text)',
-      label: 'Polling',
+      label: t('connectionStatus.polling'),
       pulse: false,
     },
     error: {
       color: 'var(--color-danger)',
       textColor: 'var(--color-danger-text)',
-      label: 'Error',
+      label: t('connectionStatus.error'),
       pulse: false,
     },
   };

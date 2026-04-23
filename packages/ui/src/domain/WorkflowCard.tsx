@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { ChevronRight, Workflow, Flame } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { Card } from '../components/Card';
 import { Badge } from '../components/Badge';
 import type { Workflow as WorkflowType, WorkflowStatus } from './types';
@@ -32,16 +33,16 @@ export interface WorkflowCardProps {
 }
 
 interface StatusConfig {
-  label: string;
+  labelKey: string;
   variant: 'default' | 'primary' | 'success' | 'warning' | 'error';
 }
 
 const STATUS_CONFIG: Record<WorkflowStatus | string, StatusConfig> = {
-  created: { label: 'Created', variant: 'default' },
-  active: { label: 'Active', variant: 'primary' },
-  completed: { label: 'Completed', variant: 'success' },
-  failed: { label: 'Failed', variant: 'error' },
-  cancelled: { label: 'Cancelled', variant: 'warning' },
+  created: { labelKey: 'domain.workflowStatus.created', variant: 'default' },
+  active: { labelKey: 'domain.workflowStatus.active', variant: 'primary' },
+  completed: { labelKey: 'domain.workflowStatus.completed', variant: 'success' },
+  failed: { labelKey: 'domain.workflowStatus.failed', variant: 'error' },
+  cancelled: { labelKey: 'domain.workflowStatus.cancelled', variant: 'warning' },
 };
 
 /**
@@ -69,6 +70,7 @@ export const WorkflowCard = React.forwardRef<HTMLDivElement, WorkflowCardProps>(
     { workflow, isSelected = false, onClick, className = '', showId = false, progress, children },
     ref
   ) => {
+    const { t } = useTranslation('ui');
     const config = getWorkflowStatusConfig(workflow.status);
     const isEphemeral = workflow.ephemeral === true;
 
@@ -122,11 +124,11 @@ export const WorkflowCard = React.forwardRef<HTMLDivElement, WorkflowCardProps>(
           <div className="flex items-center gap-2 flex-shrink-0">
             {isEphemeral && (
               <Badge variant="warning" size="sm">
-                Ephemeral
+                {t('domain.workflowCard.ephemeral')}
               </Badge>
             )}
             <Badge variant={config.variant} size="sm">
-              {config.label}
+              {t(config.labelKey)}
             </Badge>
             <ChevronRight className="w-4 h-4 text-[var(--color-text-tertiary)]" />
           </div>
@@ -136,7 +138,7 @@ export const WorkflowCard = React.forwardRef<HTMLDivElement, WorkflowCardProps>(
         {typeof progress === 'number' && (
           <div className="mt-3">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-[var(--color-text-secondary)]">Progress</span>
+              <span className="text-xs text-[var(--color-text-secondary)]">{t('domain.workflowCard.progress')}</span>
               <span className="text-xs font-medium text-[var(--color-text)]">{progress}%</span>
             </div>
             <div className="w-full h-1.5 bg-[var(--color-surface-active)] rounded-full overflow-hidden">
@@ -151,7 +153,7 @@ export const WorkflowCard = React.forwardRef<HTMLDivElement, WorkflowCardProps>(
         {/* Playbook reference */}
         {workflow.playbookId && (
           <div className="mt-2 text-xs text-[var(--color-text-secondary)]">
-            From playbook:{' '}
+            {t('domain.workflowCard.fromPlaybook')}{' '}
             <span className="font-mono text-[var(--color-text-tertiary)]">
               {workflow.playbookId}
             </span>

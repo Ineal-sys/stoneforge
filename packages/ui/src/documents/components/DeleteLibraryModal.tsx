@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, ChevronLeft, Loader2, Trash2, AlertTriangle } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 
 interface DeleteLibraryModalProps {
   isOpen: boolean;
@@ -32,6 +33,7 @@ export function DeleteLibraryModal({
   error = null,
   isMobile = false,
 }: DeleteLibraryModalProps) {
+  const { t } = useTranslation('ui');
   const [deleteDocuments, setDeleteDocuments] = useState(true);
 
   // Reset state when modal opens
@@ -63,13 +65,13 @@ export function DeleteLibraryModal({
             onClick={handleClose}
             disabled={isDeleting}
             className="p-2 -ml-2 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors duration-150 touch-target disabled:opacity-50"
-            aria-label="Cancel"
+            aria-label={t('documents.deleteLibrary.cancel')}
             data-testid="delete-library-close"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <Trash2 className="w-5 h-5 text-red-500" />
-          <h2 className="flex-1 text-lg font-semibold text-[var(--color-text)]">Delete Library</h2>
+          <h2 className="flex-1 text-lg font-semibold text-[var(--color-text)]">{t('documents.deleteLibrary.title')}</h2>
         </div>
 
         {/* Content */}
@@ -80,6 +82,7 @@ export function DeleteLibraryModal({
             deleteDocuments={deleteDocuments}
             setDeleteDocuments={setDeleteDocuments}
             error={error}
+            t={t}
           />
         </div>
 
@@ -93,7 +96,7 @@ export function DeleteLibraryModal({
               className="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors disabled:opacity-50 touch-target"
               data-testid="delete-library-cancel-button"
             >
-              Cancel
+              {t('documents.deleteLibrary.cancel')}
             </button>
             <button
               type="button"
@@ -105,12 +108,12 @@ export function DeleteLibraryModal({
               {isDeleting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Deleting...
+                  {t('documents.deleteLibrary.deleting')}
                 </>
               ) : (
                 <>
                   <Trash2 className="w-4 h-4" />
-                  Delete Library
+                  {t('documents.deleteLibrary.title')}
                 </>
               )}
             </button>
@@ -132,7 +135,7 @@ export function DeleteLibraryModal({
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
             <Trash2 className="w-5 h-5 text-red-500" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Delete Library</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('documents.deleteLibrary.title')}</h3>
           </div>
           <button
             onClick={handleClose}
@@ -152,6 +155,7 @@ export function DeleteLibraryModal({
             deleteDocuments={deleteDocuments}
             setDeleteDocuments={setDeleteDocuments}
             error={error}
+            t={t}
           />
         </div>
 
@@ -164,7 +168,7 @@ export function DeleteLibraryModal({
             className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors disabled:opacity-50"
             data-testid="delete-library-cancel-button"
           >
-            Cancel
+            {t('documents.deleteLibrary.cancel')}
           </button>
           <button
             type="button"
@@ -176,12 +180,12 @@ export function DeleteLibraryModal({
             {isDeleting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Deleting...
+                {t('documents.deleteLibrary.deleting')}
               </>
             ) : (
               <>
                 <Trash2 className="w-4 h-4" />
-                Delete Library
+                {t('documents.deleteLibrary.title')}
               </>
             )}
           </button>
@@ -200,12 +204,14 @@ function ModalContent({
   deleteDocuments,
   setDeleteDocuments,
   error,
+  t,
 }: {
   library: { id: string; name: string } | null;
   documentCount: number;
   deleteDocuments: boolean;
   setDeleteDocuments: (value: boolean) => void;
   error: string | null;
+  t: ReturnType<typeof useTranslation>['t'];
 }) {
   return (
     <>
@@ -214,13 +220,13 @@ function ModalContent({
         <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
         <div>
           <h4 className="text-sm font-medium text-red-800 dark:text-red-300">
-            This action cannot be undone
+            {t('documents.deleteLibrary.warningTitle')}
           </h4>
           <p className="mt-1 text-sm text-red-700 dark:text-red-400">
-            You are about to delete the library "<strong>{library?.name}</strong>".
+            {t('documents.deleteLibrary.warningBody', { name: library?.name })}
             {documentCount > 0 && (
               <>
-                {' '}This library contains <strong>{documentCount}</strong> document{documentCount === 1 ? '' : 's'}.
+                {' '}{t('documents.deleteLibrary.warningDocuments', { count: documentCount })}
               </>
             )}
           </p>
@@ -231,7 +237,7 @@ function ModalContent({
       {documentCount > 0 && (
         <div className="mb-4">
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            What should happen to the documents in this library?
+            {t('documents.deleteLibrary.documentsQuestion')}
           </p>
           <div className="space-y-2">
             <label className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
@@ -245,10 +251,10 @@ function ModalContent({
               />
               <div>
                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  Delete all documents
+                  {t('documents.deleteLibrary.deleteDocuments')}
                 </span>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  Permanently delete all {documentCount} document{documentCount === 1 ? '' : 's'} in this library
+                  {t('documents.deleteLibrary.deleteDocumentsDescription', { count: documentCount })}
                 </p>
               </div>
             </label>
@@ -263,10 +269,10 @@ function ModalContent({
               />
               <div>
                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  Keep documents
+                  {t('documents.deleteLibrary.keepDocuments')}
                 </span>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  Remove documents from this library but don't delete them
+                  {t('documents.deleteLibrary.keepDocumentsDescription')}
                 </p>
               </div>
             </label>

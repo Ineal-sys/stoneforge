@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Bot, User, Server } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { Card } from '../components/Card';
 import { Badge } from '../components/Badge';
 import type { Entity, EntityType } from './types';
@@ -57,6 +58,7 @@ export const EntityCard = React.forwardRef<HTMLDivElement, EntityCardProps>(
     },
     ref
   ) => {
+    const { t } = useTranslation('ui');
     const config = getEntityTypeConfig(entity.entityType);
     const Icon = getEntityTypeIcon(entity.entityType);
     const isActive = entity.active !== false;
@@ -94,7 +96,7 @@ export const EntityCard = React.forwardRef<HTMLDivElement, EntityCardProps>(
               <h3 className="font-medium text-[var(--color-text)] truncate">{entity.name}</h3>
               {!isActive && (
                 <Badge variant="outline" size="sm">
-                  Inactive
+                  {t('domain.entityCard.inactive')}
                 </Badge>
               )}
             </div>
@@ -138,7 +140,7 @@ export const EntityCard = React.forwardRef<HTMLDivElement, EntityCardProps>(
         {/* Timestamp */}
         {showTimestamp && (
           <div className="mt-3 text-[11px] text-[var(--color-text-tertiary)]">
-            Created {new Date(entity.createdAt).toLocaleDateString()}
+            {t('domain.entityCard.created')} {new Date(entity.createdAt).toLocaleDateString()}
           </div>
         )}
       </Card>

@@ -22,6 +22,7 @@ import { ReactRenderer } from '@tiptap/react';
 import tippy, { Instance as TippyInstance, Props as TippyProps } from 'tippy.js';
 import { forwardRef, useEffect, useImperativeHandle, useState, useCallback } from 'react';
 import { User, Bot, Settings } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 
 // Entity type for mention suggestions
 export interface MentionEntity {
@@ -200,6 +201,7 @@ function getEntityTypeLabel(entityType: string) {
 export const MentionMenu = forwardRef<MentionMenuRef, MentionMenuProps>(
   ({ items, command }, ref) => {
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const { t } = useTranslation('ui');
 
     // Reset selection when items change
     useEffect(() => {
@@ -249,7 +251,7 @@ export const MentionMenu = forwardRef<MentionMenuRef, MentionMenuProps>(
           className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-3 min-w-[200px]"
         >
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            No matching entities
+            {t('channel.mentionNoMatch')}
           </div>
         </div>
       );
@@ -296,7 +298,7 @@ export const MentionMenu = forwardRef<MentionMenuRef, MentionMenuProps>(
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">@{item.name}</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {getEntityTypeLabel(item.entityType)}
+                  {item.entityType === 'agent' ? t('channel.entityTypeAgent') : item.entityType === 'system' ? t('channel.entityTypeSystem') : t('channel.entityTypeHuman')}
                 </div>
               </div>
             </button>

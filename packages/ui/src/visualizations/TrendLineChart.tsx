@@ -5,6 +5,7 @@
  * Accepts data via props - no internal data fetching.
  */
 
+import { useTranslation } from '@stoneforge/i18n';
 import {
   LineChart,
   Line,
@@ -51,13 +52,17 @@ export function TrendLineChart({
   testId = 'trend-line-chart',
   isLoading = false,
   isError = false,
-  errorMessage = 'Failed to load chart data',
-  emptyMessage = 'No data to display',
+  errorMessage,
+  emptyMessage,
   height = 192,
   isMobile = false,
   isTouchDevice = false,
   className = '',
 }: TrendLineChartProps) {
+  const { t } = useTranslation('ui');
+  const resolvedErrorMessage = errorMessage ?? t('chart.errorLoading');
+  const resolvedEmptyMessage = emptyMessage ?? t('chart.noData');
+
   // Loading state
   if (isLoading) {
     return (
@@ -72,7 +77,7 @@ export function TrendLineChart({
         )}
         <div className="flex items-center justify-center" style={{ height }}>
           <div className="animate-pulse text-muted-foreground text-sm">
-            Loading chart...
+            {t('chart.loading')}
           </div>
         </div>
       </div>
@@ -92,7 +97,7 @@ export function TrendLineChart({
           </h4>
         )}
         <div className="flex items-center justify-center" style={{ height }}>
-          <div className="text-error text-sm">{errorMessage}</div>
+          <div className="text-error text-sm">{resolvedErrorMessage}</div>
         </div>
       </div>
     );
@@ -111,7 +116,7 @@ export function TrendLineChart({
           </h4>
         )}
         <div className="flex items-center justify-center" style={{ height }}>
-          <div className="text-muted-foreground text-sm">{emptyMessage}</div>
+          <div className="text-muted-foreground text-sm">{resolvedEmptyMessage}</div>
         </div>
       </div>
     );
@@ -130,7 +135,7 @@ export function TrendLineChart({
           </span>
           {total !== undefined && total > 0 && (
             <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs font-normal text-muted-foreground">
-              Total: {total}
+              {t('chart.total', { total })}
             </span>
           )}
         </h4>

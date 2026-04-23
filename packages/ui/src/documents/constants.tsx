@@ -11,10 +11,10 @@ import type { DocumentSortOption, ContentTypeFilterOption, DocumentFilterConfig 
 // ============================================================================
 
 export const DOCUMENT_SORT_OPTIONS: DocumentSortOption[] = [
-  { value: 'updatedAt', label: 'Updated', defaultDirection: 'desc' },
-  { value: 'createdAt', label: 'Created', defaultDirection: 'desc' },
-  { value: 'title', label: 'Title', defaultDirection: 'asc' },
-  { value: 'contentType', label: 'Type', defaultDirection: 'asc' },
+  { value: 'updatedAt', labelKey: 'documents.sort.updated', defaultDirection: 'desc' },
+  { value: 'createdAt', labelKey: 'documents.sort.created', defaultDirection: 'desc' },
+  { value: 'title', labelKey: 'documents.sort.title', defaultDirection: 'asc' },
+  { value: 'contentType', labelKey: 'documents.sort.type', defaultDirection: 'asc' },
 ];
 
 // ============================================================================
@@ -22,9 +22,9 @@ export const DOCUMENT_SORT_OPTIONS: DocumentSortOption[] = [
 // ============================================================================
 
 export const CONTENT_TYPE_FILTER_OPTIONS: ContentTypeFilterOption[] = [
-  { value: 'text', label: 'Text', color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
-  { value: 'markdown', label: 'Markdown', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300' },
-  { value: 'json', label: 'JSON', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' },
+  { value: 'text', labelKey: 'documents.contentType.text', color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200' },
+  { value: 'markdown', labelKey: 'documents.contentType.markdown', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300' },
+  { value: 'json', labelKey: 'documents.contentType.json', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' },
 ];
 
 // ============================================================================

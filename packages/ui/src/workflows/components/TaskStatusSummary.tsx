@@ -5,6 +5,7 @@
  */
 
 import { CheckCircle, AlertCircle, ListTodo, Play } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { WorkflowProgress } from '../types';
 
 interface TaskStatusSummaryProps {
@@ -16,6 +17,7 @@ export function TaskStatusSummary({
   progress,
   layout = 'grid',
 }: TaskStatusSummaryProps) {
+  const { t } = useTranslation('ui');
   // Support both progress formats
   const completed = progress.completed ?? progress.statusCounts?.['closed'] ?? 0;
   const inProgressCount = progress.inProgress ?? progress.statusCounts?.['in_progress'] ?? 0;
@@ -25,28 +27,32 @@ export function TaskStatusSummary({
 
   const items = [
     {
-      label: 'Total',
+      key: 'total',
+      label: t('workflow.taskStatus.total'),
       count: total,
       icon: ListTodo,
       color: 'text-gray-600 dark:text-gray-400',
       bgColor: 'bg-gray-50 dark:bg-gray-800',
     },
     {
-      label: 'Completed',
+      key: 'completed',
+      label: t('workflow.taskStatus.completed'),
       count: completed,
       icon: CheckCircle,
       color: 'text-green-600 dark:text-green-400',
       bgColor: 'bg-green-50 dark:bg-green-900/30',
     },
     {
-      label: 'In Progress',
+      key: 'inProgress',
+      label: t('workflow.taskStatus.inProgress'),
       count: inProgressCount,
       icon: Play,
       color: 'text-blue-600 dark:text-blue-400',
       bgColor: 'bg-blue-50 dark:bg-blue-900/30',
     },
     {
-      label: 'Blocked',
+      key: 'blocked',
+      label: t('workflow.taskStatus.blocked'),
       count: blockedCount,
       icon: AlertCircle,
       color: 'text-red-600 dark:text-red-400',
@@ -63,7 +69,7 @@ export function TaskStatusSummary({
       <div data-testid="workflow-task-status-summary" className="flex flex-wrap gap-3">
         {items.map((item) => (
           <div
-            key={item.label}
+            key={item.key}
             className={`flex items-center gap-1.5 px-2 py-1 rounded ${item.bgColor}`}
           >
             <item.icon className={`w-3.5 h-3.5 ${item.color}`} />
@@ -79,9 +85,9 @@ export function TaskStatusSummary({
     <div data-testid="workflow-task-status-summary" className="grid grid-cols-2 md:grid-cols-4 gap-3">
       {items.map((item) => (
         <div
-          key={item.label}
+          key={item.key}
           className={`p-3 rounded-lg ${item.bgColor}`}
-          data-testid={`stat-card-${item.label.toLowerCase().replace(' ', '-')}`}
+          data-testid={`stat-card-${item.key}`}
         >
           <div className="flex items-center gap-2">
             <item.icon className={`w-4 h-4 ${item.color}`} />

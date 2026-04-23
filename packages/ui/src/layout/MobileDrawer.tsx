@@ -15,6 +15,7 @@
 
 import { useEffect, useRef, type ReactNode, type TouchEvent as ReactTouchEvent } from 'react';
 import { X } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 
 export interface MobileDrawerProps {
   /** Whether the drawer is open */
@@ -57,6 +58,7 @@ export function MobileDrawer({
   backdropBlur = true,
   backdropClassName = '',
 }: MobileDrawerProps) {
+  const { t } = useTranslation('ui');
   const drawerRef = useRef<HTMLDivElement>(null);
   const startXRef = useRef<number | null>(null);
 
@@ -151,7 +153,7 @@ export function MobileDrawer({
       data-testid={testId}
       role="dialog"
       aria-modal="true"
-      aria-label="Navigation menu"
+      aria-label={t('mobileDrawer.navigationMenu')}
     >
       {/* Backdrop */}
       <div
@@ -182,7 +184,7 @@ export function MobileDrawer({
           <button
             onClick={onClose}
             className="absolute top-3 right-3 p-2 rounded-md text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-sidebar-item-hover)] transition-colors duration-150 z-10"
-            aria-label="Close navigation menu"
+            aria-label={t('mobileDrawer.closeNavigation')}
             data-testid={`${testId}-close`}
           >
             {closeButtonContent ?? <X className="w-5 h-5" />}

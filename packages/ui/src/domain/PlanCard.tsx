@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { ChevronRight, Target } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { Card } from '../components/Card';
 import { Badge } from '../components/Badge';
 import type { Plan, PlanStatus } from './types';
@@ -31,15 +32,15 @@ export interface PlanCardProps {
 }
 
 interface StatusConfig {
-  label: string;
+  labelKey: string;
   variant: 'default' | 'primary' | 'success' | 'warning' | 'error';
 }
 
 const STATUS_CONFIG: Record<PlanStatus | string, StatusConfig> = {
-  draft: { label: 'Draft', variant: 'default' },
-  active: { label: 'Active', variant: 'primary' },
-  completed: { label: 'Completed', variant: 'success' },
-  cancelled: { label: 'Cancelled', variant: 'error' },
+  draft: { labelKey: 'domain.planStatus.draft', variant: 'default' },
+  active: { labelKey: 'domain.planStatus.active', variant: 'primary' },
+  completed: { labelKey: 'domain.planStatus.completed', variant: 'success' },
+  cancelled: { labelKey: 'domain.planStatus.cancelled', variant: 'error' },
 };
 
 /**
@@ -54,6 +55,7 @@ export const PlanCard = React.forwardRef<HTMLDivElement, PlanCardProps>(
     { plan, isSelected = false, onClick, className = '', showId = false, progress, children },
     ref
   ) => {
+    const { t } = useTranslation('ui');
     const config = getPlanStatusConfig(plan.status);
 
     return (
@@ -94,7 +96,7 @@ export const PlanCard = React.forwardRef<HTMLDivElement, PlanCardProps>(
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <Badge variant={config.variant} size="sm">
-              {config.label}
+              {t(config.labelKey)}
             </Badge>
             <ChevronRight className="w-4 h-4 text-[var(--color-text-tertiary)]" />
           </div>
@@ -104,7 +106,7 @@ export const PlanCard = React.forwardRef<HTMLDivElement, PlanCardProps>(
         {typeof progress === 'number' && (
           <div className="mt-3">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-[var(--color-text-secondary)]">Progress</span>
+              <span className="text-xs text-[var(--color-text-secondary)]">{t('domain.planCard.progress')}</span>
               <span className="text-xs font-medium text-[var(--color-text)]">{progress}%</span>
             </div>
             <div className="w-full h-1.5 bg-[var(--color-surface-active)] rounded-full overflow-hidden">

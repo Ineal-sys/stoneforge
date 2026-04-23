@@ -5,6 +5,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { i18n } from '@stoneforge/i18n';
 
 export function useDeleteChannel() {
   const queryClient = useQueryClient();
@@ -17,7 +18,7 @@ export function useDeleteChannel() {
       );
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error?.message || 'Failed to delete channel');
+        throw new Error(error.error?.message || i18n.t('ui:channel.deleteFailed'));
       }
       return response.json();
     },

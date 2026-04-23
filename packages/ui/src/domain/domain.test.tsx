@@ -1,7 +1,7 @@
 /**
  * Unit tests for @stoneforge/ui domain components
  */
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 // Import types and utilities
 import {
@@ -38,6 +38,11 @@ import {
   TaskTypeBadge,
   MergeStatusBadge,
 } from './index';
+
+/**
+ * Mock translation function that returns the key as-is for testing
+ */
+const t = vi.fn((key: string) => key);
 
 describe('Domain Types Utility Functions', () => {
   describe('getPriorityConfig', () => {
@@ -79,12 +84,12 @@ describe('Domain Types Utility Functions', () => {
   });
 
   describe('getPriorityDisplayName', () => {
-    test('returns correct display name for all priorities', () => {
-      expect(getPriorityDisplayName(1)).toBe('Critical');
-      expect(getPriorityDisplayName(2)).toBe('High');
-      expect(getPriorityDisplayName(3)).toBe('Medium');
-      expect(getPriorityDisplayName(4)).toBe('Low');
-      expect(getPriorityDisplayName(5)).toBe('Trivial');
+    test('returns correct i18n key for all priorities', () => {
+      expect(getPriorityDisplayName(1, t)).toBe('domain.priority.critical');
+      expect(getPriorityDisplayName(2, t)).toBe('domain.priority.high');
+      expect(getPriorityDisplayName(3, t)).toBe('domain.priority.medium');
+      expect(getPriorityDisplayName(4, t)).toBe('domain.priority.low');
+      expect(getPriorityDisplayName(5, t)).toBe('domain.priority.trivial');
     });
   });
 
@@ -99,17 +104,17 @@ describe('Domain Types Utility Functions', () => {
   });
 
   describe('getStatusDisplayName', () => {
-    test('returns correct display name for all statuses', () => {
-      expect(getStatusDisplayName('todo')).toBe('To Do');
-      expect(getStatusDisplayName('in_progress')).toBe('In Progress');
-      expect(getStatusDisplayName('blocked')).toBe('Blocked');
-      expect(getStatusDisplayName('closed')).toBe('Closed');
-      expect(getStatusDisplayName('cancelled')).toBe('Cancelled');
-      expect(getStatusDisplayName('deferred')).toBe('Deferred');
+    test('returns correct i18n key for all statuses', () => {
+      expect(getStatusDisplayName('todo', t)).toBe('domain.status.todo');
+      expect(getStatusDisplayName('in_progress', t)).toBe('domain.status.in_progress');
+      expect(getStatusDisplayName('blocked', t)).toBe('domain.status.blocked');
+      expect(getStatusDisplayName('closed', t)).toBe('domain.status.closed');
+      expect(getStatusDisplayName('cancelled', t)).toBe('domain.status.cancelled');
+      expect(getStatusDisplayName('deferred', t)).toBe('domain.status.deferred');
     });
 
     test('returns raw status for unknown status', () => {
-      expect(getStatusDisplayName('unknown')).toBe('unknown');
+      expect(getStatusDisplayName('unknown', t)).toBe('unknown');
     });
   });
 
@@ -124,15 +129,15 @@ describe('Domain Types Utility Functions', () => {
   });
 
   describe('getTaskTypeDisplayName', () => {
-    test('returns correct display name for all task types', () => {
-      expect(getTaskTypeDisplayName('bug')).toBe('Bug');
-      expect(getTaskTypeDisplayName('feature')).toBe('Feature');
-      expect(getTaskTypeDisplayName('task')).toBe('Task');
-      expect(getTaskTypeDisplayName('chore')).toBe('Chore');
+    test('returns correct i18n key for all task types', () => {
+      expect(getTaskTypeDisplayName('bug', t)).toBe('domain.taskType.bug');
+      expect(getTaskTypeDisplayName('feature', t)).toBe('domain.taskType.feature');
+      expect(getTaskTypeDisplayName('task', t)).toBe('domain.taskType.task');
+      expect(getTaskTypeDisplayName('chore', t)).toBe('domain.taskType.chore');
     });
 
     test('returns raw type for unknown type', () => {
-      expect(getTaskTypeDisplayName('unknown')).toBe('unknown');
+      expect(getTaskTypeDisplayName('unknown', t)).toBe('unknown');
     });
   });
 
@@ -159,14 +164,16 @@ describe('Domain Types Utility Functions', () => {
   });
 
   describe('getMergeStatusDisplayName', () => {
-    test('returns correct display name for all merge statuses', () => {
-      expect(getMergeStatusDisplayName('pending')).toBe('Pending Merge');
-      expect(getMergeStatusDisplayName('testing')).toBe('Testing');
-      expect(getMergeStatusDisplayName('merging')).toBe('Merging');
-      expect(getMergeStatusDisplayName('merged')).toBe('Merged');
-      expect(getMergeStatusDisplayName('conflict')).toBe('Conflict');
-      expect(getMergeStatusDisplayName('test_failed')).toBe('Tests Failed');
-      expect(getMergeStatusDisplayName('failed')).toBe('Merge Failed');
+    test('returns correct i18n key for all merge statuses', () => {
+      expect(getMergeStatusDisplayName('pending', t)).toBe('domain.mergeStatus.pending');
+      expect(getMergeStatusDisplayName('testing', t)).toBe('domain.mergeStatus.testing');
+      expect(getMergeStatusDisplayName('merging', t)).toBe('domain.mergeStatus.merging');
+      expect(getMergeStatusDisplayName('merged', t)).toBe('domain.mergeStatus.merged');
+      expect(getMergeStatusDisplayName('conflict', t)).toBe('domain.mergeStatus.conflict');
+      expect(getMergeStatusDisplayName('test_failed', t)).toBe('domain.mergeStatus.test_failed');
+      expect(getMergeStatusDisplayName('failed', t)).toBe('domain.mergeStatus.failed');
+      expect(getMergeStatusDisplayName('not_applicable', t)).toBe('domain.mergeStatus.not_applicable');
+      expect(getMergeStatusDisplayName('awaiting_approval', t)).toBe('domain.mergeStatus.awaiting_approval');
     });
   });
 

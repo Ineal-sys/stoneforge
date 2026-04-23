@@ -25,6 +25,7 @@ import {
   Check,
   AlertCircle,
 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 
 interface MessageImageAttachmentProps {
   isOpen: boolean;
@@ -53,6 +54,7 @@ export function MessageImageAttachment({
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<{ url: string; file?: File } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { t } = useTranslation('ui');
 
   // Library state
   const [libraryImages, setLibraryImages] = useState<UploadedFile[]>([]);
@@ -110,13 +112,13 @@ export function MessageImageAttachment({
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-      setError(`Invalid file type: ${file.type}. Allowed: JPEG, PNG, GIF, WebP`);
+      setError(t('channel.imageInvalidFileType', { type: file.type }));
       return null;
     }
 
     // Validate file size (10MB)
     if (file.size > 10 * 1024 * 1024) {
-      setError(`File too large: ${(file.size / (1024 * 1024)).toFixed(2)}MB. Maximum: 10MB`);
+      setError(t('channel.imageFileTooLarge', { size: `${(file.size / (1024 * 1024)).toFixed(2)}MB` }));
       return null;
     }
 
@@ -134,7 +136,7 @@ export function MessageImageAttachment({
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(data.error?.message || `Upload failed: ${response.status}`);
+        throw new Error(data.error?.message || t('channel.imageUploadFailed', { status: response.status }));
       }
 
       const result = await response.json();
@@ -151,7 +153,7 @@ export function MessageImageAttachment({
     // Validate immediately
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-      setError(`Invalid file type: ${file.type}. Allowed: JPEG, PNG, GIF, WebP`);
+      setError(t('channel.imageInvalidFileType', { type: file.type }));
       return;
     }
 
@@ -180,7 +182,7 @@ export function MessageImageAttachment({
       if (file && file.type.startsWith('image/')) {
         handleFileSelect(file);
       } else {
-        setError('Please drop an image file');
+        setError(t('channel.imageDropError'));
       }
     },
     [handleFileSelect]
@@ -199,7 +201,7 @@ export function MessageImageAttachment({
   const handleAttach = useCallback(async () => {
     if (mode === 'library') {
       if (!selectedLibraryImage) {
-        setError('Please select an image');
+        setError(t('channel.imageSelectError'));
         return;
       }
       onAttach(selectedLibraryImage.url);
@@ -230,7 +232,7 @@ export function MessageImageAttachment({
           data-testid="message-image-attachment-modal"
         >
           <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            Attach Image
+            {t('channel.attachImage')}
           </Dialog.Title>
 
           {/* Mode tabs */}
@@ -248,7 +250,7 @@ export function MessageImageAttachment({
               data-testid="message-image-upload-tab"
             >
               <Upload className="w-4 h-4" />
-              Upload
+              {t('channel.imageTabUpload')}
             </button>
             <button
               onClick={() => {
@@ -263,7 +265,7 @@ export function MessageImageAttachment({
               data-testid="message-image-library-tab"
             >
               <Grid className="w-4 h-4" />
-              Library
+              {t('channel.imageTabLibrary')}
             </button>
           </div>
 
@@ -282,7 +284,7 @@ export function MessageImageAttachment({
                   <button
                     onClick={() => setPreview(null)}
                     className="absolute top-2 right-2 p-1 bg-white dark:bg-gray-700 rounded-full shadow hover:bg-gray-100 dark:hover:bg-gray-600"
-                    title="Remove"
+                    title={t('channel.imageRemove')}
                     data-testid="message-image-preview-remove"
                   >
                     <X className="w-4 h-4 text-gray-600 dark:text-gray-300" />
@@ -303,10 +305,10 @@ export function MessageImageAttachment({
                 >
                   <ImageIcon className="w-12 h-12 text-gray-400 mb-3" />
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                    Drop an image here or click to browse
+                    {t('channel.imageDropzone')}
                   </p>
                   <p className="text-xs text-gray-400 dark:text-gray-500">
-                    JPEG, PNG, GIF, WebP up to 10MB
+                    {t('channel.imageDropzoneHint')}
                   </p>
                 </div>
               )}
@@ -332,7 +334,7 @@ export function MessageImageAttachment({
                   type="text"
                   value={librarySearch}
                   onChange={(e) => setLibrarySearch(e.target.value)}
-                  placeholder="Search images..."
+                  placeholder={t('channel.imageSearchPlaceholder')}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   data-testid="message-library-search-input"
                 />
@@ -349,13 +351,13 @@ export function MessageImageAttachment({
                     <ImageIcon className="w-12 h-12 mb-3 opacity-50" />
                     {libraryImages.length === 0 ? (
                       <>
-                        <p className="text-sm font-medium">No images uploaded yet</p>
-                        <p className="text-xs mt-1">Upload images to see them here</p>
+                        <p className="text-sm font-medium">{t('channel.imageNoImagesYet')}</p>
+                        <p className="text-xs mt-1">{t('channel.imageUploadToSeeHint')}</p>
                       </>
                     ) : (
                       <>
-                        <p className="text-sm font-medium">No images match your search</p>
-                        <p className="text-xs mt-1">Try a different search term</p>
+                        <p className="text-sm font-medium">{t('channel.imageNoSearchResults')}</p>
+                        <p className="text-xs mt-1">{t('channel.imageTryDifferentSearch')}</p>
                       </>
                     )}
                   </div>
@@ -440,7 +442,7 @@ export function MessageImageAttachment({
               className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               data-testid="message-image-cancel-button"
             >
-              Cancel
+              {t('channel.cancel')}
             </button>
             <button
               onClick={handleAttach}
@@ -455,10 +457,10 @@ export function MessageImageAttachment({
               {uploading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Uploading...
+                  {t('channel.imageUploading')}
                 </>
               ) : (
-                'Attach Image'
+                t('channel.attachImage')
               )}
             </button>
           </div>
@@ -467,7 +469,7 @@ export function MessageImageAttachment({
           <Dialog.Close asChild>
             <button
               className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded"
-              aria-label="Close"
+              aria-label={t('channel.close')}
             >
               <X className="w-5 h-5" />
             </button>

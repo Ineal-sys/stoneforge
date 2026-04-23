@@ -5,6 +5,7 @@
  */
 
 import type { WorkflowStatus } from '../types';
+import { useTranslation } from '@stoneforge/i18n';
 import { WORKFLOW_STATUS_CONFIG } from '../constants';
 
 interface StatusBadgeProps {
@@ -13,6 +14,7 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
+  const { t } = useTranslation('ui');
   const config = WORKFLOW_STATUS_CONFIG[status as WorkflowStatus] || WORKFLOW_STATUS_CONFIG.pending;
   const Icon = config.icon;
 
@@ -25,7 +27,7 @@ export function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
       className={`inline-flex items-center gap-1 rounded font-medium ${sizeClasses} ${config.bgColor} ${config.color}`}
     >
       <Icon className={iconSize} />
-      {config.label}
+      {t(config.label)}
     </span>
   );
 }

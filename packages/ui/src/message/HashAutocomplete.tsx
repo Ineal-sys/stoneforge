@@ -22,6 +22,7 @@ import {
   Loader2,
   Search,
 } from 'lucide-react';
+import { useTranslation, i18n } from '@stoneforge/i18n';
 
 // Element item type for autocomplete
 export interface HashAutocompleteItem {
@@ -54,6 +55,7 @@ interface HashAutocompleteMenuProps {
 export const HashAutocompleteMenu = forwardRef<HashAutocompleteMenuRef, HashAutocompleteMenuProps>(
   ({ items, command, isLoading = false, query = '' }, ref) => {
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const { t } = useTranslation('ui');
 
     // Reset selection when items change
     useEffect(() => {
@@ -107,7 +109,7 @@ export const HashAutocompleteMenu = forwardRef<HashAutocompleteMenuRef, HashAuto
         >
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span>Searching...</span>
+            <span>{t('channel.hashSearching')}</span>
           </div>
         </div>
       );
@@ -122,7 +124,7 @@ export const HashAutocompleteMenu = forwardRef<HashAutocompleteMenuRef, HashAuto
         >
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <Search className="w-4 h-4" />
-            <span>{query ? `No results for "${query}"` : 'Type to search tasks and documents'}</span>
+            <span>{query ? t('channel.hashNoResults', { query }) : t('channel.hashTypeToSearch')}</span>
           </div>
         </div>
       );
@@ -141,7 +143,7 @@ export const HashAutocompleteMenu = forwardRef<HashAutocompleteMenuRef, HashAuto
         {tasks.length > 0 && (
           <div data-testid="hash-autocomplete-tasks">
             <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              Tasks
+              {t('channel.hashSectionTasks')}
             </div>
             {tasks.map((item) => {
               const currentIndex = flatIndex++;
@@ -184,7 +186,7 @@ export const HashAutocompleteMenu = forwardRef<HashAutocompleteMenuRef, HashAuto
         {documents.length > 0 && (
           <div data-testid="hash-autocomplete-documents">
             <div className="px-3 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              Documents
+              {t('channel.hashSectionDocuments')}
             </div>
             {documents.map((item) => {
               const currentIndex = flatIndex++;
@@ -414,7 +416,7 @@ export function createElementFetcher(baseUrl: string = '/api') {
             id: task.id,
             type: 'task',
             title: task.title,
-            subtitle: task.status ? `Status: ${task.status}` : undefined,
+            subtitle: task.status ? i18n.t('ui:channel.hashTaskStatus', { status: task.status }) : undefined,
             icon: <CheckSquare className="w-4 h-4" />,
           });
         }
@@ -429,7 +431,7 @@ export function createElementFetcher(baseUrl: string = '/api') {
             id: doc.id,
             type: 'document',
             title: doc.title,
-            subtitle: doc.contentType || 'Document',
+            subtitle: doc.contentType || i18n.t('ui:channel.hashDocumentFallback'),
             icon: <FileText className="w-4 h-4" />,
           });
         }

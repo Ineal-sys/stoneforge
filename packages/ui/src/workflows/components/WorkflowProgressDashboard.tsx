@@ -18,6 +18,7 @@ import {
   Terminal,
   XCircle,
 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type {
   Workflow,
   WorkflowTask,
@@ -49,6 +50,7 @@ interface WorkflowProgressDashboardProps {
 // ============================================================================
 
 function DashboardProgressBar({ progress }: { progress: WorkflowProgress }) {
+  const { t } = useTranslation('ui');
   const { percentage, completed, inProgress, blocked, open, total } = progress;
 
   // Calculate segment widths
@@ -60,8 +62,8 @@ function DashboardProgressBar({ progress }: { progress: WorkflowProgress }) {
     <div className="space-y-3" data-testid="workflow-progress-bar">
       {/* Progress header */}
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-[var(--color-text)]">Progress</span>
-        <span className="text-sm text-[var(--color-text-secondary)]">{percentage}% complete</span>
+        <span className="text-sm font-medium text-[var(--color-text)]">{t('workflow.dashboard.progress')}</span>
+        <span className="text-sm text-[var(--color-text-secondary)]">{percentage}% {t('workflow.dashboard.complete')}</span>
       </div>
 
       {/* Stacked progress bar */}
@@ -70,21 +72,21 @@ function DashboardProgressBar({ progress }: { progress: WorkflowProgress }) {
           <div
             className="bg-green-500 transition-all duration-500"
             style={{ width: `${completedWidth}%` }}
-            title={`Completed: ${completed}`}
+            title={t('workflow.dashboard.completedTitle', { count: completed })}
           />
         )}
         {inProgressWidth > 0 && (
           <div
             className="bg-blue-500 transition-all duration-500"
             style={{ width: `${inProgressWidth}%` }}
-            title={`In Progress: ${inProgress}`}
+            title={t('workflow.dashboard.inProgressTitle', { count: inProgress })}
           />
         )}
         {blockedWidth > 0 && (
           <div
             className="bg-red-400 transition-all duration-500"
             style={{ width: `${blockedWidth}%` }}
-            title={`Blocked: ${blocked}`}
+            title={t('workflow.dashboard.blockedTitle', { count: blocked })}
           />
         )}
       </div>
@@ -93,19 +95,19 @@ function DashboardProgressBar({ progress }: { progress: WorkflowProgress }) {
       <div className="flex flex-wrap gap-4 text-xs">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-full bg-green-500" />
-          <span className="text-[var(--color-text-secondary)]">Completed ({completed})</span>
+          <span className="text-[var(--color-text-secondary)]">{t('workflow.dashboard.completed')} ({completed})</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-full bg-blue-500" />
-          <span className="text-[var(--color-text-secondary)]">In Progress ({inProgress})</span>
+          <span className="text-[var(--color-text-secondary)]">{t('workflow.dashboard.inProgress')} ({inProgress})</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-full bg-red-400" />
-          <span className="text-[var(--color-text-secondary)]">Blocked ({blocked})</span>
+          <span className="text-[var(--color-text-secondary)]">{t('workflow.dashboard.blocked')} ({blocked})</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-full bg-gray-300 dark:bg-gray-600" />
-          <span className="text-[var(--color-text-secondary)]">Open ({open})</span>
+          <span className="text-[var(--color-text-secondary)]">{t('workflow.dashboard.open')} ({open})</span>
         </div>
       </div>
     </div>
@@ -117,30 +119,35 @@ function DashboardProgressBar({ progress }: { progress: WorkflowProgress }) {
 // ============================================================================
 
 function StatsCards({ progress }: { progress: WorkflowProgress }) {
+  const { t } = useTranslation('ui');
   const stats = [
     {
-      label: 'Total Tasks',
+      key: 'total',
+      label: t('workflow.dashboard.totalTasks'),
       value: progress.total,
       icon: ListTodo,
       color: 'text-[var(--color-text)]',
       bgColor: 'bg-[var(--color-surface-elevated)]',
     },
     {
-      label: 'Completed',
+      key: 'completed',
+      label: t('workflow.dashboard.completed'),
       value: progress.completed,
       icon: CheckCircle,
       color: 'text-green-600 dark:text-green-400',
       bgColor: 'bg-green-100 dark:bg-green-900/30',
     },
     {
-      label: 'In Progress',
+      key: 'inProgress',
+      label: t('workflow.dashboard.inProgress'),
       value: progress.inProgress,
       icon: Play,
       color: 'text-blue-600 dark:text-blue-400',
       bgColor: 'bg-blue-100 dark:bg-blue-900/30',
     },
     {
-      label: 'Blocked',
+      key: 'blocked',
+      label: t('workflow.dashboard.blocked'),
       value: progress.blocked,
       icon: AlertCircle,
       color: 'text-red-600 dark:text-red-400',
@@ -152,9 +159,9 @@ function StatsCards({ progress }: { progress: WorkflowProgress }) {
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3" data-testid="workflow-stats-cards">
       {stats.map((stat) => (
         <div
-          key={stat.label}
+          key={stat.key}
           className={`p-3 rounded-lg ${stat.bgColor}`}
-          data-testid={`stat-card-${stat.label.toLowerCase().replace(' ', '-')}`}
+          data-testid={`stat-card-${stat.key}`}
         >
           <div className="flex items-center gap-2">
             <stat.icon className={`w-4 h-4 ${stat.color}`} />
@@ -178,6 +185,7 @@ interface TaskListItemProps {
 }
 
 function TaskListItem({ task, dependsOn, blockedBy }: TaskListItemProps) {
+  const { t } = useTranslation('ui');
   const statusIcon = useMemo(() => {
     switch (task.status) {
       case 'closed':
@@ -214,7 +222,7 @@ function TaskListItem({ task, dependsOn, blockedBy }: TaskListItemProps) {
           </span>
           {dependsOn.length > 0 && (
             <span className="text-[var(--color-text-tertiary)]">
-              Depends on {dependsOn.length} task{dependsOn.length > 1 ? 's' : ''}
+              {t('workflow.dashboard.dependsOnTasks', { count: dependsOn.length })}
             </span>
           )}
         </div>
@@ -224,7 +232,7 @@ function TaskListItem({ task, dependsOn, blockedBy }: TaskListItemProps) {
       {blockedBy.length > 0 && (
         <div className="flex items-center gap-1 text-xs text-red-500">
           <AlertTriangle className="w-3 h-3" />
-          <span>Blocked</span>
+          <span>{t('workflow.dashboard.blockedIndicator')}</span>
         </div>
       )}
     </div>
@@ -255,6 +263,7 @@ interface FunctionStepListItemProps {
 }
 
 function FunctionStepListItem({ step, dependsOn, blockedBy }: FunctionStepListItemProps) {
+  const { t } = useTranslation('ui');
   const statusIcon = useMemo(() => {
     switch (step.status) {
       case 'completed':
@@ -340,12 +349,12 @@ function FunctionStepListItem({ step, dependsOn, blockedBy }: FunctionStepListIt
           </span>
           {dependsOn.length > 0 && (
             <span className="text-[var(--color-text-tertiary)]">
-              Depends on {dependsOn.length} step{dependsOn.length > 1 ? 's' : ''}
+              {t('workflow.dashboard.dependsOnTasks', { count: dependsOn.length })}
             </span>
           )}
           {step.timeout && (
             <span className="text-[var(--color-text-tertiary)]">
-              Timeout: {step.timeout / 1000}s
+              {t('workflow.dashboard.timeout')} {step.timeout / 1000}s
             </span>
           )}
         </div>
@@ -355,7 +364,7 @@ function FunctionStepListItem({ step, dependsOn, blockedBy }: FunctionStepListIt
       {step.error && (
         <div className="flex items-center gap-1 text-xs text-red-500" title={step.error}>
           <AlertTriangle className="w-3 h-3" />
-          <span>Error</span>
+          <span>{t('workflow.dashboard.error')}</span>
         </div>
       )}
 
@@ -363,7 +372,7 @@ function FunctionStepListItem({ step, dependsOn, blockedBy }: FunctionStepListIt
       {blockedBy.length > 0 && (
         <div className="flex items-center gap-1 text-xs text-red-500">
           <AlertTriangle className="w-3 h-3" />
-          <span>Blocked</span>
+          <span>{t('workflow.dashboard.blockedIndicator')}</span>
         </div>
       )}
     </div>
@@ -385,6 +394,7 @@ function StepList({
   steps?: WorkflowStep[];
   dependencies: WorkflowDependency[];
 }) {
+  const { t } = useTranslation('ui');
   // Build dependency maps
   const { dependsOnMap, blockedByMap } = useMemo(() => {
     const dependsOn = new Map<string, string[]>();
@@ -436,7 +446,7 @@ function StepList({
   if (sortedSteps.length === 0) {
     return (
       <div className="text-center py-8 text-[var(--color-text-secondary)]">
-        No steps in this workflow
+        {t('workflow.dashboard.noSteps')}
       </div>
     );
   }
@@ -478,6 +488,7 @@ function DependencyGraph({
   tasks: WorkflowTask[];
   dependencies: WorkflowDependency[];
 }) {
+  const { t } = useTranslation('ui');
   const taskMap = useMemo(() => {
     const map = new Map<string, WorkflowTask>();
     for (const task of tasks) {
@@ -489,7 +500,7 @@ function DependencyGraph({
   if (dependencies.length === 0) {
     return (
       <div className="text-center py-4 text-[var(--color-text-tertiary)] text-sm">
-        No dependencies between tasks
+        {t('workflow.dashboard.noDependencies')}
       </div>
     );
   }
@@ -510,7 +521,7 @@ function DependencyGraph({
   return (
     <div className="space-y-3" data-testid="workflow-dependency-graph">
       <div className="text-xs text-[var(--color-text-secondary)] mb-2">
-        Task dependencies ({dependencies.length} connection{dependencies.length !== 1 ? 's' : ''})
+        {t('workflow.dashboard.taskDependencies')} ({dependencies.length})
       </div>
       <div className="space-y-2 overflow-x-auto">
         {dependencies.slice(0, 10).map((dep, idx) => {
@@ -538,7 +549,7 @@ function DependencyGraph({
         })}
         {dependencies.length > 10 && (
           <div className="text-xs text-[var(--color-text-tertiary)]">
-            ...and {dependencies.length - 10} more
+            {t('workflow.dashboard.andMore', { count: dependencies.length - 10 })}
           </div>
         )}
       </div>
@@ -559,6 +570,7 @@ export function WorkflowProgressDashboard({
   dependencies,
   isLoading,
 }: WorkflowProgressDashboardProps) {
+  const { t } = useTranslation('ui');
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -582,12 +594,12 @@ export function WorkflowProgressDashboard({
             {workflow.title}
           </h2>
           <p className="text-sm text-[var(--color-text-secondary)]">
-            {totalSteps} step{totalSteps !== 1 ? 's' : ''} in workflow
+            {t('workflow.dashboard.stepsInWorkflow', { count: totalSteps })}
             {hasFunctionSteps && (
               <span className="ml-2 inline-flex items-center gap-1">
                 <Terminal className="w-3 h-3 text-purple-500" />
                 <span className="text-purple-600 dark:text-purple-400">
-                  includes function steps
+                  {t('workflow.dashboard.includesFunctionSteps')}
                 </span>
               </span>
             )}
@@ -608,7 +620,7 @@ export function WorkflowProgressDashboard({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Step List - 2 columns */}
         <div className="lg:col-span-2">
-          <h3 className="text-sm font-medium text-[var(--color-text)] mb-3">Steps</h3>
+          <h3 className="text-sm font-medium text-[var(--color-text)] mb-3">{t('workflow.dashboard.steps')}</h3>
           <StepList
             tasks={tasks}
             functionSteps={functionSteps}
@@ -619,7 +631,7 @@ export function WorkflowProgressDashboard({
 
         {/* Dependencies - 1 column */}
         <div className="lg:col-span-1">
-          <h3 className="text-sm font-medium text-[var(--color-text)] mb-3">Dependencies</h3>
+          <h3 className="text-sm font-medium text-[var(--color-text)] mb-3">{t('workflow.dashboard.dependencies')}</h3>
           <div className="p-4 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)]">
             <DependencyGraph tasks={tasks} dependencies={dependencies} />
           </div>

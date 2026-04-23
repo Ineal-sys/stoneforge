@@ -13,6 +13,7 @@ import {
   BookOpen,
   ChevronDown,
 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { PlaybookVariable, PlaybookStep } from '../types';
 import { usePlaybooks, usePlaybook, useCreateFromPlaybook } from '../hooks';
 
@@ -45,6 +46,7 @@ function VariableInput({
   value: unknown;
   onChange: (value: unknown) => void;
 }) {
+  const { t } = useTranslation('ui');
   const displayValue = value !== undefined ? value : variable.default;
 
   if (variable.type === 'boolean') {
@@ -57,7 +59,7 @@ function VariableInput({
           className="w-4 h-4 rounded border-[var(--color-border)] text-[var(--color-primary)]"
           data-testid={`variable-input-${variable.name}`}
         />
-        <span className="text-sm text-[var(--color-text-secondary)]">Enable</span>
+        <span className="text-sm text-[var(--color-text-secondary)]">{t('workflow.create.enable')}</span>
       </label>
     );
   }
@@ -74,7 +76,7 @@ function VariableInput({
         className="w-full px-3 py-2 text-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
         data-testid={`variable-input-${variable.name}`}
       >
-        <option value="">Select...</option>
+        <option value="">{t('workflow.create.selectPlaceholder')}</option>
         {variable.enum.map((opt) => (
           <option key={String(opt)} value={String(opt)}>
             {String(opt)}
@@ -93,7 +95,7 @@ function VariableInput({
           variable.type === 'number' ? Number(e.target.value) : e.target.value
         )
       }
-      placeholder={variable.default !== undefined ? `Default: ${variable.default}` : ''}
+      placeholder={variable.default !== undefined ? t('workflow.create.defaultPlaceholder', { value: variable.default }) : ''}
       className="w-full px-3 py-2 text-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
       data-testid={`variable-input-${variable.name}`}
     />
@@ -104,6 +106,7 @@ function VariableInput({
  * Steps preview showing what tasks will be created
  */
 function StepsPreview({ steps }: { steps: PlaybookStep[] }) {
+  const { t } = useTranslation('ui');
   const [isExpanded, setIsExpanded] = useState(false);
   const displaySteps = isExpanded ? steps : steps.slice(0, 3);
   const hasMore = steps.length > 3;
@@ -111,7 +114,7 @@ function StepsPreview({ steps }: { steps: PlaybookStep[] }) {
   return (
     <div data-testid="steps-preview" className="space-y-2">
       <div className="text-sm font-medium text-[var(--color-text)]">
-        Steps ({steps.length})
+        {t('workflow.create.steps')} ({steps.length})
       </div>
       <div className="space-y-1">
         {displaySteps.map((step, index) => (
@@ -131,7 +134,7 @@ function StepsPreview({ steps }: { steps: PlaybookStep[] }) {
           onClick={() => setIsExpanded(!isExpanded)}
           className="text-xs text-[var(--color-primary)] hover:underline"
         >
-          {isExpanded ? 'Show less' : `Show ${steps.length - 3} more...`}
+          {isExpanded ? t('workflow.create.showLess') : t('workflow.create.showMore', { count: steps.length - 3 })}
         </button>
       )}
     </div>
@@ -150,6 +153,7 @@ function PlaybookPicker({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const { data, isLoading } = usePlaybooks();
+  const { t } = useTranslation('ui');
   const playbooks = data?.playbooks ?? [];
 
   const selectedPlaybook = playbooks.find((p) => p.id === selectedPlaybookId);
@@ -158,7 +162,7 @@ function PlaybookPicker({
     return (
       <div className="flex items-center gap-2 px-3 py-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg">
         <Loader2 className="w-4 h-4 animate-spin text-[var(--color-text-secondary)]" />
-        <span className="text-sm text-[var(--color-text-secondary)]">Loading playbooks...</span>
+        <span className="text-sm text-[var(--color-text-secondary)]">{t('workflow.create.loadingPlaybooks')}</span>
       </div>
     );
   }
@@ -167,8 +171,8 @@ function PlaybookPicker({
     return (
       <div className="px-3 py-4 text-center bg-[var(--color-surface)] border border-dashed border-[var(--color-border)] rounded-lg">
         <BookOpen className="w-6 h-6 mx-auto mb-2 text-[var(--color-text-tertiary)]" />
-        <p className="text-sm text-[var(--color-text-secondary)]">No playbooks available</p>
-        <p className="text-xs text-[var(--color-text-tertiary)]">Create a playbook template first</p>
+        <p className="text-sm text-[var(--color-text-secondary)]">{t('workflow.create.noPlaybooks')}</p>
+        <p className="text-xs text-[var(--color-text-tertiary)]">{t('workflow.create.createPlaybookFirst')}</p>
       </div>
     );
   }
@@ -184,7 +188,7 @@ function PlaybookPicker({
         <span className="flex items-center gap-2">
           <BookOpen className="w-4 h-4 text-[var(--color-primary)]" />
           <span className="text-sm text-[var(--color-text)]">
-            {selectedPlaybook?.title ?? 'Select a playbook...'}
+            {selectedPlaybook?.title ?? t('workflow.create.selectPlaybook')}
           </span>
         </span>
         <ChevronDown className={`w-4 h-4 text-[var(--color-text-secondary)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -231,6 +235,7 @@ export function CreateWorkflowModal({
   playbookId: initialPlaybookId,
   onSuccess,
 }: CreateWorkflowModalProps) {
+  const { t } = useTranslation('ui');
   // Form state
   const [title, setTitle] = useState('');
   const [selectedPlaybookId, setSelectedPlaybookId] = useState<string | null>(
@@ -290,12 +295,12 @@ export function CreateWorkflowModal({
   const validationErrors = useMemo(() => {
     const errors: string[] = [];
     if (!playbook) {
-      errors.push('Please select a playbook');
+      errors.push(t('workflow.create.validation.selectPlaybook'));
     } else {
       // Check required variables
       for (const v of playbook.variables) {
         if (v.required && !variables[v.name] && v.default === undefined) {
-          errors.push(`Required variable: ${v.name}`);
+          errors.push(t('workflow.create.validation.requiredVariable', { name: v.name }));
         }
       }
     }
@@ -313,7 +318,7 @@ export function CreateWorkflowModal({
     setError(null);
 
     if (!playbook || !selectedPlaybookId) {
-      setError('Please select a playbook');
+      setError(t('workflow.create.validation.selectPlaybook'));
       return;
     }
 
@@ -327,7 +332,7 @@ export function CreateWorkflowModal({
       onSuccess?.({ id: result.workflow.id, title: title || playbook.title });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create workflow');
+      setError(err instanceof Error ? err.message : t('workflow.create.failedToCreate'));
     }
   };
 
@@ -368,13 +373,13 @@ export function CreateWorkflowModal({
                 id="create-workflow-title"
                 className="text-lg font-semibold text-[var(--color-text)]"
               >
-                Create Workflow
+                {t('workflow.create.title')}
               </h2>
             </div>
             <button
               onClick={onClose}
               className="p-1.5 rounded-lg text-[var(--color-text-tertiary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors"
-              aria-label="Close dialog"
+              aria-label={t('workflow.create.closeDialog')}
               data-testid="create-workflow-close"
             >
               <X className="w-5 h-5" />
@@ -385,7 +390,7 @@ export function CreateWorkflowModal({
           {(error || createFromPlaybook.error) && (
             <div className="mx-4 mt-4 flex items-center gap-2 px-3 py-2 text-sm text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              {error || createFromPlaybook.error?.message || 'An error occurred'}
+              {error || createFromPlaybook.error?.message || t('workflow.create.errorOccurred')}
             </div>
           )}
 
@@ -394,7 +399,7 @@ export function CreateWorkflowModal({
             {/* Playbook Picker */}
             <div className="space-y-1">
               <label className="text-sm font-medium text-[var(--color-text)]">
-                Playbook <span className="text-red-500">*</span>
+                {t('workflow.create.playbook')} <span className="text-red-500">*</span>
               </label>
               <PlaybookPicker
                 selectedPlaybookId={selectedPlaybookId}
@@ -413,7 +418,7 @@ export function CreateWorkflowModal({
                 {/* Workflow Title */}
                 <div className="space-y-1">
                   <label className="text-sm font-medium text-[var(--color-text)]">
-                    Workflow Title
+                    {t('workflow.create.workflowTitle')}
                   </label>
                   <input
                     type="text"
@@ -442,7 +447,7 @@ export function CreateWorkflowModal({
                 {playbook.variables.length > 0 && (
                   <div className="space-y-3">
                     <div className="text-sm font-medium text-[var(--color-text)]">
-                      Variables
+                      {t('workflow.create.variables')}
                     </div>
                     {playbook.variables.map((variable) => (
                       <div key={variable.name} className="space-y-1">
@@ -475,7 +480,7 @@ export function CreateWorkflowModal({
                 {/* Advanced Options */}
                 <details className="text-sm" data-testid="advanced-options">
                   <summary className="text-[var(--color-text-secondary)] cursor-pointer hover:text-[var(--color-text)]" data-testid="toggle-advanced">
-                    Advanced options
+                    {t('workflow.create.advancedOptions')}
                   </summary>
                   <div className="mt-2 p-3 bg-[var(--color-surface)] rounded-lg space-y-2">
                     <label className="flex items-center gap-2 cursor-pointer">
@@ -488,10 +493,10 @@ export function CreateWorkflowModal({
                       />
                       <div>
                         <span className="text-sm text-[var(--color-text)]">
-                          Ephemeral workflow
+                          {t('workflow.create.ephemeralWorkflow')}
                         </span>
                         <p className="text-xs text-[var(--color-text-tertiary)]">
-                          Ephemeral workflows are automatically cleaned up after completion
+                          {t('workflow.create.ephemeralDescription')}
                         </p>
                       </div>
                     </label>
@@ -508,7 +513,7 @@ export function CreateWorkflowModal({
               className="px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] rounded-lg transition-colors"
               data-testid="create-cancel-button"
             >
-              Cancel
+              {t('workflow.create.cancel')}
             </button>
             <button
               onClick={handleSubmit}
@@ -519,12 +524,12 @@ export function CreateWorkflowModal({
               {createFromPlaybook.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Creating...
+                  {t('workflow.create.creating')}
                 </>
               ) : (
                 <>
                   <Play className="w-4 h-4" />
-                  Create Workflow
+                  {t('workflow.create.createWorkflow')}
                 </>
               )}
             </button>

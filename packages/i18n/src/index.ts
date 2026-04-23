@@ -2,6 +2,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
 import frCommon from '../locales/fr/common.json';
+import frUi from '../locales/fr/ui.json';
 
 /**
  * Supported locales in the Stoneforge platform.
@@ -22,6 +23,7 @@ export const DEFAULT_NAMESPACE = 'common';
 export const resources = {
   fr: {
     common: frCommon,
+    ui: frUi,
   },
 } as const;
 
@@ -48,7 +50,7 @@ export function initI18n(): typeof i18n {
     lng: DEFAULT_LOCALE,
     fallbackLng: DEFAULT_LOCALE,
     defaultNS: DEFAULT_NAMESPACE,
-    ns: [DEFAULT_NAMESPACE],
+    ns: [DEFAULT_NAMESPACE, 'ui'],
     interpolation: {
       escapeValue: false, // React already escapes
     },

@@ -3,6 +3,7 @@
  */
 
 import { List, GanttChart } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { ViewMode } from '../types';
 
 interface ViewToggleProps {
@@ -11,6 +12,8 @@ interface ViewToggleProps {
 }
 
 export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
+  const { t } = useTranslation('ui');
+
   return (
     <div data-testid="view-toggle" className="flex p-0.5 bg-gray-100 rounded-lg">
       <button
@@ -21,10 +24,10 @@ export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
             ? 'bg-white text-gray-900 shadow-sm'
             : 'text-gray-600 hover:text-gray-900'
         }`}
-        aria-label="List view"
+        aria-label={t('plans.view.listAriaLabel')}
       >
         <List className="w-4 h-4" />
-        List
+        {t('plans.view.list')}
       </button>
       <button
         data-testid="view-toggle-roadmap"
@@ -34,10 +37,10 @@ export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
             ? 'bg-white text-gray-900 shadow-sm'
             : 'text-gray-600 hover:text-gray-900'
         }`}
-        aria-label="Roadmap view"
+        aria-label={t('plans.view.roadmapAriaLabel')}
       >
         <GanttChart className="w-4 h-4" />
-        Roadmap
+        {t('plans.view.roadmap')}
       </button>
     </div>
   );

@@ -5,6 +5,7 @@
  */
 
 import { AlertCircle } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { WorkflowTask } from '../types';
 import { TASK_PRIORITY_COLORS } from '../constants';
 
@@ -34,6 +35,7 @@ export function WorkflowTaskList({
   tasks,
   taskLinkBase = '/tasks',
 }: WorkflowTaskListProps) {
+  const { t } = useTranslation('ui');
   if (tasks.length === 0) {
     return (
       <div
@@ -41,10 +43,9 @@ export function WorkflowTaskList({
         className="text-center py-8 text-gray-500 dark:text-gray-400"
       >
         <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
-        <p className="text-sm font-medium">No tasks in this workflow</p>
+        <p className="text-sm font-medium">{t('workflow.taskList.noTasks')}</p>
         <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-          Workflows need tasks to be useful. This state should not occur
-          as workflows require at least one task to be created.
+          {t('workflow.taskList.noTasksDescription')}
         </p>
       </div>
     );
@@ -60,7 +61,7 @@ export function WorkflowTaskList({
         >
           <div
             className={`w-2 h-2 rounded-full ${TASK_PRIORITY_COLORS[task.priority] || 'bg-gray-200 dark:bg-gray-700'}`}
-            title={`Priority ${task.priority}`}
+            title={t('workflow.taskList.priorityTitle', { priority: task.priority })}
           />
           <a
             href={`${taskLinkBase}?selected=${task.id}`}

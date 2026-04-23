@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   XCircle,
 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { HydratedPlan } from '../types';
 
 interface MobilePlanCardProps {
@@ -24,27 +25,24 @@ interface MobilePlanCardProps {
   progressRing?: React.ReactNode;
 }
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; icon: React.ReactNode; color: string }
-> = {
+const STATUS_ICONS: Record<string, { icon: React.ReactNode; color: string; labelKey: string }> = {
   draft: {
-    label: 'Draft',
+    labelKey: 'plans.status.draft',
     icon: <FileEdit className="w-3 h-3" />,
     color: 'bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300',
   },
   active: {
-    label: 'Active',
+    labelKey: 'plans.status.active',
     icon: <CircleDot className="w-3 h-3" />,
     color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
   },
   completed: {
-    label: 'Completed',
+    labelKey: 'plans.status.completed',
     icon: <CheckCircle2 className="w-3 h-3" />,
     color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
   },
   cancelled: {
-    label: 'Cancelled',
+    labelKey: 'plans.status.cancelled',
     icon: <XCircle className="w-3 h-3" />,
     color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
   },
@@ -83,21 +81,6 @@ function highlightMatches(title: string, indices: number[]): React.ReactNode {
   return <>{result}</>;
 }
 
-function formatRelativeTime(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 1) return 'just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
 export function MobilePlanCard({
   plan,
   isSelected,
@@ -105,7 +88,8 @@ export function MobilePlanCard({
   searchMatchIndices,
   progressRing,
 }: MobilePlanCardProps) {
-  const statusConfig = STATUS_CONFIG[plan.status] || STATUS_CONFIG.draft;
+  const { t } = useTranslation('ui');
+  const statusConfig = STATUS_ICONS[plan.status] || STATUS_ICONS.draft;
   const progress = plan._progress;
   const hasProgress = progress && progress.totalTasks > 0;
 
@@ -150,7 +134,7 @@ export function MobilePlanCard({
             {plan.id}
           </span>
           <span className="text-xs text-[var(--color-text-muted)]">
-            · {formatRelativeTime(plan.updatedAt)}
+            · {formatRelativeTime(t, plan.updatedAt)}
           </span>
         </div>
 
@@ -159,7 +143,7 @@ export function MobilePlanCard({
           {/* Status badge */}
           <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium rounded ${statusConfig.color}`}>
             {statusConfig.icon}
-            {statusConfig.label}
+            {t(statusConfig.labelKey)}
           </span>
 
           {/* Tags (limited) */}
@@ -190,7 +174,7 @@ export function MobilePlanCard({
         ) : hasProgress ? (
           <div
             className="w-8 h-8 rounded-full border-2 border-blue-500 flex items-center justify-center"
-            title={`${progress.completionPercentage}% complete`}
+            title={t('plans.progress.percentComplete', { percentage: progress.completionPercentage })}
             data-testid={`mobile-plan-progress-${plan.id}`}
           >
             <span className="text-[10px] text-blue-500 font-medium">{progress.completionPercentage}%</span>
@@ -198,7 +182,7 @@ export function MobilePlanCard({
         ) : (
           <div
             className="w-8 h-8 rounded-full border-2 border-dashed border-[var(--color-border)] flex items-center justify-center"
-            title="No tasks in plan"
+            title={t('plans.progress.noTasks')}
           >
             <span className="text-[8px] text-[var(--color-text-muted)]">--</span>
           </div>
@@ -213,4 +197,25 @@ export function MobilePlanCard({
       </div>
     </div>
   );
+}
+
+/**
+ * Format relative time from a date string using i18n
+ */
+function formatRelativeTime(
+  t: (key: string, options?: Record<string, unknown>) => string,
+  dateString: string,
+): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return t('plans.time.justNow');
+  if (diffMins < 60) return t('plans.time.minutesAgo', { count: diffMins });
+  if (diffHours < 24) return t('plans.time.hoursAgo', { count: diffHours });
+  if (diffDays < 7) return t('plans.time.daysAgo', { count: diffDays });
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }

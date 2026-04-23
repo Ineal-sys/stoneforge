@@ -1,5 +1,6 @@
 import { useState, KeyboardEvent } from 'react';
 import { X } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 
 interface TagInputProps {
   tags: string[];
@@ -16,6 +17,8 @@ export function TagInput({
   className = '',
   'data-testid': testId,
 }: TagInputProps) {
+  const { t } = useTranslation('ui');
+  const resolvedPlaceholder = placeholder ?? t('tagInput.placeholder');
   const [inputValue, setInputValue] = useState('');
 
   const addTag = (value: string) => {
@@ -75,7 +78,7 @@ export function TagInput({
             type="button"
             onClick={() => removeTag(tag)}
             className="p-0.5 hover:bg-[var(--color-surface-hover)] rounded text-[var(--color-text-tertiary)] hover:text-[var(--color-text)]"
-            aria-label={`Remove tag ${tag}`}
+            aria-label={t('tagInput.removeTag', { tag })}
             data-testid={`tag-remove-${tag}`}
           >
             <X className="w-3 h-3" />
@@ -88,7 +91,7 @@ export function TagInput({
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
-        placeholder={tags.length === 0 ? placeholder : ''}
+        placeholder={tags.length === 0 ? resolvedPlaceholder : ''}
         className="flex-1 min-w-[100px] outline-none text-sm bg-transparent text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)]"
         data-testid={`${testId}-input`}
       />

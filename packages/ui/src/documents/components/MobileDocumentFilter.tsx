@@ -4,6 +4,7 @@
 
 import { useEffect, useRef } from 'react';
 import { ChevronLeft, Check, Tag } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { DocumentFilterConfig } from '../types';
 import { CONTENT_TYPE_FILTER_OPTIONS } from '../constants';
 import { getActiveFilterCount } from '../utils';
@@ -25,6 +26,7 @@ export function MobileDocumentFilter({
   onClearFilters,
   availableTags,
 }: MobileDocumentFilterProps) {
+  const { t } = useTranslation('ui');
   const sheetRef = useRef<HTMLDivElement>(null);
   const startYRef = useRef<number | null>(null);
   const currentYRef = useRef<number>(0);
@@ -146,7 +148,7 @@ export function MobileDocumentFilter({
       data-testid="mobile-document-filter"
       role="dialog"
       aria-modal="true"
-      aria-label="Document filters"
+      aria-label={t('documents.filters.dialogAriaLabel')}
     >
       {/* Backdrop */}
       <div
@@ -173,13 +175,13 @@ export function MobileDocumentFilter({
           <button
             onClick={onClose}
             className="p-2 -ml-2 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors duration-150 touch-target"
-            aria-label="Close"
+            aria-label={t('documents.filters.close')}
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
 
           <h2 className="flex-1 text-lg font-semibold text-[var(--color-text)]">
-            Filters
+            {t('documents.filters.title')}
           </h2>
         </div>
 
@@ -188,7 +190,7 @@ export function MobileDocumentFilter({
           {/* Content type filter */}
           <div>
             <label className="block text-sm font-medium text-[var(--color-text)] mb-2">
-              Type
+              {t('documents.filters.type')}
             </label>
             <div className="flex flex-wrap gap-2">
               {CONTENT_TYPE_FILTER_OPTIONS.map((option) => {
@@ -205,7 +207,7 @@ export function MobileDocumentFilter({
                     data-testid={`mobile-filter-type-${option.value}`}
                   >
                     {isSelected && <Check className="w-4 h-4" />}
-                    {option.label}
+                    {option.labelKey ? t(option.labelKey) : option.label}
                   </button>
                 );
               })}
@@ -216,7 +218,7 @@ export function MobileDocumentFilter({
           {availableTags.length > 0 && (
             <div>
               <label className="block text-sm font-medium text-[var(--color-text)] mb-2">
-                Tags
+                {t('documents.filters.tags')}
               </label>
               <div className="flex flex-wrap gap-2">
                 {availableTags.map((tag) => {
@@ -249,7 +251,7 @@ export function MobileDocumentFilter({
               className="w-full py-2.5 text-sm font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors touch-target"
               data-testid="mobile-clear-filters"
             >
-              Clear all filters ({activeCount})
+              {t('documents.filters.clearAll', { count: activeCount })}
             </button>
           )}
 
@@ -259,7 +261,7 @@ export function MobileDocumentFilter({
             className="w-full py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors touch-target"
             data-testid="mobile-apply-filters"
           >
-            Apply Filters
+            {t('documents.filters.apply')}
           </button>
         </div>
       </div>

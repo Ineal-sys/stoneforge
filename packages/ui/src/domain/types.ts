@@ -8,6 +8,8 @@
  * from backend types. Components accept these as props and don't make API calls.
  */
 
+import type { TFunction } from '@stoneforge/i18n';
+
 /**
  * Base element properties shared by all domain types
  */
@@ -199,8 +201,16 @@ export function getPriorityConfig(priority: number): PriorityConfig {
 /**
  * Get priority display name
  */
-export function getPriorityDisplayName(priority: Priority | number): string {
-  return getPriorityConfig(priority).label;
+export function getPriorityDisplayName(priority: Priority | number, t: TFunction): string {
+  const key = Object.entries(PRIORITY_CONFIG).find(([, v]) => v.label === getPriorityConfig(priority).label)?.[0];
+  switch (key) {
+    case '1': return t('domain.priority.critical');
+    case '2': return t('domain.priority.high');
+    case '3': return t('domain.priority.medium');
+    case '4': return t('domain.priority.low');
+    case '5': return t('domain.priority.trivial');
+    default: return t('domain.priority.medium');
+  }
 }
 
 /**
@@ -226,26 +236,26 @@ export function getPriorityColor(priority: Priority | number): string {
 /**
  * Get status display name
  */
-export function getStatusDisplayName(status: TaskStatus | string): string {
+export function getStatusDisplayName(status: TaskStatus | string, t: TFunction): string {
   switch (status) {
     case 'open':
-      return 'Open';
+      return t('domain.status.open');
     case 'todo':
-      return 'To Do';
+      return t('domain.status.todo');
     case 'in_progress':
-      return 'In Progress';
+      return t('domain.status.in_progress');
     case 'blocked':
-      return 'Blocked';
+      return t('domain.status.blocked');
     case 'review':
-      return 'Review';
+      return t('domain.status.review');
     case 'closed':
-      return 'Closed';
+      return t('domain.status.closed');
     case 'cancelled':
-      return 'Cancelled';
+      return t('domain.status.cancelled');
     case 'deferred':
-      return 'Deferred';
+      return t('domain.status.deferred');
     case 'backlog':
-      return 'Backlog';
+      return t('domain.status.backlog');
     default:
       return status;
   }
@@ -282,16 +292,16 @@ export function getStatusColor(status: TaskStatus | string): string {
 /**
  * Get task type display name
  */
-export function getTaskTypeDisplayName(taskType: TaskType | string): string {
+export function getTaskTypeDisplayName(taskType: TaskType | string, t: TFunction): string {
   switch (taskType) {
     case 'bug':
-      return 'Bug';
+      return t('domain.taskType.bug');
     case 'feature':
-      return 'Feature';
+      return t('domain.taskType.feature');
     case 'task':
-      return 'Task';
+      return t('domain.taskType.task');
     case 'chore':
-      return 'Chore';
+      return t('domain.taskType.chore');
     default:
       return taskType;
   }
@@ -318,26 +328,26 @@ export function getTaskTypeColor(taskType: TaskType | string): string {
 /**
  * Get merge status display name
  */
-export function getMergeStatusDisplayName(status: MergeStatus): string {
+export function getMergeStatusDisplayName(status: MergeStatus, t: TFunction): string {
   switch (status) {
     case 'pending':
-      return 'Pending Merge';
+      return t('domain.mergeStatus.pending');
     case 'testing':
-      return 'Testing';
+      return t('domain.mergeStatus.testing');
     case 'merging':
-      return 'Merging';
+      return t('domain.mergeStatus.merging');
     case 'merged':
-      return 'Merged';
+      return t('domain.mergeStatus.merged');
     case 'conflict':
-      return 'Conflict';
+      return t('domain.mergeStatus.conflict');
     case 'test_failed':
-      return 'Tests Failed';
+      return t('domain.mergeStatus.test_failed');
     case 'failed':
-      return 'Merge Failed';
+      return t('domain.mergeStatus.failed');
     case 'not_applicable':
-      return 'No Merge Needed';
+      return t('domain.mergeStatus.not_applicable');
     case 'awaiting_approval':
-      return 'Awaiting Approval';
+      return t('domain.mergeStatus.awaiting_approval');
     default:
       return status;
   }

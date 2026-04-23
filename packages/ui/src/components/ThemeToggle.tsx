@@ -6,6 +6,7 @@
  */
 
 import { Sun, Moon, Monitor } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useTheme } from '../hooks/useTheme';
 
 interface ThemeToggleProps {
@@ -17,6 +18,7 @@ interface ThemeToggleProps {
 
 export function ThemeToggle({ showCycle = false, className = '' }: ThemeToggleProps) {
   const { theme, resolvedTheme, toggleTheme, toggleDarkMode } = useTheme();
+  const { t } = useTranslation('ui');
 
   if (showCycle) {
     // Cycle toggle: shows current mode and cycles through all options
@@ -30,8 +32,8 @@ export function ThemeToggle({ showCycle = false, className = '' }: ThemeTogglePr
           hover:text-gray-700 dark:hover:text-gray-200
           ${className}
         `}
-        aria-label={`Current theme: ${theme}. Click to change.`}
-        title={`Theme: ${theme === 'system' ? `System (${resolvedTheme})` : theme}`}
+        aria-label={t('themeToggle.currentTheme', { theme })}
+        title={t('themeToggle.currentTheme', { theme: theme === 'system' ? `System (${resolvedTheme})` : theme })}
         data-testid="theme-toggle"
       >
         {theme === 'system' ? (
@@ -56,8 +58,8 @@ export function ThemeToggle({ showCycle = false, className = '' }: ThemeTogglePr
         hover:text-gray-700 dark:hover:text-gray-200
         ${className}
       `}
-      aria-label={resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-      title={resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+      aria-label={resolvedTheme === 'dark' ? t('themeToggle.switchToLight') : t('themeToggle.switchToDark')}
+      title={resolvedTheme === 'dark' ? t('themeToggle.switchToLight') : t('themeToggle.switchToDark')}
       data-testid="theme-toggle"
     >
       {resolvedTheme === 'dark' ? (

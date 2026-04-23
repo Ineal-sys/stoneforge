@@ -21,6 +21,7 @@ import {
   PanelLeftOpen,
   type LucideIcon,
 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { Tooltip } from '../components/Tooltip';
 
 /**
@@ -108,7 +109,7 @@ export interface SidebarProps {
 // Default branding
 const DEFAULT_BRANDING: SidebarBranding = {
   logoText: 'E',
-  appName: 'Stoneforge',
+  appName: 'Stoneforge', // will be overridden by t() in component
   logoGradient: 'from-[var(--color-primary)] to-[var(--color-accent-500)]',
 };
 
@@ -130,6 +131,7 @@ export function Sidebar({
   expandTooltip = { content: 'Expand sidebar', shortcut: '⌘B' },
   isPathActive = defaultIsPathActive,
 }: SidebarProps) {
+  const { t } = useTranslation('ui');
   // Track expanded sections - default to section's defaultExpanded
   const [expandedSections, setExpandedSections] = useState<Set<string>>(() =>
     new Set(sections.filter(s => s.defaultExpanded !== false).map(s => s.id))
@@ -196,7 +198,7 @@ export function Sidebar({
                 className="px-1.5 py-0.5 text-[10px] font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full"
                 data-testid={`${item.testId}-badge`}
               >
-                {item.badgeCount > 99 ? '99+' : item.badgeCount}
+                {item.badgeCount > 99 ? t('sidebar.badgeOverflow') : item.badgeCount}
               </span>
             )}
             {!item.badgeCount && item.shortcut && (
@@ -291,7 +293,7 @@ export function Sidebar({
           <button
             onClick={onToggle}
             className="p-1.5 rounded-md text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-sidebar-item-hover)] transition-colors duration-150"
-            aria-label="Collapse sidebar"
+            aria-label={t('sidebar.collapseSidebar')}
             aria-expanded="true"
             data-testid="sidebar-toggle"
           >
@@ -319,7 +321,7 @@ export function Sidebar({
             <button
               onClick={onToggle}
               className="w-full flex items-center justify-center p-2 rounded-md text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-sidebar-item-hover)] transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-1 focus:ring-offset-[var(--color-sidebar-bg)]"
-              aria-label="Expand sidebar"
+              aria-label={t('sidebar.expandSidebar')}
               aria-expanded="false"
               data-testid="sidebar-expand-button"
             >

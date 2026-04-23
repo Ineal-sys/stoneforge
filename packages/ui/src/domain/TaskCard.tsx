@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { Paperclip, Link2, GitBranch } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { Card } from '../components/Card';
 import { Badge } from '../components/Badge';
 import type { Task } from './types';
@@ -72,6 +73,7 @@ export const TaskCard = React.forwardRef<HTMLDivElement, TaskCardProps>(
     },
     ref
   ) => {
+    const { t } = useTranslation('ui');
     const priority = getPriorityConfig(task.priority);
     const typeStyle = getTaskTypeStyle(task.taskType);
 
@@ -171,7 +173,7 @@ export const TaskCard = React.forwardRef<HTMLDivElement, TaskCardProps>(
           </Badge>
           {task.assignee && (
             <span className="text-xs text-[var(--color-text-secondary)]">
-              Assigned: <span className="text-[var(--color-text)]">{task.assignee}</span>
+              {t('domain.taskCard.assigned')} <span className="text-[var(--color-text)]">{task.assignee}</span>
             </span>
           )}
         </div>
@@ -195,7 +197,7 @@ export const TaskCard = React.forwardRef<HTMLDivElement, TaskCardProps>(
                 title={`Blocks ${blocksCount} task${blocksCount > 1 ? 's' : ''}`}
               >
                 <GitBranch className="w-3 h-3" />
-                Blocks {blocksCount}
+                {t('domain.taskCard.blocks', { count: blocksCount })}
               </span>
             )}
             {blockedByCount > 0 && (
@@ -205,7 +207,7 @@ export const TaskCard = React.forwardRef<HTMLDivElement, TaskCardProps>(
                 title={`Blocked by ${blockedByCount} task${blockedByCount > 1 ? 's' : ''}`}
               >
                 <Link2 className="w-3 h-3" />
-                Blocked by {blockedByCount}
+                {t('domain.taskCard.blockedBy', { count: blockedByCount })}
               </span>
             )}
           </div>
@@ -231,7 +233,7 @@ export const TaskCard = React.forwardRef<HTMLDivElement, TaskCardProps>(
 
         {showTimestamp && (
           <div className="mt-3 text-[11px] text-[var(--color-text-tertiary)]">
-            Created {new Date(task.createdAt).toLocaleDateString()}
+            {t('domain.taskCard.created')} {new Date(task.createdAt).toLocaleDateString()}
           </div>
         )}
       </Card>

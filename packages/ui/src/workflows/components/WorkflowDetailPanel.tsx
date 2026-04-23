@@ -20,6 +20,7 @@ import {
   Ban,
   Loader2,
 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 
 import type { Workflow, WorkflowStatus } from '../types';
 import { formatDate, formatRelativeTime } from '../utils';
@@ -51,23 +52,23 @@ interface WorkflowDetailPanelProps {
 /**
  * Get available status transitions based on current status
  */
-function getStatusTransitions(status: WorkflowStatus): StatusTransition[] {
+function getStatusTransitions(status: WorkflowStatus, t: ReturnType<typeof useTranslation>['t']): StatusTransition[] {
   switch (status) {
     case 'pending':
       return [
-        { status: 'running', label: 'Start', icon: Play, color: 'bg-blue-500 hover:bg-blue-600' },
-        { status: 'cancelled', label: 'Cancel', icon: Ban, color: 'bg-orange-500 hover:bg-orange-600' },
+        { status: 'running', label: t('workflow.detail.statusAction.start'), icon: Play, color: 'bg-blue-500 hover:bg-blue-600' },
+        { status: 'cancelled', label: t('workflow.detail.statusAction.cancel'), icon: Ban, color: 'bg-orange-500 hover:bg-orange-600' },
       ];
     case 'running':
       return [
-        { status: 'completed', label: 'Complete', icon: CheckCircle, color: 'bg-green-500 hover:bg-green-600' },
-        { status: 'failed', label: 'Mark Failed', icon: AlertTriangle, color: 'bg-red-500 hover:bg-red-600' },
-        { status: 'cancelled', label: 'Cancel', icon: Ban, color: 'bg-orange-500 hover:bg-orange-600' },
+        { status: 'completed', label: t('workflow.detail.statusAction.complete'), icon: CheckCircle, color: 'bg-green-500 hover:bg-green-600' },
+        { status: 'failed', label: t('workflow.detail.statusAction.markFailed'), icon: AlertTriangle, color: 'bg-red-500 hover:bg-red-600' },
+        { status: 'cancelled', label: t('workflow.detail.statusAction.cancel'), icon: Ban, color: 'bg-orange-500 hover:bg-orange-600' },
       ];
     case 'completed':
     case 'failed':
     case 'cancelled':
-      return [{ status: 'pending', label: 'Reset to Pending', icon: Clock, color: 'bg-gray-500 hover:bg-gray-600' }];
+      return [{ status: 'pending', label: t('workflow.detail.statusAction.resetToPending'), icon: Clock, color: 'bg-gray-500 hover:bg-gray-600' }];
     default:
       return [];
   }
@@ -78,6 +79,7 @@ export function WorkflowDetailPanel({
   onClose,
   taskLinkBase = '/tasks',
 }: WorkflowDetailPanelProps) {
+  const { t } = useTranslation('ui');
   const { workflow, tasks, progress, isLoading, error } = useWorkflowDetail(workflowId);
 
   // Edit mode state
@@ -158,7 +160,7 @@ export function WorkflowDetailPanel({
         data-testid="workflow-detail-loading"
         className="h-full flex items-center justify-center bg-white dark:bg-[var(--color-bg)]"
       >
-        <div className="text-gray-500 dark:text-gray-400">Loading workflow...</div>
+        <div className="text-gray-500 dark:text-gray-400">{t('workflow.detail.loading')}</div>
       </div>
     );
   }
@@ -169,7 +171,7 @@ export function WorkflowDetailPanel({
         data-testid="workflow-detail-error"
         className="h-full flex flex-col items-center justify-center bg-white dark:bg-[var(--color-bg)]"
       >
-        <div className="text-red-600 dark:text-red-400 mb-2">Failed to load workflow</div>
+        <div className="text-red-600 dark:text-red-400 mb-2">{t('workflow.detail.loadFailed')}</div>
         <div className="text-sm text-gray-500 dark:text-gray-400">{error?.message}</div>
       </div>
     );
@@ -181,12 +183,12 @@ export function WorkflowDetailPanel({
         data-testid="workflow-detail-not-found"
         className="h-full flex items-center justify-center bg-white dark:bg-[var(--color-bg)]"
       >
-        <div className="text-gray-500 dark:text-gray-400">Workflow not found</div>
+        <div className="text-gray-500 dark:text-gray-400">{t('workflow.detail.notFound')}</div>
       </div>
     );
   }
 
-  const statusTransitions = getStatusTransitions(workflow.status);
+  const statusTransitions = getStatusTransitions(workflow.status, t);
 
   return (
     <div
@@ -204,7 +206,7 @@ export function WorkflowDetailPanel({
                 data-testid="ephemeral-badge"
                 className="text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded"
               >
-                Ephemeral
+                {t('workflow.detail.ephemeral')}
               </span>
             )}
           </div>
@@ -229,7 +231,7 @@ export function WorkflowDetailPanel({
                 onClick={handleSaveTitle}
                 disabled={updateWorkflow.isPending}
                 className="p-1 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded"
-                title="Save"
+                title={t('workflow.detail.save')}
               >
                 <Check className="w-5 h-5" />
               </button>
@@ -237,7 +239,7 @@ export function WorkflowDetailPanel({
                 data-testid="cancel-edit-btn"
                 onClick={handleCancelEdit}
                 className="p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
-                title="Cancel"
+                title={t('workflow.detail.cancelEdit')}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -254,7 +256,7 @@ export function WorkflowDetailPanel({
                 data-testid="edit-title-btn"
                 onClick={() => setIsEditMode(true)}
                 className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                title="Edit title"
+                title={t('workflow.detail.editTitle')}
               >
                 <Pencil className="w-4 h-4" />
               </button>
@@ -270,7 +272,7 @@ export function WorkflowDetailPanel({
         <button
           onClick={onClose}
           className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
-          aria-label="Close panel"
+          aria-label={t('workflow.detail.closePanel')}
           data-testid="workflow-detail-close"
         >
           <X className="w-5 h-5" />
@@ -304,7 +306,7 @@ export function WorkflowDetailPanel({
           {showDeleteConfirm ? (
             <div className="flex-1 flex items-center gap-2">
               <span className="text-sm text-red-600 dark:text-red-400 font-medium">
-                Delete this workflow and all its tasks?
+                {t('workflow.detail.deleteConfirm')}
               </span>
               <button
                 data-testid="delete-confirm-btn"
@@ -317,14 +319,14 @@ export function WorkflowDetailPanel({
                 ) : (
                   <Flame className="w-4 h-4" />
                 )}
-                Confirm Delete
+                {t('workflow.detail.confirmDelete')}
               </button>
               <button
                 data-testid="delete-cancel-btn"
                 onClick={() => setShowDeleteConfirm(false)}
                 className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
               >
-                Cancel
+                {t('workflow.detail.cancelDelete')}
               </button>
             </div>
           ) : (
@@ -340,7 +342,7 @@ export function WorkflowDetailPanel({
                 ) : (
                   <Archive className="w-4 h-4" />
                 )}
-                Promote (Make Durable)
+                {t('workflow.detail.promote')}
               </button>
               <button
                 data-testid="delete-btn"
@@ -348,7 +350,7 @@ export function WorkflowDetailPanel({
                 className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 border border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
               >
                 <Flame className="w-4 h-4" />
-                Delete
+                {t('workflow.detail.delete')}
               </button>
             </>
           )}
@@ -360,7 +362,7 @@ export function WorkflowDetailPanel({
         {/* Progress Section */}
         {progress && progress.total > 0 && (
           <div className="mb-6">
-            <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Progress</div>
+            <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('workflow.detail.progress')}</div>
             <ProgressBar progress={progress} />
             <div className="mt-4">
               <TaskStatusSummary progress={progress} />
@@ -371,7 +373,7 @@ export function WorkflowDetailPanel({
         {/* Tasks Section */}
         <div className="mb-6">
           <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Tasks ({tasks.length})
+            {t('workflow.detail.tasks', { count: tasks.length })}
           </div>
           {/* Warning when workflow has only one task */}
           {tasks.length === 1 && (
@@ -381,11 +383,12 @@ export function WorkflowDetailPanel({
             >
               <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
                 <AlertTriangle className="w-4 h-4" />
-                <span className="text-sm font-medium">Only one task remaining</span>
+                <span className="text-sm font-medium">{t('workflow.detail.lastTaskWarning')}</span>
               </div>
               <p className="mt-1 text-xs text-amber-600 dark:text-amber-500">
-                Workflows must have at least one task. This task cannot be deleted.
-                Use &apos;Delete&apos; to remove the entire workflow if needed.
+                {t('workflow.detail.lastTaskWarningDescription')}
+                {' '}
+                {t('workflow.detail.lastTaskWarningAction')}
               </p>
             </div>
           )}
@@ -403,31 +406,32 @@ export function WorkflowDetailPanel({
  * Workflow metadata display (dates, creator, tags, variables)
  */
 function WorkflowMetadata({ workflow }: { workflow: Workflow }) {
+  const { t } = useTranslation('ui');
   return (
     <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
       <div className="grid grid-cols-2 gap-4 text-xs text-gray-500 dark:text-gray-400">
         <div>
           <div className="flex items-center gap-1 mb-1">
             <Clock className="w-3 h-3" />
-            <span className="font-medium">Created:</span>
+            <span className="font-medium">{t('workflow.detail.created')}</span>
           </div>
           <span title={formatDate(workflow.createdAt)}>
-            {formatRelativeTime(workflow.createdAt)}
+            {formatRelativeTime(workflow.createdAt, t)}
           </span>
         </div>
         <div>
           <div className="flex items-center gap-1 mb-1">
             <Clock className="w-3 h-3" />
-            <span className="font-medium">Updated:</span>
+            <span className="font-medium">{t('workflow.detail.updated')}</span>
           </div>
           <span title={formatDate(workflow.updatedAt)}>
-            {formatRelativeTime(workflow.updatedAt)}
+            {formatRelativeTime(workflow.updatedAt, t)}
           </span>
         </div>
         <div className="col-span-2">
           <div className="flex items-center gap-1 mb-1">
             <User className="w-3 h-3" />
-            <span className="font-medium">Created by:</span>
+            <span className="font-medium">{t('workflow.detail.createdBy')}</span>
           </div>
           <span className="font-mono">{workflow.createdBy}</span>
         </div>
@@ -435,7 +439,7 @@ function WorkflowMetadata({ workflow }: { workflow: Workflow }) {
           <div className="col-span-2">
             <div className="flex items-center gap-1 mb-1">
               <Play className="w-3 h-3 text-blue-500" />
-              <span className="font-medium">Started:</span>
+              <span className="font-medium">{t('workflow.detail.started')}</span>
             </div>
             <span>{formatDate(workflow.startedAt)}</span>
           </div>
@@ -444,7 +448,7 @@ function WorkflowMetadata({ workflow }: { workflow: Workflow }) {
           <div className="col-span-2">
             <div className="flex items-center gap-1 mb-1">
               <CheckCircle className="w-3 h-3 text-green-500" />
-              <span className="font-medium">Finished:</span>
+              <span className="font-medium">{t('workflow.detail.finished')}</span>
             </div>
             <span>{formatDate(workflow.finishedAt)}</span>
           </div>
@@ -453,7 +457,7 @@ function WorkflowMetadata({ workflow }: { workflow: Workflow }) {
           <div className="col-span-2">
             <div className="flex items-center gap-1 mb-1">
               <AlertTriangle className="w-3 h-3 text-red-500" />
-              <span className="font-medium">Failure reason:</span>
+              <span className="font-medium">{t('workflow.detail.failureReason')}</span>
             </div>
             <p className="text-red-600 dark:text-red-400">{workflow.failureReason}</p>
           </div>
@@ -462,7 +466,7 @@ function WorkflowMetadata({ workflow }: { workflow: Workflow }) {
           <div className="col-span-2">
             <div className="flex items-center gap-1 mb-1">
               <XCircle className="w-3 h-3 text-orange-500" />
-              <span className="font-medium">Cancel reason:</span>
+              <span className="font-medium">{t('workflow.detail.cancelReason')}</span>
             </div>
             <p className="text-orange-600 dark:text-orange-400">{workflow.cancelReason}</p>
           </div>
@@ -473,7 +477,7 @@ function WorkflowMetadata({ workflow }: { workflow: Workflow }) {
       {workflow.tags && workflow.tags.length > 0 && (
         <div className="mt-4">
           <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-            Tags
+            {t('workflow.detail.tags')}
           </div>
           <div className="flex flex-wrap gap-1">
             {workflow.tags.map((tag) => (
@@ -493,7 +497,7 @@ function WorkflowMetadata({ workflow }: { workflow: Workflow }) {
       {workflow.variables && Object.keys(workflow.variables).length > 0 && (
         <div className="mt-4">
           <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-            Variables
+            {t('workflow.detail.variables')}
           </div>
           <div className="bg-gray-50 dark:bg-gray-800 rounded p-2 text-xs font-mono">
             {Object.entries(workflow.variables).map(([key, value]) => (

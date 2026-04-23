@@ -1,0 +1,797 @@
+{
+  "workflow": {
+    "status": {
+      "pending": "En attente",
+      "running": "En cours",
+      "completed": "Terminé",
+      "failed": "Échoué",
+      "cancelled": "Annulé"
+    },
+    "taskType": {
+      "task": "Tâche",
+      "bug": "Bug",
+      "feature": "Fonctionnalité",
+      "chore": "Corvée"
+    },
+    "priority": {
+      "5": "5 - Critique",
+      "4": "4 - Haute",
+      "3": "3 - Moyenne",
+      "2": "2 - Basse",
+      "1": "1 - Minime"
+    },
+    "complexity": {
+      "1": "1 - Trivial",
+      "2": "2 - Simple",
+      "3": "3 - Moyen",
+      "4": "4 - Complexe",
+      "5": "5 - Très complexe"
+    },
+    "variableType": {
+      "string": "Chaîne",
+      "number": "Nombre",
+      "boolean": "Booléen"
+    },
+    "stepType": {
+      "task": "Tâche",
+      "taskDescription": "Tâche exécutée par un agent",
+      "function": "Fonction",
+      "functionDescription": "Exécuter du code directement"
+    },
+    "runtime": {
+      "typescript": "TypeScript",
+      "typescriptDescription": "Exécuter du code TypeScript/JavaScript",
+      "python": "Python",
+      "pythonDescription": "Exécuter du code Python",
+      "shell": "Shell",
+      "shellDescription": "Exécuter des commandes shell"
+    },
+    "filter": {
+      "all": "Tous",
+      "running": "En cours",
+      "pending": "En attente",
+      "completed": "Terminé",
+      "failed": "Échoué",
+      "cancelled": "Annulé"
+    },
+    "time": {
+      "justNow": "à l'instant",
+      "minutesAgo": "il y a {{count}}m",
+      "hoursAgo": "il y a {{count}}h",
+      "daysAgo": "il y a {{count}}j"
+    },
+    "editor": {
+      "functionStepTitle": "Étape fonction",
+      "taskStepTitle": "Étape tâche",
+      "untitledStep": "Étape sans titre",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "deleteStep": "Supprimer l'étape",
+      "editStep": "Modifier l'étape",
+      "stepType": "Type d'étape",
+      "executeCodeDirectly": "Exécuter du code directement",
+      "createAgentTask": "Créer une tâche d'agent",
+      "stepId": "ID de l'étape",
+      "title": "Titre",
+      "stepTitlePlaceholder": "Titre de l'étape",
+      "description": "Description",
+      "stepDescriptionPlaceholder": "Description de l'étape",
+      "runtime": "Runtime",
+      "code": "Code",
+      "command": "Commande",
+      "timeoutMs": "Délai d'attente (ms)",
+      "timeoutHint": "Par défaut : 30000ms (30 secondes). Max : 600000ms (10 minutes)",
+      "taskType": "Type de tâche",
+      "none": "Aucun",
+      "priority": "Priorité",
+      "complexity": "Complexité",
+      "assignee": "Assigné à",
+      "assigneePlaceholder": "{{variable}} ou nom de l'entité",
+      "dependencies": "Dépendances",
+      "noOtherSteps": "Aucune autre étape disponible",
+      "editVariable": "Modifier la variable",
+      "variableName": "Nom",
+      "variableType": "Type",
+      "required": "Requis",
+      "variableDescription": "Description",
+      "variableDescriptionPlaceholder": "À quoi sert cette variable",
+      "defaultValue": "Valeur par défaut",
+      "noDefault": "Pas de défaut",
+      "defaultNumberPlaceholder": "0",
+      "defaultStringPlaceholder": "valeur par défaut",
+      "allowedValues": "Valeurs autorisées",
+      "addValue": "Ajouter",
+      "noEnumValues": "Aucune valeur d'énumération. La variable accepte toute valeur de son type.",
+      "import": "Importer",
+      "copied": "Copié !",
+      "copy": "Copier",
+      "download": "Télécharger",
+      "uploadFile": "Importer un fichier",
+      "orPasteYaml": "ou coller du YAML ci-dessous",
+      "pasteYamlPlaceholder": "Coller le contenu YAML ici...",
+      "cancel": "Annuler",
+      "importConfirm": "Importer",
+      "validation": {
+        "nameRequired": "Le nom est requis",
+        "titleRequired": "Le titre est requis",
+        "nameFormat": "Le nom doit commencer par une lettre ou un tiret bas",
+        "stepIdRequired": "Toutes les étapes doivent avoir un ID",
+        "stepTitleRequired": "Toutes les étapes doivent avoir un titre",
+        "variableNameRequired": "Toutes les variables doivent avoir un nom"
+      },
+      "yamlParseError": "Échec de l'analyse YAML. Veuillez vérifier le format et réessayer.",
+      "saveFailed": "Échec de la sauvegarde du playbook",
+      "editTemplate": "Modifier le modèle",
+      "createTemplate": "Créer un modèle",
+      "closeDialog": "Fermer le dialogue",
+      "errorOccurred": "Une erreur est survenue",
+      "playbookName": "Nom",
+      "playbookNamePlaceholder": "mon_playbook",
+      "playbookTitle": "Titre",
+      "playbookTitlePlaceholder": "Mon Playbook",
+      "tabs": {
+        "steps": "Étapes",
+        "variables": "Variables",
+        "yaml": "YAML"
+      },
+      "steps": "Étapes",
+      "addStep": "Ajouter une étape",
+      "taskStep": "Étape tâche",
+      "agentExecutedTask": "Tâche exécutée par un agent",
+      "functionStep": "Étape fonction",
+      "executeCode": "Exécuter du code directement",
+      "noStepsYet": "Aucune étape. Cliquez sur « Ajouter une étape » pour commencer.",
+      "selectStepToEdit": "Sélectionnez une étape à modifier",
+      "variables": "Variables",
+      "addVariable": "Ajouter une variable",
+      "noVariablesYet": "Aucune variable. Cliquez sur « Ajouter une variable » pour commencer.",
+      "requiredBadge": "requis",
+      "deleteVariable": "Supprimer la variable",
+      "selectVariableToEdit": "Sélectionnez une variable à modifier",
+      "saving": "Sauvegarde...",
+      "saveChanges": "Sauvegarder les modifications",
+      "createTemplateButton": "Créer un modèle"
+    },
+    "create": {
+      "enable": "Activer",
+      "selectPlaceholder": "Sélectionner...",
+      "defaultPlaceholder": "Par défaut : {{value}}",
+      "steps": "Étapes",
+      "showLess": "Voir moins",
+      "showMore": "Voir {{count}} de plus...",
+      "loadingPlaybooks": "Chargement des playbooks...",
+      "noPlaybooks": "Aucun playbook disponible",
+      "createPlaybookFirst": "Créez d'abord un modèle de playbook",
+      "selectPlaybook": "Sélectionner un playbook...",
+      "validation": {
+        "selectPlaybook": "Veuillez sélectionner un playbook",
+        "requiredVariable": "Variable requise : {{name}}"
+      },
+      "failedToCreate": "Échec de la création du workflow",
+      "title": "Créer un workflow",
+      "closeDialog": "Fermer le dialogue",
+      "errorOccurred": "Une erreur est survenue",
+      "playbook": "Playbook",
+      "workflowTitle": "Titre du workflow",
+      "variables": "Variables",
+      "advancedOptions": "Options avancées",
+      "ephemeralWorkflow": "Workflow éphémère",
+      "ephemeralDescription": "Les workflows éphémères sont automatiquement nettoyés après leur achèvement",
+      "cancel": "Annuler",
+      "creating": "Création...",
+      "createWorkflow": "Créer le workflow"
+    },
+    "card": {
+      "playbookActions": "Actions du playbook",
+      "workflowActions": "Actions du workflow",
+      "viewDetails": "Voir les détails",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "duration": "Durée :",
+      "ephemeral": "Éphémère",
+      "created": "Créé",
+      "started": "Démarré"
+    },
+    "detail": {
+      "statusAction": {
+        "start": "Démarrer",
+        "cancel": "Annuler",
+        "complete": "Terminer",
+        "markFailed": "Marquer échoué",
+        "resetToPending": "Réinitialiser en attente"
+      },
+      "loading": "Chargement du workflow...",
+      "loadFailed": "Échec du chargement du workflow",
+      "notFound": "Workflow non trouvé",
+      "ephemeral": "Éphémère",
+      "save": "Sauvegarder",
+      "cancelEdit": "Annuler",
+      "editTitle": "Modifier le titre",
+      "closePanel": "Fermer le panneau",
+      "deleteConfirm": "Supprimer ce workflow et toutes ses tâches ?",
+      "confirmDelete": "Confirmer la suppression",
+      "cancelDelete": "Annuler",
+      "promote": "Promouvoir (Rendre durable)",
+      "delete": "Supprimer",
+      "progress": "Progression",
+      "tasks": "Tâches",
+      "lastTaskWarning": "Dernière tâche restante",
+      "lastTaskWarningDescription": "Les workflows doivent avoir au moins une tâche. Cette tâche ne peut pas être supprimée.",
+      "lastTaskWarningAction": "Utilisez « Supprimer » pour supprimer l'ensemble du workflow si nécessaire.",
+      "created": "Créé :",
+      "updated": "Mis à jour :",
+      "createdBy": "Créé par :",
+      "started": "Démarré :",
+      "finished": "Terminé :",
+      "failureReason": "Raison de l'échec :",
+      "cancelReason": "Raison de l'annulation :",
+      "tags": "Étiquettes",
+      "variables": "Variables"
+    },
+    "dashboard": {
+      "progress": "Progression",
+      "complete": "terminé",
+      "completedTitle": "Terminées : {{count}}",
+      "inProgressTitle": "En cours : {{count}}",
+      "blockedTitle": "Bloquées : {{count}}",
+      "completed": "Terminées",
+      "inProgress": "En cours",
+      "blocked": "Bloquées",
+      "open": "Ouvertes",
+      "totalTasks": "Total des tâches",
+      "dependsOnTasks": "Dépend de {{count}} tâche(s)",
+      "blockedIndicator": "Bloquée",
+      "dependsOnSteps": "Dépend de {{count}} étape(s)",
+      "timeout": "Délai d'attente :",
+      "error": "Erreur",
+      "noSteps": "Aucune étape dans ce workflow",
+      "noDependencies": "Aucune dépendance entre les tâches",
+      "taskDependencies": "Dépendances des tâches",
+      "andMore": "...et {{count}} de plus",
+      "stepsInWorkflow": "étape(s) dans le workflow",
+      "includesFunctionSteps": "inclut des étapes fonction",
+      "steps": "Étapes",
+      "dependencies": "Dépendances"
+    },
+    "taskList": {
+      "noTasks": "Aucune tâche dans ce workflow",
+      "noTasksDescription": "Les workflows ont besoin de tâches pour être utiles. Cet état ne devrait pas se produire car les workflows nécessitent au moins une tâche pour être créés.",
+      "priorityTitle": "Priorité {{priority}}"
+    },
+    "mobileCard": {
+      "updated": "Mis à jour",
+      "ephemeral": "Éphémère"
+    },
+    "playbookCard": {
+      "actions": "Actions du playbook",
+      "createWorkflow": "Créer un workflow",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "stepsCount": "{{count}} étapes",
+      "variablesCount": "{{count}} variables"
+    },
+    "progressBar": {
+      "completed": "Terminées : {{count}}",
+      "inProgress": "En cours : {{count}}",
+      "blocked": "Bloquées : {{count}}",
+      "completedLabel": "Terminées",
+      "inProgressLabel": "En cours",
+      "blockedLabel": "Bloquées",
+      "openLabel": "Ouvertes"
+    },
+    "taskStatus": {
+      "total": "Total",
+      "completed": "Terminées",
+      "inProgress": "En cours",
+      "blocked": "Bloquées"
+    },
+    "listItem": {
+      "ephemeral": "Éphémère",
+      "updated": "Mis à jour"
+    },
+    "api": {
+      "unknownError": "Erreur inconnue"
+    }
+  },
+  "plans": {
+    "status": {
+      "draft": "Brouillon",
+      "active": "Actif",
+      "completed": "Terminé",
+      "cancelled": "Annulé"
+    },
+    "action": {
+      "activate": "Activer",
+      "complete": "Terminer",
+      "cancel": "Annuler",
+      "reopenAsDraft": "Rouvrir en brouillon",
+      "save": "Sauvegarder",
+      "cancelEdit": "Annuler",
+      "editTitle": "Modifier le titre",
+      "deletePlan": "Supprimer le plan"
+    },
+    "error": {
+      "failedToDelete": "Échec de la suppression du plan",
+      "failedToLoad": "Échec du chargement du plan",
+      "failedToFetchPlans": "Échec du chargement des plans",
+      "failedToFetchPlan": "Échec du chargement du plan",
+      "failedToFetchPlanTasks": "Échec du chargement des tâches du plan",
+      "failedToFetchProgress": "Échec du chargement de la progression",
+      "failedToFetchTasks": "Échec du chargement des tâches",
+      "failedToUpdate": "Échec de la mise à jour du plan",
+      "failedToAddTask": "Échec de l'ajout de la tâche au plan",
+      "failedToRemoveTask": "Échec du retrait de la tâche du plan",
+      "failedToCreate": "Échec de la création du plan",
+      "failedToCreateTask": "Échec de la création de la tâche",
+      "noPlanSelected": "Aucun plan sélectionné"
+    },
+    "loading": "Chargement du plan...",
+    "notFound": "Plan non trouvé",
+    "progress": {
+      "title": "Progression",
+      "percentComplete": "{{percentage}}% terminé",
+      "noTasks": "Aucune tâche dans le plan"
+    },
+    "tasks": {
+      "title": "Tâches ({{count}})",
+      "addTask": "Ajouter une tâche",
+      "empty": "Aucune tâche dans ce plan",
+      "lastTaskWarning": "C'est la seule tâche. Les plans doivent avoir au moins une tâche.",
+      "priority": "Priorité {{priority}}",
+      "removeNotAllowed": "Impossible de retirer — les plans doivent avoir au moins une tâche",
+      "confirmRemoval": "Cliquez à nouveau pour confirmer le retrait",
+      "removeFromPlan": "Retirer du plan"
+    },
+    "metadata": {
+      "created": "Créé :",
+      "updated": "Mis à jour :",
+      "createdBy": "Créé par :",
+      "completed": "Terminé :",
+      "cancelled": "Annulé :",
+      "updatedPrefix": "Mis à jour",
+      "tags": "Étiquettes"
+    },
+    "filter": {
+      "all": "Tous"
+    },
+    "view": {
+      "list": "Liste",
+      "roadmap": "Feuille de route",
+      "listAriaLabel": "Vue en liste",
+      "roadmapAriaLabel": "Vue feuille de route"
+    },
+    "search": {
+      "placeholder": "Rechercher des plans... (Appuyez sur / pour focus)",
+      "clearAriaLabel": "Effacer la recherche (Échap)"
+    },
+    "taskStatus": {
+      "completed": "Terminées",
+      "inProgress": "En cours",
+      "blocked": "Bloquées",
+      "remaining": "Restantes"
+    },
+    "taskPicker": {
+      "title": "Ajouter une tâche au plan",
+      "searchPlaceholder": "Rechercher des tâches par titre ou ID...",
+      "loading": "Chargement des tâches...",
+      "noMatch": "Aucune tâche correspondante trouvée",
+      "allAdded": "Toutes les tâches sont déjà dans ce plan"
+    },
+    "roadmap": {
+      "percentComplete": "{{percentage}}% terminé",
+      "start": "Début :",
+      "end": "Fin :",
+      "duration": "Durée : {{count}} jours",
+      "empty": "Aucun plan à afficher dans la feuille de route",
+      "emptyHint": "Créez des plans pour les voir sur la timeline",
+      "planCount_one": "{{count}} plan",
+      "planCount_other": "{{count}} plans"
+    },
+    "create": {
+      "title": "Créer un plan",
+      "submit": "Créer le plan",
+      "creating": "Création...",
+      "success": "Plan créé avec succès",
+      "error": "Échec de la création du plan",
+      "titleLabel": "Titre du plan *",
+      "titlePlaceholder": "Entrer le titre du plan...",
+      "tasksLabel": "Tâches ({{count}})",
+      "newTask": "Créer une nouvelle tâche",
+      "taskInfo": "Les plans doivent avoir au moins une tâche. Recherchez et sélectionnez des tâches existantes ci-dessous.",
+      "selectedTasks": "Tâches sélectionnées",
+      "removeTask": "Retirer la tâche",
+      "searchTasks": "Rechercher des tâches par titre ou ID...",
+      "loadingTasks": "Chargement des tâches...",
+      "noMatchingTasks": "Aucune tâche correspondante trouvée",
+      "noTasksAvailable": "Aucune tâche disponible",
+      "createTaskLink": "Créer une nouvelle tâche"
+    },
+    "delete": {
+      "title": "Supprimer le plan",
+      "warning": "Cette action est irréversible.",
+      "confirmMessage": "Êtes-vous sûr de vouloir supprimer « {{title}} » ? Les tâches de ce plan seront dissociées mais pas supprimées.",
+      "confirm": "Supprimer le plan",
+      "deleting": "Suppression..."
+    },
+    "time": {
+      "justNow": "à l'instant",
+      "minutesAgo": "il y a {{count}}m",
+      "hoursAgo": "il y a {{count}}h",
+      "daysAgo": "il y a {{count}}j"
+    }
+  },
+  "channel": {
+    "cancel": "Annuler",
+    "creating": "Création...",
+    "create": "Créer",
+    "createChannel": "Créer un canal",
+    "channelType": "Type de canal",
+    "group": "Groupe",
+    "direct": "Direct",
+    "name": "Nom",
+    "namePlaceholder": "Entrer le nom du canal...",
+    "nameHint": "Alphanumérique, tirets et tirets bas uniquement",
+    "visibility": "Visibilité",
+    "visibilityPrivate": "Privé — Seuls les membres peuvent voir",
+    "visibilityPublic": "Public — Tout le monde peut voir",
+    "joinPolicy": "Politique d'adhésion",
+    "joinPolicyInviteOnly": "Sur invitation uniquement",
+    "joinPolicyOpen": "Ouvert — Tout le monde peut rejoindre",
+    "joinPolicyRequest": "Sur demande — Approbation requise",
+    "members": "Membres",
+    "optional": "(facultatif)",
+    "noOtherEntities": "Aucune autre entité disponible",
+    "creatorAutoAdded": "Le créateur est automatiquement ajouté",
+    "firstEntity": "Première entité",
+    "secondEntity": "Deconde entité",
+    "selectEntity": "Sélectionner une entité...",
+    "entitiesMustDiffer": "Les entités doivent être différentes",
+    "tags": "Étiquettes",
+    "tagsPlaceholder": "Taper et appuyer sur virgule pour ajouter des étiquettes",
+    "createFailed": "Échec de la création du canal",
+    "channelCreator": "Créateur du canal",
+    "entityNotFound": "Entité non trouvée",
+    "removeMember": "Retirer le membre",
+    "remove": "Retirer",
+    "addMember": "Ajouter un membre",
+    "add": "Ajouter",
+    "noMoreEntities": "Aucune autre entité disponible à ajouter",
+    "leaveConfirm": "Êtes-vous sûr de vouloir quitter ce canal ?",
+    "directFixedMembership": "Les canaux de messages directs ont une adhésion fixe et ne peuvent pas être modifiés.",
+    "loadingMembers": "Chargement des membres...",
+    "loadMembersFailed": "Échec du chargement des membres",
+    "leaveChannel": "Quitter le canal",
+    "deleteChannel": "Supprimer le canal",
+    "actionCannotBeUndone": "Cette action est irréversible.",
+    "deleteWarning": "Tous les messages et données de ce canal seront définitivement supprimés.",
+    "delete": "Supprimer",
+    "deleteFailed": "Échec de la suppression du canal",
+    "hashSearching": "Recherche...",
+    "hashNoResults": "Aucun résultat pour « {{query}} »",
+    "hashTypeToSearch": "Tapez pour rechercher des tâches et documents",
+    "hashSectionTasks": "Tâches",
+    "hashSectionDocuments": "Documents",
+    "hashTaskStatus": "Statut : {{status}}",
+    "hashDocumentFallback": "Document",
+    "linkEnterUrl": "Entrer l'URL (ex. : https://example.com)",
+    "linkApply": "Appliquer le lien",
+    "linkUpdate": "Mettre à jour",
+    "linkApplyButton": "Appliquer",
+    "linkRemove": "Supprimer le lien",
+    "linkOpenInNewTab": "Ouvrir le lien dans un nouvel onglet",
+    "entityTypeAgent": "Agent",
+    "entityTypeSystem": "Système",
+    "entityTypeHuman": "Humain",
+    "mentionNoMatch": "Aucune entité correspondante",
+    "embedLoadingTask": "Chargement de la tâche...",
+    "embedTaskNotFound": "Tâche non trouvée : {{taskId}}",
+    "embedLoadingDocument": "Chargement du document...",
+    "embedDocumentNotFound": "Document non trouvé : {{documentId}}",
+    "imageInvalidFileType": "Type de fichier invalide : {{type}}. Autorisés : JPEG, PNG, GIF, WebP",
+    "imageFileTooLarge": "Fichier trop volumineux : {{size}}. Maximum : 10 Mo",
+    "imageUploadFailed": "Échec de l'import : {{status}}",
+    "imageDropError": "Veuillez déposer un fichier image",
+    "imageSelectError": "Veuillez sélectionner une image",
+    "attachImage": "Joindre une image",
+    "imageTabUpload": "Importer",
+    "imageTabLibrary": "Bibliothèque",
+    "imageRemove": "Retirer",
+    "imageDropzone": "Déposer une image ici ou cliquer pour parcourir",
+    "imageDropzoneHint": "JPEG, PNG, GIF, WebP jusqu'à 10 Mo",
+    "imageSearchPlaceholder": "Rechercher des images...",
+    "imageNoImagesYet": "Aucune image importée",
+    "imageUploadToSeeHint": "Importez des images pour les voir ici",
+    "imageNoSearchResults": "Aucune image ne correspond à votre recherche",
+    "imageTryDifferentSearch": "Essayez un autre terme de recherche",
+    "imageUploading": "Import en cours...",
+    "close": "Fermer",
+    "messagePlaceholder": "Message...",
+    "messageChannelPlaceholder": "Message {{channelName}}...",
+    "loadingEditor": "Chargement de l'éditeur...",
+    "toolbarBold": "Gras ({{mod}}B)",
+    "toolbarItalic": "Italique ({{mod}}I)",
+    "toolbarUnderline": "Souligné ({{mod}}U)",
+    "toolbarStrikethrough": "Barré",
+    "toolbarInlineCode": "Code en ligne ({{mod}}E)",
+    "toolbarCodeBlock": "Bloc de code",
+    "toolbarBulletList": "Liste à puces",
+    "toolbarNumberedList": "Liste numérotée",
+    "toolbarBlockQuote": "Citation en bloc",
+    "toolbarLink": "Lien ({{mod}}K)",
+    "toolbarHideFormatting": "Masquer les options de formatage",
+    "toolbarShowFormatting": "Afficher plus d'options de formatage",
+    "slashBold": "Gras",
+    "slashBoldDesc": "Mettre le texte en gras",
+    "slashItalic": "Italique",
+    "slashItalicDesc": "Mettre le texte en italique",
+    "slashInlineCode": "Code en ligne",
+    "slashInlineCodeDesc": "Formater comme code en ligne",
+    "slashCodeBlock": "Bloc de code",
+    "slashCodeBlockDesc": "Insérer un bloc de code",
+    "slashQuote": "Citation",
+    "slashQuoteDesc": "Insérer une citation en bloc",
+    "slashBulletList": "Liste à puces",
+    "slashBulletListDesc": "Créer une liste à puces simple",
+    "slashNumberedList": "Liste numérotée",
+    "slashNumberedListDesc": "Créer une liste numérotée",
+    "slashEmoji": "Émoji",
+    "slashEmojiDesc": "Insérer un émoji",
+    "slashTask": "Tâche",
+    "slashTaskDesc": "Référencer une tâche",
+    "slashDocument": "Document",
+    "slashDocumentDesc": "Référencer un document",
+    "slashCategoryFormatting": "Mise en forme",
+    "slashCategoryBlocks": "Blocs",
+    "slashCategoryMedia": "Média",
+    "slashCategoryEmbeds": "Intégrations",
+    "slashNoMatch": "Aucune commande correspondante"
+  },
+  "domain": {
+    "priority": {
+      "critical": "Critique",
+      "high": "Haute",
+      "medium": "Moyenne",
+      "low": "Basse",
+      "trivial": "Triviale"
+    },
+    "status": {
+      "open": "Ouvert",
+      "todo": "À faire",
+      "in_progress": "En cours",
+      "blocked": "Bloqué",
+      "review": "En revue",
+      "closed": "Fermé",
+      "cancelled": "Annulé",
+      "deferred": "Différé",
+      "backlog": "Backlog"
+    },
+    "taskType": {
+      "bug": "Bug",
+      "feature": "Fonctionnalité",
+      "task": "Tâche",
+      "chore": "Corvée"
+    },
+    "mergeStatus": {
+      "pending": "En attente de fusion",
+      "testing": "En test",
+      "merging": "Fusion en cours",
+      "merged": "Fusionné",
+      "conflict": "Conflit",
+      "test_failed": "Tests échoués",
+      "failed": "Fusion échouée",
+      "not_applicable": "Pas de fusion nécessaire",
+      "awaiting_approval": "En attente d'approbation"
+    },
+    "entityCard": {
+      "inactive": "Inactif",
+      "created": "Créé "
+    },
+    "taskCard": {
+      "assigned": "Assigné : ",
+      "blocks": "Bloque {{count}}",
+      "blockedBy": "Bloqué par {{count}}",
+      "created": "Créé "
+    },
+    "teamCard": {
+      "deleted": "Supprimé",
+      "member_one": "{{count}} membre",
+      "member_other": "{{count}} membres",
+      "created": "Créé "
+    },
+    "channelHeader": {
+      "searchPlaceholder": "Rechercher des messages...",
+      "member_one": "{{count}} membre",
+      "member_other": "{{count}} membres",
+      "backToChannels": "Retour aux canaux",
+      "viewMembers": "Voir les membres"
+    },
+    "mobileEntityCard": {
+      "inactive": "Inactif"
+    },
+    "userSelector": {
+      "loading": "Chargement...",
+      "noUsers": "Aucun utilisateur",
+      "selectUser": "Sélectionner un utilisateur",
+      "userCount": "{{count}} utilisateurs"
+    },
+    "planCard": {
+      "status": {
+        "draft": "Brouillon",
+        "active": "Actif",
+        "completed": "Terminé",
+        "cancelled": "Annulé"
+      },
+      "progress": "Progression"
+    },
+    "workflowCard": {
+      "status": {
+        "created": "Créé",
+        "active": "Actif",
+        "completed": "Terminé",
+        "failed": "Échoué",
+        "cancelled": "Annulé"
+      },
+      "ephemeral": "Éphémère",
+      "progress": "Progression",
+      "fromPlaybook": "Du playbook : "
+    },
+    "entityLink": {
+      "notFound": "Entité non trouvée : {{ref}}",
+      "loadingStats": "Chargement des statistiques...",
+      "stats": {
+        "open": "Ouvert",
+        "done": "Terminé",
+        "total": "Total"
+      },
+      "currentlyWorkingOn": "Actuellement en cours",
+      "moreTags": "+{{count}} de plus",
+      "viewFullProfile": "Voir le profil complet"
+    }
+  },
+  "documents": {
+    "sort": {
+      "updated": "Mis à jour",
+      "created": "Créé",
+      "title": "Titre",
+      "type": "Type",
+      "label": "Trier : ",
+      "ascending": "Croissant",
+      "descending": "Décroissant"
+    },
+    "contentType": {
+      "text": "Texte",
+      "markdown": "Markdown",
+      "json": "JSON"
+    },
+    "deleteLibrary": {
+      "title": "Supprimer la bibliothèque",
+      "cancel": "Annuler",
+      "deleting": "Suppression...",
+      "confirm": "Supprimer la bibliothèque",
+      "warningTitle": "Cette action est irréversible",
+      "warningBody": "Vous allez supprimer la bibliothèque ",
+      "warningDocuments_one": "Cette bibliothèque contient {{count}} document",
+      "warningDocuments_other": "Cette bibliothèque contient {{count}} documents",
+      "documentsQuestion": "Que devez-vous faire des documents de cette bibliothèque ?",
+      "deleteDocuments": "Supprimer tous les documents",
+      "deleteDocumentsDescription_one": "Supprimer définitivement {{count}} document de cette bibliothèque",
+      "deleteDocumentsDescription_other": "Supprimer définitivement {{count}} documents de cette bibliothèque",
+      "keepDocuments": "Conserver les documents",
+      "keepDocumentsDescription": "Retirer les documents de cette bibliothèque sans les supprimer"
+    },
+    "filters": {
+      "title": "Filtres",
+      "clear": "Effacer",
+      "type": "Type",
+      "tags": "Étiquettes",
+      "tagsPlaceholder": "Cliquer pour sélectionner des étiquettes...",
+      "allTagsSelected": "Toutes les étiquettes sélectionnées",
+      "dialogAriaLabel": "Filtres de documents",
+      "close": "Fermer",
+      "clearAll": "Effacer tous les filtres ({{count}})",
+      "apply": "Appliquer les filtres"
+    },
+    "tags": {
+      "addPlaceholder": "Ajouter une étiquette...",
+      "removeAriaLabel": "Retirer l'étiquette {{tag}}",
+      "label": "Étiquettes",
+      "add": "Ajouter une étiquette",
+      "empty": "Aucune étiquette"
+    }
+  },
+  "dialog": {
+    "close": "Fermer"
+  },
+  "tagInput": {
+    "placeholder": "Taper et appuyer sur virgule pour ajouter des étiquettes",
+    "removeTag": "Retirer l'étiquette {{tag}}"
+  },
+  "themeToggle": {
+    "currentTheme": "Thème actuel : {{theme}}. Cliquez pour changer.",
+    "themeLabel": "Thème : {{theme}}",
+    "switchToLight": "Passer en mode clair",
+    "switchToDark": "Passer en mode sombre"
+  },
+  "connectionStatus": {
+    "connecting": "Connexion...",
+    "live": "En direct",
+    "disconnected": "Déconnecté",
+    "reconnecting": "Reconnexion...",
+    "polling": "Interrogation",
+    "error": "Erreur"
+  },
+  "sidebar": {
+    "defaultAppName": "Stoneforge",
+    "keyboardHint": "⌘K pour les commandes",
+    "expandTooltip": "Agrandir la barre latérale",
+    "badgeOverflow": "99+",
+    "collapseSidebar": "Réduire la barre latérale",
+    "expandSidebar": "Agrandir la barre latérale"
+  },
+  "appShell": {
+    "openNavigation": "Ouvrir le menu de navigation",
+    "search": "Rechercher"
+  },
+  "mobileDrawer": {
+    "navigationMenu": "Menu de navigation",
+    "closeNavigation": "Fermer le menu de navigation"
+  },
+  "responsiveModal": {
+    "close": "Fermer"
+  },
+  "breadcrumbs": {
+    "navLabel": "Fil d'Ariane"
+  },
+  "shortcuts": {
+    "editShortcut": "Modifier le raccourci",
+    "pressKeys": "Appuyez sur les touches...",
+    "keyCombinationHint": "Appuyez sur une combinaison de touches. Pour les raccourcis séquentiels, appuyez sur les touches l'une après l'autre.",
+    "conflictsWith": "Conflit avec : {{conflict}}",
+    "resetToDefault": "Réinitialiser par défaut",
+    "cancel": "Annuler",
+    "save": "Sauvegarder",
+    "customized": "Personnalisé",
+    "edit": "Modifier",
+    "customize": "Personnaliser",
+    "keyboardShortcuts": "Raccourcis clavier",
+    "resetToDefaults": "Réinitialiser tous les raccourcis",
+    "description": "Voir et personnaliser les raccourcis clavier.",
+    "tap": "Appuyer",
+    "clickCustomize": "Cliquer « Personnaliser »",
+    "resetAllConfirmTitle": "Réinitialiser tous les raccourcis ?",
+    "resetAllConfirmDescription": "Cela réinitialisera tous les raccourcis clavier à leurs valeurs par défaut. Cette action est irréversible.",
+    "resetAll": "Tout réinitialiser",
+    "changesImmediate": "Les modifications des raccourcis clavier prennent effet immédiatement.",
+    "changesTakeEffect": "Les modifications prennent effet immédiatement.",
+    "editTitle": "Modifier le raccourci",
+    "pressKeyCombination": "Appuyez sur une combinaison de touches...",
+    "resetAllTitle": "Réinitialiser tous les raccourcis ?",
+    "resetAllWarning": "Cela réinitialisera tous les raccourcis clavier à leurs valeurs par défaut. Cette action est irréversible.",
+    "viewAndCustomize": "{{action}} pour voir et personnaliser les raccourcis clavier.",
+    "category": {
+      "navigation": "Navigation",
+      "actions": "Actions",
+      "views": "Vues",
+      "editing": "Édition",
+      "other": "Autre"
+    }
+  },
+  "chart": {
+    "items": "{{count}} éléments",
+    "item_one": "{{count}} élément",
+    "item_other": "{{count}} éléments",
+    "errorLoading": "Échec du chargement des données du graphique",
+    "noData": "Aucune donnée à afficher",
+    "loading": "Chargement du graphique...",
+    "clickToViewDetails": "Cliquer pour voir les détails",
+    "tapAgainToView": "Appuyer à nouveau pour voir les détails",
+    "completed": "{{count}} terminé(s)",
+    "total": "Total : {{total}}"
+  },
+  "api": {
+    "requestTimeout": "Délai d'attente de la requête"
+  },
+  "errors": {
+    "useCurrentUserMissingProvider": "useCurrentUser doit être utilisé dans un CurrentUserProvider"
+  }
+}

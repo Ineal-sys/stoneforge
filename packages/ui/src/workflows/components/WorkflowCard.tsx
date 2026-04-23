@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   Ban,
 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { Workflow, WorkflowStatus } from '../types';
 import {
   formatRelativeTime,
@@ -58,6 +59,7 @@ export function WorkflowCard({
   onDelete,
 }: WorkflowCardProps) {
   const [showMenu, setShowMenu] = useState(false);
+  const { t } = useTranslation('ui');
   const canCancel = workflow.status === 'pending' || workflow.status === 'running';
   const isTerminal = ['completed', 'failed', 'cancelled'].includes(workflow.status);
   const duration = formatWorkflowDuration(workflow);
@@ -85,7 +87,7 @@ export function WorkflowCard({
               setShowMenu(!showMenu);
             }}
             className="p-1 rounded hover:bg-[var(--color-surface-hover)] transition-colors"
-            aria-label="Workflow actions"
+            aria-label={t('workflow.card.workflowActions')}
           >
             <MoreVertical className="w-4 h-4 text-[var(--color-text-secondary)]" />
           </button>
@@ -100,7 +102,7 @@ export function WorkflowCard({
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--color-text)] hover:bg-[var(--color-surface-hover)]"
               >
                 <Eye className="w-4 h-4" />
-                View Details
+                {t('workflow.card.viewDetails')}
               </button>
               {canCancel && onCancel && (
                 <button
@@ -112,7 +114,7 @@ export function WorkflowCard({
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
                 >
                   <AlertTriangle className="w-4 h-4" />
-                  Cancel
+                  {t('workflow.card.cancel')}
                 </button>
               )}
               {isTerminal && onDelete && (
@@ -125,7 +127,7 @@ export function WorkflowCard({
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
                 >
                   <Trash2 className="w-4 h-4" />
-                  Delete
+                  {t('workflow.card.delete')}
                 </button>
               )}
             </div>
@@ -135,15 +137,15 @@ export function WorkflowCard({
 
       <div className="mt-3 flex items-center gap-4 text-xs text-[var(--color-text-secondary)]">
         <span className={`px-2 py-0.5 rounded-full ${getWorkflowStatusColor(workflow.status)}`}>
-          {getWorkflowStatusDisplayName(workflow.status)}
+          {getWorkflowStatusDisplayName(workflow.status, t)}
         </span>
-        {duration && <span>Duration: {duration}</span>}
-        {workflow.ephemeral && <span className="text-amber-600">Ephemeral</span>}
+        {duration && <span>{t('workflow.card.duration')} {duration}</span>}
+        {workflow.ephemeral && <span className="text-amber-600">{t('workflow.card.ephemeral')}</span>}
       </div>
 
       <div className="mt-2 flex items-center gap-4 text-xs text-[var(--color-text-tertiary)]">
-        <span>Created {formatRelativeTime(workflow.createdAt)}</span>
-        {workflow.startedAt && <span>Started {formatRelativeTime(workflow.startedAt)}</span>}
+        <span>{t('workflow.card.created')} {formatRelativeTime(workflow.createdAt, t)}</span>
+        {workflow.startedAt && <span>{t('workflow.card.started')} {formatRelativeTime(workflow.startedAt, t)}</span>}
       </div>
 
       {(workflow.failureReason || workflow.cancelReason) && (

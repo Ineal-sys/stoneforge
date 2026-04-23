@@ -9,6 +9,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { X, ChevronLeft, Search, Info, Loader2, Plus, Trash2, FilePlus } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useCreatePlan } from '../hooks';
 import type { PlanTaskType } from '../types';
 
@@ -46,6 +47,7 @@ export function CreatePlanModal({
   onToastError,
   onCreateNewTask,
 }: CreatePlanModalProps) {
+  const { t } = useTranslation('ui');
   const queryClient = useQueryClient();
   const [planTitle, setPlanTitle] = useState('');
   const [selectedTasks, setSelectedTasks] = useState<SelectedTask[]>([]);
@@ -83,7 +85,7 @@ export function CreatePlanModal({
         ? `/api/tasks?limit=50&search=${encodeURIComponent(debouncedQuery)}`
         : '/api/tasks?limit=50';
       const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to fetch tasks');
+      if (!response.ok) throw new Error(t('plans.error.failedToFetchTasks'));
       const result = await response.json();
       // Handle different API response formats
       const allTasks = (result.tasks || result.items || result.data || (Array.isArray(result) ? result : [])) as PlanTaskType[];
@@ -149,11 +151,11 @@ export function CreatePlanModal({
         additionalTasks: additionalTasks.map((t) => ({ existingTaskId: t.taskId })),
       });
 
-      onToastSuccess?.('Plan created successfully');
+      onToastSuccess?.(t('plans.create.success'));
       onSuccess?.({ id: result.id, title: planTitle.trim() });
       onClose();
     } catch (err) {
-      onToastError?.((err as Error).message || 'Failed to create plan');
+      onToastError?.((err as Error).message || t('plans.create.error'));
     }
   };
 
@@ -168,19 +170,19 @@ export function CreatePlanModal({
           <button
             onClick={onClose}
             className="p-2 -ml-2 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors duration-150 touch-target"
-            aria-label="Cancel"
+            aria-label={t('plans.action.cancel')}
             data-testid="create-plan-close"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <h2 className="flex-1 text-lg font-semibold text-[var(--color-text)]">Create Plan</h2>
+          <h2 className="flex-1 text-lg font-semibold text-[var(--color-text)]">{t('plans.create.title')}</h2>
           <button
             onClick={handleSubmit}
             disabled={!canSubmit || createPlan.isPending}
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors touch-target"
             data-testid="create-plan-submit"
           >
-            {createPlan.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create'}
+            {createPlan.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t('plans.create.submit')}
           </button>
         </div>
 
@@ -189,13 +191,13 @@ export function CreatePlanModal({
           {/* Plan Title */}
           <div>
             <label htmlFor="plan-title-mobile" className="block text-sm font-medium text-[var(--color-text)] mb-1">
-              Plan Title *
+              {t('plans.create.titleLabel')}
             </label>
             <input
               id="plan-title-mobile"
               type="text"
               data-testid="plan-title-input"
-              placeholder="Enter plan title..."
+              placeholder={t('plans.create.titlePlaceholder')}
               value={planTitle}
               onChange={(e) => setPlanTitle(e.target.value)}
               className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -230,7 +232,7 @@ export function CreatePlanModal({
       <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Create Plan</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('plans.create.title')}</h3>
           <button
             onClick={onClose}
             className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
@@ -245,13 +247,13 @@ export function CreatePlanModal({
           {/* Plan Title */}
           <div>
             <label htmlFor="plan-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Plan Title *
+              {t('plans.create.titleLabel')}
             </label>
             <input
               id="plan-title"
               type="text"
               data-testid="plan-title-input"
-              placeholder="Enter plan title..."
+              placeholder={t('plans.create.titlePlaceholder')}
               value={planTitle}
               onChange={(e) => setPlanTitle(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
@@ -280,7 +282,7 @@ export function CreatePlanModal({
             className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
             data-testid="create-plan-cancel"
           >
-            Cancel
+            {t('plans.action.cancel')}
           </button>
           <button
             onClick={handleSubmit}
@@ -288,7 +290,7 @@ export function CreatePlanModal({
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             data-testid="create-plan-submit"
           >
-            {createPlan.isPending ? 'Creating...' : 'Create Plan'}
+            {createPlan.isPending ? t('plans.create.creating') : t('plans.create.title')}
           </button>
         </div>
       </div>
@@ -320,6 +322,8 @@ function TasksSection({
   onCreateNewTask?: () => void;
   isMobile: boolean;
 }) {
+  const { t } = useTranslation('ui');
+
   return (
     <div className="border border-blue-200 dark:border-blue-800 rounded-lg p-4 bg-blue-50 dark:bg-blue-900/20">
       {/* Header with buttons */}
@@ -327,7 +331,7 @@ function TasksSection({
         <div className="flex items-center gap-2">
           <Info className="w-4 h-4 text-blue-500" />
           <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-            Tasks ({selectedTasks.length})
+            {t('plans.create.tasksLabel', { count: selectedTasks.length })}
           </span>
         </div>
         {onCreateNewTask && (
@@ -337,19 +341,19 @@ function TasksSection({
             data-testid="create-new-task-btn"
           >
             <FilePlus className="w-3 h-3" />
-            Create New Task
+            {t('plans.create.newTask')}
           </button>
         )}
       </div>
       <p className="text-xs text-blue-600 dark:text-blue-400 mb-4">
-        Plans must have at least one task. Search and select existing tasks below.
+        {t('plans.create.taskInfo')}
       </p>
 
       {/* Selected Tasks */}
       {selectedTasks.length > 0 && (
         <div className="mb-4">
           <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
-            Selected Tasks
+            {t('plans.create.selectedTasks')}
           </div>
           <div className="space-y-2">
             {selectedTasks.map((task, index) => (
@@ -366,7 +370,7 @@ function TasksSection({
                 <button
                   onClick={() => onRemoveTask(task.id)}
                   className="flex-shrink-0 p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                  aria-label="Remove task"
+                  aria-label={t('plans.create.removeTask')}
                   data-testid={`remove-selected-task-${task.taskId}`}
                 >
                   <Trash2 className="w-4 h-4" />
@@ -383,7 +387,7 @@ function TasksSection({
         <input
           type="text"
           data-testid="task-search-input"
-          placeholder="Search tasks by title or ID..."
+          placeholder={t('plans.create.searchTasks')}
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           className={`w-full pl-10 pr-4 ${isMobile ? 'py-2.5' : 'py-2'} border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white`}
@@ -395,17 +399,17 @@ function TasksSection({
         {isLoadingTasks ? (
           <div className="flex items-center justify-center py-8 text-gray-500 text-sm">
             <Loader2 className="w-4 h-4 animate-spin mr-2" />
-            Loading tasks...
+            {t('plans.create.loadingTasks')}
           </div>
         ) : availableTasks.length === 0 ? (
           <div className="text-center py-8 text-gray-500 text-sm">
-            {searchQuery ? 'No matching tasks found' : 'No tasks available'}
+            {searchQuery ? t('plans.create.noMatchingTasks') : t('plans.create.noTasksAvailable')}
             {onCreateNewTask && (
               <button
                 onClick={onCreateNewTask}
                 className="block mx-auto mt-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
               >
-                Create a new task
+                {t('plans.create.createTaskLink')}
               </button>
             )}
           </div>
