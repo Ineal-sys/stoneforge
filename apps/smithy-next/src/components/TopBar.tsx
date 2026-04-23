@@ -4,6 +4,7 @@ import { Tooltip } from "./Tooltip";
 import { NotificationInbox } from "./NotificationInbox";
 import { SyncIndicator } from "./SyncIndicator";
 import { PresenceStrip } from "./PresenceStrip";
+import { WorkspaceIconMark } from "./WorkspaceIconMark";
 import type { WorkspaceInfo, NotificationItem, AppMode, SyncStatus, StoneforgeUser, PresenceEntry, WorkspaceDaemonState } from "../mock-data";
 import { mockHosts } from "./overlays/runtimes/runtime-mock-data";
 
@@ -102,22 +103,7 @@ export function TopBar({
               color: "var(--color-text)",
             }}
           >
-            <span
-              style={{
-                width: 22,
-                height: 22,
-                borderRadius: "var(--radius-sm)",
-                background: "var(--color-surface-active)",
-                color: "var(--color-text-secondary)",
-                fontSize: 11,
-                fontWeight: 700,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {activeWorkspace.icon}
-            </span>
+            <WorkspaceIconMark icon={activeWorkspace.icon} size={22} fontSize={11} />
             <span className="workspace-name">{activeWorkspace.name}</span>
           </div>
         )}

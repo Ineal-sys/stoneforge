@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { X, ArrowRight, CheckCircle2, AlertCircle, GitPullRequest, CircleDot, MessageCircle, Users } from 'lucide-react'
 import type { WorkspaceInfo } from '../mock-data'
 import { TEAM_MEMBERS } from '../mock-data'
+import { WorkspaceIconMark } from './WorkspaceIconMark'
 
 export interface ToastItem {
   id: string
@@ -104,14 +105,7 @@ function ToastCard({ toast, workspace, onDismiss, onSwitch }: {
     >
       {/* Header: workspace + dismiss */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-        <span style={{
-          width: 20, height: 20, borderRadius: 'var(--radius-sm)',
-          background: 'var(--color-surface-active)', color: 'var(--color-text-secondary)',
-          fontSize: 10, fontWeight: 700,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-        }}>
-          {workspace?.icon || '?'}
-        </span>
+        <WorkspaceIconMark icon={workspace?.icon} size={20} fontSize={10} />
         <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-secondary)', flex: 1 }}>
           {workspace?.name || 'Unknown'}
         </span>

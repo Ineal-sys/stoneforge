@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useRef, useState, useMemo } from 'react'
 import {
   ArrowLeft,
   Bell,
@@ -32,11 +32,13 @@ import {
   Bot,
   AlertTriangle,
   RotateCcw,
+  Upload,
 } from 'lucide-react'
 import { useTeamContext } from '../../TeamContext'
 import { mockWorkspaces, type WorkspaceInfo } from '../../mock-data'
 import { UserAvatar } from '../UserAvatar'
 import { PresenceDot } from '../PresenceDot'
+import { WorkspaceIconMark, isIconImage } from '../WorkspaceIconMark'
 import {
   WORKFLOW_PRESETS,
   AGENT_PROVIDERS,
@@ -213,50 +215,13 @@ function GeneralSection({ appMode, onToggleMode, activeWorkspace, onUpdateActive
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   return (
-    <div style={{ maxWidth: 560 }}>
+    <div style={{ maxWidth: 800 }}>
       {/* ── Workspace identity ── */}
       <SectionHeader title="Workspace" description="Identity and appearance of this workspace" />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 32 }}>
         <InputRow label="Name" placeholder="Stoneforge" value={wsName} onChange={setWsName} />
         <TextareaRow label="Description" placeholder="What this workspace is for..." value={wsDescription} onChange={setWsDescription} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
-          <span style={{ width: 100, fontSize: 12, color: 'var(--color-text-secondary)', flexShrink: 0 }}>Icon</span>
-          {/* Live badge preview — matches the style used in ActivityRail / TopBar / WorkspacesOverlay */}
-          <div style={{
-            width: 24, height: 24,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            borderRadius: 'var(--radius-sm)',
-            background: 'var(--color-surface-active)',
-            color: 'var(--color-text-secondary)',
-            fontSize: 11, fontWeight: 700,
-            flexShrink: 0,
-          }}>
-            {wsIcon || '?'}
-          </div>
-          <input
-            value={wsIcon}
-            onChange={e => {
-              // 1–2 chars, auto-uppercase, no whitespace
-              const next = e.target.value.replace(/\s/g, '').slice(0, 2).toUpperCase()
-              setWsIcon(next)
-            }}
-            placeholder="S"
-            maxLength={2}
-            style={{
-              width: 64, height: 30, padding: '0 10px',
-              background: 'var(--color-surface)', border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-sm)', color: 'var(--color-text)',
-              fontSize: 12, outline: 'none',
-              fontVariantCaps: 'all-small-caps',
-              transition: 'border-color var(--duration-fast)',
-            }}
-            onFocus={e => e.currentTarget.style.borderColor = 'var(--color-primary)'}
-            onBlur={e => e.currentTarget.style.borderColor = 'var(--color-border)'}
-          />
-          <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>
-            1–2 letters. Shown in the workspace switcher, notifications, and the top bar.
-          </span>
-        </div>
+        <IconRow icon={wsIcon} onChange={setWsIcon} />
       </div>
 
       {/* ── Workspace Mode ── */}
@@ -568,7 +533,7 @@ function AccountSection() {
   const { currentUser, isTeamMode, org } = useTeamContext()
 
   return (
-    <div style={{ maxWidth: 560 }}>
+    <div style={{ maxWidth: 800 }}>
       <SectionHeader title="Account" description="Your profile and connection status" />
 
       {/* Profile card */}
@@ -726,7 +691,7 @@ function OrganizationSection() {
   const planStyle = planColors[org.plan] || planColors.free
 
   return (
-    <div style={{ maxWidth: 600 }}>
+    <div style={{ maxWidth: 800 }}>
       <SectionHeader title="Organization" description="Manage your organization settings" />
 
       {/* Org header */}
@@ -1072,14 +1037,7 @@ function OrganizationSection() {
                       <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 6, marginBottom: 2 }}>Workspaces</div>
                       {workspaces.map(w => (
                         <div key={w.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <div style={{
-                            width: 18, height: 18, borderRadius: 'var(--radius-sm)',
-                            background: 'var(--color-surface-active)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 10, fontWeight: 600, color: 'var(--color-text-secondary)',
-                          }}>
-                            {w.icon}
-                          </div>
+                          <WorkspaceIconMark icon={w.icon} size={18} fontSize={10} fontWeight={600} />
                           <span style={{ fontSize: 12, color: 'var(--color-text)' }}>{w.name}</span>
                         </div>
                       ))}
@@ -1103,14 +1061,7 @@ function OrganizationSection() {
               padding: '8px 12px',
               borderRadius: 'var(--radius-sm)',
             }}>
-              <div style={{
-                width: 22, height: 22, borderRadius: 'var(--radius-sm)',
-                background: 'var(--color-surface-active)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 11, fontWeight: 600, color: 'var(--color-text-secondary)',
-              }}>
-                {w.icon}
-              </div>
+              <WorkspaceIconMark icon={w.icon} size={22} fontSize={11} fontWeight={600} />
               <span style={{ flex: 1, fontSize: 13, color: 'var(--color-text)' }}>{w.name}</span>
               <div style={{ display: 'flex', gap: 4 }}>
                 {accessTeams.map(t => (
@@ -1155,7 +1106,7 @@ function MembersSection() {
   })
 
   return (
-    <div style={{ maxWidth: 700 }}>
+    <div style={{ maxWidth: 800 }}>
       <SectionHeader title="Members" description={`${org.members.length} members in ${org.name}`} />
 
       {/* Search + invite */}
@@ -1439,14 +1390,7 @@ function RolesAccessSection() {
                   background: 'var(--color-bg)',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{
-                      width: 20, height: 20, borderRadius: 'var(--radius-sm)',
-                      background: 'var(--color-surface-active)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 10, fontWeight: 600, color: 'var(--color-text-secondary)',
-                    }}>
-                      {w.icon}
-                    </div>
+                    <WorkspaceIconMark icon={w.icon} size={20} fontSize={10} fontWeight={600} />
                     <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text)' }}>{w.name}</span>
                   </div>
                 </td>
@@ -1515,7 +1459,7 @@ function NotificationsSection() {
   const [soundEnabled, setSoundEnabled] = useState(false)
 
   return (
-    <div style={{ maxWidth: 560 }}>
+    <div style={{ maxWidth: 800 }}>
       {/* Event types */}
       <SectionHeader title="Notification events" description="Choose which events trigger notifications" />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 32 }}>
@@ -1639,7 +1583,7 @@ function IntegrationsSection() {
   }
 
   return (
-    <div style={{ maxWidth: 640 }}>
+    <div style={{ maxWidth: 800 }}>
       <IntegrationSyncGroup
         title="Issue sync"
         description="Where task issues live. Stoneforge will keep them in sync two-way."
@@ -2095,6 +2039,101 @@ function SelectRow({ label, value, options, onChange }: {
       >
         {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
+    </div>
+  )
+}
+
+function IconRow({ icon, onChange }: { icon: string; onChange: (next: string) => void }) {
+  const fileRef = useRef<HTMLInputElement | null>(null)
+  const hasImage = isIconImage(icon)
+  const letterValue = hasImage ? '' : icon
+
+  const onFile = (file: File | null) => {
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === 'string') onChange(reader.result)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
+      <span style={{ width: 100, fontSize: 12, color: 'var(--color-text-secondary)', flexShrink: 0 }}>Icon</span>
+      {/* Live preview — matches ActivityRail / TopBar / WorkspacesOverlay */}
+      <WorkspaceIconMark icon={icon} fallback="?" size={28} fontSize={11} />
+      <input
+        value={letterValue}
+        onChange={e => {
+          // 1–2 chars, auto-uppercase, no whitespace
+          const next = e.target.value.replace(/\s/g, '').slice(0, 2).toUpperCase()
+          onChange(next)
+        }}
+        placeholder="S"
+        maxLength={2}
+        disabled={hasImage}
+        title={hasImage ? 'Remove the uploaded image to edit the letter mark' : '1–2 letters'}
+        style={{
+          width: 64, height: 30, padding: '0 10px',
+          background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-sm)', color: 'var(--color-text)',
+          fontSize: 12, outline: 'none',
+          fontVariantCaps: 'all-small-caps',
+          transition: 'border-color var(--duration-fast)',
+          opacity: hasImage ? 0.5 : 1,
+        }}
+        onFocus={e => e.currentTarget.style.borderColor = 'var(--color-primary)'}
+        onBlur={e => e.currentTarget.style.borderColor = 'var(--color-border)'}
+      />
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={e => {
+          onFile(e.target.files?.[0] ?? null)
+          // allow re-uploading the same file
+          if (e.target) e.target.value = ''
+        }}
+      />
+      <button
+        onClick={() => fileRef.current?.click()}
+        style={{
+          height: 30, padding: '0 10px',
+          display: 'flex', alignItems: 'center', gap: 6,
+          background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-sm)', color: 'var(--color-text-secondary)',
+          fontSize: 12, cursor: 'pointer',
+          transition: 'all var(--duration-fast)',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-surface-hover)'; e.currentTarget.style.color = 'var(--color-text)' }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-surface)'; e.currentTarget.style.color = 'var(--color-text-secondary)' }}
+      >
+        <Upload size={12} strokeWidth={1.6} />
+        {hasImage ? 'Replace image' : 'Upload image'}
+      </button>
+      {hasImage && (
+        <button
+          onClick={() => onChange('')}
+          title="Remove image and revert to letter mark"
+          style={{
+            height: 30, padding: '0 10px',
+            display: 'flex', alignItems: 'center', gap: 4,
+            background: 'transparent', border: 'none',
+            color: 'var(--color-text-tertiary)',
+            fontSize: 12, cursor: 'pointer',
+            borderRadius: 'var(--radius-sm)',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-surface-hover)'; e.currentTarget.style.color = 'var(--color-danger)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-text-tertiary)' }}
+        >
+          <X size={12} strokeWidth={1.8} />
+          Remove
+        </button>
+      )}
+      <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginLeft: 'auto', textAlign: 'right', maxWidth: 220 }}>
+        {hasImage ? 'Custom image. Shown in the switcher, notifications, and top bar.' : '1–2 letters or an uploaded image.'}
+      </span>
     </div>
   )
 }

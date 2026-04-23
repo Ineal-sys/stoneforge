@@ -16,6 +16,7 @@ import {
   X,
   Check,
 } from 'lucide-react'
+import { WorkspaceIconMark } from '../WorkspaceIconMark'
 import type { WorkspaceInfo, WorkspaceActivity } from '../../mock-data'
 import { mockWorkspaceActivity, mockWorkspaceThreads } from '../../mock-data'
 
@@ -467,12 +468,7 @@ function WorkspaceCard({ workspace, isActive, activity, threadCount, runningThre
     >
       {/* Header */}
       <div style={{ padding: '14px 16px 10px', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-        <span style={{
-          width: 28, height: 28, borderRadius: 'var(--radius-sm)',
-          background: 'var(--color-surface-active)', color: 'var(--color-text-secondary)',
-          fontSize: 12, fontWeight: 700,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-        }}>{workspace.icon}</span>
+        <WorkspaceIconMark icon={workspace.icon} size={28} fontSize={12} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>{workspace.name}</span>
