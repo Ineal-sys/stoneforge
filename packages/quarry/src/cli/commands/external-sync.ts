@@ -17,6 +17,7 @@
 import type { Command, CommandResult, GlobalOptions, CommandOption } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
 import { getOutputMode } from '../formatter.js';
+import { t } from '../i18n/index.js';
 import { createAPI, resolveDatabasePath } from '../db.js';
 import { createStorage, initializeSchema } from '@stoneforge/storage';
 import { getValue, setValue, VALID_AUTO_LINK_PROVIDERS } from '../../config/index.js';
@@ -72,7 +73,7 @@ function validateTypeFlag(typeFlag?: string): string | undefined {
   if (!typeFlag || typeFlag === 'all' || typeFlag === 'task' || typeFlag === 'document') {
     return undefined;
   }
-  return `Invalid --type value "${typeFlag}". Must be one of: task, document, all`;
+  return t('externalSync.invalidTypeValue', { value: typeFlag });
 }
 
 // ============================================================================
@@ -91,7 +92,7 @@ async function createSettingsServiceFromOptions(options: GlobalOptions): Promise
   if (!dbPath) {
     return {
       settingsService: null as unknown as SettingsServiceLike,
-      error: 'No database found. Run "sf init" to initialize a workspace, or specify --db path',
+      error: t('db.noDatabase'),
     };
   }
 
@@ -110,12 +111,12 @@ async function createSettingsServiceFromOptions(options: GlobalOptions): Promise
     if (message.includes('Cannot find') || message.includes('MODULE_NOT_FOUND')) {
       return {
         settingsService: null as unknown as SettingsServiceLike,
-        error: 'External sync requires @stoneforge/smithy package. Ensure it is installed.',
+        error: t('externalSync.requiresSmithy'),
       };
     }
     return {
       settingsService: null as unknown as SettingsServiceLike,
-      error: `Failed to initialize settings: ${message}`,
+      error: t('externalSync.failedToInitSettings', { message }),
     };
   }
 }
@@ -216,30 +217,30 @@ async function configHandler(
 
   // Human-readable output
   const lines: string[] = [
-    'External Sync Configuration',
+    t('externalSync.config.title'),
     '',
-    `  Enabled:            ${enabled ? 'yes' : 'no'}`,
-    `  Conflict strategy:  ${conflictStrategy}`,
-    `  Default direction:  ${defaultDirection}`,
-    `  Poll interval:      ${pollInterval}ms`,
-    `  Auto-link:          ${autoLink ? 'yes' : 'no'}`,
-    `  Auto-link provider (tasks): ${autoLinkProvider ?? '(not set)'}`,
-    `  Auto-link provider (docs):  ${autoLinkDocumentProvider ?? '(not set)'}`,
+    `  ${t('externalSync.config.enabled')}:            ${enabled ? t('externalSync.config.yes') : t('externalSync.config.no')}`,
+    `  ${t('externalSync.config.conflictStrategy')}:  ${conflictStrategy}`,
+    `  ${t('externalSync.config.defaultDirection')}:  ${defaultDirection}`,
+    `  ${t('externalSync.config.pollInterval')}:      ${pollInterval}ms`,
+    `  ${t('externalSync.config.autoLink')}:          ${autoLink ? t('externalSync.config.yes') : t('externalSync.config.no')}`,
+    `  ${t('externalSync.config.autoLinkProviderTasks')}: ${autoLinkProvider ?? t('externalSync.config.notSet')}`,
+    `  ${t('externalSync.config.autoLinkProviderDocs')}:  ${autoLinkDocumentProvider ?? t('externalSync.config.notSet')}`,
     '',
   ];
 
   const providerEntries = Object.entries(settings.providers);
   if (providerEntries.length === 0) {
-    lines.push('  Providers:          (none configured)');
+    lines.push(`  ${t('externalSync.config.providers')}:          ${t('externalSync.config.noneConfigured')}`);
     lines.push('');
-    lines.push('  Run "sf external-sync config set-token <provider> <token>" to configure a provider.');
+    lines.push(`  ${t('externalSync.config.providersHint')}`);
   } else {
-    lines.push('  Providers:');
+    lines.push(`  ${t('externalSync.config.providers')}:`);
     for (const [name, config] of providerEntries) {
       lines.push(`    ${name}:`);
-      lines.push(`      Token:           ${config.token ? maskToken(config.token) : '(not set)'}`);
-      lines.push(`      API URL:         ${config.apiBaseUrl ?? '(default)'}`);
-      lines.push(`      Default project: ${config.defaultProject ?? '(not set)'}`);
+      lines.push(`      ${t('externalSync.config.token')}:           ${config.token ? maskToken(config.token) : t('externalSync.config.notSet')}`);
+      lines.push(`      ${t('externalSync.config.apiUrl')}:         ${config.apiBaseUrl ?? t('externalSync.config.default_')}`);
+      lines.push(`      ${t('externalSync.config.defaultProject')}: ${config.defaultProject ?? t('externalSync.config.notSet')}`);
     }
   }
 
@@ -256,7 +257,7 @@ async function configSetTokenHandler(
 ): Promise<CommandResult> {
   if (args.length < 2) {
     return failure(
-      'Usage: sf external-sync config set-token <provider> <token>',
+      `Usage: sf external-sync config set-token <provider> <token>`,
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -283,7 +284,7 @@ async function configSetTokenHandler(
 
   return success(
     { provider, tokenSet: true },
-    `Token set for provider "${provider}" (${maskToken(token)})`
+    t('externalSync.config.tokenSetFor', { provider, token: maskToken(token) })
   );
 }
 
@@ -297,7 +298,7 @@ async function configSetProjectHandler(
 ): Promise<CommandResult> {
   if (args.length < 2) {
     return failure(
-      'Usage: sf external-sync config set-project <provider> <project>',
+      `Usage: sf external-sync config set-project <provider> <project>`,
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -324,7 +325,7 @@ async function configSetProjectHandler(
 
   return success(
     { provider, defaultProject: project },
-    `Default project set for provider "${provider}": ${project}`
+    t('externalSync.config.defaultProjectSetFor', { provider, project })
   );
 }
 
@@ -350,7 +351,7 @@ async function configSetAutoLinkHandler(
   // Validate --type flag
   if (linkType !== 'task' && linkType !== 'document') {
     return failure(
-      `Invalid type "${linkType}". Must be one of: task, document`,
+      t('externalSync.invalidTypeValueShort', { value: linkType }),
       ExitCode.VALIDATION
     );
   }
@@ -358,7 +359,7 @@ async function configSetAutoLinkHandler(
   // Validate provider name
   if (!VALID_AUTO_LINK_PROVIDERS.includes(provider)) {
     return failure(
-      `Invalid provider "${provider}". Must be one of: ${VALID_AUTO_LINK_PROVIDERS.join(', ')}`,
+      t('externalSync.invalidProvider', { provider, valid: VALID_AUTO_LINK_PROVIDERS.join(', ') }),
       ExitCode.VALIDATION
     );
   }
@@ -369,7 +370,7 @@ async function configSetAutoLinkHandler(
   if (!settingsError && !TOKENLESS_PROVIDERS.has(provider)) {
     const providerConfig = settingsService.getProviderConfig(provider);
     if (!providerConfig?.token) {
-      tokenWarning = `Warning: Provider "${provider}" has no token configured. Auto-link will not work until a token is set. Run "sf external-sync config set-token ${provider} <token>".`;
+      tokenWarning = t('externalSync.tokenWarning', { provider });
     }
   }
 
@@ -387,7 +388,7 @@ async function configSetAutoLinkHandler(
       return success(provider);
     }
 
-    const lines = [`Auto-link for documents enabled with provider "${provider}".`];
+    const lines = [t('externalSync.config.autoLinkDocEnabled', { provider })];
     if (tokenWarning) {
       lines.push('');
       lines.push(tokenWarning);
@@ -413,7 +414,7 @@ async function configSetAutoLinkHandler(
     return success(provider);
   }
 
-  const lines = [`Auto-link for tasks enabled with provider "${provider}".`];
+  const lines = [t('externalSync.config.autoLinkTaskEnabled', { provider })];
   if (tokenWarning) {
     lines.push('');
     lines.push(tokenWarning);
@@ -439,7 +440,7 @@ async function configDisableAutoLinkHandler(
   // Validate --type flag
   if (linkType !== 'task' && linkType !== 'document' && linkType !== 'all') {
     return failure(
-      `Invalid type "${linkType}". Must be one of: task, document, all`,
+      t('externalSync.invalidTypeValue', { value: linkType }),
       ExitCode.VALIDATION
     );
   }
@@ -460,7 +461,7 @@ async function configDisableAutoLinkHandler(
 
     return success(
       { autoLinkDocumentProvider: null },
-      'Auto-link for documents disabled.'
+      t('externalSync.config.autoLinkDocDisabled')
     );
   }
 
@@ -479,7 +480,7 @@ async function configDisableAutoLinkHandler(
 
     return success(
       { autoLink: false },
-      'Auto-link for tasks disabled.'
+      t('externalSync.config.autoLinkTaskDisabled')
     );
   }
 
@@ -498,7 +499,7 @@ async function configDisableAutoLinkHandler(
 
   return success(
     { autoLink: false },
-    'Auto-link disabled.'
+    t('externalSync.config.autoLinkDisabled')
   );
 }
 
@@ -515,13 +516,13 @@ const linkOptions: CommandOption[] = [
   {
     name: 'provider',
     short: 'p',
-    description: 'Provider name (default: github)',
+    description: t('externalSync.link.optionProvider'),
     hasValue: true,
   },
   {
     name: 'type',
     short: 't',
-    description: 'Element type: task or document (default: task)',
+    description: t('externalSync.link.optionType'),
     hasValue: true,
     defaultValue: 'task',
   },
@@ -534,14 +535,14 @@ async function linkHandler(
   const elementType = options.type ?? 'task';
   if (elementType !== 'task' && elementType !== 'document') {
     return failure(
-      `Invalid --type value "${elementType}". Must be one of: task, document`,
+      t('externalSync.invalidTypeValueShort', { value: elementType }),
       ExitCode.INVALID_ARGUMENTS
     );
   }
 
   if (args.length < 2) {
     return failure(
-      `Usage: sf external-sync link <${elementType}Id> <url-or-external-id>`,
+      t('externalSync.linkAll.usage', { type: elementType }),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -559,15 +560,15 @@ async function linkHandler(
   try {
     element = await api.get<Task | Document>(elementId as ElementId);
   } catch {
-    return failure(`Element not found: ${elementId}`, ExitCode.NOT_FOUND);
+    return failure(t('externalSync.elementNotFound', { id: elementId }), ExitCode.NOT_FOUND);
   }
 
   if (!element) {
-    return failure(`Element not found: ${elementId}`, ExitCode.NOT_FOUND);
+    return failure(t('externalSync.elementNotFound', { id: elementId }), ExitCode.NOT_FOUND);
   }
 
   if (element.type !== elementType) {
-    return failure(`Element ${elementId} is not a ${elementType} (type: ${element.type})`, ExitCode.VALIDATION);
+    return failure(t('externalSync.elementNotType', { id: elementId, type: elementType, actualType: element.type }), ExitCode.VALIDATION);
   }
 
   // Determine the external URL and external ID
@@ -584,9 +585,7 @@ async function linkHandler(
     const providerConfig = settingsService.getProviderConfig(provider);
     if (!providerConfig?.defaultProject) {
       return failure(
-        `No default project configured for provider "${provider}". ` +
-        `Run "sf external-sync config set-project ${provider} <project>" first, ` +
-        `or provide a full URL.`,
+        t('externalSync.noDefaultProject', { provider }),
         ExitCode.VALIDATION
       );
     }
@@ -640,7 +639,7 @@ async function linkHandler(
     } as Partial<Task | Document>);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to update ${elementType}: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('externalSync.failedToUpdate', { type: elementType, message }), ExitCode.GENERAL_ERROR);
   }
 
   const mode = getOutputMode(options);
@@ -655,7 +654,7 @@ async function linkHandler(
 
   return success(
     { elementId, elementType, externalUrl, provider, externalId },
-    `Linked ${elementType} ${elementId} to ${externalUrl}`
+    t('externalSync.link.linked', { elementType, elementId, externalUrl })
   );
 }
 
@@ -669,7 +668,7 @@ async function unlinkHandler(
 ): Promise<CommandResult> {
   if (args.length < 1) {
     return failure(
-      'Usage: sf external-sync unlink <elementId>',
+      t('externalSync.unlink.usage'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -686,21 +685,21 @@ async function unlinkHandler(
   try {
     element = await api.get<Task | Document>(elementId as ElementId);
   } catch {
-    return failure(`Element not found: ${elementId}`, ExitCode.NOT_FOUND);
+    return failure(t('externalSync.elementNotFound', { id: elementId }), ExitCode.NOT_FOUND);
   }
 
   if (!element) {
-    return failure(`Element not found: ${elementId}`, ExitCode.NOT_FOUND);
+    return failure(t('externalSync.elementNotFound', { id: elementId }), ExitCode.NOT_FOUND);
   }
 
   if (element.type !== 'task' && element.type !== 'document') {
-    return failure(`Element ${elementId} is not a task or document (type: ${(element as any).type})`, ExitCode.VALIDATION);
+    return failure(t('externalSync.elementNotTaskOrDoc', { id: elementId, type: (element as any).type }), ExitCode.VALIDATION);
   }
 
   const hasExternalRef = (element as Task).externalRef;
   const hasExternalSync = (element.metadata as Record<string, unknown>)?._externalSync;
   if (!hasExternalRef && !hasExternalSync) {
-    return failure(`Element ${elementId} is not linked to an external service`, ExitCode.VALIDATION);
+    return failure(t('externalSync.elementNotLinked', { id: elementId }), ExitCode.VALIDATION);
   }
 
   // Clear externalRef and _externalSync metadata
@@ -713,7 +712,7 @@ async function unlinkHandler(
     } as Partial<Task | Document>);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to update element: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('externalSync.failedToUpdateElement', { message }), ExitCode.GENERAL_ERROR);
   }
 
   const mode = getOutputMode(options);
@@ -728,7 +727,7 @@ async function unlinkHandler(
 
   return success(
     { elementId, unlinked: true },
-    `Unlinked ${element.type} ${elementId} from external service`
+    t('externalSync.unlink.unlinked', { elementType: element.type, elementId })
   );
 }
 
@@ -746,20 +745,20 @@ const unlinkAllOptions: CommandOption[] = [
   {
     name: 'provider',
     short: 'p',
-    description: 'Only unlink elements linked to this provider',
+    description: t('externalSync.unlinkAll.optionProvider'),
     hasValue: true,
   },
   {
     name: 'type',
     short: 't',
-    description: 'Element type to unlink: task, document, or all (default: all)',
+    description: t('externalSync.unlinkAll.optionType'),
     hasValue: true,
     defaultValue: 'all',
   },
   {
     name: 'dry-run',
     short: 'n',
-    description: 'Show what would be unlinked without making changes',
+    description: t('externalSync.unlinkAll.optionDryRun'),
   },
 ];
 
@@ -773,7 +772,7 @@ async function unlinkAllHandler(
 
   if (typeFilter !== 'task' && typeFilter !== 'document' && typeFilter !== 'all') {
     return failure(
-      `Invalid --type value "${typeFilter}". Must be one of: task, document, all`,
+      t('externalSync.invalidTypeValue', { value: typeFilter }),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -810,7 +809,7 @@ async function unlinkAllHandler(
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return failure(`Failed to list ${elType}s: ${message}`, ExitCode.GENERAL_ERROR);
+      return failure(t('externalSync.failedToListElements', { type: elType, message }), ExitCode.GENERAL_ERROR);
     }
   }
 
@@ -821,9 +820,9 @@ async function unlinkAllHandler(
     if (mode === 'json') {
       return success(result);
     }
-    const providerHint = providerFilter ? ` linked to "${providerFilter}"` : '';
-    const typeHint = typeFilter !== 'all' ? ` of type "${typeFilter}"` : '';
-    return success(result, `No linked elements${typeHint}${providerHint} found.`);
+    const providerHint = providerFilter ? ` lié(s) à « ${providerFilter} »` : '';
+    const typeHint = typeFilter !== 'all' ? ` de type « ${typeFilter} »` : '';
+    return success(result, t('externalSync.linkAll.noLinkedElementsFound', { typeHint, providerHint }));
   }
 
   // Dry run — just list elements that would be unlinked
@@ -852,7 +851,7 @@ async function unlinkAllHandler(
     }
 
     const lines: string[] = [];
-    lines.push(`Dry run: ${linkedElements.length} element(s) would be unlinked`);
+    lines.push(t('externalSync.linkAll.dryRunUnlink', { count: linkedElements.length }));
     lines.push('');
 
     for (const el of linkedElements) {
@@ -885,13 +884,13 @@ async function unlinkAllHandler(
       totalUnlinked++;
 
       if (mode !== 'json' && mode !== 'quiet') {
-        progressLines.push(`  Unlinked ${el.type} ${el.id} (${el.provider}): ${el.title}`);
+        progressLines.push(`  ${t('externalSync.linkAll.unlinkedElement', { type: el.type, id: el.id, provider: el.provider, title: el.title })}`);
       }
     } catch (err) {
       totalFailed++;
       if (mode !== 'json' && mode !== 'quiet') {
         const message = err instanceof Error ? err.message : String(err);
-        progressLines.push(`  Failed to unlink ${el.type} ${el.id}: ${message}`);
+        progressLines.push(`  ${t('externalSync.linkAll.failedToUnlinkElement', { type: el.type, id: el.id, message })}`);
       }
     }
   }
@@ -913,9 +912,9 @@ async function unlinkAllHandler(
   }
 
   const lines: string[] = [...progressLines, ''];
-  const summaryParts = [`Unlinked ${totalUnlinked} element(s)`];
+  const summaryParts = [t('externalSync.linkAll.unlinkedSummary', { count: totalUnlinked })];
   if (totalFailed > 0) {
-    summaryParts.push(`(${totalFailed} failed)`);
+    summaryParts.push(t('externalSync.linkAll.failedCount', { count: totalFailed }));
   }
   lines.push(summaryParts.join(' '));
 
@@ -937,23 +936,23 @@ const pushOptions: CommandOption[] = [
   {
     name: 'all',
     short: 'a',
-    description: 'Push all linked elements',
+    description: t('externalSync.push.optionAll'),
   },
   {
     name: 'force',
     short: 'f',
-    description: 'Push all linked elements regardless of whether they have changed',
+    description: t('externalSync.push.optionForce'),
   },
   {
     name: 'type',
     short: 't',
-    description: 'Element type to push: task, document, or all (default: all)',
+    description: t('externalSync.push.optionType'),
     hasValue: true,
     defaultValue: 'all',
   },
   {
     name: 'no-library',
-    description: 'Include documents that are not in any library (excluded by default)',
+    description: t('externalSync.push.optionNoLibrary'),
   },
 ];
 
@@ -985,7 +984,7 @@ async function pushHandler(
 
   if (providerConfigs.length === 0) {
     return failure(
-      'No providers configured with tokens. Run "sf external-sync config set-token <provider> <token>" first.',
+      t('externalSync.noProviders'),
       ExitCode.GENERAL_ERROR
     );
   }
@@ -1024,7 +1023,7 @@ async function pushHandler(
     : (current: number, total: number) => {
         if (current === 0 && total > 0) {
           // First call — create the progress bar now that we know the total
-          pushProgress = createProgressBar(total, 'Pushing');
+          pushProgress = createProgressBar(total, t('externalSync.push.pushing'));
         }
         pushProgress.update(current);
       };
@@ -1039,7 +1038,7 @@ async function pushHandler(
     syncPushOptions.taskIds = args;
   } else {
     return failure(
-      'Usage: sf external-sync push [elementId...] or sf external-sync push --all',
+      t('externalSync.push.usage'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -1058,8 +1057,7 @@ async function pushHandler(
     syncPushOptions.onBeforeProcess = (count: number) => {
       if (count > LARGE_SET_WARNING_THRESHOLD) {
         process.stderr.write(
-          `\nWarning: About to push ${count} elements. ` +
-          `This may take a significant amount of time for large element sets.\n\n`
+          `\n${t('externalSync.largeSetWarning', { count })}\n\n`
         );
       }
     };
@@ -1090,21 +1088,21 @@ async function pushHandler(
 
     const typeLabel = options.type === 'document' ? 'document(s)' : options.type === 'task' ? 'task(s)' : 'element(s)';
     const lines: string[] = [
-      `Push: ${result.pushed} ${typeLabel} pushed successfully`,
+      t('externalSync.push.result', { count: result.pushed, typeLabel }),
       '',
     ];
 
     if (result.skipped > 0) {
-      lines.push(`Skipped: ${result.skipped}`);
+      lines.push(t('externalSync.push.skipped', { count: result.skipped }));
     }
 
     if (result.noLibrarySkipped && result.noLibrarySkipped > 0) {
-      lines.push(`Skipped ${result.noLibrarySkipped} document(s) not in any library (use --no-library to include)`);
+      lines.push(t('externalSync.push.skippedNoLibrary', { count: result.noLibrarySkipped }));
     }
 
     if (result.errors.length > 0) {
       lines.push('');
-      lines.push(`Errors (${result.errors.length}):`);
+      lines.push(t('externalSync.push.errors', { count: result.errors.length }));
       for (const err of result.errors) {
         lines.push(`  ${err.elementId ?? 'unknown'}: ${err.message}`);
       }
@@ -1112,7 +1110,7 @@ async function pushHandler(
 
     if (result.conflicts.length > 0) {
       lines.push('');
-      lines.push(`Conflicts (${result.conflicts.length}):`);
+      lines.push(t('externalSync.push.conflicts', { count: result.conflicts.length }));
       for (const conflict of result.conflicts) {
         lines.push(`  ${conflict.elementId} ↔ ${conflict.externalId} (${conflict.strategy}, resolved: ${conflict.resolved})`);
       }
@@ -1122,7 +1120,7 @@ async function pushHandler(
   } catch (err) {
     pushProgress.finish();
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Push failed: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('externalSync.push.pushFailedGeneral', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
@@ -1140,18 +1138,18 @@ const pullOptions: CommandOption[] = [
   {
     name: 'provider',
     short: 'p',
-    description: 'Provider to pull from (default: all configured)',
+    description: t('externalSync.pull.optionProvider'),
     hasValue: true,
   },
   {
     name: 'discover',
     short: 'd',
-    description: 'Discover new issues not yet linked',
+    description: t('externalSync.pull.optionDiscover'),
   },
   {
     name: 'type',
     short: 't',
-    description: 'Element type to pull: task, document, or all (default: all)',
+    description: t('externalSync.pull.optionType'),
     hasValue: true,
     defaultValue: 'all',
   },
@@ -1184,7 +1182,7 @@ async function pullHandler(
 
   if (providerNames.length === 0) {
     return failure(
-      'No providers configured. Run "sf external-sync config set-token <provider> <token>" first.',
+      t('externalSync.noProvidersConfigured'),
       ExitCode.VALIDATION
     );
   }
@@ -1209,7 +1207,7 @@ async function pullHandler(
 
   if (providerConfigs.length === 0) {
     return failure(
-      'No providers with valid tokens found. Run "sf external-sync config set-token <provider> <token>" first.',
+      t('externalSync.noProvidersWithTokens'),
       ExitCode.GENERAL_ERROR
     );
   }
@@ -1270,22 +1268,22 @@ async function pullHandler(
 
     const typeLabel = options.type === 'document' ? 'document(s)' : options.type === 'task' ? 'task(s)' : 'element(s)';
     const lines: string[] = [
-      `Pull: ${result.pulled} ${typeLabel} pulled successfully`,
+      t('externalSync.pull.result', { count: result.pulled, typeLabel }),
       '',
     ];
 
     if (result.skipped > 0) {
-      lines.push(`Skipped: ${result.skipped}`);
+      lines.push(t('externalSync.pull.skipped', { count: result.skipped }));
     }
 
     if (invalidProviders.length > 0) {
       lines.push('');
-      lines.push(`Skipped providers (no token): ${invalidProviders.join(', ')}`);
+      lines.push(t('externalSync.skippedProvidersNoToken', { providers: invalidProviders.join(', ') }));
     }
 
     if (result.errors.length > 0) {
       lines.push('');
-      lines.push(`Errors (${result.errors.length}):`);
+      lines.push(t('externalSync.pull.errors', { count: result.errors.length }));
       for (const err of result.errors) {
         lines.push(`  ${err.elementId ?? 'unknown'}: ${err.message}`);
       }
@@ -1293,7 +1291,7 @@ async function pullHandler(
 
     if (result.conflicts.length > 0) {
       lines.push('');
-      lines.push(`Conflicts (${result.conflicts.length}):`);
+      lines.push(t('externalSync.pull.conflicts', { count: result.conflicts.length }));
       for (const conflict of result.conflicts) {
         lines.push(`  ${conflict.elementId} ↔ ${conflict.externalId} (${conflict.strategy}, resolved: ${conflict.resolved})`);
       }
@@ -1302,7 +1300,7 @@ async function pullHandler(
     return success(output, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Pull failed: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('externalSync.pull.pullFailedGeneral', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
@@ -1319,12 +1317,12 @@ const syncOptions: CommandOption[] = [
   {
     name: 'dry-run',
     short: 'n',
-    description: 'Show what would change without making changes',
+    description: t('externalSync.sync.optionDryRun'),
   },
   {
     name: 'type',
     short: 't',
-    description: 'Element type to sync: task, document, or all (default: all)',
+    description: t('externalSync.sync.optionType'),
     hasValue: true,
     defaultValue: 'all',
   },
@@ -1359,7 +1357,7 @@ async function syncHandler(
 
   if (providerConfigs.length === 0) {
     return failure(
-      'No providers configured with tokens. Run "sf external-sync config set-token <provider> <token>" first.',
+      t('externalSync.noProviders'),
       ExitCode.GENERAL_ERROR
     );
   }
@@ -1421,19 +1419,19 @@ async function syncHandler(
 
     const typeLabel = options.type === 'document' ? 'document(s)' : options.type === 'task' ? 'task(s)' : 'element(s)';
     const lines: string[] = [
-      isDryRun ? 'Sync (dry run) - showing what would change' : 'Bidirectional Sync Complete',
+      isDryRun ? t('externalSync.sync.dryRunTitle') : t('externalSync.sync.completeTitle'),
       '',
-      `  Pushed: ${result.pushed} ${typeLabel}`,
-      `  Pulled: ${result.pulled} ${typeLabel}`,
+      t('externalSync.sync.pushed', { count: result.pushed, typeLabel }),
+      t('externalSync.sync.pulled', { count: result.pulled, typeLabel }),
     ];
 
     if (result.skipped > 0) {
-      lines.push(`  Skipped: ${result.skipped} (no changes)`);
+      lines.push(t('externalSync.sync.skipped', { count: result.skipped }));
     }
 
     if (result.errors.length > 0) {
       lines.push('');
-      lines.push(`Errors (${result.errors.length}):`);
+      lines.push(t('externalSync.sync.errors', { count: result.errors.length }));
       for (const err of result.errors) {
         lines.push(`  ${err.elementId ?? 'unknown'}: ${err.message}`);
       }
@@ -1441,7 +1439,7 @@ async function syncHandler(
 
     if (result.conflicts.length > 0) {
       lines.push('');
-      lines.push(`Conflicts (${result.conflicts.length}):`);
+      lines.push(t('externalSync.sync.conflicts', { count: result.conflicts.length }));
       for (const conflict of result.conflicts) {
         lines.push(`  ${conflict.elementId} ↔ ${conflict.externalId} (${conflict.strategy}, resolved: ${conflict.resolved})`);
       }
@@ -1450,7 +1448,7 @@ async function syncHandler(
     return success(output, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Sync failed: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('externalSync.sync.syncFailedGeneral', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
@@ -1498,7 +1496,7 @@ async function statusHandler(
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to list tasks: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('externalSync.failedToListTasks', { message }), ExitCode.GENERAL_ERROR);
   }
 
   try {
@@ -1545,36 +1543,36 @@ async function statusHandler(
   }
 
   const lines: string[] = [
-    'External Sync Status',
+    t('externalSync.status.title'),
     '',
-    `  Enabled:             ${enabled ? 'yes' : 'no'}`,
-    `  Linked tasks:        ${linkedTaskCount}`,
-    `  Linked documents:    ${linkedDocCount}`,
-    `  Pending conflicts:   ${conflictCount}`,
-    `  Poll interval:       ${settings.pollIntervalMs}ms`,
-    `  Default direction:   ${settings.defaultDirection}`,
+    `  ${t('externalSync.status.enabled')}:             ${enabled ? t('externalSync.config.yes') : t('externalSync.config.no')}`,
+    `  ${t('externalSync.status.linkedTasks')}:        ${linkedTaskCount}`,
+    `  ${t('externalSync.status.linkedDocs')}:    ${linkedDocCount}`,
+    `  ${t('externalSync.status.pendingConflicts')}:   ${conflictCount}`,
+    `  ${t('externalSync.status.pollInterval')}:       ${settings.pollIntervalMs}ms`,
+    `  ${t('externalSync.status.defaultDirection')}:   ${settings.defaultDirection}`,
     '',
   ];
 
   // Provider breakdown
   const providerEntries = Object.entries(settings.providers);
   if (providerEntries.length > 0) {
-    lines.push('  Providers:');
+    lines.push(`  ${t('externalSync.status.providers')}:`);
     for (const [name, config] of providerEntries) {
       const taskCount = providerTaskCounts[name] ?? 0;
       const docCount = providerDocCounts[name] ?? 0;
-      const hasToken = config.token ? 'yes' : 'no';
-      lines.push(`    ${name}: ${taskCount} linked task(s), ${docCount} linked document(s), token: ${hasToken}, project: ${config.defaultProject ?? '(not set)'}`);
+      const hasToken = config.token ? t('externalSync.config.yes') : t('externalSync.config.no');
+      lines.push(`    ${name}: ${t('externalSync.status.linkedTaskCount', { count: taskCount })}, ${t('externalSync.status.linkedDocCount', { count: docCount })}, ${t('externalSync.status.token')}: ${hasToken}, ${t('externalSync.status.project')}: ${config.defaultProject ?? t('externalSync.status.notSet')}`);
     }
   } else {
-    lines.push('  Providers: (none configured)');
+    lines.push(`  ${t('externalSync.status.providers')}: ${t('externalSync.status.noneConfigured')}`);
   }
 
   // Sync cursors
   const cursorEntries = Object.entries(cursors);
   if (cursorEntries.length > 0) {
     lines.push('');
-    lines.push('  Last sync cursors:');
+    lines.push(`  ${t('externalSync.status.lastSyncCursors')}:`);
     for (const [key, value] of cursorEntries) {
       lines.push(`    ${key}: ${value}`);
     }
@@ -1582,7 +1580,7 @@ async function statusHandler(
 
   if (conflictCount > 0) {
     lines.push('');
-    lines.push(`  ⚠ ${conflictCount} conflict(s) need resolution. Run "sf external-sync resolve <taskId> --keep local|remote".`);
+    lines.push(`  ⚠ ${t('externalSync.status.conflictsNeedResolution', { count: conflictCount })}`);
   }
 
   return success(statusData, lines.join('\n'));
@@ -1600,7 +1598,7 @@ const resolveOptions: CommandOption[] = [
   {
     name: 'keep',
     short: 'k',
-    description: 'Which version to keep: local or remote',
+    description: t('externalSync.resolve.optionKeep'),
     hasValue: true,
     required: true,
   },
@@ -1612,7 +1610,7 @@ async function resolveHandler(
 ): Promise<CommandResult> {
   if (args.length < 1) {
     return failure(
-      'Usage: sf external-sync resolve <elementId> --keep local|remote',
+      t('externalSync.resolve.usage'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -1622,7 +1620,7 @@ async function resolveHandler(
 
   if (!keep || (keep !== 'local' && keep !== 'remote')) {
     return failure(
-      'The --keep flag is required and must be either "local" or "remote"',
+      t('externalSync.keepFlagRequired'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -1637,21 +1635,21 @@ async function resolveHandler(
   try {
     element = await api.get<Task | Document>(elementId as ElementId);
   } catch {
-    return failure(`Element not found: ${elementId}`, ExitCode.NOT_FOUND);
+    return failure(t('externalSync.elementNotFound', { id: elementId }), ExitCode.NOT_FOUND);
   }
 
   if (!element) {
-    return failure(`Element not found: ${elementId}`, ExitCode.NOT_FOUND);
+    return failure(t('externalSync.elementNotFound', { id: elementId }), ExitCode.NOT_FOUND);
   }
 
   if (element.type !== 'task' && element.type !== 'document') {
-    return failure(`Element ${elementId} is not a task or document (type: ${(element as any).type})`, ExitCode.VALIDATION);
+    return failure(t('externalSync.elementNotTaskOrDoc', { id: elementId, type: (element as any).type }), ExitCode.VALIDATION);
   }
 
   const elementTags = (element as Task).tags;
   if (!elementTags?.includes('sync-conflict')) {
     return failure(
-      `Element ${elementId} does not have a sync conflict. Only elements tagged with "sync-conflict" can be resolved.`,
+      t('externalSync.elementNoConflict', { id: elementId }),
       ExitCode.VALIDATION
     );
   }
@@ -1683,7 +1681,7 @@ async function resolveHandler(
     } as Partial<Task | Document>);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to resolve conflict: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('externalSync.failedToResolveConflict', { message }), ExitCode.GENERAL_ERROR);
   }
 
   const mode = getOutputMode(options);
@@ -1698,7 +1696,7 @@ async function resolveHandler(
 
   return success(
     { elementId, resolved: true, kept: keep },
-    `Resolved sync conflict for ${element.type} ${elementId} (kept: ${keep})`
+    t('externalSync.resolve.resolved', { type: element.type, id: elementId, kept: keep })
   );
 }
 
@@ -1732,49 +1730,49 @@ const linkAllOptions: CommandOption[] = [
   {
     name: 'provider',
     short: 'p',
-    description: 'Provider to link to (required)',
+    description: t('externalSync.linkAll.optionProvider'),
     hasValue: true,
     required: true,
   },
   {
     name: 'project',
-    description: 'Override the default project',
+    description: t('externalSync.linkAll.optionProject'),
     hasValue: true,
   },
   {
     name: 'status',
     short: 's',
-    description: 'Only link elements with this status (can be repeated)',
+    description: t('externalSync.linkAll.optionStatus'),
     hasValue: true,
     array: true,
   },
   {
     name: 'dry-run',
     short: 'n',
-    description: 'List elements that would be linked without creating external issues/pages',
+    description: t('externalSync.linkAll.optionDryRun'),
   },
   {
     name: 'batch-size',
     short: 'b',
-    description: 'How many elements to process concurrently (default: 10)',
+    description: t('externalSync.linkAll.optionBatchSize'),
     hasValue: true,
     defaultValue: '10',
   },
   {
     name: 'force',
     short: 'f',
-    description: 'Re-link elements that are already linked (including same provider)',
+    description: t('externalSync.linkAll.optionForce'),
   },
   {
     name: 'type',
     short: 't',
-    description: 'Element type: task or document (default: task)',
+    description: t('externalSync.linkAll.optionType'),
     hasValue: true,
     defaultValue: 'task',
   },
   {
     name: 'no-library',
-    description: 'Include documents that are not in any library (excluded by default)',
+    description: t('externalSync.linkAll.optionNoLibrary'),
   },
 ];
 
@@ -1843,7 +1841,7 @@ async function createProviderFromSettings(
 }> {
   const dbPath = resolveDatabasePath(options);
   if (!dbPath) {
-    return { error: 'No database found. Run "sf init" to initialize a workspace, or specify --db path' };
+    return { error: t('db.noDatabase') };
   }
 
   try {
@@ -1865,17 +1863,17 @@ async function createProviderFromSettings(
     // All other providers require both a config entry and a token.
     if (!providerConfig) {
       if (isTokenless) {
-        return { error: `Provider "${providerName}" is not configured. Run "sf external-sync config set-project ${providerName} <path>" first.` };
+        return { error: t('externalSync.providerNotConfigured', { provider: providerName }) };
       }
-      return { error: `Provider "${providerName}" has no token configured. Run "sf external-sync config set-token ${providerName} <token>" first.` };
+      return { error: t('externalSync.providerNoToken', { provider: providerName }) };
     }
     if (!isTokenless && !providerConfig.token) {
-      return { error: `Provider "${providerName}" has no token configured. Run "sf external-sync config set-token ${providerName} <token>" first.` };
+      return { error: t('externalSync.providerNoToken', { provider: providerName }) };
     }
 
     const project = projectOverride ?? providerConfig?.defaultProject;
     if (!project) {
-      return { error: `No project specified and provider "${providerName}" has no default project configured. Use --project or run "sf external-sync config set-project ${providerName} <project>" first.` };
+      return { error: t('externalSync.providerNoProject', { provider: providerName }) };
     }
 
     let provider: ExternalProvider;
@@ -1903,7 +1901,7 @@ async function createProviderFromSettings(
       const { createFolderProvider } = await import('../../external-sync/providers/folder/index.js');
       provider = createFolderProvider();
     } else {
-      return { error: `Unsupported provider: "${providerName}". Supported providers: github, linear, notion, folder` };
+      return { error: t('externalSync.unsupportedProvider', { provider: providerName }) };
     }
 
     const direction = (getValue('externalSync.defaultDirection') ?? 'bidirectional') as SyncDirection;
@@ -1912,9 +1910,9 @@ async function createProviderFromSettings(
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes('Cannot find') || message.includes('MODULE_NOT_FOUND')) {
-      return { error: 'External sync requires @stoneforge/smithy package. Ensure it is installed.' };
+      return { error: t('externalSync.requiresSmithy') };
     }
-    return { error: `Failed to initialize provider: ${message}` };
+    return { error: t('externalSync.failedToInitProvider', { message }) };
   }
 }
 
@@ -1968,7 +1966,7 @@ async function processBatch(
         },
       } as Partial<Task>);
 
-      progressLines.push(`Linked ${task.id} → ${externalTask.url}`);
+      progressLines.push(t('externalSync.linkAll.linkedElement', { id: task.id, url: externalTask.url }));
       succeeded++;
     } catch (err) {
       // Check for rate limit errors
@@ -1977,7 +1975,7 @@ async function processBatch(
         rateLimited = true;
         resetAt = rlCheck.resetAt;
         const message = err instanceof Error ? err.message : String(err);
-        progressLines.push(`Rate limit hit while linking ${task.id}: ${message}`);
+        progressLines.push(t('externalSync.rateLimitHitWhileLinking', { id: task.id, message }));
         // Stop processing further tasks in this batch
         break;
       }
@@ -1987,8 +1985,8 @@ async function processBatch(
       const detail = extractValidationDetail(err);
       progressLines.push(
         detail
-          ? `Failed to link ${task.id}: ${message} — ${detail}`
-          : `Failed to link ${task.id}: ${message}`
+          ? t('externalSync.linkAll.failedToLinkElementDetail', { id: task.id, message, detail })
+          : t('externalSync.linkAll.failedToLinkElement', { id: task.id, message })
       );
       failed++;
     }
@@ -2054,7 +2052,7 @@ async function processDocumentBatch(
         },
       } as Partial<Document>);
 
-      progressLines.push(`Linked ${doc.id} → ${externalDoc.url}`);
+      progressLines.push(t('externalSync.linkAll.linkedElement', { id: doc.id, url: externalDoc.url }));
       succeeded++;
     } catch (err) {
       // Check for rate limit errors
@@ -2063,7 +2061,7 @@ async function processDocumentBatch(
         rateLimited = true;
         resetAt = rlCheck.resetAt;
         const message = err instanceof Error ? err.message : String(err);
-        progressLines.push(`Rate limit hit while linking ${doc.id}: ${message}`);
+        progressLines.push(t('externalSync.rateLimitHitWhileLinking', { id: doc.id, message }));
         break;
       }
 
@@ -2071,8 +2069,8 @@ async function processDocumentBatch(
       const detail = extractValidationDetail(err);
       progressLines.push(
         detail
-          ? `Failed to link ${doc.id}: ${message} — ${detail}`
-          : `Failed to link ${doc.id}: ${message}`
+          ? t('externalSync.linkAll.failedToLinkElementDetail', { id: doc.id, message, detail })
+          : t('externalSync.linkAll.failedToLinkElement', { id: doc.id, message })
       );
       failed++;
     }
@@ -2094,7 +2092,7 @@ async function linkAllDocumentsHandler(
   const force = options.force ?? false;
   const batchSize = parseInt(options['batch-size'] ?? '10', 10);
   if (isNaN(batchSize) || batchSize < 1) {
-    return failure('--batch-size must be a positive integer', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('externalSync.batchSizePositive'), ExitCode.INVALID_ARGUMENTS);
   }
 
   // Parse status filters
@@ -2120,7 +2118,7 @@ async function linkAllDocumentsHandler(
     allDocs = results as Document[];
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to list documents: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('externalSync.failedToListElements', { type: 'document', message }), ExitCode.GENERAL_ERROR);
   }
 
   // Filter out system categories and untitled documents
@@ -2178,12 +2176,12 @@ async function linkAllDocumentsHandler(
     }
     const hints: string[] = [];
     if (force) {
-      hints.push('No documents found to re-link matching the specified criteria.');
+      hints.push(t('externalSync.linkAll.noDocsToRelink'));
     } else {
-      hints.push('No unlinked documents found. Use --force to re-link existing documents.');
+      hints.push(t('externalSync.linkAll.noUnlinkedDocs'));
     }
     if (noLibrarySkipped > 0) {
-      hints.push(`Skipped ${noLibrarySkipped} document(s) not in any library (use --no-library to include)`);
+      hints.push(t('externalSync.linkAll.skippedNoLibrary', { count: noLibrarySkipped }));
     }
     return success(result, hints.join('\n'));
   }
@@ -2224,17 +2222,17 @@ async function linkAllDocumentsHandler(
     const lines: string[] = [];
     if (force && relinkCount > 0) {
       lines.push(
-        `Dry run: Re-linking ${relinkCount} document(s) from ${relinkedFromProvider} to ${providerName} (--force)`
+        t('externalSync.linkAll.dryRunRelinkDocs', { count: relinkCount, from: relinkedFromProvider, to: providerName })
       );
       const newCount = docsToLink.length - relinkCount;
       if (newCount > 0) {
-        lines.push(`  Plus ${newCount} unlinked document(s) to link`);
+        lines.push(t('externalSync.linkAll.dryRunPlusDocs', { count: newCount }));
       }
     } else {
-      lines.push(`Dry run: ${docsToLink.length} document(s) would be linked to ${providerName}`);
+      lines.push(t('externalSync.linkAll.dryRunDocs', { count: docsToLink.length, provider: providerName }));
     }
     if (noLibrarySkipped > 0) {
-      lines.push(`Skipped ${noLibrarySkipped} document(s) not in any library (use --no-library to include)`);
+      lines.push(t('externalSync.linkAll.skippedNoLibrary', { count: noLibrarySkipped }));
     }
     lines.push('');
 
@@ -2248,8 +2246,7 @@ async function linkAllDocumentsHandler(
   // Warn about large element sets (skip for json/quiet — already handled above)
   if (docsToLink.length > LARGE_SET_WARNING_THRESHOLD && mode !== 'json' && mode !== 'quiet') {
     process.stderr.write(
-      `\nWarning: About to link ${docsToLink.length} documents. ` +
-      `This may take a significant amount of time for large document sets.\n\n`
+      `\n${t('externalSync.largeSetWarningDocs', { count: docsToLink.length })}\n\n`
     );
   }
 
@@ -2270,7 +2267,7 @@ async function linkAllDocumentsHandler(
   const docAdapter = externalProvider!.getDocumentAdapter?.();
   if (!docAdapter) {
     return failure(
-      `Provider "${providerName}" does not support document sync`,
+      t('externalSync.providerNoDocumentSync', { provider: providerName }),
       ExitCode.GENERAL_ERROR
     );
   }
@@ -2280,11 +2277,11 @@ async function linkAllDocumentsHandler(
   // Log re-linking info when using --force
   if (force && relinkCount > 0 && mode !== 'json' && mode !== 'quiet') {
     progressLines.push(
-      `Re-linking ${relinkCount} document(s) from ${relinkedFromProvider} to ${providerName} (--force)`
+      t('externalSync.linkAll.relinkingDocs', { count: relinkCount, from: relinkedFromProvider, to: providerName })
     );
     const newCount = docsToLink.length - relinkCount;
     if (newCount > 0) {
-      progressLines.push(`Linking ${newCount} unlinked document(s)`);
+      progressLines.push(t('externalSync.linkAll.linkingDocs', { count: newCount }));
     }
     progressLines.push('');
   }
@@ -2292,7 +2289,7 @@ async function linkAllDocumentsHandler(
   // Progress bar — only in default/verbose human-readable output mode
   const progress = mode === 'json' || mode === 'quiet'
     ? nullProgressBar
-    : createProgressBar(docsToLink.length, 'Linking documents');
+    : createProgressBar(docsToLink.length, t('externalSync.linkAll.linkingDocsProgress'));
 
   // Process documents in batches
   let totalSucceeded = 0;
@@ -2363,26 +2360,26 @@ async function linkAllDocumentsHandler(
   }
 
   const lines: string[] = [...progressLines, ''];
-  const summaryParts = [`Linked ${totalSucceeded} documents to ${providerName}`];
+  const summaryParts = [t('externalSync.linkAll.linkedDocsSummary', { count: totalSucceeded, provider: providerName })];
   if (totalFailed > 0) {
-    summaryParts.push(`(${totalFailed} failed)`);
+    summaryParts.push(t('externalSync.linkAll.failedCount', { count: totalFailed }));
   }
   if (skipped > 0) {
-    summaryParts.push(`(${skipped} skipped)`);
+    summaryParts.push(t('externalSync.linkAll.skippedCount', { count: skipped }));
   }
   lines.push(summaryParts.join(' '));
 
   if (noLibrarySkipped > 0) {
-    lines.push(`Skipped ${noLibrarySkipped} document(s) not in any library (use --no-library to include)`);
+    lines.push(t('externalSync.linkAll.skippedNoLibrary', { count: noLibrarySkipped }));
   }
 
   if (rateLimited) {
     lines.push('');
     if (rateLimitResetAt) {
       const resetDate = new Date(rateLimitResetAt * 1000);
-      lines.push(`Rate limit reached. Resets at ${resetDate.toISOString()}. Re-run this command after the reset to link remaining documents.`);
+      lines.push(t('externalSync.rateLimitReached', { date: resetDate.toISOString() }));
     } else {
-      lines.push('Rate limit reached. Re-run this command later to link remaining documents.');
+      lines.push(t('externalSync.rateLimitReachedNoReset'));
     }
   }
 
@@ -2396,7 +2393,7 @@ async function linkAllHandler(
   const providerName = options.provider;
   if (!providerName) {
     return failure(
-      'The --provider flag is required. Usage: sf external-sync link-all --provider <provider>',
+      t('externalSync.providerFlagRequired'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -2404,7 +2401,7 @@ async function linkAllHandler(
   const elementType = options.type ?? 'task';
   if (elementType !== 'task' && elementType !== 'document') {
     return failure(
-      `Invalid --type value "${elementType}". Must be one of: task, document`,
+      t('externalSync.invalidTypeValueShort', { value: elementType }),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -2418,7 +2415,7 @@ async function linkAllHandler(
   const force = options.force ?? false;
   const batchSize = parseInt(options['batch-size'] ?? '10', 10);
   if (isNaN(batchSize) || batchSize < 1) {
-    return failure('--batch-size must be a positive integer', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('externalSync.batchSizePositive'), ExitCode.INVALID_ARGUMENTS);
   }
 
   // Parse status filters
@@ -2444,7 +2441,7 @@ async function linkAllHandler(
     allTasks = results as Task[];
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to list tasks: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('externalSync.failedToListTasks', { message }), ExitCode.GENERAL_ERROR);
   }
 
   // Filter tasks: unlinked tasks, plus (with --force) tasks linked to any provider
@@ -2488,8 +2485,8 @@ async function linkAllHandler(
       return success(result);
     }
     const hint = force
-      ? 'No tasks found to re-link matching the specified criteria.'
-      : 'No unlinked tasks found. Use --force to re-link existing tasks.';
+      ? t('externalSync.linkAll.noTasksToRelink')
+      : t('externalSync.linkAll.noUnlinkedTasks');
     return success(result, hint);
   }
 
@@ -2524,14 +2521,14 @@ async function linkAllHandler(
     const lines: string[] = [];
     if (force && relinkCount > 0) {
       lines.push(
-        `Dry run: Re-linking ${relinkCount} task(s) from ${relinkedFromProvider} to ${providerName} (--force)`
+        t('externalSync.linkAll.dryRunRelinkTasks', { count: relinkCount, from: relinkedFromProvider, to: providerName })
       );
       const newCount = tasksToLink.length - relinkCount;
       if (newCount > 0) {
-        lines.push(`  Plus ${newCount} unlinked task(s) to link`);
+        lines.push(t('externalSync.linkAll.dryRunPlusTasks', { count: newCount }));
       }
     } else {
-      lines.push(`Dry run: ${tasksToLink.length} task(s) would be linked to ${providerName}`);
+      lines.push(t('externalSync.linkAll.dryRunTasks', { count: tasksToLink.length, provider: providerName }));
     }
     lines.push('');
 
@@ -2545,8 +2542,7 @@ async function linkAllHandler(
   // Warn about large element sets (skip for json/quiet — already handled above)
   if (tasksToLink.length > LARGE_SET_WARNING_THRESHOLD && mode !== 'json' && mode !== 'quiet') {
     process.stderr.write(
-      `\nWarning: About to link ${tasksToLink.length} tasks. ` +
-      `This may take a significant amount of time for large task sets.\n\n`
+      `\n${t('externalSync.largeSetWarningTasks', { count: tasksToLink.length })}\n\n`
     );
   }
 
@@ -2567,7 +2563,7 @@ async function linkAllHandler(
   const adapter = externalProvider!.getTaskAdapter?.();
   if (!adapter) {
     return failure(
-      `Provider "${providerName}" does not support task sync`,
+      t('externalSync.providerNoTaskSync', { provider: providerName }),
       ExitCode.GENERAL_ERROR
     );
   }
@@ -2577,11 +2573,11 @@ async function linkAllHandler(
   // Log re-linking info when using --force
   if (force && relinkCount > 0 && mode !== 'json' && mode !== 'quiet') {
     progressLines.push(
-      `Re-linking ${relinkCount} task(s) from ${relinkedFromProvider} to ${providerName} (--force)`
+      t('externalSync.linkAll.relinkingTasks', { count: relinkCount, from: relinkedFromProvider, to: providerName })
     );
     const newCount = tasksToLink.length - relinkCount;
     if (newCount > 0) {
-      progressLines.push(`Linking ${newCount} unlinked task(s)`);
+      progressLines.push(t('externalSync.linkAll.linkingTasks', { count: newCount }));
     }
     progressLines.push('');
   }
@@ -2589,7 +2585,7 @@ async function linkAllHandler(
   // Progress bar — only in default/verbose human-readable output mode
   const progress = mode === 'json' || mode === 'quiet'
     ? nullProgressBar
-    : createProgressBar(tasksToLink.length, 'Linking tasks');
+    : createProgressBar(tasksToLink.length, t('externalSync.linkAll.linkingTasksProgress'));
 
   // Process tasks in batches
   let totalSucceeded = 0;
@@ -2661,12 +2657,12 @@ async function linkAllHandler(
   const lines: string[] = [...progressLines, ''];
 
   // Summary
-  const summaryParts = [`Linked ${totalSucceeded} tasks to ${providerName}`];
+  const summaryParts = [t('externalSync.linkAll.linkedTasksSummary', { count: totalSucceeded, provider: providerName })];
   if (totalFailed > 0) {
-    summaryParts.push(`(${totalFailed} failed)`);
+    summaryParts.push(t('externalSync.linkAll.failedCount', { count: totalFailed }));
   }
   if (skipped > 0) {
-    summaryParts.push(`(${skipped} skipped)`);
+    summaryParts.push(t('externalSync.linkAll.skippedCount', { count: skipped }));
   }
   lines.push(summaryParts.join(' '));
 
@@ -2674,9 +2670,9 @@ async function linkAllHandler(
     lines.push('');
     if (rateLimitResetAt) {
       const resetDate = new Date(rateLimitResetAt * 1000);
-      lines.push(`Rate limit reached. Resets at ${resetDate.toISOString()}. Re-run this command after the reset to link remaining tasks.`);
+      lines.push(t('externalSync.rateLimitReached', { date: resetDate.toISOString() }));
     } else {
-      lines.push('Rate limit reached. Re-run this command later to link remaining tasks.');
+      lines.push(t('externalSync.rateLimitReachedNoReset'));
     }
   }
 
@@ -2689,38 +2685,18 @@ async function linkAllHandler(
 
 const configSetTokenCommand: Command = {
   name: 'set-token',
-  description: 'Set authentication token for a provider',
+  description: t('externalSync.config.setToken.description'),
   usage: 'sf external-sync config set-token <provider> <token>',
-  help: `Store an authentication token for an external sync provider.
-
-The token is stored in the local SQLite database (not git-tracked).
-
-Arguments:
-  provider    Provider name (e.g., github, linear)
-  token       Authentication token
-
-Examples:
-  sf external-sync config set-token github ghp_xxxxxxxxxxxx
-  sf external-sync config set-token linear lin_api_xxxxxxxxxxxx`,
+  help: t('externalSync.config.setToken.help'),
   options: [],
   handler: configSetTokenHandler as Command['handler'],
 };
 
 const configSetProjectCommand: Command = {
   name: 'set-project',
-  description: 'Set default project for a provider',
+  description: t('externalSync.config.setProject.description'),
   usage: 'sf external-sync config set-project <provider> <project>',
-  help: `Set the default project (e.g., owner/repo) for an external sync provider.
-
-This is used when linking tasks with bare issue numbers.
-
-Arguments:
-  provider    Provider name (e.g., github, linear)
-  project     Project identifier (e.g., owner/repo for GitHub)
-
-Examples:
-  sf external-sync config set-project github my-org/my-repo
-  sf external-sync config set-project linear MY-PROJECT`,
+  help: t('externalSync.config.setProject.help'),
   options: [],
   handler: configSetProjectHandler as Command['handler'],
 };
@@ -2728,33 +2704,15 @@ Examples:
 const autoLinkTypeOption: CommandOption = {
   name: 'type',
   short: 't',
-  description: 'Type of auto-link: task or document (default: task)',
+  description: t('externalSync.config.autoLinkTypeOption'),
   hasValue: true,
 };
 
 const configSetAutoLinkCommand: Command = {
   name: 'set-auto-link',
-  description: 'Enable auto-link with a provider',
+  description: t('externalSync.config.setAutoLink.description'),
   usage: 'sf external-sync config set-auto-link <provider> [--type task|document]',
-  help: `Enable auto-link for new elements with the specified provider.
-
-When auto-link is enabled, newly created Stoneforge elements will automatically
-get a corresponding external issue or page created and linked.
-
-Use --type to specify whether to configure task or document auto-linking.
-Defaults to task for backwards compatibility.
-
-Arguments:
-  provider    Provider name (github, linear, notion, or folder)
-
-Options:
-  --type, -t  Type of auto-link: task or document (default: task)
-
-Examples:
-  sf external-sync config set-auto-link github
-  sf external-sync config set-auto-link linear
-  sf external-sync config set-auto-link --type document folder
-  sf external-sync config set-auto-link --type document notion`,
+  help: t('externalSync.config.setAutoLink.help'),
   options: [autoLinkTypeOption],
   handler: configSetAutoLinkHandler as Command['handler'],
 };
@@ -2762,56 +2720,24 @@ Examples:
 const disableAutoLinkTypeOption: CommandOption = {
   name: 'type',
   short: 't',
-  description: 'Type of auto-link to disable: task, document, or all (default: all)',
+  description: t('externalSync.config.disableAutoLinkTypeOption'),
   hasValue: true,
 };
 
 const configDisableAutoLinkCommand: Command = {
   name: 'disable-auto-link',
-  description: 'Disable auto-link',
+  description: t('externalSync.config.disableAutoLink.description'),
   usage: 'sf external-sync config disable-auto-link [--type task|document|all]',
-  help: `Disable auto-link for new elements.
-
-Clears the auto-link provider and disables automatic external creation.
-
-Use --type to specify which auto-link to disable:
-  task      Only disable task auto-link
-  document  Only disable document auto-link
-  all       Disable both task and document auto-link (default)
-
-Options:
-  --type, -t  Type of auto-link to disable: task, document, or all (default: all)
-
-Examples:
-  sf external-sync config disable-auto-link
-  sf external-sync config disable-auto-link --type task
-  sf external-sync config disable-auto-link --type document`,
+  help: t('externalSync.config.disableAutoLink.help'),
   options: [disableAutoLinkTypeOption],
   handler: configDisableAutoLinkHandler as Command['handler'],
 };
 
 const configParentCommand: Command = {
   name: 'config',
-  description: 'Show or set provider configuration',
+  description: t('externalSync.config.description'),
   usage: 'sf external-sync config [set-token|set-project|set-auto-link|disable-auto-link]',
-  help: `Show current external sync provider configuration.
-
-Tokens are masked in output for security.
-
-Subcommands:
-  set-token <provider> <token>     Store auth token
-  set-project <provider> <project> Set default project
-  set-auto-link <provider> [--type task|document]  Enable auto-link with a provider
-  disable-auto-link [--type task|document|all]     Disable auto-link
-
-Examples:
-  sf external-sync config
-  sf external-sync config set-token github ghp_xxxxxxxxxxxx
-  sf external-sync config set-project github my-org/my-repo
-  sf external-sync config set-auto-link github
-  sf external-sync config set-auto-link --type document folder
-  sf external-sync config disable-auto-link
-  sf external-sync config disable-auto-link --type document`,
+  help: t('externalSync.config.help'),
   subcommands: {
     'set-token': configSetTokenCommand,
     'set-project': configSetProjectCommand,
@@ -2828,28 +2754,9 @@ Examples:
 
 const linkCommand: Command = {
   name: 'link',
-  description: 'Link a task or document to an external issue/page',
+  description: t('externalSync.link.description'),
   usage: 'sf external-sync link <elementId> <url-or-external-id> [--type task|document] [--provider <name>]',
-  help: `Link a Stoneforge element (task or document) to an external issue or page.
-
-Sets the element's externalRef and _externalSync metadata. If given a bare
-issue number, constructs the URL from the provider's default project.
-
-Use --type document to link a document element (default: task).
-
-Arguments:
-  elementId        Stoneforge element ID (task or document)
-  url-or-id        Full URL, bare issue number, or external ID
-
-Options:
-  -p, --provider   Provider name (default: github)
-  -t, --type       Element type: task or document (default: task)
-
-Examples:
-  sf external-sync link el-abc123 https://github.com/org/repo/issues/42
-  sf external-sync link el-abc123 42
-  sf external-sync link el-abc123 42 --provider github
-  sf external-sync link el-doc456 https://notion.so/page-id --type document --provider notion`,
+  help: t('externalSync.link.help'),
   options: linkOptions,
   handler: linkHandler as Command['handler'],
 };
@@ -2860,48 +2767,9 @@ Examples:
 
 const linkAllCommand: Command = {
   name: 'link-all',
-  description: 'Bulk-link all unlinked tasks or documents to external issues/pages',
+  description: t('externalSync.linkAll.description'),
   usage: 'sf external-sync link-all --provider <provider> [--type task|document] [--project <project>] [--status <status>] [--dry-run] [--batch-size <n>] [--force] [--no-library]',
-  help: `Create external issues/pages for all unlinked elements and link them in bulk.
-
-Finds all tasks (or documents with --type document) that do NOT have
-external sync metadata and creates a corresponding external issue or
-page for each one, then links them.
-
-Use --type document to link documents instead of tasks. When linking
-documents, system categories (task-description, message-content) are
-automatically excluded. Documents not in any library are excluded by
-default; use --no-library to include them.
-
-Use --force to re-link elements that are already linked, including those linked
-to the same provider. This is useful for re-syncing from scratch after deleting
-a synced folder.
-
-Options:
-  -p, --provider <name>    Provider to link to (required)
-  -t, --type <type>        Element type: task or document (default: task)
-      --project <project>  Override the default project
-  -s, --status <status>    Only link elements with this status (can be repeated)
-  -n, --dry-run            List elements that would be linked without creating issues/pages
-  -b, --batch-size <n>     Elements to process concurrently (default: 10)
-  -f, --force              Re-link elements already linked (including same provider)
-      --no-library         Include documents not in any library (excluded by default)
-
-Rate Limits:
-  If a rate limit is hit, the command stops gracefully and reports how
-  many elements were linked. Re-run the command to continue linking.
-
-Examples:
-  sf external-sync link-all --provider github
-  sf external-sync link-all --provider github --status open
-  sf external-sync link-all --provider github --status open --status in_progress
-  sf external-sync link-all --provider github --dry-run
-  sf external-sync link-all --provider github --project my-org/my-repo
-  sf external-sync link-all --provider linear --batch-size 5
-  sf external-sync link-all --provider linear --force
-  sf external-sync link-all --provider notion --type document
-  sf external-sync link-all --provider notion --type document --dry-run
-  sf external-sync link-all --provider notion --type document --no-library`,
+  help: t('externalSync.linkAll.help'),
   options: linkAllOptions,
   handler: linkAllHandler as Command['handler'],
 };
@@ -2912,18 +2780,9 @@ Examples:
 
 const unlinkCommand: Command = {
   name: 'unlink',
-  description: 'Remove external link from a task or document',
+  description: t('externalSync.unlink.description'),
   usage: 'sf external-sync unlink <elementId>',
-  help: `Remove the external link from a Stoneforge task or document.
-
-Clears the element's externalRef field and _externalSync metadata.
-Works with both tasks and documents.
-
-Arguments:
-  elementId    Stoneforge element ID (task or document)
-
-Examples:
-  sf external-sync unlink el-abc123`,
+  help: t('externalSync.unlink.help'),
   options: [],
   handler: unlinkHandler as Command['handler'],
 };
@@ -2934,25 +2793,9 @@ Examples:
 
 const unlinkAllCommand: Command = {
   name: 'unlink-all',
-  description: 'Bulk-remove external links from all linked elements',
+  description: t('externalSync.unlinkAll.description'),
   usage: 'sf external-sync unlink-all [--provider <name>] [--type task|document|all] [--dry-run]',
-  help: `Remove external links from all linked elements in bulk.
-
-Clears the externalRef field and _externalSync metadata from every
-linked element. Useful for re-syncing from scratch after deleting
-a synced folder.
-
-Options:
-  -p, --provider <name>    Only unlink elements linked to this provider
-  -t, --type <type>        Element type: task, document, or all (default: all)
-  -n, --dry-run            Show what would be unlinked without making changes
-
-Examples:
-  sf external-sync unlink-all
-  sf external-sync unlink-all --provider folder
-  sf external-sync unlink-all --type document
-  sf external-sync unlink-all --provider github --type task
-  sf external-sync unlink-all --dry-run`,
+  help: t('externalSync.unlinkAll.help'),
   options: unlinkAllOptions,
   handler: unlinkAllHandler as Command['handler'],
 };
@@ -2961,42 +2804,12 @@ Examples:
 // Push Command
 // ============================================================================
 
+
 const pushCommand: Command = {
   name: 'push',
-  description: 'Push linked elements to external service',
+  description: t('externalSync.push.description'),
   usage: 'sf external-sync push [elementId...] [--all] [--force] [--type task|document|all] [--no-library]',
-  help: `Push specific linked elements to their external service, or push all linked elements.
-
-If specific element IDs are given, pushes only those elements. With --all,
-pushes every element that has an external link.
-
-Use --force to push all linked elements regardless of whether their local
-content has changed. This is useful when label generation logic changes
-and the external representation needs to be refreshed.
-
-Use --type to filter by element type (task, document, or all). Default: all.
-
-Documents not in any library are excluded by default. Use --no-library to
-include them.
-
-Arguments:
-  elementId...     One or more element IDs to push (optional with --all)
-
-Options:
-  -a, --all                Push all linked elements
-  -f, --force              Push all linked elements regardless of whether they have changed
-  -t, --type <type>        Element type to push: task, document, or all (default: all)
-      --no-library         Include documents not in any library (excluded by default)
-
-Examples:
-  sf external-sync push el-abc123
-  sf external-sync push el-abc123 el-def456
-  sf external-sync push --all
-  sf external-sync push --all --force
-  sf external-sync push --all --type document
-  sf external-sync push --all --type task
-  sf external-sync push --all --type document --no-library
-  sf external-sync push el-abc123 --force`,
+  help: t('externalSync.push.help'),
   options: pushOptions,
   handler: pushHandler as Command['handler'],
 };
@@ -3007,25 +2820,9 @@ Examples:
 
 const pullCommand: Command = {
   name: 'pull',
-  description: 'Pull changes from external for linked elements',
+  description: t('externalSync.pull.description'),
   usage: 'sf external-sync pull [--provider <name>] [--discover] [--type task|document|all]',
-  help: `Pull changes from external services for all linked elements (tasks and documents).
-
-Optionally discover new issues not yet linked to Stoneforge elements.
-
-Use --type to filter by element type (task, document, or all). Default: all.
-
-Options:
-  -p, --provider <name>   Pull from specific provider (default: all configured)
-  -d, --discover          Discover new unlinked issues
-  -t, --type <type>       Element type to pull: task, document, or all (default: all)
-
-Examples:
-  sf external-sync pull
-  sf external-sync pull --provider github
-  sf external-sync pull --discover
-  sf external-sync pull --type document
-  sf external-sync pull --type task --provider notion`,
+  help: t('externalSync.pull.help'),
   options: pullOptions,
   handler: pullHandler as Command['handler'],
 };
@@ -3036,24 +2833,9 @@ Examples:
 
 const biSyncCommand: Command = {
   name: 'sync',
-  description: 'Bidirectional sync with external services',
+  description: t('externalSync.sync.description'),
   usage: 'sf external-sync sync [--dry-run] [--type task|document|all]',
-  help: `Run bidirectional sync between Stoneforge and external services.
-
-Performs both push and pull operations for tasks and documents.
-In dry-run mode, reports what would change without making any modifications.
-
-Use --type to filter by element type (task, document, or all). Default: all.
-
-Options:
-  -n, --dry-run            Show what would change without making changes
-  -t, --type <type>        Element type to sync: task, document, or all (default: all)
-
-Examples:
-  sf external-sync sync
-  sf external-sync sync --dry-run
-  sf external-sync sync --type document
-  sf external-sync sync --type task`,
+  help: t('externalSync.sync.help'),
   options: syncOptions,
   handler: syncHandler as Command['handler'],
 };
@@ -3064,16 +2846,9 @@ Examples:
 
 const extStatusCommand: Command = {
   name: 'status',
-  description: 'Show external sync state',
+  description: t('externalSync.status.description'),
   usage: 'sf external-sync status',
-  help: `Show the current external sync state.
-
-Displays linked task and document counts, last sync times, configured
-providers, and pending conflicts.
-
-Examples:
-  sf external-sync status
-  sf external-sync status --json`,
+  help: t('externalSync.status.help'),
   options: [],
   handler: statusHandler as Command['handler'],
 };
@@ -3084,22 +2859,9 @@ Examples:
 
 const resolveCommand: Command = {
   name: 'resolve',
-  description: 'Resolve a sync conflict',
+  description: t('externalSync.resolve.description'),
   usage: 'sf external-sync resolve <elementId> --keep local|remote',
-  help: `Resolve a sync conflict by choosing which version to keep.
-
-Elements (tasks or documents) with sync conflicts are tagged with "sync-conflict".
-This command resolves the conflict by keeping either the local or remote version.
-
-Arguments:
-  elementId    Element ID with a sync conflict (task or document)
-
-Options:
-  -k, --keep <version>   Which version to keep: local or remote (required)
-
-Examples:
-  sf external-sync resolve el-abc123 --keep local
-  sf external-sync resolve el-abc123 --keep remote`,
+  help: t('externalSync.resolve.help'),
   options: resolveOptions,
   handler: resolveHandler as Command['handler'],
 };
@@ -3110,46 +2872,9 @@ Examples:
 
 export const externalSyncCommand: Command = {
   name: 'external-sync',
-  description: 'External service sync commands',
+  description: t('externalSync.description'),
   usage: 'sf external-sync <command> [options]',
-  help: `Manage bidirectional synchronization between Stoneforge and external services
-(GitHub Issues, Linear, etc.).
-
-Commands:
-  config                              Show provider configuration
-  config set-token <provider> <token> Store auth token
-  config set-project <provider> <project> Set default project
-  config set-auto-link <provider> [--type task|document]  Enable auto-link
-  config disable-auto-link [--type task|document|all]   Disable auto-link
-  link <taskId> <url-or-issue-number> Link task to external issue
-  link-all --provider <name>          Bulk-link all unlinked tasks
-  unlink <elementId>                  Remove external link
-  unlink-all [--provider] [--type]    Bulk-remove all external links
-  push [taskId...] [--force]           Push linked task(s) to external
-  pull                                Pull changes from external
-  sync [--dry-run]                    Bidirectional sync
-  status                              Show sync state
-  resolve <taskId> --keep local|remote Resolve sync conflict
-
-Examples:
-  sf external-sync config
-  sf external-sync config set-token github ghp_xxxxxxxxxxxx
-  sf external-sync config set-project github my-org/my-repo
-  sf external-sync config set-auto-link github
-  sf external-sync config set-auto-link --type document folder
-  sf external-sync config disable-auto-link
-  sf external-sync config disable-auto-link --type document
-  sf external-sync link el-abc123 42
-  sf external-sync link-all --provider github
-  sf external-sync link-all --provider github --dry-run
-  sf external-sync unlink-all
-  sf external-sync unlink-all --provider folder --type document
-  sf external-sync push --all
-  sf external-sync push --all --force
-  sf external-sync pull
-  sf external-sync sync --dry-run
-  sf external-sync status
-  sf external-sync resolve el-abc123 --keep local`,
+  help: t('externalSync.help'),
   subcommands: {
     config: configParentCommand,
     link: linkCommand,
@@ -3170,7 +2895,7 @@ Examples:
       });
     }
     return failure(
-      'Usage: sf external-sync <command>\n\nCommands: config, link, link-all, unlink, unlink-all, push, pull, sync, status, resolve\n\nRun "sf external-sync --help" for more information.',
+      t('externalSync.parentUsage'),
       ExitCode.INVALID_ARGUMENTS
     );
   },

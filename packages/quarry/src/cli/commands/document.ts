@@ -12,6 +12,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { Command, GlobalOptions, CommandResult, CommandOption } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
+import { t } from '../i18n/index.js';
 import { getFormatter, getOutputMode } from '../formatter.js';
 import {
   createDocument,
@@ -46,42 +47,42 @@ interface DocCreateOptions {
 const docCreateOptions: CommandOption[] = [
   {
     name: 'title',
-    description: 'Document title',
+    description: t('document.create.option.title'),
     hasValue: true,
   },
   {
     name: 'content',
     short: 'c',
-    description: 'Document content (text)',
+    description: t('document.create.option.content'),
     hasValue: true,
   },
   {
     name: 'file',
     short: 'f',
-    description: 'Read content from file',
+    description: t('label.option.readFile'),
     hasValue: true,
   },
   {
     name: 'type',
     short: 't',
-    description: 'Content type: text, markdown, json (default: text)',
+    description: t('document.create.option.type'),
     hasValue: true,
   },
   {
     name: 'category',
-    description: 'Document category (e.g., spec, prd, reference, tutorial)',
+    description: t('document.create.option.category'),
     hasValue: true,
   },
   {
     name: 'tag',
-    description: 'Add tag (can be repeated)',
+    description: t('label.option.tag'),
     hasValue: true,
     array: true,
   },
   {
     name: 'metadata',
     short: 'm',
-    description: "JSON metadata (e.g. '{\"key\": \"value\"}')",
+    description: t('label.option.metadata'),
     hasValue: true,
   },
 ];
@@ -92,11 +93,11 @@ async function docCreateHandler(
 ): Promise<CommandResult> {
   // Must specify either --content or --file
   if (!options.content && !options.file) {
-    return failure('Either --content or --file is required', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('document.error.contentOrFileRequired'), ExitCode.INVALID_ARGUMENTS);
   }
 
   if (options.content && options.file) {
-    return failure('Cannot specify both --content and --file', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('document.error.contentAndFile'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options, true);
@@ -114,7 +115,7 @@ async function docCreateHandler(
     } else {
       const filePath = resolve(options.file!);
       if (!existsSync(filePath)) {
-        return failure(`File not found: ${filePath}`, ExitCode.NOT_FOUND);
+        return failure(t('document.error.notFound', { id: filePath }), ExitCode.NOT_FOUND);
       }
       content = readFileSync(filePath, 'utf-8');
     }
@@ -153,7 +154,7 @@ async function docCreateHandler(
       try {
         metadata = JSON.parse(options.metadata);
       } catch {
-        return failure('Invalid JSON for --metadata', ExitCode.VALIDATION);
+        return failure(t('document.error.invalidJson'), ExitCode.VALIDATION);
       }
     }
 
@@ -175,33 +176,18 @@ async function docCreateHandler(
       return success(created.id);
     }
 
-    return success(created, `Created document ${created.id}`);
+    return success(created, t('document.create.success', { id: created.id }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to create document: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('document.error.failedToCreate', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const docCreateCommand: Command = {
   name: 'create',
-  description: 'Create a new document',
+  description: t('document.create.description'),
   usage: 'sf document create --content <text> | --file <path> [options]',
-  help: `Create a new document.
-
-Options:
-      --title <title>       Document title
-  -c, --content <text>      Document content (inline)
-  -f, --file <path>         Read content from file
-  -t, --type <type>         Content type: text, markdown, json (default: text)
-      --category <category> Document category (e.g., spec, prd, reference)
-      --tag <tag>           Add tag (can be repeated)
-  -m, --metadata <json>     JSON metadata
-
-Examples:
-  sf document create --title "API Reference" --content "..." --category reference
-  sf document create --title "Architecture" --file spec.md --type markdown --category spec
-  sf document create --content '{"key": "value"}' --type json --tag config
-  sf document create --title "Custom Doc" --content "..." --category other --metadata '{"customCategory": "design-system"}'`,
+  help: t('document.create.help'),
   options: docCreateOptions,
   handler: docCreateHandler as Command['handler'],
 };
@@ -222,29 +208,29 @@ const docListOptions: CommandOption[] = [
   {
     name: 'limit',
     short: 'l',
-    description: 'Maximum number of results',
+    description: t('label.limit'),
     hasValue: true,
   },
   {
     name: 'type',
     short: 't',
-    description: 'Filter by content type (text, markdown, json)',
+    description: t('document.list.option.type'),
     hasValue: true,
   },
   {
     name: 'category',
-    description: 'Filter by category (e.g., spec, prd, reference)',
+    description: t('document.list.option.category'),
     hasValue: true,
   },
   {
     name: 'status',
-    description: 'Filter by status (active, archived)',
+    description: t('document.list.option.status'),
     hasValue: true,
   },
   {
     name: 'all',
     short: 'a',
-    description: 'Include archived documents',
+    description: t('document.list.option.all'),
     hasValue: false,
   },
 ];
@@ -268,7 +254,7 @@ async function docListHandler(
     if (options.limit) {
       const limit = parseInt(options.limit, 10);
       if (isNaN(limit) || limit < 1) {
-        return failure('Limit must be a positive number', ExitCode.VALIDATION);
+        return failure(t('error.limitPositive'), ExitCode.VALIDATION);
       }
       filter.limit = limit;
     }
@@ -319,11 +305,11 @@ async function docListHandler(
     }
 
     if (items.length === 0) {
-      return success(null, 'No documents found');
+      return success(null, t('document.list.empty'));
     }
 
     // Build table
-    const headers = ['ID', 'TYPE', 'CATEGORY', 'STATUS', 'VERSION', 'SIZE', 'CREATED'];
+    const headers = [t('label.id'), 'TYPE', 'CATEGORY', 'STATUS', 'VERSION', 'SIZE', 'CREATED'];
     const rows = items.map((d) => [
       d.id,
       d.contentType,
@@ -335,12 +321,12 @@ async function docListHandler(
     ]);
 
     const table = formatter.table(headers, rows);
-    const summary = `\nShowing ${items.length} of ${result.total} documents`;
+    const summary = `\n${t('document.list.summary', { shown: items.length, total: result.total })}`;
 
     return success(items, table + summary);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to list documents: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('document.error.failedToList', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
@@ -355,24 +341,9 @@ function formatSize(bytes: number): string {
 
 const docListCommand: Command = {
   name: 'list',
-  description: 'List documents',
+  description: t('document.list.description'),
   usage: 'sf document list [options]',
-  help: `List documents (active only by default).
-
-Options:
-  -l, --limit <n>            Maximum results
-  -t, --type <type>          Filter by content type
-      --category <category>  Filter by category (e.g., spec, prd, reference)
-      --status <status>      Filter by status (active, archived)
-  -a, --all                  Include archived documents
-
-Examples:
-  sf document list
-  sf document list --type markdown
-  sf document list --category spec
-  sf document list --status archived
-  sf document list --all
-  sf document list --limit 10`,
+  help: t('document.list.help'),
   options: docListOptions,
   handler: docListHandler as Command['handler'],
 };
@@ -389,7 +360,7 @@ const docHistoryOptions: CommandOption[] = [
   {
     name: 'limit',
     short: 'l',
-    description: 'Maximum versions to show',
+    description: t('label.limit'),
     hasValue: true,
   },
 ];
@@ -401,7 +372,7 @@ async function docHistoryHandler(
   const [docId] = args;
 
   if (!docId) {
-    return failure('Usage: sf document history <document-id>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('document.history.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -413,16 +384,16 @@ async function docHistoryHandler(
     // Get current document to verify it exists
     const current = await api.get<Document>(docId as ElementId);
     if (!current) {
-      return failure(`Document not found: ${docId}`, ExitCode.NOT_FOUND);
+      return failure(t('document.error.notFound', { id: docId }), ExitCode.NOT_FOUND);
     }
     if (current.type !== 'document') {
-      return failure(`Element ${docId} is not a document (type: ${current.type})`, ExitCode.VALIDATION);
+      return failure(t('document.error.notDocument', { id: docId, type: current.type }), ExitCode.VALIDATION);
     }
 
     // Check if document is deleted (tombstone)
     const data = current as unknown as Record<string, unknown>;
     if (data.status === 'tombstone' || data.deletedAt) {
-      return failure(`Document not found: ${docId}`, ExitCode.NOT_FOUND);
+      return failure(t('document.error.notFound', { id: docId }), ExitCode.NOT_FOUND);
     }
 
     // Get version history
@@ -433,7 +404,7 @@ async function docHistoryHandler(
     if (options.limit) {
       const limit = parseInt(options.limit, 10);
       if (isNaN(limit) || limit < 1) {
-        return failure('Limit must be a positive number', ExitCode.VALIDATION);
+        return failure(t('error.limitPositive'), ExitCode.VALIDATION);
       }
       versions = history.slice(0, limit);
     }
@@ -450,43 +421,33 @@ async function docHistoryHandler(
     }
 
     if (versions.length === 0) {
-      return success(null, 'No version history');
+      return success(null, t('document.history.empty'));
     }
 
     // Build table
-    const headers = ['VERSION', 'SIZE', 'MODIFIED', 'CURRENT'];
+    const headers = [t('label.version'), t('label.size'), t('label.modified'), t('label.current')];
     const rows = versions.map((v) => [
       `v${v.version}`,
       formatSize(v.content.length),
       v.updatedAt.split('T')[0],
-      v.id === current.id ? 'Yes' : '',
+      v.id === current.id ? t('label.yes') : '',
     ]);
 
     const table = formatter.table(headers, rows);
-    const summary = `\nDocument ${docId} has ${history.length} version(s)`;
+    const summary = `\n${t('document.history.summary', { id: docId, count: history.length })}`;
 
     return success(versions, table + summary);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to get document history: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('document.error.failedToGet', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const docHistoryCommand: Command = {
   name: 'history',
-  description: 'Show document version history',
+  description: t('document.history.description'),
   usage: 'sf document history <document-id> [options]',
-  help: `Show the version history of a document.
-
-Arguments:
-  document-id   Document identifier
-
-Options:
-  -l, --limit <n>  Maximum versions to show
-
-Examples:
-  sf document history el-doc123
-  sf document history el-doc123 --limit 5`,
+  help: t('document.history.help'),
   options: docHistoryOptions,
   handler: docHistoryHandler as Command['handler'],
 };
@@ -502,12 +463,12 @@ async function docRollbackHandler(
   const [docId, versionStr] = args;
 
   if (!docId || !versionStr) {
-    return failure('Usage: sf document rollback <document-id> <version>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('document.rollback.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const version = parseInt(versionStr, 10);
   if (isNaN(version) || version < 1) {
-    return failure('Version must be a positive number', ExitCode.VALIDATION);
+    return failure(t('error.versionPositive'), ExitCode.VALIDATION);
   }
 
   const { api, error } = createAPI(options);
@@ -521,24 +482,24 @@ async function docRollbackHandler(
     // Get the target version
     const targetVersion = await api.getDocumentVersion(docId as unknown as DocumentId, version);
     if (!targetVersion) {
-      return failure(`Version ${version} not found for document ${docId}`, ExitCode.NOT_FOUND);
+      return failure(t('document.error.versionNotFound', { version, id: docId }), ExitCode.NOT_FOUND);
     }
 
     // Get current document
     const current = await api.get<Document>(docId as ElementId);
     if (!current) {
-      return failure(`Document not found: ${docId}`, ExitCode.NOT_FOUND);
+      return failure(t('document.error.notFound', { id: docId }), ExitCode.NOT_FOUND);
     }
 
     // Check if document is deleted (tombstone)
     const data = current as unknown as Record<string, unknown>;
     if (data.status === 'tombstone' || data.deletedAt) {
-      return failure(`Cannot rollback deleted document: ${docId}`, ExitCode.NOT_FOUND);
+      return failure(t('document.rollback.error.deleted', { id: docId }), ExitCode.NOT_FOUND);
     }
 
     // Already at that version?
     if (current.version === version) {
-      return success(current, `Document is already at version ${version}`);
+      return success(current, t('document.rollback.alreadyAtVersion', { version }));
     }
 
     // Update document with content from target version
@@ -562,25 +523,15 @@ async function docRollbackHandler(
     if (code === 'INVALID_INPUT') {
       return failure(message, ExitCode.VALIDATION);
     }
-    return failure(`Failed to rollback document: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('document.error.failedToRollback', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const docRollbackCommand: Command = {
   name: 'rollback',
-  description: 'Rollback document to a previous version',
+  description: t('document.rollback.description'),
   usage: 'sf document rollback <document-id> <version>',
-  help: `Rollback a document to a previous version.
-
-This creates a new version with the content from the specified version.
-The version history is preserved.
-
-Arguments:
-  document-id   Document identifier
-  version       Version number to rollback to
-
-Examples:
-  sf document rollback el-doc123 2`,
+  help: t('document.rollback.help'),
   handler: docRollbackHandler as Command['handler'],
 };
 
@@ -599,24 +550,24 @@ const docUpdateOptions: CommandOption[] = [
   {
     name: 'content',
     short: 'c',
-    description: 'New document content (text)',
+    description: t('document.update.option.content'),
     hasValue: true,
   },
   {
     name: 'file',
     short: 'f',
-    description: 'Read new content from file',
+    description: t('document.update.option.file'),
     hasValue: true,
   },
   {
     name: 'metadata',
     short: 'm',
-    description: "JSON metadata to merge (e.g. '{\"key\": \"value\"}')",
+    description: t('label.option.metadataMerge'),
     hasValue: true,
   },
   {
     name: 'category',
-    description: 'New document category (e.g., spec, prd, reference)',
+    description: t('document.update.option.category'),
     hasValue: true,
   },
 ];
@@ -628,16 +579,16 @@ async function docUpdateHandler(
   const [docId] = args;
 
   if (!docId) {
-    return failure('Usage: sf document update <document-id> --content <text> | --file <path> | --metadata <json> | --category <category>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('document.update.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   // Must specify at least one of --content, --file, --metadata, or --category
   if (!options.content && !options.file && !options.metadata && !options.category) {
-    return failure('At least one of --content, --file, --metadata, or --category is required', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('document.update.error.noChange'), ExitCode.INVALID_ARGUMENTS);
   }
 
   if (options.content && options.file) {
-    return failure('Cannot specify both --content and --file', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('document.error.contentAndFile'), ExitCode.INVALID_ARGUMENTS);
   }
 
   // Validate category
@@ -658,16 +609,16 @@ async function docUpdateHandler(
     // Verify document exists
     const existing = await api.get<Document>(docId as ElementId);
     if (!existing) {
-      return failure(`Document not found: ${docId}`, ExitCode.NOT_FOUND);
+      return failure(t('document.error.notFound', { id: docId }), ExitCode.NOT_FOUND);
     }
     if (existing.type !== 'document') {
-      return failure(`Element ${docId} is not a document (type: ${existing.type})`, ExitCode.VALIDATION);
+      return failure(t('document.error.notDocument', { id: docId, type: existing.type }), ExitCode.VALIDATION);
     }
 
     // Check if document is deleted (tombstone)
     const data = existing as unknown as Record<string, unknown>;
     if (data.status === 'tombstone' || data.deletedAt) {
-      return failure(`Document not found: ${docId}`, ExitCode.NOT_FOUND);
+      return failure(t('document.error.notFound', { id: docId }), ExitCode.NOT_FOUND);
     }
 
     const actor = resolveActor(options);
@@ -678,7 +629,7 @@ async function docUpdateHandler(
       try {
         metadata = JSON.parse(options.metadata);
       } catch {
-        return failure('Invalid JSON for --metadata', ExitCode.VALIDATION);
+        return failure(t('document.error.invalidJson'), ExitCode.VALIDATION);
       }
     }
 
@@ -689,7 +640,7 @@ async function docUpdateHandler(
     } else if (options.file) {
       const filePath = resolve(options.file);
       if (!existsSync(filePath)) {
-        return failure(`File not found: ${filePath}`, ExitCode.NOT_FOUND);
+        return failure(t('document.error.notFound', { id: filePath }), ExitCode.NOT_FOUND);
       }
       content = readFileSync(filePath, 'utf-8');
     }
@@ -715,39 +666,18 @@ async function docUpdateHandler(
       return success(updated.id);
     }
 
-    return success(updated, `Updated document ${docId} (now at version ${updated.version})`);
+    return success(updated, t('document.update.success', { id: docId, version: updated.version }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to update document: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('document.error.failedToUpdate', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const docUpdateCommand: Command = {
   name: 'update',
-  description: 'Update document content',
+  description: t('document.update.description'),
   usage: 'sf document update <document-id> --content <text> | --file <path> | --metadata <json> | --category <category>',
-  help: `Update a document's content, metadata, and/or category, creating a new version.
-
-Documents are versioned - each update creates a new version while preserving
-the history. Use 'sf document history' to view versions and 'sf document rollback' to
-revert to a previous version.
-
-Arguments:
-  document-id   Document identifier
-
-Options:
-  -c, --content <text>       New content (inline)
-  -f, --file <path>          Read new content from file
-  -m, --metadata <json>      JSON metadata to merge
-      --category <category>  New document category (e.g., spec, prd, reference)
-
-Examples:
-  sf document update el-doc123 --content "Updated content"
-  sf document update el-doc123 --file updated-spec.md
-  sf document update el-doc123 -c "Quick fix"
-  sf document update el-doc123 --metadata '{"purpose": "api-reference"}'
-  sf document update el-doc123 --content "New content" --metadata '{"version": 2}'
-  sf document update el-doc123 --category spec`,
+  help: t('document.update.help'),
   options: docUpdateOptions,
   handler: docUpdateHandler as Command['handler'],
 };
@@ -763,7 +693,7 @@ interface DocShowOptions {
 const docShowOptions: CommandOption[] = [
   {
     name: 'docVersion',
-    description: 'Show specific version',
+    description: t('document.show.option.version'),
     hasValue: true,
   },
 ];
@@ -775,7 +705,7 @@ async function docShowHandler(
   const [docId] = args;
 
   if (!docId) {
-    return failure('Usage: sf document show <document-id> [options]', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('document.show.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -789,26 +719,26 @@ async function docShowHandler(
     if (options.docVersion) {
       const version = parseInt(options.docVersion, 10);
       if (isNaN(version) || version < 1) {
-        return failure('Version must be a positive number', ExitCode.VALIDATION);
+        return failure(t('error.versionPositive'), ExitCode.VALIDATION);
       }
       doc = await api.getDocumentVersion(docId as unknown as DocumentId, version);
       if (!doc) {
-        return failure(`Version ${version} not found for document ${docId}`, ExitCode.NOT_FOUND);
+        return failure(t('document.error.versionNotFound', { version, id: docId }), ExitCode.NOT_FOUND);
       }
     } else {
       doc = await api.get<Document>(docId as ElementId);
       if (!doc) {
-        return failure(`Document not found: ${docId}`, ExitCode.NOT_FOUND);
+        return failure(t('document.error.notFound', { id: docId }), ExitCode.NOT_FOUND);
       }
       if (doc.type !== 'document') {
-        return failure(`Element ${docId} is not a document (type: ${doc.type})`, ExitCode.VALIDATION);
+        return failure(t('document.error.notDocument', { id: docId, type: doc.type }), ExitCode.VALIDATION);
       }
     }
 
     // Check if document is deleted (tombstone)
     const data = doc as unknown as Record<string, unknown>;
     if (data.status === 'tombstone' || data.deletedAt) {
-      return failure(`Document not found: ${docId}`, ExitCode.NOT_FOUND);
+      return failure(t('document.error.notFound', { id: docId }), ExitCode.NOT_FOUND);
     }
 
     const mode = getOutputMode(options);
@@ -834,26 +764,15 @@ async function docShowHandler(
     if (code === 'INVALID_INPUT') {
       return failure(message, ExitCode.VALIDATION);
     }
-    return failure(`Failed to show document: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('document.error.failedToShow', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const docShowCommand: Command = {
   name: 'show',
-  description: 'Show document details',
+  description: t('document.show.description'),
   usage: 'sf document show <document-id> [options]',
-  help: `Show document details and content.
-
-Arguments:
-  document-id   Document identifier
-
-Options:
-  --doc-version <n>      Show specific version
-
-Examples:
-  sf document show el-doc123
-  sf document show el-doc123 --doc-version 2
-  sf document show el-doc123 --quiet  # Output content only`,
+  help: t('document.show.help'),
   options: docShowOptions,
   handler: docShowHandler as Command['handler'],
 };
@@ -869,7 +788,7 @@ async function docArchiveHandler(
   const [docId] = args;
 
   if (!docId) {
-    return failure('Usage: sf document archive <document-id>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('document.archive.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -880,10 +799,10 @@ async function docArchiveHandler(
   try {
     const existing = await api.get<Document>(docId as ElementId);
     if (!existing) {
-      return failure(`Document not found: ${docId}`, ExitCode.NOT_FOUND);
+      return failure(t('document.error.notFound', { id: docId }), ExitCode.NOT_FOUND);
     }
     if (existing.type !== 'document') {
-      return failure(`Element ${docId} is not a document`, ExitCode.VALIDATION);
+      return failure(t('document.error.notADocument', { id: docId }), ExitCode.VALIDATION);
     }
 
     const updated = await api.update<Document>(
@@ -892,24 +811,18 @@ async function docArchiveHandler(
       { actor: resolveActor(options) }
     );
 
-    return success(updated, `Archived document ${docId}`);
+    return success(updated, t('document.archive.success', { id: docId }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to archive document: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('document.error.failedToArchive', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const docArchiveCommand: Command = {
   name: 'archive',
-  description: 'Archive a document',
+  description: t('document.archive.description'),
   usage: 'sf document archive <document-id>',
-  help: `Archive a document. Archived documents are hidden from default list/search.
-
-Arguments:
-  document-id   Document identifier
-
-Examples:
-  sf document archive el-doc123`,
+  help: t('document.archive.help'),
   handler: docArchiveHandler as Command['handler'],
 };
 
@@ -926,13 +839,13 @@ const docDeleteOptions: CommandOption[] = [
   {
     name: 'reason',
     short: 'r',
-    description: 'Reason for deletion',
+    description: t('label.option.reason'),
     hasValue: true,
   },
   {
     name: 'force',
     short: 'f',
-    description: 'Skip confirmation',
+    description: t('label.option.skipConfirm'),
     hasValue: false,
   },
 ];
@@ -944,7 +857,7 @@ async function docDeleteHandler(
   const [docId] = args;
 
   if (!docId) {
-    return failure('Usage: sf document delete <document-id>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('document.delete.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -955,16 +868,16 @@ async function docDeleteHandler(
   try {
     const existing = await api.get<Document>(docId as ElementId);
     if (!existing) {
-      return failure(`Document not found: ${docId}`, ExitCode.NOT_FOUND);
+      return failure(t('document.error.notFound', { id: docId }), ExitCode.NOT_FOUND);
     }
     if (existing.type !== 'document') {
-      return failure(`Element ${docId} is not a document`, ExitCode.VALIDATION);
+      return failure(t('document.error.notADocument', { id: docId }), ExitCode.VALIDATION);
     }
 
     // Check if document is already deleted (tombstone)
     const data = existing as unknown as Record<string, unknown>;
     if (data.status === 'tombstone' || data.deletedAt) {
-      return failure(`Document not found: ${docId}`, ExitCode.NOT_FOUND);
+      return failure(t('document.error.notFound', { id: docId }), ExitCode.NOT_FOUND);
     }
 
     const actor = resolveActor(options);
@@ -977,34 +890,22 @@ async function docDeleteHandler(
     if (mode === 'quiet') {
       return success(docId);
     }
-    return success(null, `Deleted document ${docId}`);
+    return success(null, t('document.delete.success', { id: docId }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     const code = (err as { code?: string }).code;
     if (code === 'NOT_FOUND') {
       return failure(message, ExitCode.NOT_FOUND);
     }
-    return failure(`Failed to delete document: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('document.error.failedToDelete', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const docDeleteCommand: Command = {
   name: 'delete',
-  description: 'Delete a document (soft-delete)',
+  description: t('document.delete.description'),
   usage: 'sf document delete <document-id> [options]',
-  help: `Delete a document (soft-delete via tombstone).
-
-Arguments:
-  document-id   Document identifier
-
-Options:
-  -r, --reason <text>  Reason for deletion
-  -f, --force          Skip confirmation
-
-Examples:
-  sf document delete el-doc123
-  sf document delete el-doc123 --reason "outdated"
-  sf document delete el-doc123 --force`,
+  help: t('document.delete.help'),
   options: docDeleteOptions,
   handler: docDeleteHandler as Command['handler'],
 };
@@ -1020,7 +921,7 @@ async function docUnarchiveHandler(
   const [docId] = args;
 
   if (!docId) {
-    return failure('Usage: sf document unarchive <document-id>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('document.unarchive.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -1031,10 +932,10 @@ async function docUnarchiveHandler(
   try {
     const existing = await api.get<Document>(docId as ElementId);
     if (!existing) {
-      return failure(`Document not found: ${docId}`, ExitCode.NOT_FOUND);
+      return failure(t('document.error.notFound', { id: docId }), ExitCode.NOT_FOUND);
     }
     if (existing.type !== 'document') {
-      return failure(`Element ${docId} is not a document`, ExitCode.VALIDATION);
+      return failure(t('document.error.notADocument', { id: docId }), ExitCode.VALIDATION);
     }
 
     const updated = await api.update<Document>(
@@ -1043,24 +944,18 @@ async function docUnarchiveHandler(
       { actor: resolveActor(options) }
     );
 
-    return success(updated, `Unarchived document ${docId}`);
+    return success(updated, t('document.unarchive.success', { id: docId }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to unarchive document: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('document.error.failedToUnarchive', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const docUnarchiveCommand: Command = {
   name: 'unarchive',
-  description: 'Unarchive a document',
+  description: t('document.unarchive.description'),
   usage: 'sf document unarchive <document-id>',
-  help: `Unarchive a document, making it visible in default list/search again.
-
-Arguments:
-  document-id   Document identifier
-
-Examples:
-  sf document unarchive el-doc123`,
+  help: t('document.unarchive.help'),
   handler: docUnarchiveHandler as Command['handler'],
 };
 
@@ -1077,18 +972,18 @@ interface DocSearchOptions {
 const docSearchOptions: CommandOption[] = [
   {
     name: 'category',
-    description: 'Filter by category',
+    description: t('label.option.filterByCategory'),
     hasValue: true,
   },
   {
     name: 'status',
-    description: 'Filter by status',
+    description: t('label.option.filterByStatus'),
     hasValue: true,
   },
   {
     name: 'limit',
     short: 'l',
-    description: 'Maximum results',
+    description: t('label.limit'),
     hasValue: true,
   },
 ];
@@ -1098,7 +993,7 @@ async function docSearchHandler(
   options: GlobalOptions & DocSearchOptions
 ): Promise<CommandResult> {
   if (args.length === 0) {
-    return failure('Search query is required. Usage: sf document search <query>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('document.search.error.queryRequired'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -1135,7 +1030,7 @@ async function docSearchHandler(
     if (options.limit) {
       hardCap = parseInt(options.limit, 10);
       if (isNaN(hardCap) || hardCap < 1) {
-        return failure('Limit must be a positive number', ExitCode.VALIDATION);
+        return failure(t('error.limitPositive'), ExitCode.VALIDATION);
       }
     }
 
@@ -1157,10 +1052,10 @@ async function docSearchHandler(
     }
 
     if (results.length === 0) {
-      return success(null, 'No documents found');
+      return success(null, t('document.list.empty'));
     }
 
-    const headers = ['ID', 'SCORE', 'TITLE', 'CATEGORY', 'SNIPPET'];
+    const headers = [t('label.id'), 'SCORE', 'TITLE', 'CATEGORY', 'SNIPPET'];
     const rows = results.map((r) => [
       r.document.id,
       r.score.toFixed(2),
@@ -1170,33 +1065,20 @@ async function docSearchHandler(
     ]);
 
     const table = formatter.table(headers, rows);
-    const summary = `\n${results.length} result${results.length !== 1 ? 's' : ''} for "${query}"`;
+    const summary = `\n${t('document.search.summary', { count: results.length, query })}`;
 
     return success(results, table + summary);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Search failed: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('document.search.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const docSearchCommand: Command = {
   name: 'search',
-  description: 'Full-text search documents',
+  description: t('document.search.description'),
   usage: 'sf document search <query> [options]',
-  help: `Full-text search documents using FTS5 with BM25 ranking.
-
-Arguments:
-  query   Search query text
-
-Options:
-  -l, --limit <n>            Maximum results (default: 50)
-      --category <category>  Filter by category (e.g., spec, prd, reference)
-      --status <status>      Filter by status (active, archived)
-
-Examples:
-  sf document search "API authentication"
-  sf document search "migration" --category spec
-  sf document search "config" --limit 5`,
+  help: t('document.search.help'),
   options: docSearchOptions,
   handler: docSearchHandler as Command['handler'],
 };
@@ -1222,26 +1104,19 @@ async function docReindexHandler(
     }
     return success(
       null,
-      `Reindexed ${result.indexed} documents for FTS search${result.errors > 0 ? ` (${result.errors} errors)` : ''}`
+      t('document.reindex.success', { indexed: result.indexed, errors: result.errors })
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to reindex documents: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('document.error.failedToReindex', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const docReindexCommand: Command = {
   name: 'reindex',
-  description: 'Rebuild full-text search index',
+  description: t('document.reindex.description'),
   usage: 'sf document reindex',
-  help: `Rebuild the FTS5 full-text search index for all documents.
-
-Iterates all documents (including archived) and re-indexes them
-in the FTS5 virtual table. Use this after migration or if search
-results seem stale.
-
-Examples:
-  sf document reindex`,
+  help: t('document.reindex.help'),
   handler: docReindexHandler as Command['handler'],
 };
 
@@ -1251,42 +1126,9 @@ Examples:
 
 export const documentCommand: Command = {
   name: 'document',
-  description: 'Manage documents (versioned content)',
+  description: t('document.description'),
   usage: 'sf document <subcommand> [options]',
-  help: `Manage documents - versioned content storage.
-
-Documents store content with automatic versioning. Each update creates
-a new version, and you can view history or rollback to any previous version.
-
-Subcommands:
-  create      Create a new document
-  list        List documents (active only by default)
-  search      Full-text search documents
-  show        Show document details
-  update      Update document content (creates new version)
-  history     Show version history
-  rollback    Rollback to a previous version
-  archive     Archive a document
-  unarchive   Unarchive a document
-  delete      Delete a document (soft-delete)
-  reindex     Rebuild full-text search index
-
-Examples:
-  sf document create --content "Hello world"
-  sf document create --file notes.md --type markdown --category spec
-  sf document list
-  sf document list --category reference --all
-  sf document search "API authentication"
-  sf document search "migration" --category spec
-  sf document show el-doc123
-  sf document update el-doc123 --content "New content"
-  sf document update el-doc123 --file updated.md
-  sf document history el-doc123
-  sf document rollback el-doc123 2
-  sf document archive el-doc123
-  sf document unarchive el-doc123
-  sf document delete el-doc123
-  sf document reindex`,
+  help: t('document.help'),
   subcommands: {
     create: docCreateCommand,
     list: docListCommand,
@@ -1317,11 +1159,11 @@ Examples:
     // Show "did you mean?" for unknown subcommands
     const subNames = Object.keys(documentCommand.subcommands!);
     const suggestions = suggestCommands(args[0], subNames);
-    let msg = `Unknown subcommand: ${args[0]}`;
+    let msg = t('error.unknownSubcommand', { subcommand: args[0] });
     if (suggestions.length > 0) {
-      msg += `\n\nDid you mean?\n${suggestions.map(s => `  ${s}`).join('\n')}`;
+      msg += '\n' + suggestions.map(s => `  ${s}`).join('\n');
     }
-    msg += '\n\nRun "sf document --help" to see available subcommands.';
+    msg += '\n\n' + t('error.runHelp', { command: 'sf document' });
     return failure(msg, ExitCode.INVALID_ARGUMENTS);
   },
 };

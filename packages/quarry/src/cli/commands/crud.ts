@@ -9,6 +9,7 @@
 
 import type { Command, GlobalOptions, CommandResult, CommandOption } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
+import { t } from '../i18n/index.js';
 import { getFormatter, getOutputMode, getStatusIcon, formatEventsTable, type EventData } from '../formatter.js';
 import { createTask, createDocument, ContentType, TaskStatus, TaskTypeValue, PlanStatus, type CreateTaskInput, type Priority, type Complexity, type Plan, type DocumentId, type HydratedMessage } from '@stoneforge/core';
 import type { Element, ElementId, EntityId, Task, Document, SyncDirection } from '@stoneforge/core';
@@ -42,58 +43,58 @@ export const createOptions: CommandOption[] = [
   {
     name: 'title',
     short: 't',
-    description: 'Title for the element (required for tasks)',
+    description: t('create.option.title'),
     hasValue: true,
   },
   {
     name: 'name',
     short: 'n',
-    description: 'Alias for --title',
+    description: t('create.option.name'),
     hasValue: true,
   },
   {
     name: 'priority',
     short: 'p',
-    description: 'Priority level (1-5, 1=critical)',
+    description: t('create.option.priority'),
     hasValue: true,
   },
   {
     name: 'complexity',
     short: 'c',
-    description: 'Complexity level (1-5, 1=trivial)',
+    description: t('create.option.complexity'),
     hasValue: true,
   },
   {
     name: 'type',
-    description: 'Task type (bug, feature, task, chore)',
+    description: t('create.option.type'),
     hasValue: true,
   },
   {
     name: 'assignee',
     short: 'a',
-    description: 'Assignee entity ID',
+    description: t('create.option.assignee'),
     hasValue: true,
   },
   {
     name: 'tag',
-    description: 'Add a tag (can be repeated)',
+    description: t('create.option.tag'),
     hasValue: true,
     array: true,
   },
   {
     name: 'plan',
-    description: 'Plan ID or name to attach this task to',
+    description: t('create.option.plan'),
     hasValue: true,
   },
   {
     name: 'description',
     short: 'd',
-    description: 'Task description (creates a linked document)',
+    description: t('create.option.description'),
     hasValue: true,
   },
   {
     name: 'no-auto-link',
-    description: 'Skip auto-linking to external provider even when configured',
+    description: t('create.option.noAutoLink'),
   },
 ];
 
@@ -105,13 +106,13 @@ export async function createHandler(
   const [elementType] = args;
 
   if (!elementType) {
-    return failure('Usage: sf task create [options]\n\nUse "sf task create --help" for options.', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('create.error.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   // Currently only support task creation
   if (elementType !== 'task') {
     return failure(
-      `Unsupported element type: ${elementType}. Currently supported: task`,
+      t('create.error.unsupportedType', { type: elementType }),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -121,7 +122,7 @@ export async function createHandler(
 
   // Validate required options for task
   if (!title) {
-    return failure('--title (or --name) is required for creating a task', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('create.error.titleRequired'), ExitCode.INVALID_ARGUMENTS);
   }
 
   // Create command should create the database if it doesn't exist
@@ -138,7 +139,7 @@ export async function createHandler(
     if (options.priority) {
       const p = parseInt(options.priority, 10);
       if (isNaN(p) || p < 1 || p > 5) {
-        return failure('Priority must be a number from 1 to 5', ExitCode.VALIDATION);
+        return failure(t('label.error.priorityRange'), ExitCode.VALIDATION);
       }
       priority = p as Priority;
     }
@@ -148,7 +149,7 @@ export async function createHandler(
     if (options.complexity) {
       const c = parseInt(options.complexity, 10);
       if (isNaN(c) || c < 1 || c > 5) {
-        return failure('Complexity must be a number from 1 to 5', ExitCode.VALIDATION);
+        return failure(t('label.error.complexityRange'), ExitCode.VALIDATION);
       }
       complexity = c as Complexity;
     }
@@ -160,7 +161,7 @@ export async function createHandler(
       const validTypes: string[] = Object.values(TaskTypeValue);
       if (!validTypes.includes(options.type)) {
         return failure(
-          `Invalid task type: ${options.type}. Must be one of: ${validTypes.join(', ')}`,
+          t('create.error.invalidTaskType', { type: options.type, valid: validTypes.join(', ') }),
           ExitCode.VALIDATION
         );
       }
@@ -221,17 +222,17 @@ export async function createHandler(
         }
 
         if (!plan) {
-          planWarning = `Warning: Plan not found: ${options.plan}. Task was created but not attached to a plan.`;
+          planWarning = t('create.warning.planNotFound', { plan: options.plan });
         } else if (plan.type !== 'plan') {
-          planWarning = `Warning: ${options.plan} is not a plan (type: ${plan.type}). Task was created but not attached.`;
+          planWarning = t('create.warning.notAPlan', { plan: options.plan, type: plan.type });
         } else if (plan.status === PlanStatus.CANCELLED) {
-          planWarning = `Warning: Plan ${plan.id} is cancelled. Task was created but not attached.`;
+          planWarning = t('create.warning.planCancelled', { id: plan.id });
         } else {
           await api.addTaskToPlan(created.id, plan.id, { actor });
         }
       } catch (attachErr) {
         const attachMessage = attachErr instanceof Error ? attachErr.message : String(attachErr);
-        planWarning = `Warning: Failed to attach task to plan: ${attachMessage}. Task was created successfully.`;
+        planWarning = t('create.warning.attachFailed', { message: attachMessage });
       }
     }
 
@@ -255,53 +256,31 @@ export async function createHandler(
           });
 
           if (linkResult.success && linkResult.syncState) {
-            autoLinkMessage = `Linked to ${autoLinkProvider}: ${linkResult.syncState.url}`;
+            autoLinkMessage = t('create.success.linked', { provider: autoLinkProvider, url: linkResult.syncState.url });
           } else if (!linkResult.success) {
-            autoLinkMessage = `Warning: Auto-link failed: ${linkResult.error}`;
+            autoLinkMessage = t('create.warning.autoLinkFailed', { error: linkResult.error });
           }
         } else if (providerResult.error) {
-          autoLinkMessage = `Warning: Auto-link failed: ${providerResult.error}`;
+          autoLinkMessage = t('create.warning.autoLinkFailed', { error: providerResult.error });
         }
       }
     }
 
-    const messageParts = [`Created task ${created.id}`];
+    const messageParts = [t('create.success.created', { id: created.id })];
     if (planWarning) messageParts.push(planWarning);
     if (autoLinkMessage) messageParts.push(autoLinkMessage);
     return success(created, messageParts.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to create task: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('create.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const createCommand: Command = {
   name: 'create',
-  description: 'Create a new element',
+  description: t('create.description'),
   usage: 'sf create <type> [options]',
-  help: `Create a new element of the specified type.
-
-Supported types:
-  task     Work item with status, priority, and assignment
-
-Task options:
-  -t, --title <text>      Task title (required)
-  -d, --description <text> Task description (creates a linked document)
-  -p, --priority <1-5>    Priority (1=critical, 5=minimal, default=3)
-  -c, --complexity <1-5>  Complexity (1=trivial, 5=very complex, default=3)
-      --type <type>       Task type: bug, feature, task, chore
-  -a, --assignee <id>     Assignee entity ID
-      --tag <tag>         Add a tag (can be repeated)
-      --plan <id|name>    Plan ID or name to attach this task to
-      --no-auto-link      Skip auto-linking to external provider
-
-Examples:
-  sf create task --title "Fix login bug" --priority 1 --type bug
-  sf create task -t "Add dark mode" --tag ui --tag feature
-  sf create task -t "Implement feature X" --plan el-plan123
-  sf create task -t "Implement feature X" --plan "My Plan Name"
-  sf create task -t "New feature" -d "Detailed description here"
-  sf create task -t "Internal task" --no-auto-link`,
+  help: t('create.help'),
   options: createOptions,
   handler: createHandler as Command['handler'],
 };
@@ -324,43 +303,43 @@ export const listOptions: CommandOption[] = [
   {
     name: 'type',
     short: 't',
-    description: 'Filter by element type',
+    description: t('list.option.type'),
     hasValue: true,
   },
   {
     name: 'status',
     short: 's',
-    description: 'Filter by status (for tasks)',
+    description: t('list.option.status'),
     hasValue: true,
   },
   {
     name: 'priority',
     short: 'p',
-    description: 'Filter by priority (for tasks)',
+    description: t('list.option.priority'),
     hasValue: true,
   },
   {
     name: 'assignee',
     short: 'a',
-    description: 'Filter by assignee (for tasks)',
+    description: t('list.option.assignee'),
     hasValue: true,
   },
   {
     name: 'tag',
-    description: 'Filter by tag (can be repeated for AND)',
+    description: t('list.option.tag'),
     hasValue: true,
     array: true,
   },
   {
     name: 'limit',
     short: 'l',
-    description: 'Maximum number of results',
+    description: t('list.option.limit'),
     hasValue: true,
   },
   {
     name: 'offset',
     short: 'o',
-    description: 'Number of results to skip',
+    description: t('list.option.offset'),
     hasValue: true,
   },
 ];
@@ -419,7 +398,7 @@ export async function listHandler(
       // Also accept 'blocked' as a valid filter value (computed status)
       if (!validStatuses.includes(options.status) && options.status !== 'blocked') {
         return failure(
-          `Invalid status: ${options.status}. Must be one of: ${validStatuses.join(', ')}, blocked`,
+          t('list.error.invalidStatus', { status: options.status, valid: validStatuses.join(', ') }),
           ExitCode.VALIDATION
         );
       }
@@ -433,7 +412,7 @@ export async function listHandler(
     if (options.priority) {
       const priority = parseInt(options.priority, 10);
       if (isNaN(priority) || priority < 1 || priority > 5) {
-        return failure('Priority must be a number from 1 to 5', ExitCode.VALIDATION);
+        return failure(t('label.error.priorityRange'), ExitCode.VALIDATION);
       }
       filter.priority = priority as 1 | 2 | 3 | 4 | 5;
     }
@@ -452,7 +431,7 @@ export async function listHandler(
     if (options.limit) {
       const limit = parseInt(options.limit, 10);
       if (isNaN(limit) || limit < 1) {
-        return failure('Limit must be a positive number', ExitCode.VALIDATION);
+        return failure(t('list.error.limitPositive'), ExitCode.VALIDATION);
       }
       filter.limit = limit;
     }
@@ -460,7 +439,7 @@ export async function listHandler(
     if (options.offset) {
       const offset = parseInt(options.offset, 10);
       if (isNaN(offset) || offset < 0) {
-        return failure('Offset must be a non-negative number', ExitCode.VALIDATION);
+        return failure(t('list.error.offsetNonNegative'), ExitCode.VALIDATION);
       }
       filter.offset = offset;
     }
@@ -494,7 +473,7 @@ export async function listHandler(
 
     // Human-readable output
     if (items.length === 0) {
-      return success(null, 'No elements found');
+      return success(null, t('list.success.noElements'));
     }
 
     // Sort by priority ASC for tasks (P1 is highest priority, comes first)
@@ -507,7 +486,7 @@ export async function listHandler(
     });
 
     // Build table data with priority and assignee columns
-    const headers = ['ID', 'TYPE', 'TITLE/NAME', 'STATUS', 'PRIORITY', 'ASSIGNEE', 'CREATED'];
+    const headers = [t('label.id'), t('label.type'), t('label.titleName'), t('label.status'), t('label.priority'), t('label.assignee'), t('label.created')];
     const rows = sortedItems.map((item) => {
       const data = item as unknown as Record<string, unknown>;
       const title = data.title ?? data.name ?? '-';
@@ -523,38 +502,20 @@ export async function listHandler(
     });
 
     const table = formatter.table(headers, rows);
-    const summary = `\nShowing ${items.length} of ${result.total} elements`;
+    const summary = t('list.success.showing', { count: items.length, total: result.total });
 
     return success(items, table + summary);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to list elements: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('list.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const listCommand: Command = {
   name: 'list',
-  description: 'List elements',
+  description: t('list.description'),
   usage: 'sf list [type] [options]',
-  help: `List elements with optional filtering.
-
-Arguments:
-  type                  Element type to list (task, document, etc.)
-
-Options:
-  -t, --type <type>     Filter by element type
-  -s, --status <status> Filter by status (for tasks)
-  -p, --priority <1-5>  Filter by priority (for tasks)
-  -a, --assignee <id>   Filter by assignee (for tasks)
-      --tag <tag>       Filter by tag (can be repeated)
-  -l, --limit <n>       Maximum results (default: 50)
-  -o, --offset <n>      Skip first n results
-
-Examples:
-  sf list task
-  sf list task --status open
-  sf list --type task --priority 1 --status in_progress
-  sf list --tag urgent`,
+  help: t('list.help'),
   options: listOptions,
   handler: listHandler as Command['handler'],
 };
@@ -572,12 +533,12 @@ export const showOptions: CommandOption[] = [
   {
     name: 'events',
     short: 'e',
-    description: 'Include recent events/history',
+    description: t('show.option.events'),
     hasValue: false,
   },
   {
     name: 'events-limit',
-    description: 'Maximum number of events to show (default: 10)',
+    description: t('show.option.eventsLimit'),
     hasValue: true,
   },
 ];
@@ -589,7 +550,7 @@ export async function showHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf show <id>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('show.error.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, backend, error } = createAPI(options);
@@ -604,7 +565,7 @@ export async function showHandler(
       const inboxItem = inboxService.getInboxItem(id);
 
       if (!inboxItem) {
-        return failure(`Inbox item not found: ${id}`, ExitCode.NOT_FOUND);
+        return failure(t('show.error.inboxNotFound', { id }), ExitCode.NOT_FOUND);
       }
 
       // Fetch the associated message with hydrated content
@@ -639,13 +600,13 @@ export async function showHandler(
     const element = await api.get<Element>(id as ElementId);
 
     if (!element) {
-      return failure(`Element not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('label.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     // Check if element is deleted (tombstone)
     const data = element as unknown as Record<string, unknown>;
     if (data.status === 'tombstone' || data.deletedAt) {
-      return failure(`Element not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('label.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     // Format output based on mode
@@ -691,49 +652,35 @@ export async function showHandler(
 
     // Add plan progress if available
     if (planProgress) {
-      output += '\n\n--- Task Progress ---\n';
-      output += `Total:       ${planProgress.totalTasks}\n`;
-      output += `Completed:   ${planProgress.completedTasks}\n`;
-      output += `In Progress: ${planProgress.inProgressTasks}\n`;
-      output += `Blocked:     ${planProgress.blockedTasks}\n`;
-      output += `Ready:       ${planProgress.remainingTasks}\n`;
-      output += `Progress:    ${planProgress.completionPercentage}%`;
+      output += '\n\n--- ' + t('show.taskProgress') + ' ---\n';
+      output += `${t('show.label.total')}:       ${planProgress.totalTasks}\n`;
+      output += `${t('show.label.completed')}:   ${planProgress.completedTasks}\n`;
+      output += `${t('show.label.inProgress')}: ${planProgress.inProgressTasks}\n`;
+      output += `${t('show.label.blocked')}:     ${planProgress.blockedTasks}\n`;
+      output += `${t('show.label.ready')}:       ${planProgress.remainingTasks}\n`;
+      output += `${t('show.label.progress')}:    ${planProgress.completionPercentage}%`;
     }
 
     // Add events if requested
     if (events && events.length > 0) {
-      output += '\n\n--- Recent Events ---\n';
+      output += '\n\n--- ' + t('show.recentEvents') + ' ---\n';
       output += formatEventsTable(events as EventData[]);
     } else if (options.events) {
-      output += '\n\n--- Recent Events ---\nNo events';
+      output += '\n\n--- ' + t('show.recentEvents') + ' ---\n' + t('show.noEvents');
     }
 
     return success(element, output);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to get element: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('show.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const showCommand: Command = {
   name: 'show',
-  description: 'Show element details',
+  description: t('show.description'),
   usage: 'sf show <id> [options]',
-  help: `Display detailed information about an element.
-
-Arguments:
-  id    Element identifier (e.g., el-abc123) or inbox item ID (e.g., inbox-abc123)
-
-Options:
-  -e, --events            Include recent events/history
-      --events-limit <n>  Maximum events to show (default: 10)
-
-Examples:
-  sf show el-abc123
-  sf show el-abc123 --events
-  sf show el-abc123 --events --events-limit 20
-  sf show el-abc123 --json
-  sf show inbox-abc123     # Show inbox item with message content`,
+  help: t('show.help'),
   options: showOptions,
   handler: showHandler as Command['handler'],
 };
@@ -759,59 +706,59 @@ export const updateOptions: CommandOption[] = [
   {
     name: 'title',
     short: 't',
-    description: 'New title',
+    description: t('update.option.title'),
     hasValue: true,
   },
   {
     name: 'priority',
     short: 'p',
-    description: 'New priority level (1-5)',
+    description: t('update.option.priority'),
     hasValue: true,
   },
   {
     name: 'complexity',
     short: 'c',
-    description: 'New complexity level (1-5)',
+    description: t('update.option.complexity'),
     hasValue: true,
   },
   {
     name: 'status',
     short: 's',
-    description: 'New status (for tasks: open, in_progress, blocked, deferred, backlog, review, closed, tombstone)',
+    description: t('update.option.status'),
     hasValue: true,
   },
   {
     name: 'assignee',
     short: 'a',
-    description: 'New assignee (use empty string to unassign)',
+    description: t('update.option.assignee'),
     hasValue: true,
   },
   {
     name: 'description',
     short: 'd',
-    description: 'Update description (tasks: updates linked doc; documents: updates content)',
+    description: t('update.option.description'),
     hasValue: true,
   },
   {
     name: 'metadata',
-    description: 'JSON metadata to merge into element',
+    description: t('update.option.metadata'),
     hasValue: true,
   },
   {
     name: 'tag',
-    description: 'Replace all tags (can be repeated)',
+    description: t('update.option.tag'),
     hasValue: true,
     array: true,
   },
   {
     name: 'add-tag',
-    description: 'Add a tag (can be repeated)',
+    description: t('update.option.addTag'),
     hasValue: true,
     array: true,
   },
   {
     name: 'remove-tag',
-    description: 'Remove a tag (can be repeated)',
+    description: t('update.option.removeTag'),
     hasValue: true,
     array: true,
   },
@@ -824,7 +771,7 @@ export async function updateHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf update <id> [options]', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('update.error.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -836,13 +783,13 @@ export async function updateHandler(
     // Get existing element
     const element = await api.get<Element>(id as ElementId);
     if (!element) {
-      return failure(`Element not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('label.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     // Check if element is deleted (tombstone)
     const elemData = element as unknown as Record<string, unknown>;
     if (elemData.status === 'tombstone' || elemData.deletedAt) {
-      return failure(`Element not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('label.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     // Resolve actor for audit trail
@@ -859,11 +806,11 @@ export async function updateHandler(
     // Handle priority (for tasks)
     if (options.priority !== undefined) {
       if (element.type !== 'task') {
-        return failure('Priority can only be set on tasks', ExitCode.VALIDATION);
+        return failure(t('update.error.priorityTaskOnly'), ExitCode.VALIDATION);
       }
       const p = parseInt(options.priority, 10);
       if (isNaN(p) || p < 1 || p > 5) {
-        return failure('Priority must be a number from 1 to 5', ExitCode.VALIDATION);
+        return failure(t('label.error.priorityRange'), ExitCode.VALIDATION);
       }
       updates.priority = p as Priority;
     }
@@ -871,11 +818,11 @@ export async function updateHandler(
     // Handle complexity (for tasks)
     if (options.complexity !== undefined) {
       if (element.type !== 'task') {
-        return failure('Complexity can only be set on tasks', ExitCode.VALIDATION);
+        return failure(t('update.error.complexityTaskOnly'), ExitCode.VALIDATION);
       }
       const c = parseInt(options.complexity, 10);
       if (isNaN(c) || c < 1 || c > 5) {
-        return failure('Complexity must be a number from 1 to 5', ExitCode.VALIDATION);
+        return failure(t('label.error.complexityRange'), ExitCode.VALIDATION);
       }
       updates.complexity = c as Complexity;
     }
@@ -883,12 +830,12 @@ export async function updateHandler(
     // Handle status (for tasks)
     if (options.status !== undefined) {
       if (element.type !== 'task') {
-        return failure('Status can only be set on tasks', ExitCode.VALIDATION);
+        return failure(t('update.error.statusTaskOnly'), ExitCode.VALIDATION);
       }
       const validStatuses: string[] = Object.values(TaskStatus);
       if (!validStatuses.includes(options.status)) {
         return failure(
-          `Invalid status: ${options.status}. Must be one of: ${validStatuses.join(', ')}`,
+          t('update.error.invalidStatus', { status: options.status, valid: validStatuses.join(', ') }),
           ExitCode.VALIDATION
         );
       }
@@ -898,7 +845,7 @@ export async function updateHandler(
     // Handle assignee (for tasks)
     if (options.assignee !== undefined) {
       if (element.type !== 'task') {
-        return failure('Assignee can only be set on tasks', ExitCode.VALIDATION);
+        return failure(t('update.error.assigneeTaskOnly'), ExitCode.VALIDATION);
       }
       // Empty string means unassign
       updates.assignee = options.assignee === '' ? undefined : (options.assignee as EntityId);
@@ -939,7 +886,7 @@ export async function updateHandler(
           updates.content = options.description;
         } else {
           return failure(
-            `Element type '${element.type}' does not support description updates`,
+            t('update.error.noDescriptionSupport', { type: element.type }),
             ExitCode.VALIDATION
           );
         }
@@ -953,11 +900,11 @@ export async function updateHandler(
       try {
         parsed = JSON.parse(options.metadata);
       } catch {
-        return failure('Invalid JSON for --metadata flag', ExitCode.VALIDATION);
+        return failure(t('update.error.invalidMetadataJson'), ExitCode.VALIDATION);
       }
 
       if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-        return failure('Metadata must be a JSON object', ExitCode.VALIDATION);
+        return failure(t('update.error.metadataNotObject'), ExitCode.VALIDATION);
       }
 
       // Merge into existing metadata, removing keys set to null
@@ -1005,7 +952,7 @@ export async function updateHandler(
 
     // Check if there are any updates to apply
     if (Object.keys(updates).length === 0 && !descriptionUpdated) {
-      return failure('No updates specified. Use --help for available options.', ExitCode.INVALID_ARGUMENTS);
+      return failure(t('update.error.noUpdates'), ExitCode.INVALID_ARGUMENTS);
     }
 
     // Apply the update with optimistic concurrency control (if there are field updates)
@@ -1034,42 +981,18 @@ export async function updateHandler(
 
     // Human-readable output
     const output = formatter.element(updated as unknown as Record<string, unknown>);
-    return success(updated, `Updated ${element.type} ${id}\n\n${output}`);
+    return success(updated, t('update.success.updated', { type: element.type, id }) + `\n\n${output}`);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to update element: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('update.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const updateCommand: Command = {
   name: 'update',
-  description: 'Update an element',
+  description: t('update.description'),
   usage: 'sf update <id> [options]',
-  help: `Update fields on an existing element.
-
-Arguments:
-  id    Element identifier (e.g., el-abc123)
-
-Options:
-  -t, --title <text>       New title
-  -p, --priority <1-5>     New priority (tasks only)
-  -c, --complexity <1-5>   New complexity (tasks only)
-  -s, --status <status>    New status (tasks only: open, in_progress, blocked, deferred, backlog, review, closed, tombstone)
-  -a, --assignee <id>      New assignee (tasks only, empty string to unassign)
-  -d, --description <text> Update description (tasks: updates linked doc; documents: updates content)
-      --metadata <json>    JSON metadata to merge into element (null values remove keys)
-      --tag <tag>          Replace all tags (can be repeated)
-      --add-tag <tag>      Add a tag (can be repeated)
-      --remove-tag <tag>   Remove a tag (can be repeated)
-
-Examples:
-  sf update el-abc123 --title "New Title"
-  sf update el-abc123 --priority 1 --status in_progress
-  sf update el-abc123 -d "Updated description text"
-  sf update el-abc123 --metadata '{"key": "value"}'
-  sf update el-abc123 --add-tag urgent --add-tag frontend
-  sf update el-abc123 --remove-tag old-tag
-  sf update el-abc123 --assignee ""  # Unassign`,
+  help: t('update.help'),
   options: updateOptions,
   handler: updateHandler as Command['handler'],
 };
@@ -1087,13 +1010,13 @@ export const deleteOptions: CommandOption[] = [
   {
     name: 'reason',
     short: 'r',
-    description: 'Deletion reason',
+    description: t('delete.option.reason'),
     hasValue: true,
   },
   {
     name: 'force',
     short: 'f',
-    description: 'Skip confirmation (for scripts)',
+    description: t('delete.option.force'),
   },
 ];
 
@@ -1104,7 +1027,7 @@ export async function deleteHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf delete <id> [options]', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('delete.error.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -1116,18 +1039,18 @@ export async function deleteHandler(
     // Get existing element to verify it exists and get its type
     const element = await api.get<Element>(id as ElementId);
     if (!element) {
-      return failure(`Element not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('label.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     // Check if element is already deleted (tombstone)
     const elemData = element as unknown as Record<string, unknown>;
     if (elemData.status === 'tombstone' || elemData.deletedAt) {
-      return failure(`Element not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('label.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     // Check if element type supports deletion
     if (element.type === 'message') {
-      return failure('Messages cannot be deleted (immutable)', ExitCode.VALIDATION);
+      return failure(t('delete.error.messagesImmutable'), ExitCode.VALIDATION);
     }
 
     // Resolve actor for audit trail
@@ -1147,36 +1070,18 @@ export async function deleteHandler(
       return success(id);
     }
 
-    return success({ id, deleted: true }, `Deleted ${element.type} ${id}`);
+    return success({ id, deleted: true }, t('delete.success.deleted', { type: element.type, id }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to delete element: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('delete.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const deleteCommand: Command = {
   name: 'delete',
-  description: 'Delete an element',
+  description: t('delete.description'),
   usage: 'sf delete <id> [options]',
-  help: `Soft-delete an element.
-
-The element will be marked as deleted (tombstone) but not immediately removed.
-Tombstones are retained for a configurable period (default: 30 days) to
-allow sync operations to propagate deletions.
-
-Note: Messages cannot be deleted as they are immutable.
-
-Arguments:
-  id    Element identifier (e.g., el-abc123)
-
-Options:
-  -r, --reason <text>    Deletion reason (recorded in audit trail)
-  -f, --force            Skip confirmation (for scripts)
-
-Examples:
-  sf delete el-abc123
-  sf delete el-abc123 --reason "Duplicate entry"
-  sf delete el-abc123 -f`,
+  help: t('delete.help'),
   options: deleteOptions,
   handler: deleteHandler as Command['handler'],
 };

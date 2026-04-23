@@ -13,6 +13,7 @@ import type { Command, GlobalOptions, CommandResult, CommandOption } from '@ston
 import { success, failure, ExitCode, getOutputMode } from '@stoneforge/quarry/cli';
 import type { ElementId, Task } from '@stoneforge/core';
 import { TaskStatus, createTimestamp } from '@stoneforge/core';
+import { t } from '../i18n/index.js';
 
 // ============================================================================
 // Shared Helpers
@@ -35,7 +36,7 @@ async function createTaskAssignmentService(options: GlobalOptions): Promise<{
     if (!stoneforgeDir) {
       return {
         service: null,
-        error: 'No .stoneforge directory found. Run "sf init" first.',
+        error: t('task.noStoneforge'),
       };
     }
 
@@ -51,7 +52,7 @@ async function createTaskAssignmentService(options: GlobalOptions): Promise<{
     return { service };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return { service: null, error: `Failed to initialize service: ${message}` };
+    return { service: null, error: t('task.serviceInitFailed', { message }) };
   }
 }
 
@@ -70,7 +71,7 @@ async function createOrchestratorApi(options: GlobalOptions): Promise<{
     if (!stoneforgeDir) {
       return {
         api: null,
-        error: 'No .stoneforge directory found. Run "sf init" first.',
+        error: t('task.noStoneforge'),
       };
     }
 
@@ -82,7 +83,7 @@ async function createOrchestratorApi(options: GlobalOptions): Promise<{
     return { api };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return { api: null, error: `Failed to initialize API: ${message}` };
+    return { api: null, error: t('task.apiInitFailed', { message }) };
   }
 }
 
@@ -109,25 +110,25 @@ const taskHandoffOptions: CommandOption[] = [
   {
     name: 'message',
     short: 'm',
-    description: 'Handoff message explaining context and reason',
+    description: t('task.handoff.option.message'),
     hasValue: true,
   },
   {
     name: 'branch',
     short: 'b',
-    description: 'Override the branch to preserve (defaults to task branch)',
+    description: t('task.handoff.option.branch'),
     hasValue: true,
   },
   {
     name: 'worktree',
     short: 'w',
-    description: 'Override the worktree path to preserve (defaults to task worktree)',
+    description: t('task.handoff.option.worktree'),
     hasValue: true,
   },
   {
     name: 'sessionId',
     short: 's',
-    description: 'Session ID of the agent handing off (defaults to current session)',
+    description: t('task.handoff.option.sessionId'),
     hasValue: true,
   },
 ];
@@ -139,12 +140,12 @@ async function taskHandoffHandler(
   const [taskId] = args;
 
   if (!taskId) {
-    return failure('Usage: sf task handoff <task-id> [options]\nExample: sf task handoff el-abc123 --message "Need help with frontend"', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('task.handoff.usageError'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { service, error } = await createTaskAssignmentService(options);
   if (error || !service) {
-    return failure(error ?? 'Failed to create service', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreateService'), ExitCode.GENERAL_ERROR);
   }
 
   try {
@@ -175,7 +176,7 @@ async function taskHandoffHandler(
     }
 
     const lines = [
-      `Handed off task ${taskId}`,
+      t('task.handoff.success', { taskId }),
       `  Session:   ${sessionId}`,
     ];
     if (options.message) {
@@ -188,42 +189,20 @@ async function taskHandoffHandler(
       lines.push(`  Worktree:  ${options.worktree}`);
     }
     lines.push('');
-    lines.push('Task has been unassigned and is available for pickup by another agent.');
+    lines.push(t('task.handoff.availableForPickup'));
 
     return success(task, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to hand off task: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('task.handoff.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const taskHandoffCommand: Command = {
   name: 'handoff',
-  description: 'Hand off a task to another agent',
+  description: t('task.handoff.description'),
   usage: 'sf task handoff <task-id> [options]',
-  help: `Hand off a task to be picked up by another agent.
-
-This command:
-1. Preserves the branch and worktree references in task metadata
-2. Appends a handoff note with context to the task description
-3. Unassigns the task so it returns to the available pool
-
-The next agent that picks up this task can continue from the
-existing code state in the preserved branch/worktree.
-
-Arguments:
-  task-id    Task identifier to hand off
-
-Options:
-  -m, --message <text>     Handoff message with context and reason
-  -b, --branch <name>      Override branch to preserve
-  -w, --worktree <path>    Override worktree path to preserve
-  -s, --sessionId <id>     Session ID (defaults to current session)
-
-Examples:
-  sf task handoff el-abc123
-  sf task handoff el-abc123 --message "Completed API, need help with frontend"
-  sf task handoff el-abc123 -m "Blocked on database access" -b feature/my-branch`,
+  help: t('task.handoff.help'),
   options: taskHandoffOptions,
   handler: taskHandoffHandler as Command['handler'],
 };
@@ -245,33 +224,33 @@ const taskCompleteOptions: CommandOption[] = [
   {
     name: 'summary',
     short: 's',
-    description: 'Summary of what was accomplished',
+    description: t('task.complete.option.summary'),
     hasValue: true,
   },
   {
     name: 'commitHash',
     short: 'c',
-    description: 'Commit hash for the final commit',
+    description: t('task.complete.option.commitHash'),
     hasValue: true,
   },
   {
     name: 'no-mr',
-    description: 'Skip merge request creation',
+    description: t('task.complete.option.noMr'),
   },
   {
     name: 'mr-title',
-    description: 'Custom title for the merge request',
+    description: t('task.complete.option.mrTitle'),
     hasValue: true,
   },
   {
     name: 'mr-body',
-    description: 'Custom body for the merge request',
+    description: t('task.complete.option.mrBody'),
     hasValue: true,
   },
   {
     name: 'baseBranch',
     short: 'b',
-    description: 'Base branch for the merge request (default: auto-detect from task targetBranch, then main)',
+    description: t('task.complete.option.baseBranch'),
     hasValue: true,
   },
 ];
@@ -283,12 +262,12 @@ async function taskCompleteHandler(
   const [taskId] = args;
 
   if (!taskId) {
-    return failure('Usage: sf task complete <task-id> [options]\nExample: sf task complete el-abc123 --summary "Implemented feature"', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('task.complete.usageError'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { service, error } = await createTaskAssignmentService(options);
   if (error || !service) {
-    return failure(error ?? 'Failed to create service', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreateService'), ExitCode.GENERAL_ERROR);
   }
 
   try {
@@ -317,7 +296,7 @@ async function taskCompleteHandler(
     }
 
     const lines = [
-      `Completed task ${taskId}`,
+      t('task.complete.success', { taskId }),
       `  Status: ${result.task.status}`,
     ];
     if (options.summary) {
@@ -330,38 +309,15 @@ async function taskCompleteHandler(
     return success(result, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to complete task: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('task.complete.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const taskCompleteCommand: Command = {
   name: 'complete',
-  description: 'Complete a task and optionally create a merge request',
+  description: t('task.complete.description'),
   usage: 'sf task complete <task-id> [options]',
-  help: `Complete a task and optionally create a merge request.
-
-This command:
-1. Sets the task status to 'review' (awaiting merge)
-2. Clears the task assignee
-3. Records completion time and optional summary
-4. Creates a merge request for the task branch (if a provider is configured)
-
-Arguments:
-  task-id    Task identifier to complete
-
-Options:
-  -s, --summary <text>      Summary of what was accomplished
-  -c, --commitHash <hash>   Commit hash for the final commit
-  --no-mr                   Skip merge request creation
-  --mr-title <title>        Custom MR title (defaults to task title)
-  --mr-body <body>          Custom MR body
-  -b, --baseBranch <name>   Base branch for MR (default: main)
-
-Examples:
-  sf task complete el-abc123
-  sf task complete el-abc123 --summary "Implemented login feature"
-  sf task complete el-abc123 --no-mr
-  sf task complete el-abc123 --baseBranch develop`,
+  help: t('task.complete.help'),
   options: taskCompleteOptions,
   handler: taskCompleteHandler as Command['handler'],
 };
@@ -378,7 +334,7 @@ const taskMergeOptions: CommandOption[] = [
   {
     name: 'summary',
     short: 's',
-    description: 'Summary of the merge',
+    description: t('task.merge.option.summary'),
     hasValue: true,
   },
 ];
@@ -390,23 +346,23 @@ async function taskMergeHandler(
   const [taskId] = args;
 
   if (!taskId) {
-    return failure('Usage: sf task merge <task-id> [options]\nExample: sf task merge el-abc123', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('task.merge.usageError'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = await createOrchestratorApi(options);
   if (error || !api) {
-    return failure(error ?? 'Failed to create API', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreateApi'), ExitCode.GENERAL_ERROR);
   }
 
   try {
     // 1. Get task and validate
     const task = await api.get<Task>(taskId as ElementId);
     if (!task) {
-      return failure(`Task not found: ${taskId}`, ExitCode.GENERAL_ERROR);
+      return failure(t('task.merge.notFound', { taskId }), ExitCode.GENERAL_ERROR);
     }
     if (task.status !== TaskStatus.REVIEW) {
       return failure(
-        `Task ${taskId} is in '${task.status}' status. Only REVIEW tasks can be merged.`,
+        t('task.merge.notReviewStatus', { taskId, status: task.status }),
         ExitCode.GENERAL_ERROR
       );
     }
@@ -417,14 +373,14 @@ async function taskMergeHandler(
     const targetBranch = orchestratorMeta?.targetBranch;
 
     if (!sourceBranch) {
-      return failure(`Task ${taskId} has no branch in orchestrator metadata.`, ExitCode.GENERAL_ERROR);
+      return failure(t('task.merge.noBranch', { taskId }), ExitCode.GENERAL_ERROR);
     }
 
     // 2. Derive workspace root from .stoneforge dir
     const { findStoneforgeDir } = await import('@stoneforge/quarry');
     const stoneforgeDir = findStoneforgeDir(process.cwd());
     if (!stoneforgeDir) {
-      return failure('No .stoneforge directory found. Run "sf init" first.', ExitCode.GENERAL_ERROR);
+      return failure(t('task.noStoneforge'), ExitCode.GENERAL_ERROR);
     }
     const { default: path } = await import('node:path');
     const workspaceRoot = path.dirname(stoneforgeDir);
@@ -443,9 +399,9 @@ async function taskMergeHandler(
     });
 
     if (!mergeResult.success) {
-      const lines = [`Failed to merge task ${taskId}: ${mergeResult.error}`];
+      const lines = [t('task.merge.mergeFailed', { taskId, error: mergeResult.error })];
       if (mergeResult.conflictFiles?.length) {
-        lines.push('Conflict files:');
+        lines.push(t('task.merge.conflictFiles'));
         for (const f of mergeResult.conflictFiles) {
           lines.push(`  - ${f}`);
         }
@@ -464,7 +420,7 @@ async function taskMergeHandler(
     } catch (fetchErr) {
       const fetchMsg = fetchErr instanceof Error ? fetchErr.message : String(fetchErr);
       return failure(
-        `Post-merge verification failed: could not fetch origin/${effectiveTargetForVerify}. ${fetchMsg}`,
+        t('task.merge.postMergeFetchFailed', { target: effectiveTargetForVerify, error: fetchMsg }),
         ExitCode.GENERAL_ERROR
       );
     }
@@ -478,8 +434,7 @@ async function taskMergeHandler(
         );
       } catch {
         return failure(
-          `Post-merge verification failed: commit ${mergeResult.commitHash} is not on origin/${effectiveTargetForVerify}. ` +
-          `The merge commit may not have been delivered to the remote. Please retry or push manually.`,
+          t('task.merge.postMergeCommitNotOnTarget', { hash: mergeResult.commitHash, target: effectiveTargetForVerify }),
           ExitCode.GENERAL_ERROR
         );
       }
@@ -493,17 +448,14 @@ async function taskMergeHandler(
         const aheadCount = parseInt(countStr.trim(), 10);
         if (aheadCount > 0) {
           return failure(
-            `Post-merge verification failed: source branch ${sourceBranch} has ${aheadCount} commit(s) ` +
-            `not on origin/${effectiveTargetForVerify} despite being reported as already merged. ` +
-            `The commits may not have been delivered to the remote. Please retry or push manually.`,
+            t('task.merge.postMergeCommitsAhead', { branch: sourceBranch, count: aheadCount, target: effectiveTargetForVerify }),
             ExitCode.GENERAL_ERROR
           );
         }
       } catch (revListErr) {
         const revListMsg = revListErr instanceof Error ? revListErr.message : String(revListErr);
         return failure(
-          `Post-merge verification failed: could not verify source branch ${sourceBranch} against ` +
-          `origin/${effectiveTargetForVerify}. ${revListMsg}`,
+          t('task.merge.postMergeVerifyFailed', { branch: sourceBranch, target: effectiveTargetForVerify, error: revListMsg }),
           ExitCode.GENERAL_ERROR
         );
       }
@@ -566,44 +518,21 @@ async function taskMergeHandler(
     }
 
     const lines = [
-      `Merged task ${taskId}`,
-      `  Commit: ${mergeResult.commitHash}`,
-      '  Merge Status: merged',
-      '  Task Status: CLOSED',
+      t('task.merge.successSummary', { taskId, hash: mergeResult.commitHash }),
     ];
-    if (options.summary) {
-      lines.push(`  Summary: ${options.summary.slice(0, 50)}${options.summary.length > 50 ? '...' : ''}`);
-    }
 
     return success({ taskId, mergeStatus: 'merged', commitHash: mergeResult.commitHash }, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to merge task: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('task.merge.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const taskMergeCommand: Command = {
   name: 'merge',
-  description: 'Squash-merge a task branch and close the task',
+  description: t('task.merge.description'),
   usage: 'sf task merge <task-id> [options]',
-  help: `Squash-merge a task's branch into the target branch and close it.
-
-This command:
-1. Validates the task is in REVIEW status with an associated branch
-2. Squash-merges the branch into the target branch (auto-detected)
-3. Pushes to remote
-4. Atomically sets merge status to "merged" and closes the task
-5. Cleans up the source branch (local + remote) and worktree
-
-Arguments:
-  task-id    Task identifier to merge
-
-Options:
-  -s, --summary <text>    Summary of the merge
-
-Examples:
-  sf task merge el-abc123
-  sf task merge el-abc123 --summary "All tests passing, merged to main"`,
+  help: t('task.merge.help'),
   options: taskMergeOptions,
   handler: taskMergeHandler as Command['handler'],
 };
@@ -621,13 +550,13 @@ const taskRejectOptions: CommandOption[] = [
   {
     name: 'reason',
     short: 'r',
-    description: 'Reason for rejection (required)',
+    description: t('task.reject.option.reason'),
     hasValue: true,
   },
   {
     name: 'message',
     short: 'm',
-    description: 'Handoff message for the next worker',
+    description: t('task.reject.option.message'),
     hasValue: true,
   },
 ];
@@ -639,16 +568,16 @@ async function taskRejectHandler(
   const [taskId] = args;
 
   if (!taskId) {
-    return failure('Usage: sf task reject <task-id> --reason "..." [options]\nExample: sf task reject el-abc123 --reason "Tests failed"', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('task.reject.usageError'), ExitCode.INVALID_ARGUMENTS);
   }
 
   if (!options.reason) {
-    return failure('--reason is required. Usage: sf task reject <task-id> --reason "..."\nExample: sf task reject el-abc123 --reason "Tests failed"', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('task.reject.reasonRequired'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = await createOrchestratorApi(options);
   if (error || !api) {
-    return failure(error ?? 'Failed to create API', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreateApi'), ExitCode.GENERAL_ERROR);
   }
 
   try {
@@ -679,7 +608,7 @@ async function taskRejectHandler(
     }
 
     const lines = [
-      `Rejected task ${taskId}`,
+      t('task.reject.success', { taskId }),
       '  Merge Status: test_failed',
       `  Reason: ${options.reason.slice(0, 50)}${options.reason.length > 50 ? '...' : ''}`,
     ];
@@ -687,36 +616,20 @@ async function taskRejectHandler(
       lines.push(`  Handoff: ${options.message.slice(0, 50)}${options.message.length > 50 ? '...' : ''}`);
     }
     lines.push('');
-    lines.push('Task has been reopened and unassigned for pickup by another agent.');
+    lines.push(t('task.reject.reopened'));
 
     return success({ taskId, mergeStatus: 'test_failed' }, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to reject task: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('task.reject.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const taskRejectCommand: Command = {
   name: 'reject',
-  description: 'Mark a task merge as failed and reopen it',
+  description: t('task.reject.description'),
   usage: 'sf task reject <task-id> --reason "..." [options]',
-  help: `Mark a task merge as failed and reopen it.
-
-This command:
-1. Sets the task's merge status to "test_failed"
-2. Records the failure reason
-3. Reopens the task and unassigns it
-
-Arguments:
-  task-id    Task identifier to reject
-
-Options:
-  -r, --reason <text>     Reason for rejection (required)
-  -m, --message <text>    Handoff message for the next worker
-
-Examples:
-  sf task reject el-abc123 --reason "Tests failed"
-  sf task reject el-abc123 --reason "Tests failed" --message "Fix flaky test in auth.test.ts"`,
+  help: t('task.reject.help'),
   options: taskRejectOptions,
   handler: taskRejectHandler as Command['handler'],
 };
@@ -750,19 +663,19 @@ async function taskSyncHandler(
   const [taskId] = args;
 
   if (!taskId) {
-    return failure('Usage: sf task sync <task-id>\nExample: sf task sync el-abc123', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('task.sync.usageError'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = await createOrchestratorApi(options);
   if (error || !api) {
-    return failure(error ?? 'Failed to create API', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreateApi'), ExitCode.GENERAL_ERROR);
   }
 
   try {
     // 1. Get task and its metadata
     const task = await api.get<Task>(taskId as ElementId);
     if (!task) {
-      return failure(`Task not found: ${taskId}`, ExitCode.GENERAL_ERROR);
+      return failure(t('task.sync.notFound', { taskId }), ExitCode.GENERAL_ERROR);
     }
 
     // 2. Extract worktree and branch from task metadata
@@ -774,8 +687,8 @@ async function taskSyncHandler(
     if (!worktreePath) {
       const syncResult: SyncResult = {
         success: false,
-        error: 'No worktree path found in task metadata',
-        message: 'Task has no worktree path - cannot sync',
+        error: t('task.sync.noWorktree'),
+        message: t('task.sync.noWorktreeMessage'),
       };
       const mode = getOutputMode(options);
       if (mode === 'json') {
@@ -790,7 +703,7 @@ async function taskSyncHandler(
 
     const stoneforgeDir = findStoneforgeDir(process.cwd());
     if (!stoneforgeDir) {
-      return failure('No .stoneforge directory found. Run "sf init" first.', ExitCode.GENERAL_ERROR);
+      return failure(t('task.noStoneforge'), ExitCode.GENERAL_ERROR);
     }
 
     // Get workspace root (parent of .stoneforge)
@@ -804,8 +717,8 @@ async function taskSyncHandler(
     if (!worktreeExists) {
       const syncResult: SyncResult = {
         success: false,
-        error: `Worktree does not exist: ${worktreePath}`,
-        message: `Worktree not found at ${worktreePath}`,
+        error: t('task.sync.worktreeNotFound', { path: worktreePath }),
+        message: t('task.sync.worktreeNotFound', { path: worktreePath }),
         worktreePath,
         branch,
       };
@@ -830,8 +743,8 @@ async function taskSyncHandler(
     if (!remoteAvailable) {
       const syncResult: SyncResult = {
         success: false,
-        error: 'No origin remote is configured for this workspace or worktree',
-        message: 'Git origin remote is not configured',
+        error: t('task.sync.noOrigin'),
+        message: t('task.sync.noOriginMessage'),
         worktreePath,
         branch,
       };
@@ -852,8 +765,8 @@ async function taskSyncHandler(
     } catch (fetchError) {
       const syncResult: SyncResult = {
         success: false,
-        error: `Failed to fetch from origin: ${(fetchError as Error).message}`,
-        message: 'Git fetch failed',
+        error: t('task.sync.fetchFailed', { error: (fetchError as Error).message }),
+        message: t('task.sync.fetchFailedMessage'),
         worktreePath,
         branch,
       };
@@ -880,7 +793,7 @@ async function taskSyncHandler(
       // Merge succeeded
       const syncResult: SyncResult = {
         success: true,
-        message: `Branch synced with ${remoteBranch}`,
+        message: t('task.sync.success', { branch: remoteBranch }),
         worktreePath,
         branch,
       };
@@ -892,7 +805,7 @@ async function taskSyncHandler(
       if (mode === 'quiet') {
         return success('synced');
       }
-      return success(syncResult, `✓ Branch synced with ${remoteBranch}`);
+      return success(syncResult, t('task.sync.success', { branch: remoteBranch }));
     } catch (mergeError) {
       // Check for merge conflicts
       try {
@@ -913,7 +826,7 @@ async function taskSyncHandler(
           const syncResult: SyncResult = {
             success: false,
             conflicts,
-            message: `Merge conflicts detected in ${conflicts.length} file(s)`,
+            message: t('task.sync.conflicts', { count: conflicts.length }),
             worktreePath,
             branch,
           };
@@ -927,10 +840,10 @@ async function taskSyncHandler(
           }
 
           const lines = [
-            `⚠ Merge conflicts detected in ${conflicts.length} file(s):`,
+            t('task.sync.conflictWarning', { count: conflicts.length }),
             ...conflicts.map(f => `  - ${f}`),
             '',
-            'Resolve conflicts, then commit the resolution.',
+            t('task.sync.resolveConflicts'),
           ];
           return success(syncResult, lines.join('\n'));
         }
@@ -939,7 +852,7 @@ async function taskSyncHandler(
         const syncResult: SyncResult = {
           success: false,
           error: (mergeError as Error).message,
-          message: 'Merge failed (not due to conflicts)',
+          message: t('task.sync.mergeFailedNotConflicts'),
           worktreePath,
           branch,
         };
@@ -954,7 +867,7 @@ async function taskSyncHandler(
         const syncResult: SyncResult = {
           success: false,
           error: (mergeError as Error).message,
-          message: 'Merge failed',
+          message: t('task.sync.mergeFailed'),
           worktreePath,
           branch,
         };
@@ -968,41 +881,15 @@ async function taskSyncHandler(
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to sync task branch: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('task.sync.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const taskSyncCommand: Command = {
   name: 'sync',
-  description: 'Sync a task branch with the main branch',
+  description: t('task.sync.description'),
   usage: 'sf task sync <task-id>',
-  help: `Sync a task's branch with the main branch (master/main).
-
-This command:
-1. Looks up the task's worktree path and branch from metadata
-2. Runs \`git fetch origin\` in the worktree
-3. Attempts \`git merge origin/main\` (or origin/master)
-4. Reports success, conflicts, or errors
-
-This is typically run by the dispatch daemon before spawning a merge steward,
-or by the steward during review if master advances.
-
-Arguments:
-  task-id    Task identifier to sync
-
-Output (JSON mode):
-  {
-    "success": true/false,
-    "conflicts": ["file1.ts", "file2.ts"],  // if conflicts
-    "error": "message",                      // if error
-    "message": "human-readable status",
-    "worktreePath": "/path/to/worktree",
-    "branch": "agent/bob/el-123-feature"
-  }
-
-Examples:
-  sf task sync el-abc123
-  sf task sync el-abc123 --json`,
+  help: t('task.sync.help'),
   options: [],
   handler: taskSyncHandler as Command['handler'],
 };
@@ -1047,8 +934,7 @@ export async function verifyMergeStatus(params: {
     if (count > 0) {
       return {
         status: 'error',
-        message: `Cannot mark as merged: branch ${branch} has ${count} commit(s) not on origin/${effectiveTarget}. ` +
-          `Use 'sf task merge' instead to merge and push, or use 'not_applicable' if no merge is needed.`,
+        message: t('task.mergeStatus.cannotMarkMerged', { branch, count, target: effectiveTarget }),
       };
     }
     return { status: 'ok' };
@@ -1067,33 +953,29 @@ export async function verifyMergeStatus(params: {
           if (force) {
             return {
               status: 'forced',
-              message: `⚠️  Warning: --force used. Merge commit ${mergeCommitHash} is NOT on origin/${effectiveTarget}. Proceeding anyway.`,
+              message: t('task.mergeStatus.forceWarning', { hash: mergeCommitHash, target: effectiveTarget }),
             };
           }
           return {
             status: 'error',
-            message: `Cannot verify merge: source branch ${branch} no longer exists and merge commit ${mergeCommitHash} is not on origin/${effectiveTarget}.\n` +
-              `Use 'sf task merge' to perform the actual merge, or if the work was already merged by other means,\n` +
-              `use --force to override this check.`,
+            message: t('task.mergeStatus.cannotVerifyBranchDeleted', { branch, hash: mergeCommitHash, target: effectiveTarget }),
           };
         }
       } else if (force) {
         return {
           status: 'forced',
-          message: `⚠️  Warning: --force used. Source branch ${branch} no longer exists and no merge commit hash is recorded. Proceeding anyway.`,
+          message: t('task.mergeStatus.forceWarningNoHash', { branch }),
         };
       } else {
         return {
           status: 'error',
-          message: `Cannot verify merge: source branch ${branch} no longer exists and no merge commit hash is recorded.\n` +
-            `Use 'sf task merge' to perform the actual merge, or if the work was already merged by other means,\n` +
-            `use --force to override this check.`,
+          message: t('task.mergeStatus.cannotVerifyNoHash', { branch }),
         };
       }
     } else {
       return {
         status: 'error',
-        message: `Cannot mark as merged: verification failed: ${errMsg}`,
+        message: t('task.mergeStatus.verifyFailed', { error: errMsg }),
       };
     }
   }
@@ -1107,7 +989,7 @@ async function taskMergeStatusHandler(
 
   if (!taskId || !statusArg) {
     return failure(
-      `Usage: sf task merge-status <task-id> <status>\nExample: sf task merge-status el-abc123 merged\n\nValid statuses: ${MergeStatusValues.join(', ')}`,
+      t('task.mergeStatus.usageError', { validStatuses: MergeStatusValues.join(', ') }),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -1115,7 +997,7 @@ async function taskMergeStatusHandler(
   // Validate that the provided status is a valid MergeStatus
   if (!isMergeStatus(statusArg)) {
     return failure(
-      `Invalid merge status: "${statusArg}"\nValid statuses: ${MergeStatusValues.join(', ')}`,
+      t('task.mergeStatus.invalidStatus', { status: statusArg, validStatuses: MergeStatusValues.join(', ') }),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -1124,7 +1006,7 @@ async function taskMergeStatusHandler(
 
   const { api, error } = await createOrchestratorApi(options);
   if (error || !api) {
-    return failure(error ?? 'Failed to create API', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreateApi'), ExitCode.GENERAL_ERROR);
   }
 
   try {
@@ -1132,7 +1014,7 @@ async function taskMergeStatusHandler(
     if (status === 'merged' || status === 'not_applicable') {
       const task = await api.get<Task>(taskId as ElementId);
       if (!task) {
-        return failure(`Task not found: ${taskId}`, ExitCode.GENERAL_ERROR);
+        return failure(t('task.mergeStatus.notFound', { taskId }), ExitCode.GENERAL_ERROR);
       }
 
       // Safety verification: when marking as 'merged', verify commits are actually on origin/target
@@ -1219,8 +1101,8 @@ async function taskMergeStatusHandler(
     }
 
     const statusLine = (status === 'merged' || status === 'not_applicable')
-      ? `Updated task ${taskId}\n  Merge Status: ${status}\n  Task Status: CLOSED`
-      : `Updated task ${taskId}\n  Merge Status: ${status}`;
+      ? t('task.mergeStatus.successWithClose', { taskId, status })
+      : t('task.mergeStatus.success', { taskId, status });
 
     return success(
       { taskId, mergeStatus: status },
@@ -1229,50 +1111,22 @@ async function taskMergeStatusHandler(
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes('not found') || message.includes('Task not found')) {
-      return failure(`Task not found: ${taskId}`, ExitCode.GENERAL_ERROR);
+      return failure(t('task.mergeStatus.notFound', { taskId }), ExitCode.GENERAL_ERROR);
     }
-    return failure(`Failed to update merge status: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('task.mergeStatus.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const taskMergeStatusCommand: Command = {
   name: 'merge-status',
-  description: 'Update the merge status of a task',
+  description: t('task.mergeStatus.description'),
   usage: 'sf task merge-status <task-id> <status>',
-  help: `Update the merge status of a task.
-
-This command allows you to manually update the merge status of a task,
-which is useful when the merge steward gets stuck or when a branch is
-manually merged outside of the normal workflow.
-
-Arguments:
-  task-id    Task identifier to update
-  status     New merge status value
-
-Valid status values:
-  pending         Task completed, awaiting merge
-  testing         Steward is running tests on the branch
-  merging         Tests passed, merge in progress
-  merged          Successfully merged
-  conflict        Merge conflict detected
-  test_failed     Tests failed, needs attention
-  failed          Merge failed for other reason
-  not_applicable      No merge needed (issue already fixed on master)
-  awaiting_approval   PR created, waiting for human approval/merge
-
-Options:
-  --force    Bypass merge verification (use when branch is deleted and merge cannot be verified)
-
-Examples:
-  sf task merge-status el-abc123 merged
-  sf task merge-status el-abc123 merged --force
-  sf task merge-status el-abc123 pending
-  sf task merge-status el-abc123 test_failed`,
+  help: t('task.mergeStatus.help'),
   options: [
     {
       name: 'force',
       short: 'f',
-      description: 'Bypass merge verification when source branch is deleted and merge cannot be verified',
+      description: t('task.mergeStatus.option.force'),
     },
   ],
   handler: taskMergeStatusHandler as Command['handler'],
@@ -1290,14 +1144,14 @@ async function taskSetOwnerHandler(
 
   if (!taskId || !directorId) {
     return failure(
-      'Usage: sf task set-owner <task-id> <director-id>\nExample: sf task set-owner el-abc123 el-dir01',
+      t('task.setOwner.usageError'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
 
   const { api, error } = await createOrchestratorApi(options);
   if (error || !api) {
-    return failure(error ?? 'Failed to create API', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreateApi'), ExitCode.GENERAL_ERROR);
   }
 
   try {
@@ -1320,33 +1174,22 @@ async function taskSetOwnerHandler(
 
     return success(
       { taskId, owningDirector: directorId },
-      `Updated task ${taskId}\n  Owning Director: ${directorId}`
+      t('task.setOwner.success', { taskId, directorId })
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes('not found') || message.includes('Task not found')) {
-      return failure(`Task not found: ${taskId}`, ExitCode.GENERAL_ERROR);
+      return failure(t('task.setOwner.notFound', { taskId }), ExitCode.GENERAL_ERROR);
     }
-    return failure(`Failed to set task owner: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('task.setOwner.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const taskSetOwnerCommand: Command = {
   name: 'set-owner',
-  description: 'Set the owning director for a task',
+  description: t('task.setOwner.description'),
   usage: 'sf task set-owner <task-id> <director-id>',
-  help: `Set the owning director for a task.
-
-This command sets the owningDirector field in the task's orchestrator metadata,
-which is used for message routing in multi-director workspaces.
-
-Arguments:
-  task-id        Task identifier to update
-  director-id    Entity ID of the director that owns/created this task
-
-Examples:
-  sf task set-owner el-abc123 el-dir01
-  sf task set-owner el-abc123 el-39hd`,
+  help: t('task.setOwner.help'),
   options: [],
   handler: taskSetOwnerHandler as Command['handler'],
 };
@@ -1357,27 +1200,9 @@ Examples:
 
 export const taskCommand: Command = {
   name: 'task',
-  description: 'Orchestrator task management',
+  description: t('task.description'),
   usage: 'sf task <subcommand> [options]',
-  help: `Orchestrator task management commands.
-
-Subcommands:
-  handoff        Hand off a task to another agent
-  complete       Complete a task and optionally create a merge request
-  merge          Mark a task as merged and close it
-  reject         Mark a task merge as failed and reopen it
-  sync           Sync a task branch with the main branch
-  merge-status   Update the merge status of a task
-  set-owner      Set the owning director for a task
-
-Examples:
-  sf task handoff el-abc123 --message "Need help with frontend"
-  sf task complete el-abc123 --summary "Implemented feature"
-  sf task merge el-abc123
-  sf task reject el-abc123 --reason "Tests failed"
-  sf task sync el-abc123
-  sf task merge-status el-abc123 merged
-  sf task set-owner el-abc123 el-dir01`,
+  help: t('task.help'),
   subcommands: {
     handoff: taskHandoffCommand,
     complete: taskCompleteCommand,

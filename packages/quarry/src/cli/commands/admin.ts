@@ -10,6 +10,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Command, GlobalOptions, CommandResult } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
+import { t } from '../i18n/index.js';
 import { createStorage, type StorageBackend } from '@stoneforge/storage';
 import {
   initializeSchema,
@@ -67,36 +68,36 @@ async function doctorHandler(
 
   if (!workspaceExists && !options.db) {
     diagnostics.push({
-      name: 'workspace',
+      name: t('admin.doctor.workspace'),
       status: 'error',
-      message: 'No .stoneforge directory found',
+      message: t('admin.doctor.workspace'),
       details: { path: stoneforgeDir },
     });
     return buildDoctorResult(diagnostics, options);
   }
 
   diagnostics.push({
-    name: 'workspace',
+    name: t('admin.doctor.workspace'),
     status: 'ok',
-    message: options.db ? `Using custom database path: ${options.db}` : `Workspace found at ${stoneforgeDir}`,
+    message: options.db ? t('admin.doctor.workspaceCustomDb', { path: options.db }) : t('admin.doctor.workspaceFound', { path: stoneforgeDir }),
   });
 
   // 2. Check database file exists
   const dbPath = resolveDatabasePath(options);
   if (!dbPath) {
     diagnostics.push({
-      name: 'database',
+      name: t('admin.doctor.database'),
       status: 'error',
-      message: 'Database file not found',
+      message: t('admin.doctor.database'),
       details: { expectedPath: join(stoneforgeDir, DEFAULT_DB_NAME) },
     });
     return buildDoctorResult(diagnostics, options);
   }
 
   diagnostics.push({
-    name: 'database',
+    name: t('admin.doctor.database'),
     status: 'ok',
-    message: `Database found at ${dbPath}`,
+    message: t('admin.doctor.databaseFound', { path: dbPath }),
   });
 
   // 3. Check database can be opened
@@ -106,16 +107,16 @@ async function doctorHandler(
     // This doesn't create a new database, just allows opening existing ones
     backend = createStorage({ path: dbPath, create: true });
     diagnostics.push({
-      name: 'connection',
+      name: t('admin.doctor.database'),
       status: 'ok',
-      message: 'Database connection successful',
+      message: t('admin.doctor.databaseConnectionOk'),
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     diagnostics.push({
-      name: 'connection',
+      name: t('admin.doctor.database'),
       status: 'error',
-      message: `Failed to open database: ${message}`,
+      message: t('admin.doctor.databaseOpenFailed', { message }),
     });
     return buildDoctorResult(diagnostics, options);
   }
@@ -126,17 +127,17 @@ async function doctorHandler(
 
   if (schemaVersion === 0) {
     diagnostics.push({
-      name: 'schema_version',
+      name: t('admin.doctor.schema'),
       status: 'error',
-      message: 'Database schema not initialized',
+      message: t('admin.doctor.schemaNotInitialized'),
       details: { currentVersion: 0, expectedVersion: CURRENT_SCHEMA_VERSION },
     });
   } else if (!schemaUpToDate) {
     const pendingMigrations = getPendingMigrations(backend);
     diagnostics.push({
-      name: 'schema_version',
+      name: t('admin.doctor.schema'),
       status: 'warning',
-      message: `Schema version ${schemaVersion} is behind (current: ${CURRENT_SCHEMA_VERSION})`,
+      message: t('admin.doctor.schemaBehind', { version: schemaVersion, current: CURRENT_SCHEMA_VERSION }),
       details: {
         currentVersion: schemaVersion,
         expectedVersion: CURRENT_SCHEMA_VERSION,
@@ -148,9 +149,9 @@ async function doctorHandler(
     });
   } else {
     diagnostics.push({
-      name: 'schema_version',
+      name: t('admin.doctor.schema'),
       status: 'ok',
-      message: `Schema is at version ${schemaVersion} (up to date)`,
+      message: t('admin.doctor.schemaUpToDate', { version: schemaVersion }),
     });
   }
 
@@ -159,9 +160,9 @@ async function doctorHandler(
 
   if (!schemaValidation.valid) {
     diagnostics.push({
-      name: 'schema_tables',
+      name: t('admin.doctor.schema'),
       status: 'error',
-      message: `Missing tables: ${schemaValidation.missingTables.join(', ')}`,
+      message: t('admin.doctor.missingTables', { tables: schemaValidation.missingTables.join(', ') }),
       details: {
         missingTables: schemaValidation.missingTables,
         extraTables: schemaValidation.extraTables,
@@ -169,9 +170,9 @@ async function doctorHandler(
     });
   } else {
     diagnostics.push({
-      name: 'schema_tables',
+      name: t('admin.doctor.schema'),
       status: 'ok',
-      message: 'All expected tables present',
+      message: t('admin.doctor.tablesOk'),
       details: schemaValidation.extraTables.length > 0
         ? { extraTables: schemaValidation.extraTables }
         : undefined,
@@ -186,15 +187,15 @@ async function doctorHandler(
 
     if (integrityResult.length === 1 && integrityResult[0].integrity_check === 'ok') {
       diagnostics.push({
-        name: 'integrity',
+        name: t('admin.doctor.integrity'),
         status: 'ok',
-        message: 'Database integrity check passed',
+        message: t('admin.doctor.integrityOk'),
       });
     } else {
       diagnostics.push({
-        name: 'integrity',
+        name: t('admin.doctor.integrity'),
         status: 'error',
-        message: 'Database integrity check failed',
+        message: t('admin.doctor.integrityFailed'),
         details: { issues: integrityResult.map((r) => r.integrity_check) },
       });
     }
@@ -203,7 +204,7 @@ async function doctorHandler(
     diagnostics.push({
       name: 'integrity',
       status: 'error',
-      message: `Integrity check failed: ${message}`,
+      message: t('admin.doctor.integrityCheckFailed', { message }),
     });
   }
 
@@ -218,15 +219,15 @@ async function doctorHandler(
 
     if (fkResult.length === 0) {
       diagnostics.push({
-        name: 'foreign_keys',
+        name: t('admin.doctor.foreignKeys'),
         status: 'ok',
-        message: 'Foreign key constraints satisfied',
+        message: t('admin.doctor.foreignKeysOk'),
       });
     } else {
       diagnostics.push({
-        name: 'foreign_keys',
+        name: t('admin.doctor.foreignKeys'),
         status: 'warning',
-        message: `${fkResult.length} foreign key violations found`,
+        message: t('admin.doctor.foreignKeysViolations', { count: fkResult.length }),
         details: {
           violations: fkResult.slice(0, 10).map((r) => ({
             table: r.table,
@@ -242,7 +243,7 @@ async function doctorHandler(
     diagnostics.push({
       name: 'foreign_keys',
       status: 'warning',
-      message: `Foreign key check failed: ${message}`,
+      message: t('admin.doctor.foreignKeysCheckFailed', { message }),
     });
   }
 
@@ -286,9 +287,9 @@ async function doctorHandler(
 
     if (orphanCount === 0 && missingCacheCount === 0) {
       diagnostics.push({
-        name: 'blocked_cache',
+        name: t('admin.doctor.blockedCache'),
         status: 'ok',
-        message: 'Blocked cache is consistent',
+        message: t('admin.doctor.blockedCacheOk'),
         details: options.verbose ? { cacheEntries, tasksWithBlockedStatus } : undefined,
       });
     } else {
@@ -296,19 +297,19 @@ async function doctorHandler(
       const details: Record<string, unknown> = { cacheEntries, tasksWithBlockedStatus };
 
       if (orphanCount > 0) {
-        issues.push(`${orphanCount} orphaned cache entries`);
+        issues.push(t('admin.doctor.orphanedCacheEntries', { count: orphanCount }));
         details.orphanedCount = orphanCount;
       }
 
       if (missingCacheCount > 0) {
-        issues.push(`${missingCacheCount} blocked tasks missing from cache`);
+        issues.push(t('admin.doctor.blockedTasksMissingCache', { count: missingCacheCount }));
         details.missingCacheCount = missingCacheCount;
       }
 
       diagnostics.push({
-        name: 'blocked_cache',
+        name: t('admin.doctor.blockedCache'),
         status: 'warning',
-        message: `Blocked cache inconsistent: ${issues.join(', ')}. Cache may need rebuild.`,
+        message: t('admin.doctor.blockedCacheInconsistent', { issues: issues.join(', ') }),
         details,
       });
     }
@@ -317,7 +318,7 @@ async function doctorHandler(
     diagnostics.push({
       name: 'blocked_cache',
       status: 'warning',
-      message: `Blocked cache check failed: ${message}`,
+      message: t('admin.doctor.blockedCacheCheckFailed', { message }),
     });
   }
 
@@ -325,17 +326,17 @@ async function doctorHandler(
   try {
     const stats = backend.getStats();
     diagnostics.push({
-      name: 'storage',
+      name: t('admin.doctor.storage'),
       status: 'ok',
-      message: `Database size: ${formatBytes(stats.fileSize)}`,
+      message: t('admin.doctor.databaseSize', { size: formatBytes(stats.fileSize) }),
       details: { fileSize: stats.fileSize },
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     diagnostics.push({
-      name: 'storage',
+      name: t('admin.doctor.storage'),
       status: 'warning',
-      message: `Could not get storage stats: ${message}`,
+      message: t('admin.doctor.storageStatsFailed', { message }),
     });
   }
 
@@ -383,7 +384,7 @@ async function doctorHandler(
           if (totalDeleted > 0) {
             repairs.push({
               name: `fix_fk_${table}`,
-              description: `Deleted ${totalDeleted} orphaned rows from ${table}`,
+              description: t('admin.doctor.fixDeletedOrphanedRows', { count: totalDeleted, table }),
               rowsAffected: totalDeleted,
             });
           }
@@ -393,7 +394,7 @@ async function doctorHandler(
         diagnostics.push({
           name: `fix_fk_${table}`,
           status: 'error',
-          message: `Failed to fix FK violations in ${table}: ${message}`,
+          message: t('admin.doctor.fixFkFailed', { table, message }),
         });
       }
     }
@@ -404,7 +405,7 @@ async function doctorHandler(
       const rebuildResult = blockedCacheService.rebuild();
       repairs.push({
         name: 'rebuild_blocked_cache',
-        description: `Rebuilt blocked cache: ${rebuildResult.elementsChecked} checked, ${rebuildResult.elementsBlocked} blocked (${rebuildResult.durationMs}ms)`,
+        description: t('admin.doctor.rebuiltBlockedCache', { checked: rebuildResult.elementsChecked, blocked: rebuildResult.elementsBlocked, ms: rebuildResult.durationMs }),
         rowsAffected: rebuildResult.elementsBlocked,
       });
     } catch (err) {
@@ -412,7 +413,7 @@ async function doctorHandler(
       diagnostics.push({
         name: 'rebuild_blocked_cache',
         status: 'error',
-        message: `Failed to rebuild blocked cache: ${message}`,
+        message: t('admin.doctor.rebuildBlockedCacheFailed', { message }),
       });
     }
 
@@ -432,10 +433,10 @@ async function doctorHandler(
         if (fkDiag) {
           if (fkResult.length === 0) {
             fkDiag.status = 'ok';
-            fkDiag.message = 'Foreign key constraints satisfied (fixed)';
+            fkDiag.message = t('admin.doctor.foreignKeysFixed');
             fkDiag.details = undefined;
           } else {
-            fkDiag.message = `${fkResult.length} foreign key violations remaining after fix`;
+            fkDiag.message = t('admin.doctor.foreignKeysRemaining', { count: fkResult.length });
           }
         }
       } catch {
@@ -463,10 +464,10 @@ async function doctorHandler(
         if (blockedCacheDiag) {
           if (orphanedCache[0].count === 0 && tasksWithBlockedStatusMissingCache[0].count === 0) {
             blockedCacheDiag.status = 'ok';
-            blockedCacheDiag.message = 'Blocked cache is consistent (rebuilt)';
+            blockedCacheDiag.message = t('admin.doctor.blockedCacheRebuilt');
             blockedCacheDiag.details = undefined;
           } else {
-            blockedCacheDiag.message = `Blocked cache still inconsistent after rebuild: ${orphanedCache[0].count} orphaned, ${tasksWithBlockedStatusMissingCache[0].count} missing`;
+            blockedCacheDiag.message = t('admin.doctor.blockedCacheStillInconsistent', { orphaned: orphanedCache[0].count, missing: tasksWithBlockedStatusMissingCache[0].count });
           }
         }
       } catch {
@@ -558,9 +559,9 @@ async function collectRuntimeDiagnostics(
 
     if (!response.ok) {
       diagnostics.push({
-        name: 'runtime',
+        name: t('admin.doctor.runtime'),
         status: 'warning',
-        message: `smithy-server returned ${response.status} from diagnostics endpoint`,
+        message: t('admin.doctor.runtimeStatusError', { status: response.status }),
       });
       return;
     }
@@ -568,9 +569,9 @@ async function collectRuntimeDiagnostics(
     data = (await response.json()) as RuntimeDiagnosticsResponse;
   } catch {
     diagnostics.push({
-      name: 'runtime',
+      name: t('admin.doctor.runtime'),
       status: 'warning',
-      message: 'smithy-server not available — runtime checks skipped',
+      message: t('admin.doctor.runtimeUnavailable'),
       details: { url: diagnosticsUrl },
     });
     return;
@@ -583,9 +584,9 @@ async function collectRuntimeDiagnostics(
       .map((l) => `${l.executable} resets at ${new Date(l.resetsAt).toLocaleTimeString()}`)
       .join('; ');
     diagnostics.push({
-      name: 'rate_limits',
+      name: t('admin.doctor.rateLimits'),
       status: 'warning',
-      message: `Rate limited: ${limitNames}. ${resetTimes}`,
+      message: t('admin.doctor.rateLimited', { names: limitNames, resets: resetTimes }),
       details: options.verbose
         ? {
             isPaused: data.rateLimits.isPaused,
@@ -596,9 +597,9 @@ async function collectRuntimeDiagnostics(
     });
   } else {
     diagnostics.push({
-      name: 'rate_limits',
+      name: t('admin.doctor.rateLimits'),
       status: 'ok',
-      message: 'No rate limits active',
+      message: t('admin.doctor.noRateLimits'),
     });
   }
 
@@ -608,16 +609,16 @@ async function collectRuntimeDiagnostics(
       .map((t) => `${t.taskId} (${t.title}, resumeCount=${t.resumeCount})`)
       .join('; ');
     diagnostics.push({
-      name: 'stuck_tasks',
+      name: t('admin.doctor.stuckTasks'),
       status: 'error',
-      message: `${data.stuckTasks.length} stuck task(s): ${taskList}`,
+      message: t('admin.doctor.stuckTasksFound', { count: data.stuckTasks.length, tasks: taskList }),
       details: options.verbose ? { tasks: data.stuckTasks } : undefined,
     });
   } else {
     diagnostics.push({
-      name: 'stuck_tasks',
+      name: t('admin.doctor.stuckTasks'),
       status: 'ok',
-      message: 'No stuck tasks detected',
+      message: t('admin.doctor.noStuckTasks'),
     });
   }
 
@@ -629,9 +630,9 @@ async function collectRuntimeDiagnostics(
       .map((t) => `${t.taskId} (${t.mergeStatus})`)
       .join('; ');
     diagnostics.push({
-      name: 'merge_queue',
+      name: t('admin.doctor.mergeQueue'),
       status: 'warning',
-      message: `${mergeStuckCount} task(s) stuck in merge pipeline: ${stuckDetails}. ${data.mergeQueue.awaitingMergeCount} awaiting merge.`,
+      message: t('admin.doctor.mergeStuck', { count: mergeStuckCount, details: stuckDetails, awaiting: data.mergeQueue.awaitingMergeCount }),
       details: options.verbose
         ? {
             awaitingMerge: data.mergeQueue.awaitingMergeCount,
@@ -643,9 +644,9 @@ async function collectRuntimeDiagnostics(
     });
   } else {
     diagnostics.push({
-      name: 'merge_queue',
+      name: t('admin.doctor.mergeQueue'),
       status: 'ok',
-      message: `Merge queue healthy. ${data.mergeQueue.awaitingMergeCount} task(s) awaiting merge.`,
+      message: t('admin.doctor.mergeQueueHealthy', { count: data.mergeQueue.awaitingMergeCount }),
     });
   }
 
@@ -654,31 +655,31 @@ async function collectRuntimeDiagnostics(
   const errorDay = data.errorRate.lastDayCount;
   if (errorHour > 20) {
     diagnostics.push({
-      name: 'error_rate',
+      name: t('admin.doctor.errorRate'),
       status: 'error',
-      message: `High error rate: ${errorHour} errors in the last hour, ${errorDay} in the last day`,
+      message: t('admin.doctor.errorRateHigh', { hour: errorHour, day: errorDay }),
       details: { lastHourCount: errorHour, lastDayCount: errorDay },
     });
   } else if (errorHour > 5) {
     diagnostics.push({
-      name: 'error_rate',
+      name: t('admin.doctor.errorRate'),
       status: 'warning',
-      message: `Elevated error rate: ${errorHour} errors in the last hour, ${errorDay} in the last day`,
+      message: t('admin.doctor.errorRateElevated', { hour: errorHour, day: errorDay }),
       details: { lastHourCount: errorHour, lastDayCount: errorDay },
     });
   } else {
     diagnostics.push({
-      name: 'error_rate',
+      name: t('admin.doctor.errorRate'),
       status: 'ok',
-      message: `Error rate normal: ${errorHour} errors in the last hour, ${errorDay} in the last day`,
+      message: t('admin.doctor.errorRateNormal', { hour: errorHour, day: errorDay }),
     });
   }
 
   // --- Agent Pool ---
   diagnostics.push({
-    name: 'agent_pool',
+    name: t('admin.doctor.agentPool'),
     status: 'ok',
-    message: `Agent pool: ${data.agentPool.busyAgents}/${data.agentPool.totalAgents} busy (${data.agentPool.utilizationPercent}% utilization)`,
+    message: t('admin.doctor.agentPoolStatus', { busy: data.agentPool.busyAgents, total: data.agentPool.totalAgents, utilization: data.agentPool.utilizationPercent }),
     details: options.verbose
       ? {
           totalAgents: data.agentPool.totalAgents,
@@ -730,7 +731,7 @@ function buildDoctorResult(
 
   // Build human-readable output
   const lines: string[] = [];
-  lines.push('System Health Check');
+  lines.push(t('admin.doctor.description'));
   lines.push('');
 
   for (const diag of diagnostics) {
@@ -745,11 +746,11 @@ function buildDoctorResult(
   }
 
   lines.push('');
-  lines.push(`Summary: ${summary.ok} ok, ${summary.warning} warnings, ${summary.error} errors`);
+  lines.push(t('admin.doctor.summary', { ok: summary.ok, warnings: summary.warning, errors: summary.error }));
 
   if (repairs.length > 0) {
     lines.push('');
-    lines.push('Repairs applied:');
+    lines.push(t('admin.doctor.repairsApplied'));
     for (const repair of repairs) {
       lines.push(`  [FIXED] ${repair.description}`);
     }
@@ -757,16 +758,16 @@ function buildDoctorResult(
 
   if (healthy) {
     lines.push('');
-    lines.push('System is healthy.');
+    lines.push(t('admin.doctor.systemHealthy'));
   } else {
     lines.push('');
-    lines.push('Issues detected. Run "sf migrate" to fix schema issues.');
+    lines.push(t('admin.doctor.repairPrompt'));
   }
 
   const hasWarnings = summary.warning > 0 && repairs.length === 0;
   if (hasWarnings) {
     lines.push('');
-    lines.push('Run "sf doctor --fix" to attempt automatic repair of warnings.');
+    lines.push(t('admin.doctor.repairPrompt'));
   }
 
   return {
@@ -798,7 +799,7 @@ async function migrateHandler(
 
   if (!dbPath) {
     return failure(
-      'No database found. Run "sf init" to initialize a workspace, or specify --db path',
+      t('db.noDatabase'),
       ExitCode.GENERAL_ERROR
     );
   }
@@ -806,7 +807,7 @@ async function migrateHandler(
   // For dry-run, we need the database to exist
   if (options.dryRun && !existsSync(dbPath)) {
     return failure(
-      'No database found. Run "sf init" to initialize a workspace, or specify --db path',
+      t('db.noDatabase'),
       ExitCode.GENERAL_ERROR
     );
   }
@@ -817,7 +818,7 @@ async function migrateHandler(
     backend = createStorage({ path: dbPath, create: true });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to open database: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('admin.migrate.failedToMigrate', { message }), ExitCode.GENERAL_ERROR);
   }
 
   const previousVersion = getSchemaVersion(backend);
@@ -830,20 +831,20 @@ async function migrateHandler(
         currentVersion: previousVersion,
         migrationsApplied: [],
       },
-      `Database is already at version ${previousVersion} (up to date)`
+      t('admin.migrate.noPendingMigrations'),
     );
   }
 
   // Dry run: just show what would be done
   if (options.dryRun) {
     const lines: string[] = [];
-    lines.push('Migrations to apply (dry run):');
+    lines.push(t('admin.migrate.dryRunTitle'));
     lines.push('');
     for (const migration of pendingMigrations) {
       lines.push(`  v${migration.version}: ${migration.description}`);
     }
     lines.push('');
-    lines.push(`Run "sf migrate" without --dry-run to apply these migrations.`);
+    lines.push(t('admin.migrate.dryRunHint'));
 
     return success(
       {
@@ -867,19 +868,19 @@ async function migrateHandler(
       const migration = MIGRATIONS.find((m) => m.version === version);
       return {
         version,
-        description: migration?.description ?? 'Unknown migration',
+        description: migration?.description ?? t('admin.migrate.unknownMigration'),
       };
     });
 
     const lines: string[] = [];
-    lines.push('Migration complete');
+    lines.push(t('admin.migrate.complete'));
     lines.push('');
-    lines.push(`Previous version: ${previousVersion}`);
-    lines.push(`Current version: ${currentVersion}`);
+    lines.push(t('admin.migrate.previousVersion', { version: previousVersion }));
+    lines.push(t('admin.migrate.currentVersion', { version: currentVersion }));
     lines.push('');
 
     if (migrationsApplied.length > 0) {
-      lines.push('Migrations applied:');
+      lines.push(t('admin.migrate.applied'));
       for (const m of migrationsApplied) {
         lines.push(`  v${m.version}: ${m.description}`);
       }
@@ -895,7 +896,7 @@ async function migrateHandler(
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Migration failed: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('admin.migrate.failedToMigrate', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
@@ -905,7 +906,7 @@ async function migrateHandler(
 
 export const doctorCommand: Command = {
   name: 'doctor',
-  description: 'Check system health and diagnose issues',
+  description: t('admin.doctor.description'),
   usage: 'sf doctor [--fix]',
   help: `Check system health and diagnose issues.
 
@@ -941,7 +942,7 @@ Examples:
   options: [
     {
       name: 'fix',
-      description: 'Automatically repair detected issues (FK violations, blocked cache)',
+      description: t('admin.doctor.repairPrompt'),
       hasValue: false,
     },
   ],
@@ -950,7 +951,7 @@ Examples:
 
 export const migrateCommand: Command = {
   name: 'migrate',
-  description: 'Run database migrations',
+  description: t('admin.migrate.description'),
   usage: 'sf migrate [--dry-run]',
   help: `Run database migrations to update the schema.
 
@@ -968,7 +969,7 @@ Examples:
   options: [
     {
       name: 'dry-run',
-      description: 'Show what would be done without making changes',
+      description: t('admin.doctor.repairComplete'),
       hasValue: false,
     },
   ],

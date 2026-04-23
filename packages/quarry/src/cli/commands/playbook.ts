@@ -10,6 +10,7 @@
 
 import type { Command, GlobalOptions, CommandResult, CommandOption } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
+import { t } from '../i18n/index.js';
 import { getFormatter, getOutputMode } from '../formatter.js';
 import {
   createPlaybook,
@@ -43,7 +44,7 @@ const playbookListOptions: CommandOption[] = [
   {
     name: 'limit',
     short: 'l',
-    description: 'Maximum number of results',
+    description: t('label.limit'),
     hasValue: true,
   },
 ];
@@ -67,7 +68,7 @@ async function playbookListHandler(
     if (options.limit) {
       const limit = parseInt(options.limit, 10);
       if (isNaN(limit) || limit < 1) {
-        return failure('Limit must be a positive number', ExitCode.VALIDATION);
+        return failure(t('error.limitPositive'), ExitCode.VALIDATION);
       }
       filter.limit = limit;
     }
@@ -87,11 +88,11 @@ async function playbookListHandler(
     }
 
     if (items.length === 0) {
-      return success(null, 'No playbooks found');
+      return success(null, t('playbook.list.empty'));
     }
 
     // Build table
-    const headers = ['ID', 'NAME', 'TITLE', 'VERSION', 'STEPS', 'CREATED'];
+    const headers = [t('label.id'), 'NAME', 'TITLE', 'VERSION', 'STEPS', 'CREATED'];
     const rows = items.map((p) => [
       p.id,
       p.name,
@@ -102,27 +103,20 @@ async function playbookListHandler(
     ]);
 
     const table = formatter.table(headers, rows);
-    const summary = `\nShowing ${items.length} of ${result.total} playbooks`;
+    const summary = `\n${t('playbook.list.summary', { shown: items.length, total: result.total })}`;
 
     return success(items, table + summary);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to list playbooks: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('playbook.error.failedToList', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const playbookListCommand: Command = {
   name: 'list',
-  description: 'List playbooks',
+  description: t('playbook.list.description'),
   usage: 'sf playbook list [options]',
-  help: `List playbooks with optional filtering.
-
-Options:
-  -l, --limit <n>  Maximum results
-
-Examples:
-  sf playbook list
-  sf playbook list --limit 10`,
+  help: t('playbook.list.help'),
   options: playbookListOptions,
   handler: playbookListHandler as Command['handler'],
 };
@@ -140,12 +134,12 @@ const playbookShowOptions: CommandOption[] = [
   {
     name: 'steps',
     short: 's',
-    description: 'Include step definitions',
+    description: t('playbook.show.option.steps'),
     hasValue: false,
   },
   {
     name: 'variables',
-    description: 'Include variable definitions',
+    description: t('playbook.show.option.variables'),
     hasValue: false,
   },
 ];
@@ -157,7 +151,7 @@ async function playbookShowHandler(
   const [nameOrId] = args;
 
   if (!nameOrId) {
-    return failure('Usage: sf playbook show <name|id>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('playbook.show.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -180,11 +174,11 @@ async function playbookShowHandler(
     }
 
     if (!playbook) {
-      return failure(`Playbook not found: ${nameOrId}`, ExitCode.NOT_FOUND);
+      return failure(t('playbook.error.notFound', { id: nameOrId }), ExitCode.NOT_FOUND);
     }
 
     if (playbook.type !== 'playbook') {
-      return failure(`Element ${nameOrId} is not a playbook (type: ${playbook.type})`, ExitCode.VALIDATION);
+      return failure(t('playbook.error.notPlaybook', { id: nameOrId, type: playbook.type }), ExitCode.VALIDATION);
     }
 
     const mode = getOutputMode(options);
@@ -202,19 +196,19 @@ async function playbookShowHandler(
     let output = formatter.element(playbook as unknown as Record<string, unknown>);
 
     // Add playbook-specific info
-    output += '\n\n--- Playbook Info ---\n';
-    output += `Name:      ${playbook.name}\n`;
-    output += `Version:   ${playbook.version}\n`;
-    output += `Steps:     ${playbook.steps.length}\n`;
-    output += `Variables: ${playbook.variables.length}\n`;
+    output += `\n\n${t('playbook.show.infoSection')}\n`;
+    output += `${t('label.name')}:      ${playbook.name}\n`;
+    output += `${t('label.version')}:   ${playbook.version}\n`;
+    output += `${t('label.steps')}:     ${playbook.steps.length}\n`;
+    output += `${t('label.variables')}: ${playbook.variables.length}\n`;
     if (playbook.extends && playbook.extends.length > 0) {
-      output += `Extends:   ${playbook.extends.join(', ')}\n`;
+      output += `${t('label.extends')}:   ${playbook.extends.join(', ')}\n`;
     }
 
     // Show steps if requested
     if (options.steps && playbook.steps.length > 0) {
       output += '\n--- Steps ---\n';
-      const stepHeaders = ['ID', 'TITLE', 'DEPENDS ON'];
+      const stepHeaders = [t('label.id'), t('label.title'), t('label.dependsOn')];
       const stepRows = playbook.steps.map((s) => [
         s.id,
         s.title.length > 40 ? s.title.substring(0, 37) + '...' : s.title,
@@ -226,7 +220,7 @@ async function playbookShowHandler(
     // Show variables if requested
     if (options.variables && playbook.variables.length > 0) {
       output += '\n--- Variables ---\n';
-      const varHeaders = ['NAME', 'TYPE', 'REQUIRED', 'DEFAULT'];
+      const varHeaders = [t('label.name'), t('label.type'), t('label.required'), t('label.default')];
       const varRows = playbook.variables.map((v) => [
         v.name,
         v.type,
@@ -239,27 +233,15 @@ async function playbookShowHandler(
     return success(playbook, output);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to show playbook: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('playbook.error.failedToShow', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const playbookShowCommand: Command = {
   name: 'show',
-  description: 'Show playbook details',
+  description: t('playbook.show.description'),
   usage: 'sf playbook show <name|id> [options]',
-  help: `Display detailed information about a playbook.
-
-Arguments:
-  name|id    Playbook name or identifier
-
-Options:
-  -s, --steps      Include step definitions
-  -v, --variables  Include variable definitions
-
-Examples:
-  sf playbook show deploy
-  sf playbook show el-abc123 --steps --variables
-  sf playbook show deploy --json`,
+  help: t('playbook.show.help'),
   options: playbookShowOptions,
   handler: playbookShowHandler as Command['handler'],
 };
@@ -276,14 +258,14 @@ interface PlaybookValidateOptions {
 const playbookValidateOptions: CommandOption[] = [
   {
     name: 'var',
-    description: 'Set variable for create-time validation (name=value, can be repeated)',
+    description: t('playbook.validate.option.var'),
     hasValue: true,
     array: true,
   },
   {
     name: 'create',
     short: 'c',
-    description: 'Perform create-time validation (validates variables can be resolved)',
+    description: t('playbook.validate.option.create'),
     hasValue: false,
   },
 ];
@@ -330,7 +312,7 @@ async function playbookValidateHandler(
   const [nameOrId] = args;
 
   if (!nameOrId) {
-    return failure('Usage: sf playbook validate <name|id> [--var name=value] [--create]', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('playbook.validate.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -353,11 +335,11 @@ async function playbookValidateHandler(
     }
 
     if (!playbook) {
-      return failure(`Playbook not found: ${nameOrId}`, ExitCode.NOT_FOUND);
+      return failure(t('playbook.error.notFound', { id: nameOrId }), ExitCode.NOT_FOUND);
     }
 
     if (playbook.type !== 'playbook') {
-      return failure(`Element ${nameOrId} is not a playbook (type: ${playbook.type})`, ExitCode.VALIDATION);
+      return failure(t('playbook.error.notPlaybook', { id: nameOrId, type: playbook.type }), ExitCode.VALIDATION);
     }
 
     const issues: string[] = [];
@@ -508,17 +490,17 @@ async function playbookValidateHandler(
     let output = '';
 
     if (issues.length === 0) {
-      output = `Playbook '${playbook.name}' is valid`;
+      output = t('playbook.validate.valid', { name: playbook.name });
 
       // Add create-time details if validation was performed
       if (shouldDoCreateValidation && createValidationResult?.valid) {
-        output += '\n\n--- Create-time Validation ---';
-        output += '\nVariables resolved successfully';
+        output += `\n\n${t('playbook.validate.createTimeSection')}`;
+        output += `\n${t('playbook.validate.variablesResolved')}`;
         if (createValidationResult.includedSteps && createValidationResult.includedSteps.length > 0) {
-          output += `\nIncluded steps: ${createValidationResult.includedSteps.map((s) => s.id).join(', ')}`;
+          output += `\n${t('playbook.validate.includedSteps', { steps: createValidationResult.includedSteps.map((s) => s.id).join(', ') })}`;
         }
         if (createValidationResult.skippedSteps && createValidationResult.skippedSteps.length > 0) {
-          output += `\nSkipped steps: ${createValidationResult.skippedSteps.join(', ')}`;
+          output += `\n${t('playbook.validate.skippedSteps', { steps: createValidationResult.skippedSteps.join(', ') })}`;
         }
       }
     } else {
@@ -529,42 +511,15 @@ async function playbookValidateHandler(
     return success(jsonResult, output);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to validate playbook: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('playbook.error.failedToValidate', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const playbookValidateCommand: Command = {
   name: 'validate',
-  description: 'Validate playbook structure and create-time variables',
+  description: t('playbook.validate.description'),
   usage: 'sf playbook validate <name|id> [--var name=value] [--create]',
-  help: `Validate a playbook's structure and optionally test create-time variable resolution.
-
-Structure Checks:
-- Required fields are present
-- Step IDs are unique
-- Step dependencies reference existing steps
-- Variables used in templates are defined
-- No circular dependencies
-
-Create-time Checks (with --create or --var):
-- All required variables are provided
-- Variable values match their declared types
-- Enum values are within allowed list
-- Variable substitution completes without errors
-- Condition evaluation succeeds
-
-Arguments:
-  name|id    Playbook name or identifier
-
-Options:
-      --var <name=value>  Set variable for create-time validation (can be repeated)
-  -c, --create            Perform create-time validation
-
-Examples:
-  sf playbook validate deploy
-  sf playbook validate deploy --create
-  sf playbook validate deploy --var env=production --var debug=true
-  sf playbook validate el-abc123 --var version=1.0.0`,
+  help: t('playbook.validate.help'),
   options: playbookValidateOptions,
   handler: playbookValidateHandler as Command['handler'],
 };
@@ -586,40 +541,40 @@ const playbookCreateOptions: CommandOption[] = [
   {
     name: 'name',
     short: 'n',
-    description: 'Playbook name (unique identifier, required)',
+    description: t('playbook.create.option.name'),
     hasValue: true,
     required: true,
   },
   {
     name: 'title',
     short: 't',
-    description: 'Playbook title (display name, required)',
+    description: t('playbook.create.option.title'),
     hasValue: true,
     required: true,
   },
   {
     name: 'step',
     short: 's',
-    description: 'Add step (format: id:title[:dependsOn,...], can be repeated)',
+    description: t('playbook.create.option.step'),
     hasValue: true,
     array: true,
   },
   {
     name: 'variable',
-    description: 'Add variable (format: name:type[:default][:required], can be repeated)',
+    description: t('playbook.create.option.variable'),
     hasValue: true,
     array: true,
   },
   {
     name: 'extends',
     short: 'e',
-    description: 'Extend playbook (can be repeated)',
+    description: t('playbook.create.option.extends'),
     hasValue: true,
     array: true,
   },
   {
     name: 'tag',
-    description: 'Add tag (can be repeated)',
+    description: t('label.option.tag'),
     hasValue: true,
     array: true,
   },
@@ -698,11 +653,11 @@ async function playbookCreateHandler(
   options: GlobalOptions & PlaybookCreateOptions
 ): Promise<CommandResult> {
   if (!options.name) {
-    return failure('--name is required for creating a playbook', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('playbook.create.error.nameRequired'), ExitCode.INVALID_ARGUMENTS);
   }
 
   if (!options.title) {
-    return failure('--title is required for creating a playbook', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('playbook.create.error.titleRequired'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options, true);
@@ -789,40 +744,18 @@ async function playbookCreateHandler(
       return success(created.id);
     }
 
-    return success(created, `Created playbook ${created.id} (${options.name})`);
+    return success(created, t('playbook.create.success', { id: created.id, name: options.name }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to create playbook: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('playbook.error.failedToCreate', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const playbookCreateCommand: Command = {
   name: 'create',
-  description: 'Create a new playbook',
+  description: t('playbook.create.description'),
   usage: 'sf playbook create --name <name> --title <title> [options]',
-  help: `Create a new playbook template.
-
-Options:
-  -n, --name <name>       Playbook name (unique identifier, required)
-  -t, --title <title>     Playbook title (display name, required)
-  -s, --step <spec>       Add step (format: id:title[:dependsOn,...])
-  -v, --variable <spec>   Add variable (format: name:type[:default][:required])
-  -e, --extends <name>    Extend playbook (can be repeated)
-      --tag <tag>         Add tag (can be repeated)
-
-Step format:
-  id:title                       Basic step
-  id:title:dep1,dep2             Step with dependencies
-
-Variable format:
-  name:type                      Required variable
-  name:type:default              Variable with default
-  name:type:default:false        Optional variable with default
-
-Examples:
-  sf playbook create --name deploy --title "Deployment Process"
-  sf playbook create -n deploy -t "Deploy" -s "build:Build app" -s "test:Run tests:build"
-  sf playbook create -n deploy -t "Deploy" -v "env:string" -v "debug:boolean:false:false"`,
+  help: t('playbook.create.help'),
   options: playbookCreateOptions,
   handler: playbookCreateHandler as Command['handler'],
 };
@@ -833,24 +766,9 @@ Examples:
 
 export const playbookCommand: Command = {
   name: 'playbook',
-  description: 'Manage playbooks (workflow templates)',
+  description: t('playbook.description'),
   usage: 'sf playbook <subcommand> [options]',
-  help: `Manage playbooks - templates for creating workflows.
-
-Playbooks define reusable sequences of tasks with variables, conditions,
-and dependencies. They can be instantiated as workflows using 'sf workflow create'.
-
-Subcommands:
-  list       List playbooks
-  show       Show playbook details
-  validate   Validate playbook structure
-  create     Create a new playbook
-
-Examples:
-  sf playbook list
-  sf playbook show deploy --steps --variables
-  sf playbook validate deploy
-  sf playbook create --name deploy --title "Deployment"`,
+  help: t('playbook.help'),
   subcommands: {
     list: playbookListCommand,
     show: playbookShowCommand,
@@ -871,11 +789,11 @@ Examples:
     // Show "did you mean?" for unknown subcommands
     const subNames = Object.keys(playbookCommand.subcommands!);
     const suggestions = suggestCommands(args[0], subNames);
-    let msg = `Unknown subcommand: ${args[0]}`;
+    let msg = t('error.unknownSubcommand', { subcommand: args[0] });
     if (suggestions.length > 0) {
-      msg += `\n\nDid you mean?\n${suggestions.map(s => `  ${s}`).join('\n')}`;
+      msg += '\n' + suggestions.map(s => `  ${s}`).join('\n');
     }
-    msg += '\n\nRun "sf playbook --help" to see available subcommands.';
+    msg += '\n\n' + t('error.runHelp', { command: 'sf playbook' });
     return failure(msg, ExitCode.INVALID_ARGUMENTS);
   },
 };

@@ -15,6 +15,7 @@ import { success, failure, ExitCode, getFormatter, getOutputMode, OPERATOR_ENTIT
 import type { EntityId, ElementId } from '@stoneforge/core';
 import type { AgentRole, WorkerMode, StewardFocus } from '../../types/index.js';
 import type { OrchestratorAPI, AgentEntity } from '../../api/index.js';
+import { t } from '../i18n/index.js';
 
 // ============================================================================
 // Shared Helpers
@@ -35,7 +36,7 @@ async function createOrchestratorClient(options: GlobalOptions): Promise<{
     if (!stoneforgeDir) {
       return {
         api: null,
-        error: 'No .stoneforge directory found. Run "sf init" first.',
+        error: t('agent.noStoneforge'),
       };
     }
 
@@ -47,7 +48,7 @@ async function createOrchestratorClient(options: GlobalOptions): Promise<{
     return { api };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return { api: null, error: `Failed to initialize API: ${message}` };
+    return { api: null, error: t('agent.apiInitFailed', { message }) };
   }
 }
 
@@ -68,7 +69,7 @@ async function streamSpawnedSession(
 ): Promise<void> {
   return new Promise((resolve) => {
     const onInterrupt = () => {
-      console.log('\n[Stream interrupted]');
+      console.log('\n' + t('agent.start.streamInterrupted'));
       cleanup();
       resolve();
     };
@@ -85,9 +86,9 @@ async function streamSpawnedSession(
       if (event.type === 'assistant' && event.message) {
         process.stdout.write(event.message);
       } else if (event.type === 'tool_use' && event.tool?.name) {
-        console.log(`\n[Tool: ${event.tool.name}]`);
+        console.log('\n' + t('agent.start.tool', { name: event.tool.name }));
       } else if (event.type === 'result' && event.message) {
-        console.log(`\n[Result: ${event.message}]`);
+        console.log('\n' + t('agent.start.result', { message: event.message }));
       }
     };
 
@@ -98,15 +99,15 @@ async function streamSpawnedSession(
     const onExit = (code: number | null, signal: string | null) => {
       // User-friendly message for normal exit, show exit code for debugging on errors
       const exitMessage = code === 0
-        ? 'The agent has stopped the session'
-        : `The agent session ended unexpectedly (exit code ${code})${signal ? ` (signal: ${signal})` : ''}`;
+        ? t('agent.start.agentStopped')
+        : t('agent.start.agentUnexpectedExit', { code: String(code), signal: signal ? ` (signal: ${signal})` : '' });
       console.log(`\n[${exitMessage}]`);
       cleanup();
       resolve();
     };
 
     const onError = (error: Error) => {
-      console.error(`\n[Error: ${error.message}]`);
+      console.error('\n' + t('agent.start.error', { message: error.message }));
     };
 
     process.on('SIGINT', onInterrupt);
@@ -139,35 +140,35 @@ const agentListOptions: CommandOption[] = [
   {
     name: 'role',
     short: 'r',
-    description: 'Filter by role (director, worker, steward)',
+    description: t('agent.list.option.role'),
     hasValue: true,
   },
   {
     name: 'status',
     short: 's',
-    description: 'Filter by session status (idle, running, suspended, terminated)',
+    description: t('agent.list.option.status'),
     hasValue: true,
   },
   {
     name: 'workerMode',
     short: 'm',
-    description: 'Filter by worker mode (ephemeral, persistent)',
+    description: t('agent.list.option.workerMode'),
     hasValue: true,
   },
   {
     name: 'focus',
     short: 'f',
-    description: 'Filter by steward focus (merge, docs, recovery, custom)',
+    description: t('agent.list.option.focus'),
     hasValue: true,
   },
   {
     name: 'reportsTo',
-    description: 'Filter by manager entity ID',
+    description: t('agent.list.option.reportsTo'),
     hasValue: true,
   },
   {
     name: 'hasSession',
-    description: 'Filter to agents with active sessions',
+    description: t('agent.list.option.hasSession'),
   },
 ];
 
@@ -177,7 +178,7 @@ async function agentListHandler(
 ): Promise<CommandResult> {
   const { api, error } = await createOrchestratorClient(options);
   if (error || !api) {
-    return failure(error ?? 'Failed to create API', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreateApi'), ExitCode.GENERAL_ERROR);
   }
 
   try {
@@ -188,7 +189,7 @@ async function agentListHandler(
       const validRoles = ['director', 'worker', 'steward'];
       if (!validRoles.includes(options.role)) {
         return failure(
-          `Invalid role: ${options.role}. Must be one of: ${validRoles.join(', ')}`,
+          t('agent.list.invalidRole', { role: options.role, validRoles: validRoles.join(', ') }),
           ExitCode.VALIDATION
         );
       }
@@ -202,7 +203,7 @@ async function agentListHandler(
       const validStatuses = ['idle', 'running', 'suspended', 'terminated'];
       if (!validStatuses.includes(options.status)) {
         return failure(
-          `Invalid status: ${options.status}. Must be one of: ${validStatuses.join(', ')}`,
+          t('agent.list.invalidStatus', { status: options.status, validStatuses: validStatuses.join(', ') }),
           ExitCode.VALIDATION
         );
       }
@@ -217,7 +218,7 @@ async function agentListHandler(
       const validModes = ['ephemeral', 'persistent'];
       if (!validModes.includes(options.workerMode)) {
         return failure(
-          `Invalid workerMode: ${options.workerMode}. Must be one of: ${validModes.join(', ')}`,
+          t('agent.list.invalidWorkerMode', { workerMode: options.workerMode, validModes: validModes.join(', ') }),
           ExitCode.VALIDATION
         );
       }
@@ -232,7 +233,7 @@ async function agentListHandler(
       const validFocuses = ['merge', 'docs', 'recovery', 'custom'];
       if (!validFocuses.includes(options.focus)) {
         return failure(
-          `Invalid focus: ${options.focus}. Must be one of: ${validFocuses.join(', ')}`,
+          t('agent.list.invalidFocus', { focus: options.focus, validFocuses: validFocuses.join(', ') }),
           ExitCode.VALIDATION
         );
       }
@@ -267,7 +268,7 @@ async function agentListHandler(
     }
 
     if (agents.length === 0) {
-      return success(null, 'No agents found');
+      return success(null, t('agent.list.noAgents'));
     }
 
     const headers = ['ID', 'NAME', 'ROLE', 'STATUS', 'SESSION'];
@@ -283,34 +284,18 @@ async function agentListHandler(
     });
 
     const table = formatter.table(headers, rows);
-    return success(agents, `${table}\n${agents.length} agent(s)`);
+    return success(agents, `${table}\n${t('agent.list.agentCount', { count: agents.length })}`);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to list agents: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('agent.list.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const agentListCommand: Command = {
   name: 'list',
-  description: 'List registered agents',
+  description: t('agent.list.description'),
   usage: 'sf agent list [options]',
-  help: `List all registered orchestrator agents.
-
-Options:
-  -r, --role <role>        Filter by role (director, worker, steward)
-  -s, --status <status>    Filter by session status (idle, running, suspended, terminated)
-  -m, --workerMode <mode>  Filter by worker mode (ephemeral, persistent)
-  -f, --focus <focus>      Filter by steward focus (merge, docs, recovery, custom)
-  --reportsTo <id>         Filter by manager entity ID
-  --hasSession             Filter to agents with active sessions
-
-Examples:
-  sf agent list
-  sf agent list --role worker
-  sf agent list --role worker --workerMode ephemeral
-  sf agent list --status running
-  sf agent list --role steward --focus merge
-  sf agent list --hasSession`,
+  help: t('agent.list.help'),
   options: agentListOptions,
   handler: agentListHandler as Command['handler'],
 };
@@ -326,18 +311,18 @@ async function agentShowHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf agent show <id>\nExample: sf agent show el-abc123', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('agent.show.usageError'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = await createOrchestratorClient(options);
   if (error || !api) {
-    return failure(error ?? 'Failed to create API', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreateApi'), ExitCode.GENERAL_ERROR);
   }
 
   try {
     const agent = await api.getAgent(id as EntityId);
     if (!agent) {
-      return failure(`Agent not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('agent.show.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     const mode = getOutputMode(options);
@@ -374,21 +359,15 @@ async function agentShowHandler(
     return success(agent, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to show agent: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('agent.show.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const agentShowCommand: Command = {
   name: 'show',
-  description: 'Show agent details',
+  description: t('agent.show.description'),
   usage: 'sf agent show <id>',
-  help: `Show detailed information about an agent.
-
-Arguments:
-  id    Agent identifier
-
-Examples:
-  sf agent show el-abc123`,
+  help: t('agent.show.help'),
   options: [],
   handler: agentShowHandler as Command['handler'],
 };
@@ -415,61 +394,61 @@ const agentRegisterOptions: CommandOption[] = [
   {
     name: 'role',
     short: 'r',
-    description: 'Agent role (worker, director, steward)',
+    description: t('agent.register.option.role'),
     hasValue: true,
     required: true,
   },
   {
     name: 'mode',
     short: 'm',
-    description: 'Worker mode (ephemeral, persistent)',
+    description: t('agent.register.option.mode'),
     hasValue: true,
   },
   {
     name: 'focus',
     short: 'f',
-    description: 'Steward focus (merge, docs, recovery, custom)',
+    description: t('agent.register.option.focus'),
     hasValue: true,
   },
   {
     name: 'maxTasks',
     short: 't',
-    description: 'Maximum concurrent tasks (default: 1)',
+    description: t('agent.register.option.maxTasks'),
     hasValue: true,
   },
   {
     name: 'tags',
-    description: 'Comma-separated tags',
+    description: t('agent.register.option.tags'),
     hasValue: true,
   },
   {
     name: 'reportsTo',
-    description: 'Manager entity ID',
+    description: t('agent.register.option.reportsTo'),
     hasValue: true,
   },
   {
     name: 'roleDef',
-    description: 'Role definition document ID',
+    description: t('agent.register.option.roleDef'),
     hasValue: true,
   },
   {
     name: 'trigger',
-    description: 'Steward cron trigger (e.g., "0 2 * * *")',
+    description: t('agent.register.option.trigger'),
     hasValue: true,
   },
   {
     name: 'provider',
-    description: 'Agent provider (e.g., claude-code, opencode)',
+    description: t('agent.register.option.provider'),
     hasValue: true,
   },
   {
     name: 'model',
-    description: 'LLM model to use (e.g., claude-sonnet-4-5-20250929)',
+    description: t('agent.register.option.model'),
     hasValue: true,
   },
   {
     name: 'targetBranch',
-    description: 'Target branch for merge (director only, default: auto-detect)',
+    description: t('agent.register.option.targetBranch'),
     hasValue: true,
   },
 ];
@@ -481,24 +460,24 @@ async function agentRegisterHandler(
   const [name] = args;
 
   if (!name) {
-    return failure('Usage: sf agent register <name> --role <role> [options]\nExample: sf agent register MyWorker --role worker', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('agent.register.usageError'), ExitCode.INVALID_ARGUMENTS);
   }
 
   if (!options.role) {
-    return failure('--role is required', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('agent.register.roleRequired'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const validRoles = ['director', 'worker', 'steward'];
   if (!validRoles.includes(options.role)) {
     return failure(
-      `Invalid role: ${options.role}. Must be one of: ${validRoles.join(', ')}`,
+      t('agent.register.invalidRole', { role: options.role, validRoles: validRoles.join(', ') }),
       ExitCode.VALIDATION
     );
   }
 
   const { api, error } = await createOrchestratorClient(options);
   if (error || !api) {
-    return failure(error ?? 'Failed to create API', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreateApi'), ExitCode.GENERAL_ERROR);
   }
 
   try {
@@ -530,7 +509,7 @@ async function agentRegisterHandler(
         const validModes = ['ephemeral', 'persistent'];
         if (!validModes.includes(workerMode)) {
           return failure(
-            `Invalid mode: ${workerMode}. Must be one of: ${validModes.join(', ')}`,
+            t('agent.register.invalidMode', { mode: workerMode, validModes: validModes.join(', ') }),
             ExitCode.VALIDATION
           );
         }
@@ -553,7 +532,7 @@ async function agentRegisterHandler(
         const validFocuses = ['merge', 'docs', 'recovery', 'custom'];
         if (!validFocuses.includes(stewardFocus)) {
           return failure(
-            `Invalid focus: ${stewardFocus}. Must be one of: ${validFocuses.join(', ')}`,
+            t('agent.register.invalidFocus', { focus: stewardFocus, validFocuses: validFocuses.join(', ') }),
             ExitCode.VALIDATION
           );
         }
@@ -578,7 +557,7 @@ async function agentRegisterHandler(
       }
 
       default:
-        return failure(`Unknown role: ${options.role}`, ExitCode.VALIDATION);
+        return failure(t('agent.register.unknownRole', { role: options.role }), ExitCode.VALIDATION);
     }
 
     const mode = getOutputMode(options);
@@ -591,45 +570,18 @@ async function agentRegisterHandler(
       return success(agent.id);
     }
 
-    return success(agent, `Registered ${options.role} agent: ${agent.id}`);
+    return success(agent, t('agent.register.success', { role: options.role, id: agent.id }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to register agent: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('agent.register.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const agentRegisterCommand: Command = {
   name: 'register',
-  description: 'Register a new agent',
+  description: t('agent.register.description'),
   usage: 'sf agent register <name> --role <role> [options]',
-  help: `Register a new orchestrator agent.
-
-Arguments:
-  name    Agent name
-
-Options:
-  -r, --role <role>       Agent role: director, worker, steward (required)
-  -m, --mode <mode>       Worker mode: ephemeral, persistent (default: ephemeral)
-  -f, --focus <focus>     Steward focus: merge, docs, recovery, custom
-  -t, --maxTasks <n>      Maximum concurrent tasks (default: 1)
-  --tags <tags>           Comma-separated tags (e.g., "frontend,urgent")
-  --reportsTo <id>        Manager entity ID (for workers/stewards)
-  --roleDef <id>          Role definition document ID
-  --trigger <cron>        Steward cron trigger (e.g., "0 2 * * *")
-  --provider <name>       Agent provider (e.g., claude-code, opencode)
-  --model <model>         LLM model to use (e.g., claude-sonnet-4-5-20250929)
-  --target-branch <branch> Target branch for merge (director only, default: auto-detect)
-
-Examples:
-  sf agent register MyWorker --role worker --mode ephemeral
-  sf agent register MainDirector --role director
-  sf agent register MainDirector --role director --target-branch staging
-  sf agent register MergeSteward --role steward --focus merge
-  sf agent register MyWorker --role worker --tags "frontend,urgent"
-  sf agent register TeamWorker --role worker --reportsTo el-director123
-  sf agent register DocsSteward --role steward --focus docs --trigger "0 9 * * *"
-  sf agent register OcWorker --role worker --provider opencode
-  sf agent register MyWorker --role worker --model claude-sonnet-4-5-20250929`,
+  help: t('agent.register.help'),
   options: agentRegisterOptions,
   handler: agentRegisterHandler as Command['handler'],
 };
@@ -647,16 +599,16 @@ const agentStopOptions: CommandOption[] = [
   {
     name: 'graceful',
     short: 'g',
-    description: 'Graceful shutdown (default: true)',
+    description: t('agent.stop.option.graceful'),
   },
   {
     name: 'no-graceful',
-    description: 'Force immediate shutdown',
+    description: t('agent.stop.option.noGraceful'),
   },
   {
     name: 'reason',
     short: 'r',
-    description: 'Reason for stopping the agent',
+    description: t('agent.stop.option.reason'),
     hasValue: true,
   },
 ];
@@ -668,12 +620,12 @@ async function agentStopHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf agent stop <id> [options]\nExample: sf agent stop el-abc123', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('agent.stop.usageError'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = await createOrchestratorClient(options);
   if (error || !api) {
-    return failure(error ?? 'Failed to create API', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreateApi'), ExitCode.GENERAL_ERROR);
   }
 
   try {
@@ -700,39 +652,26 @@ async function agentStopHandler(
       return success(agent.id);
     }
 
-    let message = `Stopped agent ${id}`;
+    let message = t('agent.stop.success', { id });
     if (!graceful) {
-      message += ' (forced)';
+      message = t('agent.stop.forced', { id });
     }
     if (options.reason) {
-      message += `: ${options.reason}`;
+      message = t('agent.stop.withReason', { id, reason: options.reason });
     }
 
     return success(agent, message);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to stop agent: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('agent.stop.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const agentStopCommand: Command = {
   name: 'stop',
-  description: 'Stop an agent session',
+  description: t('agent.stop.description'),
   usage: 'sf agent stop <id> [options]',
-  help: `Stop an agent session.
-
-Arguments:
-  id    Agent identifier
-
-Options:
-  -g, --graceful        Graceful shutdown (default: true)
-  --no-graceful         Force immediate shutdown
-  -r, --reason <text>   Reason for stopping the agent
-
-Examples:
-  sf agent stop el-abc123
-  sf agent stop el-abc123 --reason "Task completed"
-  sf agent stop el-abc123 --no-graceful`,
+  help: t('agent.stop.help'),
   options: agentStopOptions,
   handler: agentStopHandler as Command['handler'],
 };
@@ -748,18 +687,18 @@ async function agentStreamHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf agent stream <id>\nExample: sf agent stream el-abc123', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('agent.stream.usageError'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = await createOrchestratorClient(options);
   if (error || !api) {
-    return failure(error ?? 'Failed to create API', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreateApi'), ExitCode.GENERAL_ERROR);
   }
 
   try {
     const channelId = await api.getAgentChannel(id as EntityId);
     if (!channelId) {
-      return failure(`No channel found for agent: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('agent.stream.noChannel', { id }), ExitCode.NOT_FOUND);
     }
 
     const mode = getOutputMode(options);
@@ -770,25 +709,19 @@ async function agentStreamHandler(
 
     return success(
       { channelId },
-      `Agent ${id} channel: ${channelId}\nUse "sf channel stream ${channelId}" to watch messages`
+      t('agent.stream.channelInfo', { id, channelId })
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to get agent stream: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('agent.stream.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const agentStreamCommand: Command = {
   name: 'stream',
-  description: 'Get agent channel for streaming',
+  description: t('agent.stream.description'),
   usage: 'sf agent stream <id>',
-  help: `Get the channel ID for an agent to stream messages.
-
-Arguments:
-  id    Agent identifier
-
-Examples:
-  sf agent stream el-abc123`,
+  help: t('agent.stream.help'),
   options: [],
   handler: agentStreamHandler as Command['handler'],
 };
@@ -816,66 +749,66 @@ const agentStartOptions: CommandOption[] = [
   {
     name: 'prompt',
     short: 'p',
-    description: 'Initial prompt to send to the agent',
+    description: t('agent.start.option.prompt'),
     hasValue: true,
   },
   {
     name: 'mode',
     short: 'm',
-    description: 'Spawn mode (headless, interactive)',
+    description: t('agent.start.option.mode'),
     hasValue: true,
   },
   {
     name: 'resume',
     short: 'r',
-    description: 'Provider session ID to resume',
+    description: t('agent.start.option.resume'),
     hasValue: true,
   },
   {
     name: 'workdir',
     short: 'w',
-    description: 'Working directory for the agent',
+    description: t('agent.start.option.workdir'),
     hasValue: true,
   },
   {
     name: 'cols',
-    description: 'Terminal columns for interactive mode (default: 120)',
+    description: t('agent.start.option.cols'),
     hasValue: true,
   },
   {
     name: 'rows',
-    description: 'Terminal rows for interactive mode (default: 30)',
+    description: t('agent.start.option.rows'),
     hasValue: true,
   },
   {
     name: 'timeout',
-    description: 'Timeout in milliseconds (default: 120000)',
+    description: t('agent.start.option.timeout'),
     hasValue: true,
   },
   {
     name: 'env',
     short: 'e',
-    description: 'Environment variables (KEY=VALUE, can repeat)',
+    description: t('agent.start.option.env'),
     hasValue: true,
   },
   {
     name: 'taskId',
     short: 't',
-    description: 'Task ID to assign to this agent',
+    description: t('agent.start.option.taskId'),
     hasValue: true,
   },
   {
     name: 'stream',
-    description: 'Stream agent output after spawning',
+    description: t('agent.start.option.stream'),
   },
   {
     name: 'provider',
-    description: 'Override agent provider for this session',
+    description: t('agent.start.option.provider'),
     hasValue: true,
   },
   {
     name: 'model',
-    description: 'Override model for this session (e.g., claude-opus-4-6)',
+    description: t('agent.start.option.model'),
     hasValue: true,
   },
 ];
@@ -887,19 +820,19 @@ async function agentStartHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf agent start <id> [options]\nExample: sf agent start el-abc123 --prompt "Begin working"', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('agent.start.usageError'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = await createOrchestratorClient(options);
   if (error || !api) {
-    return failure(error ?? 'Failed to create API', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreateApi'), ExitCode.GENERAL_ERROR);
   }
 
   try {
     // Get the agent to verify it exists and get its role
     const agent = await api.getAgent(id as EntityId);
     if (!agent) {
-      return failure(`Agent not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('agent.start.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     const meta = getAgentMeta(agent);
@@ -933,7 +866,7 @@ async function agentStartHandler(
     if (options.mode) {
       if (options.mode !== 'headless' && options.mode !== 'interactive') {
         return failure(
-          `Invalid mode: ${options.mode}. Must be 'headless' or 'interactive'`,
+          t('agent.start.invalidMode', { mode: options.mode }),
           ExitCode.VALIDATION
         );
       }
@@ -961,14 +894,14 @@ async function agentStartHandler(
 
     // If --stream is set, stream the session output
     if (options.stream) {
-      console.log(`Spawned agent ${id}`);
+      console.log(t('agent.start.spawned', { id }));
       console.log(`  Session ID:  ${result.session.id}`);
       console.log(`  Mode:        ${result.session.mode}`);
-      console.log('\nStreaming output (Press Ctrl+C to stop):\n');
+      console.log('\n' + t('agent.start.streaming') + '\n');
 
       await streamSpawnedSession(result.events, result.session.mode);
 
-      return success(result.session, 'Stream ended');
+      return success(result.session, t('agent.start.streamEnded'));
     }
 
     const mode = getOutputMode(options);
@@ -1004,44 +937,15 @@ async function agentStartHandler(
     return success(result.session, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to start agent: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('agent.start.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const agentStartCommand: Command = {
   name: 'start',
-  description: 'Start an agent process',
+  description: t('agent.start.description'),
   usage: 'sf agent start <id> [options]',
-  help: `Start a new agent process.
-
-Arguments:
-  id    Agent identifier
-
-Options:
-  -p, --prompt <text>      Initial prompt to send to the agent
-  -m, --mode <mode>        Start mode: headless, interactive
-  -r, --resume <id>        Resume a previous session
-  -w, --workdir <path>     Working directory for the agent
-  --cols <n>               Terminal columns for interactive mode (default: 120)
-  --rows <n>               Terminal rows for interactive mode (default: 30)
-  --timeout <ms>           Timeout in milliseconds (default: 120000)
-  -e, --env <KEY=VALUE>    Environment variable to set
-  -t, --taskId <id>        Task ID to assign to this agent
-  --stream                 Stream agent output after starting
-  --provider <name>        Override agent provider for this session
-  --model <model>          Override model for this session
-
-Examples:
-  sf agent start el-abc123
-  sf agent start el-abc123 --mode interactive
-  sf agent start el-abc123 --mode interactive --cols 160 --rows 40
-  sf agent start el-abc123 --prompt "Start working on your assigned tasks"
-  sf agent start el-abc123 --resume prev-session-id
-  sf agent start el-abc123 --env MY_VAR=value
-  sf agent start el-abc123 --taskId el-task456
-  sf agent start el-abc123 --stream
-  sf agent start el-abc123 --provider opencode
-  sf agent start el-abc123 --model claude-opus-4-6`,
+  help: t('agent.start.help'),
   options: agentStartOptions,
   handler: agentStartHandler as Command['handler'],
 };
@@ -1052,23 +956,9 @@ Examples:
 
 export const agentCommand: Command = {
   name: 'agent',
-  description: 'Manage orchestrator agents',
+  description: t('agent.description'),
   usage: 'sf agent <subcommand> [options]',
-  help: `Manage orchestrator agents.
-
-Subcommands:
-  list      List all registered agents
-  show      Show agent details
-  register  Register a new agent
-  start     Start an agent process
-  stop      Stop an agent session
-  stream    Get agent channel for streaming
-
-Examples:
-  sf agent list
-  sf agent register MyWorker --role worker
-  sf agent start el-abc123
-  sf agent start el-abc123 --mode interactive`,
+  help: t('agent.help'),
   subcommands: {
     list: agentListCommand,
     show: agentShowCommand,

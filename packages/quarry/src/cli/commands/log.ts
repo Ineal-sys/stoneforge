@@ -18,6 +18,7 @@ import type { Command, GlobalOptions, CommandResult, CommandOption } from '../ty
 import { success, failure, ExitCode } from '../types.js';
 import { getOutputMode } from '../formatter.js';
 import { createAPI } from '../db.js';
+import { t } from '../i18n/index.js';
 
 // ============================================================================
 // Types
@@ -191,7 +192,7 @@ async function logHandler(
     if (options.limit) {
       limit = parseInt(options.limit, 10);
       if (isNaN(limit) || limit < 1) {
-        return failure('--limit must be a positive number', ExitCode.VALIDATION);
+        return failure(t('general.limitMustBePositive'), ExitCode.VALIDATION);
       }
     }
 
@@ -283,7 +284,7 @@ async function logHandler(
 
     // Human-readable output
     if (entries.length === 0) {
-      return success([], 'No log entries found.');
+      return success([], t('log.noEntries'));
     }
 
     const lines: string[] = [];
@@ -305,11 +306,11 @@ async function logHandler(
       lines.push(line);
     }
 
-    const header = `Operation Log (${entries.length} entries):\n`;
+    const header = t('log.operationLog', { count: entries.length }) + '\n';
     return success(entries, header + lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to query operation log: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('log.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
@@ -319,7 +320,7 @@ async function logHandler(
 
 export const logCommand: Command = {
   name: 'log',
-  description: 'Show operation log entries',
+  description: t('log.description'),
   usage: 'sf log [options]',
   help: `Show persistent operation log entries for system observability.
 

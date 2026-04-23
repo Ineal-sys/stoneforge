@@ -16,6 +16,7 @@ import { createStorage, initializeSchema } from '@stoneforge/storage';
 import { createSyncService } from '../../sync/service.js';
 import type { ExportResult, ImportResult } from '../../sync/types.js';
 import { resolveDatabasePath, STONEFORGE_DIR, DEFAULT_DB_NAME } from '../db.js';
+import { t } from '../i18n/index.js';
 
 // ============================================================================
 // Constants
@@ -38,7 +39,7 @@ function createSyncServiceFromOptions(options: GlobalOptions): {
   if (!dbPath) {
     return {
       syncService: null as unknown as ReturnType<typeof createSyncService>,
-      error: 'No database found. Run "sf init" to initialize a workspace, or specify --db path',
+      error: t('sync.error.noDatabase'),
     };
   }
 
@@ -50,7 +51,7 @@ function createSyncServiceFromOptions(options: GlobalOptions): {
     const message = err instanceof Error ? err.message : String(err);
     return {
       syncService: null as unknown as ReturnType<typeof createSyncService>,
-      error: `Failed to open database: ${message}`,
+      error: t('sync.error.openFailed', { message }),
     };
   }
 }
@@ -83,17 +84,17 @@ const exportOptions: CommandOption[] = [
   {
     name: 'output',
     short: 'o',
-    description: 'Output directory path (default: .stoneforge/sync)',
+    description: t('sync.export.option.output'),
     hasValue: true,
   },
   {
     name: 'full',
     short: 'f',
-    description: 'Full export (ignore dirty tracking)',
+    description: t('sync.export.option.full'),
   },
   {
     name: 'include-ephemeral',
-    description: 'Include ephemeral elements (default: exclude)',
+    description: t('sync.export.option.includeEphemeral'),
   },
 ];
 
@@ -127,14 +128,14 @@ async function exportHandler(
     }
 
     // Human-readable output
-    const exportType = result.incremental ? 'Incremental' : 'Full';
+    const exportType = result.incremental ? t('sync.export.label.incremental') : t('sync.export.label.full');
     const lines = [
-      `${exportType} export completed`,
+      t('sync.export.success.completed', { type: exportType }),
       '',
-      `Elements exported:     ${result.elementsExported}`,
-      `Dependencies exported: ${result.dependenciesExported}`,
+      `${t('sync.export.label.elementsExported')}:     ${result.elementsExported}`,
+      `${t('sync.export.label.dependenciesExported')}: ${result.dependenciesExported}`,
       '',
-      `Files:`,
+      `${t('sync.export.label.files')}:`,
       `  ${result.elementsFile}`,
       `  ${result.dependenciesFile}`,
     ];
@@ -142,33 +143,15 @@ async function exportHandler(
     return success(result, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Export failed: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('sync.export.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const exportCommand: Command = {
   name: 'export',
-  description: 'Export elements to JSONL files',
+  description: t('sync.export.description'),
   usage: 'sf export [options]',
-  help: `Export elements and dependencies to JSONL files for version control.
-
-By default, only exports elements that have been modified since the last export
-(incremental export). Use --full for a complete export.
-
-Options:
-  -o, --output <dir>       Output directory (default: .stoneforge/sync)
-  -f, --full               Full export (ignore dirty tracking)
-      --include-ephemeral  Include ephemeral elements (excluded by default)
-
-Output files:
-  elements.jsonl      All exported elements
-  dependencies.jsonl  All exported dependencies
-
-Examples:
-  sf export
-  sf export --full
-  sf export -o ./backup
-  sf export --include-ephemeral`,
+  help: t('sync.export.help'),
   options: exportOptions,
   handler: exportHandler as Command['handler'],
 };
@@ -187,18 +170,18 @@ const importOptions: CommandOption[] = [
   {
     name: 'input',
     short: 'i',
-    description: 'Input directory path (default: .stoneforge/sync)',
+    description: t('sync.import.option.input'),
     hasValue: true,
   },
   {
     name: 'dry-run',
     short: 'n',
-    description: 'Show what would be imported without making changes',
+    description: t('sync.import.option.dryRun'),
   },
   {
     name: 'force',
     short: 'f',
-    description: 'Force import (remote always wins conflicts)',
+    description: t('sync.import.option.force'),
   },
 ];
 
@@ -216,7 +199,7 @@ async function importHandler(
 
     // Check if input directory exists
     if (!existsSync(inputDir)) {
-      return failure(`Input directory not found: ${inputDir}`, ExitCode.NOT_FOUND);
+      return failure(t('sync.import.error.inputNotFound', { dir: inputDir }), ExitCode.NOT_FOUND);
     }
 
     const result: ImportResult = syncService.importSync({
@@ -238,77 +221,56 @@ async function importHandler(
 
     // Human-readable output
     const isDryRun = options['dry-run'] ?? false;
-    const actionWord = isDryRun ? 'Would import' : 'Imported';
+    const actionWord = isDryRun ? t('sync.import.label.wouldImport') : t('sync.import.label.imported');
 
     const lines: string[] = [
-      isDryRun ? 'Dry run - no changes made' : 'Import completed',
+      isDryRun ? t('sync.import.label.dryRun') : t('sync.import.label.completed'),
       '',
-      `Elements:`,
+      `${t('sync.export.label.elementsExported')}:`,
       `  ${actionWord}: ${result.elementsImported}`,
-      `  Skipped:  ${result.elementsSkipped}`,
+      `  ${t('sync.import.label.skipped')}:  ${result.elementsSkipped}`,
       '',
-      `Dependencies:`,
+      `${t('sync.export.label.dependenciesExported')}:`,
       `  ${actionWord}: ${result.dependenciesImported}`,
-      `  Skipped:  ${result.dependenciesSkipped}`,
+      `  ${t('sync.import.label.skipped')}:  ${result.dependenciesSkipped}`,
     ];
 
     // Show conflicts if any
     if (result.conflicts.length > 0) {
       lines.push('');
-      lines.push(`Conflicts resolved: ${result.conflicts.length}`);
+      lines.push(t('sync.import.label.conflictsResolved', { count: result.conflicts.length }));
       for (const conflict of result.conflicts.slice(0, 5)) {
         lines.push(`  ${conflict.elementId}: ${conflict.resolution}`);
       }
       if (result.conflicts.length > 5) {
-        lines.push(`  ... and ${result.conflicts.length - 5} more`);
+        lines.push(t('sync.import.label.andMore', { count: result.conflicts.length - 5 }));
       }
     }
 
     // Show errors if any
     if (result.errors.length > 0) {
       lines.push('');
-      lines.push(`Errors: ${result.errors.length}`);
+      lines.push(t('sync.import.label.errors', { count: result.errors.length }));
       for (const err of result.errors.slice(0, 5)) {
         lines.push(`  ${err.file}:${err.line}: ${err.message}`);
       }
       if (result.errors.length > 5) {
-        lines.push(`  ... and ${result.errors.length - 5} more`);
+        lines.push(t('sync.import.label.andMore', { count: result.errors.length - 5 }));
       }
     }
 
     return success(result, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Import failed: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('sync.import.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const importCommand: Command = {
   name: 'import',
-  description: 'Import elements from JSONL files',
+  description: t('sync.import.description'),
   usage: 'sf import [options]',
-  help: `Import elements and dependencies from JSONL files.
-
-Uses Last-Write-Wins (LWW) merge strategy by default:
-- Compares updatedAt timestamps
-- Later timestamp wins
-- Tags are merged (union)
-- Closed status wins over open states
-
-Options:
-  -i, --input <dir>    Input directory (default: .stoneforge/sync)
-  -n, --dry-run        Show what would change without importing
-  -f, --force          Force import (remote always wins)
-
-Expected files:
-  elements.jsonl      Elements to import
-  dependencies.jsonl  Dependencies to import
-
-Examples:
-  sf import
-  sf import --dry-run
-  sf import -i ./backup
-  sf import --force`,
+  help: t('sync.import.help'),
   options: importOptions,
   handler: importHandler as Command['handler'],
 };
@@ -324,7 +286,7 @@ async function statusHandler(
   const dbPath = resolveDatabasePath(options);
   if (!dbPath) {
     return failure(
-      'No database found. Run "sf init" to initialize a workspace, or specify --db path',
+      t('sync.error.noDatabase'),
       ExitCode.GENERAL_ERROR
     );
   }
@@ -373,44 +335,34 @@ async function statusHandler(
 
     // Human-readable output
     const lines: string[] = [
-      'Sync Status',
+      t('sync.status.label.title'),
       '',
-      `Total elements:   ${totalCount}`,
-      `Pending changes:  ${dirtyCount}`,
+      `${t('stats.label.total')} ${t('sync.status.label.elements')}:   ${totalCount}`,
+      `${t('sync.status.label.pendingChanges')}:  ${dirtyCount}`,
       '',
-      `Sync directory:   ${syncDir}`,
-      `  Directory:      ${syncDirExists ? 'exists' : 'not found'}`,
-      `  elements.jsonl: ${elementsFileExists ? 'exists' : 'not found'}`,
-      `  dependencies.jsonl: ${dependenciesFileExists ? 'exists' : 'not found'}`,
+      `${t('sync.status.label.syncDir')}:   ${syncDir}`,
+      `  ${t('sync.status.label.directory')}:      ${syncDirExists ? t('label.exists') : t('label.notFound')}`,
+      `  elements.jsonl: ${elementsFileExists ? t('label.exists') : t('label.notFound')}`,
+      `  dependencies.jsonl: ${dependenciesFileExists ? t('label.exists') : t('label.notFound')}`,
     ];
 
     if (dirtyCount > 0) {
       lines.push('');
-      lines.push('Run "sf export" to export pending changes.');
+      lines.push(t('sync.status.label.runExport'));
     }
 
     return success(status, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to get status: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('sync.status.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const statusCommand: Command = {
   name: 'status',
-  description: 'Show sync status',
+  description: t('sync.status.description'),
   usage: 'sf status',
-  help: `Show the current sync status.
-
-Displays:
-- Number of elements with pending changes (dirty)
-- Total element count
-- Sync directory status
-- Whether sync files exist
-
-Examples:
-  sf status
-  sf status --json`,
+  help: t('sync.status.help'),
   options: [],
   handler: statusHandler as Command['handler'],
 };
@@ -421,19 +373,9 @@ Examples:
 
 export const syncCommand: Command = {
   name: 'sync',
-  description: 'Sync commands (export, import, status)',
+  description: t('sync.description'),
   usage: 'sf sync <command> [options]',
-  help: `JSONL sync commands for version control integration.
-
-Commands:
-  export   Export elements to JSONL files
-  import   Import elements from JSONL files
-  status   Show sync status
-
-Examples:
-  sf sync export
-  sf sync import --dry-run
-  sf sync status`,
+  help: t('sync.help'),
   subcommands: {
     export: exportCommand,
     import: importCommand,
@@ -447,6 +389,6 @@ Examples:
         commands: ['export', 'import', 'status'],
       });
     }
-    return failure('Usage: sf sync <command>\n\nCommands: export, import, status\n\nRun "sf sync --help" for more information.', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('sync.error.usage'), ExitCode.INVALID_ARGUMENTS);
   },
 };

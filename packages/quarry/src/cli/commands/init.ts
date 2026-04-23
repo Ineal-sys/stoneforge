@@ -11,6 +11,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import type { Command, GlobalOptions, CommandResult } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
+import { t } from '../i18n/index.js';
 import { createStorage, initializeSchema } from '@stoneforge/storage';
 import { createQuarryAPI } from '../../api/quarry-api.js';
 import {
@@ -403,9 +404,9 @@ export const WORKFLOW_PRESET_CONFIGS: Record<WorkflowPreset, PartialConfiguratio
 };
 
 const PRESET_DESCRIPTIONS: Record<WorkflowPreset, string> = {
-  auto: 'Agents merge directly to main. Fast iteration, no human review.',
-  review: 'Agents merge to a review branch. You review and merge to main.',
-  approve: 'Agents need approval for restricted actions. Merges via GitHub PRs.',
+  auto: t('init.preset.auto'),
+  review: t('init.preset.review'),
+  approve: t('init.preset.approve'),
 };
 
 /**
@@ -453,7 +454,7 @@ async function promptWorkflowPreset(): Promise<WorkflowPreset> {
 
   return new Promise((resolve) => {
     // Print header
-    stdout.write('? Choose a workflow preset:\n');
+    stdout.write(`? ${t('init.preset.prompt')}\n`);
 
     // Hide cursor during selection
     stdout.write('\x1B[?25l');
@@ -549,7 +550,7 @@ async function initHandler(
   // Fully initialized — directory and database both exist
   if (dirExists && dbExists) {
     return failure(
-      `Workspace already initialized at ${stoneforgeDir}`,
+      t('init.error.alreadyInitialized', { path: stoneforgeDir }),
       ExitCode.VALIDATION
     );
   }
@@ -571,7 +572,7 @@ async function initHandler(
       const presetLower = options.preset.toLowerCase();
       if (!VALID_WORKFLOW_PRESETS.includes(presetLower as WorkflowPreset)) {
         return failure(
-          `Invalid preset '${options.preset}'. Must be one of: ${VALID_WORKFLOW_PRESETS.join(', ')}`,
+          t('init.error.invalidPreset', { preset: options.preset, valid: VALID_WORKFLOW_PRESETS.join(', ') }),
           ExitCode.VALIDATION
         );
       }
@@ -662,7 +663,7 @@ async function initHandler(
       if (existsSync(elementsJsonl) || existsSync(depsJsonl)) {
         const syncService = createSyncService(backend);
         const importResult = syncService.importSync({ inputDir: syncDir });
-        importMessage = `\nImported ${importResult.elementsImported} element(s) and ${importResult.dependenciesImported} dependency(ies) from JSONL files`;
+        importMessage = t('init.success.imported', { elements: importResult.elementsImported, dependencies: importResult.dependenciesImported });
       }
     }
 
@@ -674,19 +675,19 @@ async function initHandler(
       if (skillsResult) {
         skillsInstalled = skillsResult.installed.length;
         if (skillsResult.installed.length > 0) {
-          skillsMessage = `\nInstalled ${skillsResult.installed.length} skill(s) to ${skillsResult.targetDir}`;
+          skillsMessage = t('init.success.skillsInstalled', { count: skillsResult.installed.length, dir: skillsResult.targetDir });
         } else if (skillsResult.skipped.length > 0) {
-          skillsMessage = `\nSkills already installed (${skillsResult.skipped.length} skill(s) skipped)`;
+          skillsMessage = t('init.success.skillsSkipped', { count: skillsResult.skipped.length });
         }
         if (skillsResult.errors.length > 0) {
-          skillsMessage += `\nWarning: Failed to install ${skillsResult.errors.length} skill(s)`;
+          skillsMessage += t('init.warning.skillsFailed', { count: skillsResult.errors.length });
         }
       } else {
-        skillsMessage = '\nSkills installation skipped (no skills source found)';
+        skillsMessage = t('init.success.skillsNoSource');
       }
     } catch (skillsErr) {
       const skillsErrMsg = skillsErr instanceof Error ? skillsErr.message : String(skillsErr);
-      skillsMessage = `\nWarning: Skills installation failed: ${skillsErrMsg}`;
+      skillsMessage = t('init.warning.skillsInstallFailed', { error: skillsErrMsg });
     }
 
     // Build polished, branded output
@@ -703,9 +704,9 @@ async function initHandler(
 
     // Concise preset descriptions for the summary display
     const PRESET_SHORT: Record<WorkflowPreset, string> = {
-      auto: 'Fast iteration, no human review',
-      review: 'You review and merge to main',
-      approve: 'Agents need approval, merges via PRs',
+      auto: t('init.preset.short.auto'),
+      review: t('init.preset.short.review'),
+      approve: t('init.preset.short.approve'),
     };
 
     const lines: string[] = [];
@@ -716,7 +717,7 @@ async function initHandler(
     lines.push('');
 
     // Success indicator
-    const initLabel = partialInit ? 'Workspace initialized from existing files' : 'Workspace initialized';
+    const initLabel = partialInit ? t('init.success.fromExisting') : t('init.success.created');
     lines.push(`  ${green}✔${reset} ${bold}${initLabel}${reset}`);
     lines.push('');
 
@@ -725,31 +726,31 @@ async function initHandler(
     const pad = (label: string) => `  ${dim}${label.padEnd(labelWidth)}${reset}`;
 
     if (options.name) {
-      lines.push(`${pad('Name')}${options.name}`);
+      lines.push(`${pad(t('init.label.name'))}${options.name}`);
     }
     if (selectedPreset) {
-      lines.push(`${pad('Preset')}${bold}${selectedPreset}${reset} ${dim}— ${PRESET_SHORT[selectedPreset]}${reset}`);
+      lines.push(`${pad(t('init.label.preset'))}${bold}${selectedPreset}${reset} ${dim}— ${PRESET_SHORT[selectedPreset]}${reset}`);
     }
-    lines.push(`${pad('Agents')}${agentNames}`);
+    lines.push(`${pad(t('init.label.agents'))}${agentNames}`);
     if (skillsInstalled > 0) {
-      lines.push(`${pad('Skills')}${skillsInstalled} installed`);
+      lines.push(`${pad(t('init.label.skills'))}${t('init.label.skillsCount', { count: skillsInstalled })}`);
     } else if (skillsMessage.includes('skipped')) {
-      lines.push(`${pad('Skills')}already installed`);
+      lines.push(`${pad(t('init.label.skills'))}${t('init.label.skillsAlready')}`);
     } else if (skillsMessage.includes('skipped') === false && skillsMessage.includes('failed')) {
-      lines.push(`${pad('Skills')}${yellow}installation failed${reset}`);
+      lines.push(`${pad(t('init.label.skills'))}${yellow}${t('init.label.skillsFailed')}${reset}`);
     }
     if (agentsMdCreated) {
-      lines.push(`${pad('AGENTS.md')}created at workspace root`);
+      lines.push(`${pad(t('init.label.agentsMd'))}${t('init.label.agentsMdCreated')}`);
     }
     if (importMessage) {
-      lines.push(`${pad('Imported')}${importMessage.replace(/^\n?Imported\s*/, '')}`);
+      lines.push(`${pad(t('init.label.imported'))}${importMessage.replace(/^\n?Imported\s*/, '')}`);
     }
-    lines.push(`${pad('Path')}${relativePath}`);
+    lines.push(`${pad(t('init.label.path'))}${relativePath}`);
 
     // Warnings for skipped agents
     if (agentResult.skipped > 0) {
       lines.push('');
-      lines.push(`  ${dim}${agentResult.skipped} existing agent(s) skipped${reset}`);
+      lines.push(`  ${dim}${t('init.warning.agentsSkipped', { count: agentResult.skipped })}${reset}`);
     }
 
     // Skills warnings
@@ -761,16 +762,16 @@ async function initHandler(
     // Demo mode notice
     if (isDemo) {
       lines.push('');
-      lines.push(`  ${yellow}🎮 Demo mode active${reset}`);
-      lines.push(`  ${dim}All agents use the free ${DEMO_MODEL} provider — no API keys required.${reset}`);
-      lines.push(`  ${dim}Disable with demo_mode: false in .stoneforge/config.yaml${reset}`);
+      lines.push(`  ${yellow}${t('init.demo.active')}${reset}`);
+      lines.push(`  ${dim}${t('init.demo.description', { model: DEMO_MODEL })}${reset}`);
+      lines.push(`  ${dim}${t('init.demo.disable')}${reset}`);
     }
 
     // Next steps
     lines.push('');
-    lines.push(`  ${bold}Next steps:${reset}`);
-    lines.push(`    Run ${cyan}sf serve${reset} to start the dashboard`);
-    lines.push(`    Run ${cyan}sf help${reset}  for available commands`);
+    lines.push(`  ${bold}${t('init.nextSteps.title')}${reset}`);
+    lines.push(`    ${t('init.nextSteps.serve', { cmd: `${cyan}sf serve${reset}` })}`);
+    lines.push(`    ${t('init.nextSteps.help', { cmd: `${cyan}sf help${reset}` })}`);
     lines.push('');
 
     return success(
@@ -779,7 +780,7 @@ async function initHandler(
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to initialize workspace: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('init.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
@@ -789,56 +790,28 @@ async function initHandler(
 
 export const initCommand: Command = {
   name: 'init',
-  description: 'Initialize a new Stoneforge workspace',
+  description: t('init.description'),
   usage: 'sf init [--name <name>] [--actor <actor>] [--demo] [--preset auto|review|approve]',
-  help: `Initialize a new Stoneforge workspace in the current directory.
-
-Creates a .stoneforge/ directory containing:
-  - config.yaml     Default configuration file
-  - stoneforge.db    SQLite database with default operator entity
-  - .gitignore      Git ignore patterns for database files
-  - playbooks/      Directory for playbook definitions
-
-The database is created with a default "operator" entity (el-0000) that serves
-as the default actor for CLI operations and web applications.
-
-Default agents are automatically created:
-  - director        Director agent for task management
-  - e-worker-1      Ephemeral worker agent
-  - e-worker-2      Ephemeral worker agent
-  - m-steward-1     Merge steward agent
-
-Re-running init is safe — existing agents are not duplicated.
-
-Workflow presets configure merge and agent permission behavior:
-  Auto    — Agents merge directly to main. Fast iteration, no human review.
-  Review  — Agents merge to a review branch. You review and merge to main.
-  Approve — Agents need approval for restricted actions. Merges via GitHub PRs.
-
-Options:
-  --name    Set the workspace name (stored in config.yaml).
-  --preset  Set workflow preset (auto, review, approve). Skips interactive prompt.
-  --demo    Enable demo mode. Configures all agents to use the free
-            opencode/minimax-m2.5-free provider (no API keys required).`,
+  help: t('init.help'),
   options: [
     {
       name: 'name',
-      description: 'Workspace name (optional)',
+      description: t('init.option.name'),
       hasValue: true,
     },
     {
       name: 'actor',
-      description: 'Default actor for operations',
+      description: t('init.option.actor'),
       hasValue: true,
     },
     {
       name: 'preset',
-      description: 'Workflow preset (auto, review, approve)',
+      description: t('init.option.preset'),
       hasValue: true,
     },
     {
       name: 'demo',
-      description: 'Enable demo mode with free opencode/minimax-m2.5-free provider',
+      description: t('init.option.demo'),
       hasValue: false,
     },
   ],

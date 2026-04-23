@@ -9,6 +9,7 @@
 
 import type { Command, GlobalOptions, CommandResult } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
+import { t } from '../i18n/index.js';
 import { getOutputMode } from '../formatter.js';
 import {
   createLibrary,
@@ -205,8 +206,8 @@ async function docsInitHandler(
       return success(resultData);
     }
 
-    const statusLib = libraryCreated ? 'created' : 'found';
-    const statusDir = directoryCreated ? 'created' : 'found';
+    const statusLib = libraryCreated ? t('docs.init.status.created') : t('docs.init.status.found');
+    const statusDir = directoryCreated ? t('docs.init.status.created') : t('docs.init.status.found');
 
     const output = `Documentation library ${statusLib}: ${library.id}
 Documentation Directory ${statusDir}: ${directoryDoc.id}`;
@@ -223,21 +224,9 @@ Documentation Directory ${statusDir}: ${directoryDoc.id}`;
 
 const docsInitCommand: Command = {
   name: 'init',
-  description: 'Bootstrap Documentation library and directory',
+  description: t('docs.init.description'),
   usage: 'sf docs init',
-  help: `Bootstrap documentation infrastructure for the workspace.
-
-Idempotently finds or creates:
-1. A "Documentation" library
-2. A "Documentation Directory" document (reference category)
-3. Ensures the directory document belongs to the library
-
-Running multiple times produces the same result without duplicates.
-
-Examples:
-  sf docs init
-  sf docs init --json
-  sf docs init --quiet`,
+  help: t('docs.init.help'),
   handler: docsInitHandler as Command['handler'],
 };
 
@@ -251,7 +240,7 @@ async function docsAddHandler(
 ): Promise<CommandResult> {
   if (args.length === 0) {
     return failure(
-      'Usage: sf docs add <doc-id> [doc-id2 ...]',
+      t('docs.add.usage'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -334,16 +323,16 @@ async function docsAddHandler(
     const lines: string[] = [];
     for (const r of results) {
       if (r.added) {
-        lines.push(`Added ${r.docId} to Documentation library`);
+        lines.push(t('docs.add.success', { id: r.docId }));
       } else {
-        lines.push(`Skipped ${r.docId}: ${r.error}`);
+        lines.push(t('docs.add.skipped', { id: r.docId, error: r.error }));
       }
     }
 
     const summary =
       added.length > 0
-        ? `${added.length} document(s) added to Documentation library (${library.id})`
-        : 'No documents added';
+        ? t('docs.add.summary', { count: added.length, libraryId: library.id })
+        : t('docs.add.noDocuments');
 
     if (failed.length > 0 && added.length === 0) {
       return success({ libraryId: library.id, results }, lines.join('\n'));
@@ -364,19 +353,9 @@ async function docsAddHandler(
 
 const docsAddCommand: Command = {
   name: 'add',
-  description: 'Add document(s) to the Documentation library',
+  description: t('docs.add.description'),
   usage: 'sf docs add <doc-id> [doc-id2 ...]',
-  help: `Add one or more documents to the Documentation library.
-
-The Documentation library must exist (run "sf docs init" first).
-
-Arguments:
-  doc-id    Document identifier(s) to add
-
-Examples:
-  sf docs add el-doc123
-  sf docs add el-doc123 el-doc456 el-doc789
-  sf docs add el-doc123 --json`,
+  help: t('docs.add.help'),
   handler: docsAddHandler as Command['handler'],
 };
 
@@ -451,29 +430,15 @@ async function docsDirectoryHandler(
 
 const docsDirectoryCommand: Command = {
   name: 'dir',
-  description: 'Show the Documentation Directory document',
+  description: t('docs.dir.description'),
   usage: 'sf docs dir [--content]',
   options: [
     {
       name: 'content',
-      description: 'Include the full document content in output',
+      description: t('docs.dir.option.content'),
     },
   ],
-  help: `Find and display the Documentation Directory document.
-
-Shows the ID and title of the Documentation Directory. Use --content
-to also display the full markdown content.
-
-The Documentation Directory must exist (run "sf docs init" first).
-
-Options:
-  --content   Include the full document content in output
-
-Examples:
-  sf docs dir
-  sf docs dir --content
-  sf docs dir --json
-  sf docs dir --quiet`,
+  help: t('docs.dir.help'),
   handler: docsDirectoryHandler as Command['handler'],
 };
 
@@ -483,7 +448,7 @@ Examples:
 
 export const docsCommand: Command = {
   name: 'docs',
-  description: 'Documentation infrastructure commands',
+  description: t('docs.description'),
   usage: 'sf docs <subcommand> [options]',
   help: `Manage documentation infrastructure.
 
@@ -510,26 +475,17 @@ Examples:
   handler: async (args, options): Promise<CommandResult> => {
     // Default handler: show help
     if (args.length === 0) {
-      const helpText = `Documentation infrastructure commands.
-
-Usage: sf docs <subcommand> [options]
-
-Subcommands:
-  init    Bootstrap Documentation library and directory
-  add     Add document(s) to the Documentation library
-  dir     Show the Documentation Directory document
-
-Run "sf docs --help" for more details.`;
+      const helpText = t('docs.help');
       return success(null, helpText);
     }
     // Show "did you mean?" for unknown subcommands
     const subNames = Object.keys(docsCommand.subcommands!);
     const suggestions = suggestCommands(args[0], subNames);
-    let msg = `Unknown subcommand: ${args[0]}`;
+    let msg = t('error.unknownSubcommand', { subcommand: args[0] });
     if (suggestions.length > 0) {
       msg += `\n\nDid you mean?\n${suggestions.map((s) => `  ${s}`).join('\n')}`;
     }
-    msg += '\n\nRun "sf docs --help" to see available subcommands.';
+    msg += '\n\n' + t('error.runHelp', { command: 'sf docs' });
     return failure(msg, ExitCode.INVALID_ARGUMENTS);
   },
 };

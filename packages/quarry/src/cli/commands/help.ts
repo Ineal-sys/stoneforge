@@ -5,6 +5,7 @@
 import { createRequire } from 'node:module';
 import type { Command, CommandResult } from '../types.js';
 import { success } from '../types.js';
+import { t } from '../i18n/index.js';
 import { getGlobalOptionsHelp } from '../parser.js';
 import { getAllCommands } from '../runner.js';
 
@@ -36,17 +37,17 @@ const SUBCOMMAND_HINTS: Record<string, string> = {
 
 // Built-in command categories for display
 const COMMAND_CATEGORIES: Record<string, string[]> = {
-  'Elements': ['show', 'update', 'delete', 'history'],
-  'Tasks': ['task'],
-  'Planning': ['plan', 'workflow', 'playbook'],
-  'Dependencies': ['dependency'],
-  'Communication': ['message', 'inbox', 'channel'],
-  'Knowledge': ['document', 'library', 'embeddings'],
-  'Organization': ['entity', 'team'],
-  'Sync': ['sync', 'export', 'import', 'status'],
-  'System': ['init', 'reset', 'config', 'identity', 'whoami', 'stats'],
-  'Admin': ['doctor', 'migrate', 'gc'],
-  'Shell': ['completion', 'alias', 'install', 'help', 'version'],
+  [t('help.category.elements')]: ['show', 'update', 'delete', 'history'],
+  [t('help.category.tasks')]: ['task'],
+  [t('help.category.planning')]: ['plan', 'workflow', 'playbook'],
+  [t('help.category.dependencies')]: ['dependency'],
+  [t('help.category.communication')]: ['message', 'inbox', 'channel'],
+  [t('help.category.knowledge')]: ['document', 'library', 'embeddings'],
+  [t('help.category.organization')]: ['entity', 'team'],
+  [t('help.category.sync')]: ['sync', 'export', 'import', 'status'],
+  [t('help.category.system')]: ['init', 'reset', 'config', 'identity', 'whoami', 'stats'],
+  [t('help.category.admin')]: ['doctor', 'migrate', 'gc'],
+  [t('help.category.shell')]: ['completion', 'alias', 'install', 'help', 'version'],
 };
 
 // All categorized commands for distinguishing plugins
@@ -69,12 +70,12 @@ for (const cmd of TASK_CONVENIENCE_COMMANDS) {
  */
 function generateMainHelp(): string {
   const lines: string[] = [
-    'Stoneforge - Agent coordination system',
+    t('help.title'),
     '',
-    'Usage: stoneforge <command> [options]',
+    t('help.usage'),
     '       sf <command> [options]',
     '',
-    'Commands:',
+    t('help.commands'),
   ];
 
   const allCommands = getAllCommands();
@@ -104,7 +105,7 @@ function generateMainHelp(): string {
     .sort((a, b) => a.name.localeCompare(b.name));
 
   if (pluginCommands.length > 0) {
-    lines.push('  Plugin Commands:');
+    lines.push('  ' + t('help.pluginCommands') + ':');
     for (const cmd of pluginCommands) {
       lines.push(`    ${cmd.name.padEnd(16)} ${cmd.description}`);
     }
@@ -112,7 +113,7 @@ function generateMainHelp(): string {
   }
 
   // Add aliases section
-  lines.push('  Aliases:');
+  lines.push('  ' + t('help.aliases') + ':');
   lines.push('    dep              dependency');
   lines.push('    msg              message');
   lines.push('    doc              document');
@@ -126,7 +127,7 @@ function generateMainHelp(): string {
 
   lines.push(getGlobalOptionsHelp());
   lines.push('');
-  lines.push('Use "sf <command> --help" for more information about a command.');
+  lines.push(t('help.moreInfo'));
 
   return lines.join('\n');
 }
@@ -140,7 +141,7 @@ function helpHandler(): CommandResult {
 }
 
 function versionHandler(): CommandResult {
-  return success({ version: VERSION }, `stoneforge v${VERSION}`);
+  return success({ version: VERSION }, t('help.version', { version: VERSION }));
 }
 
 // ============================================================================
@@ -149,14 +150,14 @@ function versionHandler(): CommandResult {
 
 export const helpCommand: Command = {
   name: 'help',
-  description: 'Show help information',
+  description: t('help.description'),
   usage: 'sf help [command]',
   handler: helpHandler,
 };
 
 export const versionCommand: Command = {
   name: 'version',
-  description: 'Show version',
+  description: t('help.versionDescription'),
   usage: 'sf version',
   handler: versionHandler,
 };
@@ -176,18 +177,18 @@ export function getCommandHelp(command: Command): string {
   }
 
   if (command.options && command.options.length > 0) {
-    lines.push('', 'Options:');
+    lines.push('', t('help.options') + ':');
     for (const opt of command.options) {
       const shortPart = opt.short ? `-${opt.short}, ` : '    ';
       const valuePart = opt.hasValue ? ` <${opt.name}>` : '';
-      const requiredPart = opt.required ? ' (required)' : '';
+      const requiredPart = opt.required ? ` (${t('help.required')})` : '';
       lines.push(`  ${shortPart}--${opt.name}${valuePart}${requiredPart}`);
       lines.push(`        ${opt.description}`);
     }
   }
 
   if (command.subcommands) {
-    lines.push('', 'Subcommands:');
+    lines.push('', t('help.subcommands') + ':');
     const seen = new Set<Command>();
     for (const [name, sub] of Object.entries(command.subcommands)) {
       if (seen.has(sub)) continue; // skip aliases

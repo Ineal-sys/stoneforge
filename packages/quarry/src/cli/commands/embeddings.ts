@@ -12,6 +12,7 @@ import { existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Command, GlobalOptions, CommandResult } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
+import { t } from '../i18n/index.js';
 import { getOutputMode } from '../formatter.js';
 import { DocumentStatus, type Document, type ElementId } from '@stoneforge/core';
 import type { QuarryAPI } from '../../api/types.js';
@@ -47,7 +48,7 @@ function createEmbeddingService(options: GlobalOptions): { service: EmbeddingSer
     const message = err instanceof Error ? err.message : String(err);
     return {
       service: null as unknown as EmbeddingService,
-      error: `Failed to initialize embedding service: ${message}`,
+      error: t('embeddings.error.initFailed', { message }),
     };
   }
 }
@@ -63,7 +64,7 @@ async function embeddingsInstallHandler(
   const modelDir = join(process.cwd(), STONEFORGE_DIR, MODELS_DIR, DEFAULT_MODEL);
 
   if (existsSync(modelDir)) {
-    return success(null, `Model ${DEFAULT_MODEL} is already installed at ${modelDir}`);
+    return success(null, t('embeddings.install.alreadyInstalled', { model: DEFAULT_MODEL, path: modelDir }));
   }
 
   try {
@@ -80,25 +81,19 @@ async function embeddingsInstallHandler(
 
     return success(
       null,
-      `Installed embedding model ${DEFAULT_MODEL} at ${modelDir}\n` +
-      `Note: Using placeholder implementation. ONNX model download will be added in a future release.`
+      t('embeddings.install.success', { model: DEFAULT_MODEL, path: modelDir })
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to install embedding model: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('embeddings.error.failedToInstall', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const embeddingsInstallCommand: Command = {
   name: 'install',
-  description: 'Download the local embedding model',
+  description: t('embeddings.install.description'),
   usage: 'sf embeddings install',
-  help: `Download and install the local embedding model (bge-base-en-v1.5).
-
-The model is stored in .stoneforge/models/ and used for semantic search.
-
-Examples:
-  sf embeddings install`,
+  help: t('embeddings.install.help'),
   handler: embeddingsInstallHandler as Command['handler'],
 };
 
@@ -130,22 +125,22 @@ async function embeddingsStatusHandler(
   }
 
   const lines = [
-    `Model: ${status.model}`,
-    `Installed: ${status.modelInstalled ? 'Yes' : 'No'}`,
-    `Path: ${status.modelPath}`,
-    `Available: ${status.available ? 'Yes' : 'No'}`,
+    t('embeddings.status.model', { model: status.model }),
+    t('embeddings.status.installed', { status: status.modelInstalled ? t('label.yes') : t('label.no') }),
+    t('embeddings.status.path', { path: status.modelPath }),
+    t('embeddings.status.available', { status: status.available ? t('label.yes') : t('label.no') }),
   ];
 
   if (status.provider) {
-    lines.push(`Provider: ${status.provider.name} (${status.provider.dimensions}d, ${status.provider.isLocal ? 'local' : 'remote'})`);
+    lines.push(t('embeddings.status.provider', { name: status.provider.name, dimensions: status.provider.dimensions, mode: status.provider.isLocal ? t('embeddings.status.local') : t('embeddings.status.remote') }));
   }
 
   if (status.error) {
-    lines.push(`Error: ${status.error}`);
+    lines.push(t('embeddings.status.error', { error: status.error }));
   }
 
   if (!status.modelInstalled) {
-    lines.push(`\nRun 'sf embeddings install' to download the model.`);
+    lines.push(t('embeddings.status.installPrompt'));
   }
 
   return success(status, lines.join('\n'));
@@ -153,12 +148,9 @@ async function embeddingsStatusHandler(
 
 const embeddingsStatusCommand: Command = {
   name: 'status',
-  description: 'Show embedding configuration and model availability',
+  description: t('embeddings.status.description'),
   usage: 'sf embeddings status',
-  help: `Show the current embedding configuration and model status.
-
-Examples:
-  sf embeddings status`,
+  help: t('embeddings.status.help'),
   handler: embeddingsStatusHandler as Command['handler'],
 };
 
@@ -210,24 +202,19 @@ async function embeddingsReindexHandler(
 
     return success(
       null,
-      `Re-embedded ${indexed} documents${errors > 0 ? ` (${errors} errors)` : ''}`
+      t('embeddings.reindex.success', { indexed, errors })
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to reindex embeddings: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('embeddings.error.failedToReindex', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const embeddingsReindexCommand: Command = {
   name: 'reindex',
-  description: 'Re-embed all documents',
+  description: t('embeddings.reindex.description'),
   usage: 'sf embeddings reindex',
-  help: `Re-generate embeddings for all documents.
-
-Requires the embedding model to be installed first.
-
-Examples:
-  sf embeddings reindex`,
+  help: t('embeddings.reindex.help'),
   handler: embeddingsReindexHandler as Command['handler'],
 };
 
@@ -242,7 +229,7 @@ async function embeddingsSearchHandler(
   const query = args.join(' ');
 
   if (!query.trim()) {
-    return failure('Usage: sf embeddings search <query>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('embeddings.search.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { service, error: serviceError } = createEmbeddingService(options);
@@ -267,7 +254,7 @@ async function embeddingsSearchHandler(
     }
 
     if (results.length === 0) {
-      return success(null, 'No results found');
+      return success(null, t('embeddings.search.noResults'));
     }
 
     const lines = results.map((r, i) =>
@@ -277,21 +264,15 @@ async function embeddingsSearchHandler(
     return success(results, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to search embeddings: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('embeddings.error.failedToSearch', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const embeddingsSearchCommand: Command = {
   name: 'search',
-  description: 'Semantic search (for testing)',
+  description: t('embeddings.search.description'),
   usage: 'sf embeddings search <query>',
-  help: `Perform a semantic search over document embeddings.
-
-This command is primarily for testing. Use 'sf doc search' for production search.
-
-Examples:
-  sf embeddings search "authentication flow"
-  sf embeddings search "database migration"`,
+  help: t('embeddings.search.help'),
   handler: embeddingsSearchHandler as Command['handler'],
 };
 
@@ -301,24 +282,9 @@ Examples:
 
 export const embeddingsCommand: Command = {
   name: 'embeddings',
-  description: 'Manage document embeddings for semantic search',
+  description: t('embeddings.description'),
   usage: 'sf embeddings <subcommand>',
-  help: `Manage document embeddings for semantic search.
-
-Embeddings enable semantic (meaning-based) search in addition to keyword search.
-A local embedding model generates vector representations of document content.
-
-Subcommands:
-  install   Download the local embedding model
-  status    Show configuration and model availability
-  reindex   Re-embed all documents
-  search    Semantic search (for testing)
-
-Examples:
-  sf embeddings install
-  sf embeddings status
-  sf embeddings reindex
-  sf embeddings search "how to deploy"`,
+  help: t('embeddings.help'),
   subcommands: {
     install: embeddingsInstallCommand,
     status: embeddingsStatusCommand,
@@ -330,18 +296,18 @@ Examples:
   handler: async (args, _options): Promise<CommandResult> => {
     if (args.length === 0) {
       return failure(
-        `Usage: sf embeddings <subcommand>. Use 'sf embeddings --help' for available subcommands.`,
+        t('embeddings.usage'),
         ExitCode.INVALID_ARGUMENTS
       );
     }
     // Show "did you mean?" for unknown subcommands
     const subNames = Object.keys(embeddingsCommand.subcommands!);
     const suggestions = suggestCommands(args[0], subNames);
-    let msg = `Unknown subcommand: ${args[0]}`;
+    let msg = t('error.unknownSubcommand', { subcommand: args[0] });
     if (suggestions.length > 0) {
-      msg += `\n\nDid you mean?\n${suggestions.map(s => `  ${s}`).join('\n')}`;
+      msg += '\n' + suggestions.map(s => `  ${s}`).join('\n');
     }
-    msg += '\n\nRun "sf embeddings --help" to see available subcommands.';
+    msg += '\n\n' + t('error.runHelp', { command: 'sf embeddings' });
     return failure(msg, ExitCode.INVALID_ARGUMENTS);
   },
 };

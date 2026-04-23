@@ -10,6 +10,7 @@
 import type { Command, GlobalOptions, CommandResult, CommandOption } from '@stoneforge/quarry/cli';
 import { success, failure, ExitCode, getOutputMode } from '@stoneforge/quarry/cli';
 import { detectTargetBranch } from '../../git/merge.js';
+import { t } from '../i18n/index.js';
 
 // ============================================================================
 // Types
@@ -54,24 +55,24 @@ const mergeOptions: CommandOption[] = [
   {
     name: 'branch',
     short: 'b',
-    description: 'Source branch to merge (defaults to current branch)',
+    description: t('merge.option.branch'),
     hasValue: true,
   },
   {
     name: 'into',
     short: 'i',
-    description: 'Target branch to merge into (defaults to master/main)',
+    description: t('merge.option.into'),
     hasValue: true,
   },
   {
     name: 'message',
     short: 'm',
-    description: 'Commit message for the squash merge',
+    description: t('merge.option.message'),
     hasValue: true,
   },
   {
     name: 'cleanup',
-    description: 'Delete source branch and worktree after merge',
+    description: t('merge.option.cleanup'),
   },
 ];
 
@@ -89,7 +90,7 @@ async function mergeHandler(
 
     if (sourceBranch === targetBranch) {
       return failure(
-        `Source branch "${sourceBranch}" is the same as target "${targetBranch}". Nothing to merge.`,
+        t('merge.sameBranch', { source: sourceBranch, target: targetBranch }),
         ExitCode.INVALID_ARGUMENTS
       );
     }
@@ -208,12 +209,12 @@ async function mergeHandler(
       }
 
       const lines = [
-        `Merged ${sourceBranch} into ${targetBranch}`,
+        t('merge.success', { source: sourceBranch, target: targetBranch }),
         `  Commit: ${commitHash.slice(0, 8)}`,
         `  Message: ${commitMessage}`,
       ];
       if (options.cleanup) {
-        lines.push('  Cleanup: source branch and worktree removed');
+        lines.push('  ' + t('merge.cleanup'));
       }
 
       return success(
@@ -234,7 +235,7 @@ async function mergeHandler(
 
       if (errorMsg.includes('CONFLICT') || errorMsg.includes('Automatic merge failed')) {
         return failure(
-          `Merge conflict detected when merging ${sourceBranch} into ${targetBranch}. Resolve conflicts manually.`,
+          t('merge.conflict', { source: sourceBranch, target: targetBranch }),
           ExitCode.GENERAL_ERROR
         );
       }
@@ -243,7 +244,7 @@ async function mergeHandler(
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to merge: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('merge.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
@@ -253,29 +254,9 @@ async function mergeHandler(
 
 export const mergeCommand: Command = {
   name: 'merge',
-  description: 'Squash-merge a branch into the default branch',
+  description: t('merge.description'),
   usage: 'sf merge [options]',
-  help: `Squash-merge a branch into the default branch (master/main).
-
-This command:
-1. Fetches latest from origin
-2. Creates a temporary worktree at the target branch
-3. Squash-merges the source branch into it
-4. Commits and pushes to origin
-5. Cleans up the temporary worktree
-6. Optionally removes the source branch and worktree (--cleanup)
-
-Options:
-  -b, --branch <name>     Source branch to merge (default: current branch)
-  -i, --into <name>       Target branch (default: master/main auto-detected)
-  -m, --message <text>    Commit message (default: "Merge <branch>")
-  --cleanup               Delete source branch and worktree after merge
-
-Examples:
-  sf merge
-  sf merge --message "feat: implement user auth"
-  sf merge --branch feature/xyz --into main
-  sf merge --cleanup --message "docs: automated documentation fixes"`,
+  help: t('merge.help'),
   options: mergeOptions,
   handler: mergeHandler as Command['handler'],
 };

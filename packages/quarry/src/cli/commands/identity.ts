@@ -13,6 +13,7 @@ import { readFileSync } from 'node:fs';
 import type { Command, GlobalOptions, CommandResult, CommandOption } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
 import { getOutputMode } from '../formatter.js';
+import { t } from '../i18n/index.js';
 import { getValue, getValueSource, loadConfig } from '../../config/index.js';
 import {
   IdentityMode,
@@ -131,7 +132,7 @@ async function whoamiHandler(
 
   if (mode === 'quiet') {
     if (!resolution.actor) {
-      return failure('No actor configured', ExitCode.NOT_FOUND);
+      return failure(t('identity.whoami.error.noActor'), ExitCode.NOT_FOUND);
     }
     return success(resolution.actor);
   }
@@ -139,25 +140,25 @@ async function whoamiHandler(
   // Human-readable output
   if (!resolution.actor) {
     const lines = [
-      'No actor configured.',
+      t('identity.whoami.error.noActorConfigured'),
       '',
-      'Set an actor using one of:',
-      '  --actor <name>            CLI flag (highest priority)',
-      '  STONEFORGE_ACTOR=<name>    Environment variable',
-      '  sf config set actor <name>  Configuration file',
+      t('identity.whoami.error.setActor'),
+      t('identity.whoami.error.setActorCli'),
+      t('identity.whoami.error.setActorEnv'),
+      t('identity.whoami.error.setActorConfig'),
     ];
     return success(data, lines.join('\n'));
   }
 
   // Build formatted output
   const lines: string[] = [];
-  lines.push(`Actor: ${resolution.actor}`);
-  lines.push(`Source: ${formatSource(resolution.source)}`);
-  lines.push(`Identity Mode: ${resolution.mode}`);
-  lines.push(`Verified: ${resolution.verified ? 'yes' : 'no'}`);
+  lines.push(`${t('identity.label.actor')}: ${resolution.actor}`);
+  lines.push(`${t('identity.label.source')}: ${formatSource(resolution.source)}`);
+  lines.push(`${t('identity.label.identityMode')}: ${resolution.mode}`);
+  lines.push(`${t('identity.label.verified')}: ${resolution.verified ? t('label.yes') : t('label.no')}`);
 
   if (resolution.details?.envVar) {
-    lines.push(`Environment Variable: ${resolution.details.envVar}`);
+    lines.push(`${t('identity.label.envVar')}: ${resolution.details.envVar}`);
   }
 
   return success(data, lines.join('\n'));
@@ -170,20 +171,20 @@ function formatSource(source: ActorSource | ConfigSource): string {
   switch (source) {
     case ActorSource.CLI_FLAG:
     case 'cli':
-      return 'CLI --actor flag';
+      return t('identity.source.cli');
     case ActorSource.CONFIG:
     case 'file':
-      return 'configuration file';
+      return t('identity.source.config');
     case 'environment':
-      return 'environment variable';
+      return t('identity.source.env');
     case ActorSource.EXPLICIT:
-      return 'explicit';
+      return t('identity.source.explicit');
     case ActorSource.ELEMENT:
-      return 'element';
+      return t('identity.source.element');
     case ActorSource.SYSTEM:
-      return 'system';
+      return t('identity.source.system');
     case 'default':
-      return 'default';
+      return t('identity.source.default');
     default:
       return String(source);
   }
@@ -191,26 +192,9 @@ function formatSource(source: ActorSource | ConfigSource): string {
 
 export const whoamiCommand: Command = {
   name: 'whoami',
-  description: 'Show current actor identity',
+  description: t('identity.whoami.description'),
   usage: 'sf whoami',
-  help: `Display the current actor identity and how it was determined.
-
-The actor is resolved from multiple sources in priority order:
-  1. CLI --actor flag (highest priority)
-  2. STONEFORGE_ACTOR environment variable
-  3. Configuration file (actor setting)
-  4. No actor (operations will require explicit actor)
-
-Output includes:
-  - Actor name
-  - Source of the actor identity
-  - Identity mode (soft, cryptographic, hybrid)
-  - Verification status
-
-Examples:
-  sf whoami
-  sf whoami --json
-  sf --actor myagent whoami`,
+  help: t('identity.whoami.help'),
   options: [],
   handler: whoamiHandler as Command['handler'],
 };
@@ -253,7 +237,7 @@ function resolvePrivateKey(options: GlobalOptions): { key: string | null; source
       return { key, source: 'cli_file' };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      throw new Error(`Failed to read key file: ${message}`);
+      throw new Error(t('identity.sign.error.keyFileRead', { message }));
     }
   }
 
@@ -271,7 +255,7 @@ function resolvePrivateKey(options: GlobalOptions): { key: string | null; source
       return { key, source: 'environment_file' };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      throw new Error(`Failed to read key file from STONEFORGE_SIGN_KEY_FILE: ${message}`);
+      throw new Error(t('identity.sign.error.keyFileReadEnv', { message }));
     }
   }
 
@@ -292,18 +276,18 @@ const signOptions: CommandOption[] = [
   {
     name: 'data',
     short: 'd',
-    description: 'Data to sign (string)',
+    description: t('identity.sign.option.data'),
     hasValue: true,
   },
   {
     name: 'file',
     short: 'f',
-    description: 'Path to file containing data to sign',
+    description: t('identity.sign.option.file'),
     hasValue: true,
   },
   {
     name: 'hash',
-    description: 'Pre-computed hash to sign (for request signing)',
+    description: t('identity.sign.option.hash'),
     hasValue: true,
   },
 ];
@@ -318,7 +302,7 @@ async function signHandler(
   const resolution = resolveCurrentActor(options);
   if (!resolution.actor) {
     return failure(
-      'Actor is required for signing. Use --actor <name>',
+      t('identity.sign.error.actorRequired'),
       ExitCode.VALIDATION
     );
   }
@@ -334,7 +318,7 @@ async function signHandler(
 
   if (!keyInfo.key) {
     return failure(
-      'Private key is required for signing. Use --sign-key <key>, --sign-key-file <path>, or set STONEFORGE_SIGN_KEY',
+      t('identity.sign.error.privateKeyRequired'),
       ExitCode.VALIDATION
     );
   }
@@ -347,7 +331,7 @@ async function signHandler(
     // Validate pre-computed hash format
     if (!isValidRequestHash(options.hash)) {
       return failure(
-        'Invalid hash format. Expected 64-character hex-encoded SHA256 hash',
+        t('identity.sign.error.invalidHash'),
         ExitCode.VALIDATION
       );
     }
@@ -362,11 +346,11 @@ async function signHandler(
       requestHash = await hashRequestBody(fileData);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return failure(`Failed to read file: ${message}`, ExitCode.GENERAL_ERROR);
+      return failure(t('identity.sign.error.fileRead', { message }), ExitCode.GENERAL_ERROR);
     }
   } else {
     return failure(
-      'No data to sign. Use --data <string>, --file <path>, or --hash <hash>',
+      t('identity.sign.error.noData'),
       ExitCode.VALIDATION
     );
   }
@@ -400,42 +384,24 @@ async function signHandler(
     }
 
     const lines: string[] = [];
-    lines.push(`Signature: ${signature}`);
-    lines.push(`Signed At: ${signedAt}`);
-    lines.push(`Actor: ${resolution.actor}`);
-    lines.push(`Request Hash: ${requestHash}`);
-    lines.push(`Key Source: ${keyInfo.source}`);
+    lines.push(`${t('identity.label.signature')}: ${signature}`);
+    lines.push(`${t('identity.label.signedAt')}: ${signedAt}`);
+    lines.push(`${t('identity.label.actor')}: ${resolution.actor}`);
+    lines.push(`${t('identity.label.requestHash')}: ${requestHash}`);
+    lines.push(`${t('identity.label.keySource')}: ${keyInfo.source}`);
 
     return success(data, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to sign data: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('identity.sign.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const signCommand: Command = {
   name: 'sign',
-  description: 'Sign data using a private key',
+  description: t('identity.sign.description'),
   usage: 'sf identity sign [options]',
-  help: `Sign data using an Ed25519 private key.
-
-The signature is computed over: actor|signedAt|requestHash
-
-Options:
-  -d, --data <string>       Data to sign (will be hashed)
-  -f, --file <path>         File containing data to sign
-      --hash <hash>         Pre-computed SHA256 hash (hex)
-      --sign-key <key>      Private key (base64 PKCS8)
-      --sign-key-file <path> Path to private key file
-
-The private key can also be set via environment variables:
-  STONEFORGE_SIGN_KEY        Direct base64-encoded private key
-  STONEFORGE_SIGN_KEY_FILE   Path to file containing private key
-
-Examples:
-  sf identity sign --data "hello world" --sign-key <key> --actor alice
-  sf identity sign --file request.json --sign-key-file ~/.stoneforge/private.key
-  sf identity sign --hash abc123... --actor alice`,
+  help: t('identity.sign.help'),
   options: signOptions,
   handler: signHandler as Command['handler'],
 };
@@ -457,37 +423,37 @@ const verifyOptions: CommandOption[] = [
   {
     name: 'signature',
     short: 's',
-    description: 'Signature to verify (base64)',
+    description: t('identity.verify.option.signature'),
     hasValue: true,
     required: true,
   },
   {
     name: 'data',
     short: 'd',
-    description: 'Original data that was signed',
+    description: t('identity.verify.option.data'),
     hasValue: true,
   },
   {
     name: 'file',
     short: 'f',
-    description: 'Path to file containing original data',
+    description: t('identity.verify.option.file'),
     hasValue: true,
   },
   {
     name: 'hash',
-    description: 'Request hash that was signed',
+    description: t('identity.verify.option.hash'),
     hasValue: true,
   },
   {
     name: 'public-key',
     short: 'k',
-    description: 'Public key to verify against (base64)',
+    description: t('identity.verify.option.publicKey'),
     hasValue: true,
     required: true,
   },
   {
     name: 'signed-at',
-    description: 'Timestamp when signature was created (ISO 8601)',
+    description: t('identity.verify.option.signedAt'),
     hasValue: true,
     required: true,
   },
@@ -501,22 +467,22 @@ async function verifyHandler(
 
   // Validate required options
   if (!options.signature) {
-    return failure('--signature is required', ExitCode.VALIDATION);
+    return failure(t('identity.verify.error.signatureRequired'), ExitCode.VALIDATION);
   }
 
   if (!options['public-key']) {
-    return failure('--public-key is required', ExitCode.VALIDATION);
+    return failure(t('identity.verify.error.publicKeyRequired'), ExitCode.VALIDATION);
   }
 
   if (!options['signed-at']) {
-    return failure('--signed-at is required', ExitCode.VALIDATION);
+    return failure(t('identity.verify.error.signedAtRequired'), ExitCode.VALIDATION);
   }
 
   // Resolve actor
   const resolution = resolveCurrentActor(options);
   if (!resolution.actor) {
     return failure(
-      'Actor is required for verification. Use --actor <name>',
+      t('identity.verify.error.actorRequired'),
       ExitCode.VALIDATION
     );
   }
@@ -524,7 +490,7 @@ async function verifyHandler(
   // Validate signature format
   if (!isValidSignature(options.signature)) {
     return failure(
-      'Invalid signature format. Expected 88-character base64 string',
+      t('identity.verify.error.invalidSignature'),
       ExitCode.VALIDATION
     );
   }
@@ -532,7 +498,7 @@ async function verifyHandler(
   // Validate public key format
   if (!isValidPublicKey(options['public-key'])) {
     return failure(
-      'Invalid public key format. Expected 44-character base64 string',
+      t('identity.verify.error.invalidPublicKey'),
       ExitCode.VALIDATION
     );
   }
@@ -544,7 +510,7 @@ async function verifyHandler(
     // Validate pre-computed hash format
     if (!isValidRequestHash(options.hash)) {
       return failure(
-        'Invalid hash format. Expected 64-character hex-encoded SHA256 hash',
+        t('identity.sign.error.invalidHash'),
         ExitCode.VALIDATION
       );
     }
@@ -557,11 +523,11 @@ async function verifyHandler(
       requestHash = await hashRequestBody(fileData);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return failure(`Failed to read file: ${message}`, ExitCode.GENERAL_ERROR);
+      return failure(t('identity.verify.error.fileRead', { message }), ExitCode.GENERAL_ERROR);
     }
   } else {
     return failure(
-      'Must provide --data, --file, or --hash',
+      t('identity.verify.error.mustProvideData'),
       ExitCode.VALIDATION
     );
   }
@@ -597,37 +563,21 @@ async function verifyHandler(
     }
 
     if (valid) {
-      return success(data, 'Signature is VALID');
+      return success(data, t('identity.verify.success.valid'));
     } else {
-      return success(data, 'Signature is INVALID');
+      return success(data, t('identity.verify.success.invalid'));
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to verify signature: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('identity.verify.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const verifyCommand: Command = {
   name: 'verify',
-  description: 'Verify a signature against data',
+  description: t('identity.verify.description'),
   usage: 'sf identity verify [options]',
-  help: `Verify an Ed25519 signature against data.
-
-The signature must have been computed over: actor|signedAt|requestHash
-
-Required options:
-  -s, --signature <sig>      Signature to verify (base64)
-  -k, --public-key <key>     Public key (base64)
-      --signed-at <time>     Timestamp when signed (ISO 8601)
-
-Data options (one required):
-  -d, --data <string>        Original data that was signed
-  -f, --file <path>          File containing original data
-      --hash <hash>          Request hash that was signed
-
-Examples:
-  sf identity verify --signature <sig> --public-key <key> --signed-at 2024-01-01T00:00:00Z --data "hello" --actor alice
-  sf identity verify -s <sig> -k <key> --signed-at <time> --hash abc123... --actor alice`,
+  help: t('identity.verify.help'),
   options: verifyOptions,
   handler: verifyHandler as Command['handler'],
 };
@@ -660,46 +610,31 @@ async function keygenHandler(
     }
 
     const lines: string[] = [];
-    lines.push('Generated Ed25519 keypair:');
+    lines.push(t('identity.keygen.success.generated'));
     lines.push('');
-    lines.push(`Public Key:  ${keypair.publicKey}`);
-    lines.push(`Private Key: ${keypair.privateKey}`);
+    lines.push(`${t('identity.label.publicKey')}:  ${keypair.publicKey}`);
+    lines.push(`${t('identity.label.privateKey')}: ${keypair.privateKey}`);
     lines.push('');
-    lines.push('IMPORTANT: Store the private key securely. It cannot be recovered.');
+    lines.push(t('identity.keygen.success.important'));
     lines.push('');
-    lines.push('Register this entity with:');
+    lines.push(t('identity.keygen.success.register'));
     lines.push(`  sf entity register <name> --public-key ${keypair.publicKey}`);
     lines.push('');
-    lines.push('Sign requests with:');
+    lines.push(t('identity.keygen.success.sign'));
     lines.push('  sf --sign-key <private-key> --actor <name> <command>');
 
     return success(data, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to generate keypair: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('identity.keygen.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const keygenCommand: Command = {
   name: 'keygen',
-  description: 'Generate a new Ed25519 keypair',
+  description: t('identity.keygen.description'),
   usage: 'sf identity keygen',
-  help: `Generate a new Ed25519 keypair for cryptographic identity.
-
-The keypair can be used for:
-  - Registering an entity with a public key
-  - Signing requests in cryptographic mode
-
-Output:
-  - Public Key: Register with 'sf entity register --public-key <key>'
-  - Private Key: Use with --sign-key to sign requests
-
-SECURITY: The private key should be stored securely and never shared.
-
-Examples:
-  sf identity keygen
-  sf identity keygen --json
-  sf identity keygen --quiet  # Returns just the public key`,
+  help: t('identity.keygen.help'),
   options: [],
   handler: keygenHandler as Command['handler'],
 };
@@ -717,13 +652,13 @@ const hashOptions: CommandOption[] = [
   {
     name: 'data',
     short: 'd',
-    description: 'Data to hash',
+    description: t('identity.hash.option.data'),
     hasValue: true,
   },
   {
     name: 'file',
     short: 'f',
-    description: 'Path to file to hash',
+    description: t('identity.hash.option.file'),
     hasValue: true,
   },
 ];
@@ -743,10 +678,10 @@ async function hashHandler(
       dataToHash = readFileSync(options.file, 'utf8');
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return failure(`Failed to read file: ${message}`, ExitCode.GENERAL_ERROR);
+      return failure(t('identity.hash.error.fileRead', { message }), ExitCode.GENERAL_ERROR);
     }
   } else {
-    return failure('Must provide --data or --file', ExitCode.VALIDATION);
+    return failure(t('identity.hash.error.mustProvide'), ExitCode.VALIDATION);
   }
 
   try {
@@ -762,54 +697,27 @@ async function hashHandler(
       return success(hash);
     }
 
-    return success(data, `SHA256: ${hash}`);
+    return success(data, t('identity.hash.success', { hash }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to hash data: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('identity.hash.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const hashCommand: Command = {
   name: 'hash',
-  description: 'Compute SHA256 hash of data',
+  description: t('identity.hash.description'),
   usage: 'sf identity hash [options]',
-  help: `Compute the SHA256 hash of data for use in signing.
-
-Options:
-  -d, --data <string>    Data to hash
-  -f, --file <path>      File to hash
-
-Examples:
-  sf identity hash --data "hello world"
-  sf identity hash --file request.json`,
+  help: t('identity.hash.help'),
   options: hashOptions,
   handler: hashHandler as Command['handler'],
 };
 
 export const identityCommand: Command = {
   name: 'identity',
-  description: 'Manage identity settings',
+  description: t('identity.description'),
   usage: 'sf identity [subcommand]',
-  help: `Manage identity settings and view current actor.
-
-Without a subcommand, shows the current actor identity (same as 'sf whoami').
-
-Subcommands:
-  whoami    Show current actor identity
-  mode      Show or set identity mode
-  sign      Sign data using a private key
-  verify    Verify a signature against data
-  keygen    Generate a new Ed25519 keypair
-  hash      Compute SHA256 hash of data
-
-Examples:
-  sf identity              Show current identity
-  sf identity whoami       Same as above
-  sf identity mode         Show current identity mode
-  sf identity mode soft    Set identity mode to soft
-  sf identity keygen       Generate a new keypair
-  sf identity sign --data "hello" --sign-key <key>
-  sf identity verify --signature <sig> --public-key <key> --data "hello"`,
+  help: t('identity.help'),
   handler: identityHandler as Command['handler'],
   subcommands: {
     whoami: whoamiCommand,
@@ -819,19 +727,9 @@ Examples:
     hash: hashCommand,
     mode: {
       name: 'mode',
-      description: 'Show or set identity mode',
+      description: t('identity.mode.description'),
       usage: 'sf identity mode [mode]',
-      help: `Show or set the identity verification mode.
-
-Available modes:
-  soft          Name-based identity without verification (default)
-  cryptographic Key-based identity with signature verification
-  hybrid        Accepts both verified and unverified actors
-
-Examples:
-  sf identity mode              Show current mode
-  sf identity mode soft         Set to soft mode
-  sf identity mode cryptographic  Set to cryptographic mode`,
+      help: t('identity.mode.help'),
       options: [],
       handler: async (args: string[], options: GlobalOptions): Promise<CommandResult> => {
         const mode = getOutputMode(options);
@@ -852,7 +750,7 @@ Examples:
             return success(currentMode);
           }
 
-          return success(data, `Identity mode: ${currentMode} (from ${source})`);
+          return success(data, t('identity.mode.success.show', { mode: currentMode, source }));
         }
 
         // Set mode
@@ -861,7 +759,7 @@ Examples:
 
         if (!validModes.includes(newMode as IdentityMode)) {
           return failure(
-            `Invalid identity mode: ${newMode}. Must be one of: ${validModes.join(', ')}`,
+            t('identity.mode.error.invalid', { mode: newMode, valid: validModes.join(', ') }),
             ExitCode.VALIDATION
           );
         }
@@ -880,10 +778,10 @@ Examples:
             return success(newMode);
           }
 
-          return success(data, `Identity mode set to: ${newMode}`);
+          return success(data, t('identity.mode.success.set', { mode: newMode }));
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
-          return failure(`Failed to set identity mode: ${message}`, ExitCode.GENERAL_ERROR);
+          return failure(t('identity.mode.error.failed', { message }), ExitCode.GENERAL_ERROR);
         }
       },
     },

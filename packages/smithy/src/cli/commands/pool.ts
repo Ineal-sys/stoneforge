@@ -14,6 +14,7 @@ import type { Command, GlobalOptions, CommandResult, CommandOption } from '@ston
 import { success, failure, ExitCode, getFormatter, getOutputMode, OPERATOR_ENTITY_ID } from '@stoneforge/quarry/cli';
 import type { EntityId, ElementId } from '@stoneforge/core';
 import type { AgentPool, CreatePoolInput, UpdatePoolInput, PoolAgentTypeConfig, AgentRole, WorkerMode, StewardFocus } from '../../types/index.js';
+import { t } from '../i18n/index.js';
 
 // ============================================================================
 // Shared Helpers
@@ -36,7 +37,7 @@ async function createPoolClient(options: GlobalOptions): Promise<{
     if (!stoneforgeDir) {
       return {
         poolService: null,
-        error: 'No .stoneforge directory found. Run "sf init" first.',
+        error: t('pool.noStoneforge'),
       };
     }
 
@@ -58,7 +59,7 @@ async function createPoolClient(options: GlobalOptions): Promise<{
     return { poolService };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return { poolService: null, error: `Failed to initialize pool service: ${message}` };
+    return { poolService: null, error: t('pool.serviceInitFailed', { message }) };
   }
 }
 
@@ -170,17 +171,17 @@ const poolListOptions: CommandOption[] = [
   {
     name: 'enabled',
     short: 'e',
-    description: 'Only show enabled pools',
+    description: t('pool.list.option.enabled'),
   },
   {
     name: 'available',
     short: 'a',
-    description: 'Only show pools with available slots',
+    description: t('pool.list.option.available'),
   },
   {
     name: 'tag',
     short: 't',
-    description: 'Filter by tag',
+    description: t('pool.list.option.tag'),
     hasValue: true,
   },
 ];
@@ -191,7 +192,7 @@ async function poolListHandler(
 ): Promise<CommandResult> {
   const { poolService, error } = await createPoolClient(options);
   if (error || !poolService) {
-    return failure(error ?? 'Failed to create pool service', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreatePoolService'), ExitCode.GENERAL_ERROR);
   }
 
   try {
@@ -213,7 +214,7 @@ async function poolListHandler(
     }
 
     if (pools.length === 0) {
-      return success(null, 'No agent pools found');
+      return success(null, t('pool.list.noPools'));
     }
 
     const headers = ['ID', 'NAME', 'SIZE', 'ACTIVE', 'AVAILABLE', 'ENABLED'];
@@ -227,29 +228,18 @@ async function poolListHandler(
     ]);
 
     const table = formatter.table(headers, rows);
-    return success(pools, `${table}\n${pools.length} pool(s)`);
+    return success(pools, `${table}\n${t('pool.list.poolCount', { count: pools.length })}`);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to list pools: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('pool.list.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const poolListCommand: Command = {
   name: 'list',
-  description: 'List agent pools',
+  description: t('pool.list.description'),
   usage: 'sf pool list [options]',
-  help: `List all agent pools.
-
-Options:
-  -e, --enabled     Only show enabled pools
-  -a, --available   Only show pools with available slots
-  -t, --tag <tag>   Filter by tag
-
-Examples:
-  sf pool list
-  sf pool list --enabled
-  sf pool list --available
-  sf pool list --tag production`,
+  help: t('pool.list.help'),
   options: poolListOptions,
   handler: poolListHandler as Command['handler'],
 };
@@ -265,12 +255,12 @@ async function poolShowHandler(
   const [idOrName] = args;
 
   if (!idOrName) {
-    return failure('Usage: sf pool show <id|name>\nExample: sf pool show default', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('pool.show.usageError'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { poolService, error } = await createPoolClient(options);
   if (error || !poolService) {
-    return failure(error ?? 'Failed to create pool service', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreatePoolService'), ExitCode.GENERAL_ERROR);
   }
 
   try {
@@ -284,7 +274,7 @@ async function poolShowHandler(
     }
 
     if (!pool) {
-      return failure(`Pool not found: ${idOrName}`, ExitCode.NOT_FOUND);
+      return failure(t('pool.show.notFound', { idOrName }), ExitCode.NOT_FOUND);
     }
 
     const mode = getOutputMode(options);
@@ -332,22 +322,15 @@ async function poolShowHandler(
     return success(pool, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to show pool: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('pool.show.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const poolShowCommand: Command = {
   name: 'show',
-  description: 'Show pool details',
+  description: t('pool.show.description'),
   usage: 'sf pool show <id|name>',
-  help: `Show detailed information about an agent pool.
-
-Arguments:
-  id|name    Pool identifier or name
-
-Examples:
-  sf pool show default
-  sf pool show el-abc123`,
+  help: t('pool.show.help'),
   options: [],
   handler: poolShowHandler as Command['handler'],
 };
@@ -368,29 +351,29 @@ const poolCreateOptions: CommandOption[] = [
   {
     name: 'size',
     short: 's',
-    description: 'Maximum pool size (default: 5)',
+    description: t('pool.create.option.size'),
     hasValue: true,
   },
   {
     name: 'description',
     short: 'd',
-    description: 'Pool description',
+    description: t('pool.create.option.description'),
     hasValue: true,
   },
   {
     name: 'agentType',
     short: 't',
-    description: 'Agent type config (can repeat). Format: role[:mode|focus][:priority][:maxSlots][:provider][:model]',
+    description: t('pool.create.option.agentType'),
     hasValue: true,
   },
   {
     name: 'tags',
-    description: 'Comma-separated tags',
+    description: t('pool.create.option.tags'),
     hasValue: true,
   },
   {
     name: 'disabled',
-    description: 'Create pool in disabled state',
+    description: t('pool.create.option.disabled'),
   },
 ];
 
@@ -401,18 +384,18 @@ async function poolCreateHandler(
   const [name] = args;
 
   if (!name) {
-    return failure('Usage: sf pool create <name> [options]\nExample: sf pool create default --size 5', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('pool.create.usageError'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { poolService, error } = await createPoolClient(options);
   if (error || !poolService) {
-    return failure(error ?? 'Failed to create pool service', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreatePoolService'), ExitCode.GENERAL_ERROR);
   }
 
   try {
     const maxSize = options.size ? parseInt(options.size, 10) : 5;
     if (isNaN(maxSize) || maxSize < 1 || maxSize > 1000) {
-      return failure('Invalid size. Must be between 1 and 1000.', ExitCode.VALIDATION);
+      return failure(t('pool.create.invalidSize'), ExitCode.VALIDATION);
     }
 
     // Parse agent types
@@ -427,8 +410,7 @@ async function poolCreateHandler(
       const typeConfig = parseAgentTypeConfig(typeStr);
       if (!typeConfig) {
         return failure(
-          `Invalid agent type format: ${typeStr}. ` +
-          `Use: role[:mode|focus][:priority][:maxSlots][:provider][:model] (e.g., worker:ephemeral:100:5:claude-code:claude-sonnet-4-20250514)`,
+          t('pool.create.invalidAgentType', { typeStr }),
           ExitCode.VALIDATION
         );
       }
@@ -457,45 +439,18 @@ async function poolCreateHandler(
       return success(pool.id);
     }
 
-    return success(pool, `Created pool '${name}': ${pool.id}`);
+    return success(pool, t('pool.create.success', { name, id: pool.id }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to create pool: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('pool.create.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const poolCreateCommand: Command = {
   name: 'create',
-  description: 'Create an agent pool',
+  description: t('pool.create.description'),
   usage: 'sf pool create <name> [options]',
-  help: `Create a new agent pool.
-
-Arguments:
-  name    Pool name (must be unique)
-
-Options:
-  -s, --size <n>              Maximum pool size (default: 5)
-  -d, --description <text>    Pool description
-  -t, --agentType <config>    Agent type config (can repeat)
-                              Format: role[:mode|focus][:priority][:maxSlots][:provider][:model]
-  --tags <tags>               Comma-separated tags
-  --disabled                  Create pool in disabled state
-
-Agent Type Format Examples:
-  worker                                                All workers with default settings
-  worker:ephemeral                                      Ephemeral workers only
-  worker:ephemeral:100                                  Ephemeral workers with priority 100
-  worker:persistent:50:3                                Persistent workers, priority 50, max 3 slots
-  worker:ephemeral:100:5:claude-code:claude-sonnet-4-20250514  With provider and model
-  steward:merge                                         Merge stewards
-  steward:docs:80                                       Docs stewards with priority 80
-
-Examples:
-  sf pool create default --size 5
-  sf pool create workers --size 10 -t worker:ephemeral -t worker:persistent
-  sf pool create merge-pool --size 2 -t steward:merge:100
-  sf pool create production --size 20 --tags "prod,critical"
-  sf pool create ai-pool --size 3 -t worker:ephemeral:100:5:claude-code:claude-sonnet-4-20250514`,
+  help: t('pool.create.help'),
   options: poolCreateOptions,
   handler: poolCreateHandler as Command['handler'],
 };
@@ -517,33 +472,33 @@ const poolUpdateOptions: CommandOption[] = [
   {
     name: 'size',
     short: 's',
-    description: 'Maximum pool size',
+    description: t('pool.update.option.size'),
     hasValue: true,
   },
   {
     name: 'description',
     short: 'd',
-    description: 'Pool description',
+    description: t('pool.update.option.description'),
     hasValue: true,
   },
   {
     name: 'agentType',
     short: 't',
-    description: 'Agent type config (replaces existing, can repeat)',
+    description: t('pool.update.option.agentType'),
     hasValue: true,
   },
   {
     name: 'tags',
-    description: 'Comma-separated tags (replaces existing)',
+    description: t('pool.update.option.tags'),
     hasValue: true,
   },
   {
     name: 'enable',
-    description: 'Enable the pool',
+    description: t('pool.update.option.enable'),
   },
   {
     name: 'disable',
-    description: 'Disable the pool',
+    description: t('pool.update.option.disable'),
   },
 ];
 
@@ -554,16 +509,16 @@ async function poolUpdateHandler(
   const [idOrName] = args;
 
   if (!idOrName) {
-    return failure('Usage: sf pool update <id|name> [options]\nExample: sf pool update default --size 10', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('pool.update.usageError'), ExitCode.INVALID_ARGUMENTS);
   }
 
   if (options.enable && options.disable) {
-    return failure('Cannot use both --enable and --disable', ExitCode.VALIDATION);
+    return failure(t('pool.update.conflictEnableDisable'), ExitCode.VALIDATION);
   }
 
   const { poolService, error } = await createPoolClient(options);
   if (error || !poolService) {
-    return failure(error ?? 'Failed to create pool service', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreatePoolService'), ExitCode.GENERAL_ERROR);
   }
 
   try {
@@ -577,7 +532,7 @@ async function poolUpdateHandler(
     }
 
     if (!pool) {
-      return failure(`Pool not found: ${idOrName}`, ExitCode.NOT_FOUND);
+      return failure(t('pool.update.notFound', { idOrName }), ExitCode.NOT_FOUND);
     }
 
     // Validate and parse options first
@@ -585,7 +540,7 @@ async function poolUpdateHandler(
     if (options.size !== undefined) {
       maxSize = parseInt(options.size, 10);
       if (isNaN(maxSize) || maxSize < 1 || maxSize > 1000) {
-        return failure('Invalid size. Must be between 1 and 1000.', ExitCode.VALIDATION);
+        return failure(t('pool.update.invalidSize'), ExitCode.VALIDATION);
       }
     }
 
@@ -600,7 +555,7 @@ async function poolUpdateHandler(
         const typeConfig = parseAgentTypeConfig(typeStr);
         if (!typeConfig) {
           return failure(
-            `Invalid agent type format: ${typeStr}`,
+            t('pool.update.invalidAgentType', { typeStr }),
             ExitCode.VALIDATION
           );
         }
@@ -635,35 +590,18 @@ async function poolUpdateHandler(
       return success(updatedPool.id);
     }
 
-    return success(updatedPool, `Updated pool '${updatedPool.config.name}'`);
+    return success(updatedPool, t('pool.update.success', { name: updatedPool.config.name }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to update pool: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('pool.update.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const poolUpdateCommand: Command = {
   name: 'update',
-  description: 'Update pool configuration',
+  description: t('pool.update.description'),
   usage: 'sf pool update <id|name> [options]',
-  help: `Update an agent pool configuration.
-
-Arguments:
-  id|name    Pool identifier or name
-
-Options:
-  -s, --size <n>              Maximum pool size
-  -d, --description <text>    Pool description
-  -t, --agentType <config>    Agent type config (replaces existing, can repeat)
-  --tags <tags>               Comma-separated tags (replaces existing)
-  --enable                    Enable the pool
-  --disable                   Disable the pool
-
-Examples:
-  sf pool update default --size 10
-  sf pool update workers --enable
-  sf pool update merge-pool --disable
-  sf pool update production --description "Production agent pool"`,
+  help: t('pool.update.help'),
   options: poolUpdateOptions,
   handler: poolUpdateHandler as Command['handler'],
 };
@@ -680,7 +618,7 @@ const poolDeleteOptions: CommandOption[] = [
   {
     name: 'force',
     short: 'f',
-    description: 'Delete even if agents are active',
+    description: t('pool.delete.option.force'),
   },
 ];
 
@@ -691,12 +629,12 @@ async function poolDeleteHandler(
   const [idOrName] = args;
 
   if (!idOrName) {
-    return failure('Usage: sf pool delete <id|name>\nExample: sf pool delete old-pool', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('pool.delete.usageError'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { poolService, error } = await createPoolClient(options);
   if (error || !poolService) {
-    return failure(error ?? 'Failed to create pool service', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreatePoolService'), ExitCode.GENERAL_ERROR);
   }
 
   try {
@@ -710,14 +648,13 @@ async function poolDeleteHandler(
     }
 
     if (!pool) {
-      return failure(`Pool not found: ${idOrName}`, ExitCode.NOT_FOUND);
+      return failure(t('pool.delete.notFound', { idOrName }), ExitCode.NOT_FOUND);
     }
 
     // Check for active agents
     if (pool.status.activeCount > 0 && !options.force) {
       return failure(
-        `Pool '${pool.config.name}' has ${pool.status.activeCount} active agent(s). ` +
-        `Use --force to delete anyway.`,
+        t('pool.delete.hasActiveAgents', { name: pool.config.name, count: pool.status.activeCount }),
         ExitCode.VALIDATION
       );
     }
@@ -734,28 +671,18 @@ async function poolDeleteHandler(
       return success(pool.id);
     }
 
-    return success({ deleted: pool.id }, `Deleted pool '${pool.config.name}'`);
+    return success({ deleted: pool.id }, t('pool.delete.success', { name: pool.config.name }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to delete pool: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('pool.delete.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const poolDeleteCommand: Command = {
   name: 'delete',
-  description: 'Delete an agent pool',
+  description: t('pool.delete.description'),
   usage: 'sf pool delete <id|name>',
-  help: `Delete an agent pool.
-
-Arguments:
-  id|name    Pool identifier or name
-
-Options:
-  -f, --force    Delete even if agents are active
-
-Examples:
-  sf pool delete old-pool
-  sf pool delete el-abc123 --force`,
+  help: t('pool.delete.help'),
   options: poolDeleteOptions,
   handler: poolDeleteHandler as Command['handler'],
 };
@@ -771,12 +698,12 @@ async function poolStatusHandler(
   const [idOrName] = args;
 
   if (!idOrName) {
-    return failure('Usage: sf pool status <id|name>\nExample: sf pool status default', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('pool.status.usageError'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { poolService, error } = await createPoolClient(options);
   if (error || !poolService) {
-    return failure(error ?? 'Failed to create pool service', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreatePoolService'), ExitCode.GENERAL_ERROR);
   }
 
   try {
@@ -790,7 +717,7 @@ async function poolStatusHandler(
     }
 
     if (!pool) {
-      return failure(`Pool not found: ${idOrName}`, ExitCode.NOT_FOUND);
+      return failure(t('pool.status.notFound', { idOrName }), ExitCode.NOT_FOUND);
     }
 
     // Refresh status from session manager
@@ -840,22 +767,15 @@ async function poolStatusHandler(
     return success(status, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to get pool status: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('pool.status.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const poolStatusCommand: Command = {
   name: 'status',
-  description: 'Show pool status',
+  description: t('pool.status.description'),
   usage: 'sf pool status <id|name>',
-  help: `Show the current status of an agent pool.
-
-Arguments:
-  id|name    Pool identifier or name
-
-Examples:
-  sf pool status default
-  sf pool status el-abc123`,
+  help: t('pool.status.help'),
   options: [],
   handler: poolStatusHandler as Command['handler'],
 };
@@ -870,7 +790,7 @@ async function poolRefreshHandler(
 ): Promise<CommandResult> {
   const { poolService, error } = await createPoolClient(options);
   if (error || !poolService) {
-    return failure(error ?? 'Failed to create pool service', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreatePoolService'), ExitCode.GENERAL_ERROR);
   }
 
   try {
@@ -888,21 +808,18 @@ async function poolRefreshHandler(
       return success(String(pools.length));
     }
 
-    return success(pools, `Refreshed status for ${pools.length} pool(s)`);
+    return success(pools, t('pool.refresh.success', { count: pools.length }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to refresh pool status: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('pool.refresh.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const poolRefreshCommand: Command = {
   name: 'refresh',
-  description: 'Refresh pool status from sessions',
+  description: t('pool.refresh.description'),
   usage: 'sf pool refresh',
-  help: `Refresh the status of all agent pools based on current sessions.
-
-Examples:
-  sf pool refresh`,
+  help: t('pool.refresh.help'),
   options: [],
   handler: poolRefreshHandler as Command['handler'],
 };
@@ -913,30 +830,9 @@ Examples:
 
 export const poolCommand: Command = {
   name: 'pool',
-  description: 'Manage agent pools',
+  description: t('pool.description'),
   usage: 'sf pool <subcommand> [options]',
-  help: `Manage agent pools for concurrency limiting.
-
-Agent pools allow you to limit the maximum number of agents running
-concurrently. When a pool is at capacity, new agent spawns are blocked
-until slots become available.
-
-Subcommands:
-  list      List all agent pools
-  show      Show pool details
-  create    Create a new pool
-  update    Update pool configuration
-  delete    Delete a pool
-  status    Show pool status with active agents
-  refresh   Refresh pool status from sessions
-
-Examples:
-  sf pool list
-  sf pool create default --size 5
-  sf pool show default
-  sf pool status default
-  sf pool update default --size 10
-  sf pool delete old-pool`,
+  help: t('pool.help'),
   subcommands: {
     list: poolListCommand,
     show: poolShowCommand,

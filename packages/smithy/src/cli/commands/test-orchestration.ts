@@ -14,6 +14,7 @@ import type { Command, GlobalOptions, CommandResult } from '@stoneforge/quarry/c
 import { success, failure, ExitCode } from '@stoneforge/quarry/cli';
 import type { TestContext } from '../../testing/test-context.js';
 import type { OrchestrationTest } from '../../testing/orchestration-tests.js';
+import { t } from '../i18n/index.js';
 
 // ============================================================================
 // Types
@@ -63,21 +64,21 @@ async function runOrchestrationTests(options: TestOrchestrationOptions): Promise
 
   const mode = options.mode ?? 'mock';
 
-  console.log('🧪 Orchestration Test Suite\n');
+  console.log('🧪 ' + t('testOrchestration.title') + '\n');
   console.log('═'.repeat(60));
-  console.log(`  Mode: ${mode}`);
+  console.log(t('testOrchestration.modeLabel', { mode }));
 
   // Real mode warning
   if (mode === 'real') {
     console.log('');
-    console.log('  ⚠  REAL MODE: This will spawn actual Claude processes.');
-    console.log('  ⚠  Ensure `claude` is installed and accessible in PATH.');
-    console.log('  ⚠  Tests will have longer timeouts.');
+    console.log('  ⚠  ' + t('testOrchestration.realModeWarning'));
+    console.log('  ⚠  ' + t('testOrchestration.realModeEnsureClaude'));
+    console.log('  ⚠  ' + t('testOrchestration.realModeLongerTimeouts'));
     console.log('');
   }
 
   // Setup isolated test environment
-  console.log('\nCreating isolated test workspace...');
+  console.log('\n' + t('testOrchestration.creatingWorkspace'));
   let ctx: TestContext | undefined;
 
   try {
@@ -85,22 +86,22 @@ async function runOrchestrationTests(options: TestOrchestrationOptions): Promise
       verbose: options.verbose ?? false,
       mode,
     });
-    console.log(`  ✓ Temp workspace: ${ctx.tempWorkspace}`);
-    console.log('  ✓ Git repo initialized');
-    console.log('  ✓ Local bare remote created');
-    console.log('  ✓ Project structure created');
-    console.log('  ✓ Database initialized');
+    console.log('  ✓ ' + t('testOrchestration.tempWorkspace', { path: ctx.tempWorkspace }));
+    console.log('  ✓ ' + t('testOrchestration.gitInitialized'));
+    console.log('  ✓ ' + t('testOrchestration.localRemoteCreated'));
+    console.log('  ✓ ' + t('testOrchestration.projectStructureCreated'));
+    console.log('  ✓ ' + t('testOrchestration.databaseInitialized'));
     if (mode === 'real') {
-      console.log('  ✓ Real session manager (spawner-backed)');
-      console.log('  ✓ Test prompt overrides written');
+      console.log('  ✓ ' + t('testOrchestration.realSessionManager'));
+      console.log('  ✓ ' + t('testOrchestration.testPromptOverrides'));
     } else {
-      console.log('  ✓ Mock session manager');
+      console.log('  ✓ ' + t('testOrchestration.mockSessionManager'));
     }
-    console.log('\n✓ Test environment ready\n');
+    console.log('\n✓ ' + t('testOrchestration.environmentReady') + '\n');
 
     // Start daemon
     await ctx.daemon.start();
-    console.log('✓ Dispatch daemon running\n');
+    console.log('✓ ' + t('testOrchestration.daemonRunning') + '\n');
     console.log('═'.repeat(60));
     console.log('');
 
@@ -112,7 +113,7 @@ async function runOrchestrationTests(options: TestOrchestrationOptions): Promise
     }
 
     if (options.test) {
-      tests = tests.filter((t: OrchestrationTest) => t.id.includes(options.test!));
+      tests = tests.filter((test: OrchestrationTest) => test.id.includes(options.test!));
     }
 
     if (tests.length === 0) {
@@ -120,10 +121,10 @@ async function runOrchestrationTests(options: TestOrchestrationOptions): Promise
         options.test ? `id="${options.test}"` : '',
         options.tag ? `tag="${options.tag}"` : '',
       ].filter(Boolean).join(', ');
-      return failure(`No tests matching ${filterDesc}`, ExitCode.GENERAL_ERROR);
+      return failure(t('testOrchestration.noMatchingTests', { filter: filterDesc }), ExitCode.GENERAL_ERROR);
     }
 
-    console.log(`Running ${tests.length} test(s)...\n`);
+    console.log(t('testOrchestration.runningTests', { count: tests.length }) + '\n');
 
     // Run tests
     const results: TestRunResult[] = [];
@@ -147,13 +148,13 @@ async function runOrchestrationTests(options: TestOrchestrationOptions): Promise
         console.log(`  ${color}${icon}${reset} ${result.message} (${formatDuration(result.duration)})`);
 
         if (!result.passed && options.verbose && result.details) {
-          console.log(`    Details: ${JSON.stringify(result.details, null, 2)}`);
+          console.log(t('testOrchestration.testDetails', { details: JSON.stringify(result.details, null, 2) }));
         }
         console.log('');
 
         // Bail on failure if requested
         if (!result.passed && options.bail) {
-          console.log('  ⚠ Bailing on first failure (--bail)\n');
+          console.log('  ⚠ ' + t('testOrchestration.bailingOnFailure') + '\n');
           bailed = true;
 
           // In real mode, dump session event logs if available
@@ -168,13 +169,13 @@ async function runOrchestrationTests(options: TestOrchestrationOptions): Promise
         const message = error instanceof Error ? error.message : String(error);
         results.push({
           passed: false,
-          message: `Error: ${message}`,
+          message: t('testOrchestration.errorMessage', { message }),
           duration,
         });
-        console.log(`  \x1b[31m✗\x1b[0m Error: ${message} (${formatDuration(duration)})\n`);
+        console.log(`  \x1b[31m✗\x1b[0m ` + t('testOrchestration.errorWithDuration', { message, duration: formatDuration(duration) }) + '\n');
 
         if (options.bail) {
-          console.log('  ⚠ Bailing on first failure (--bail)\n');
+          console.log('  ⚠ ' + t('testOrchestration.bailingOnFailure') + '\n');
           bailed = true;
 
           if (mode === 'real' && options.verbose) {
@@ -193,38 +194,38 @@ async function runOrchestrationTests(options: TestOrchestrationOptions): Promise
     const totalDuration = results.reduce((sum, r) => sum + r.duration, 0);
 
     console.log('═'.repeat(60));
-    console.log('\n📊 Results Summary\n');
+    console.log('\n📊 ' + t('testOrchestration.resultsSummary') + '\n');
 
     if (failed === 0 && !bailed) {
-      console.log(`  \x1b[32m✓ All ${passed} tests passed\x1b[0m`);
+      console.log(`  \x1b[32m✓ ` + t('testOrchestration.allTestsPassed', { count: passed }) + `\x1b[0m`);
     } else {
-      console.log(`  \x1b[32m✓ ${passed} passed\x1b[0m`);
-      console.log(`  \x1b[31m✗ ${failed} failed\x1b[0m`);
+      console.log(`  \x1b[32m✓ ` + t('testOrchestration.passed', { count: passed }) + `\x1b[0m`);
+      console.log(`  \x1b[31m✗ ` + t('testOrchestration.failed', { count: failed }) + `\x1b[0m`);
       if (skipped > 0) {
-        console.log(`  ⊘ ${skipped} skipped (bail)`);
+        console.log(`  ⊘ ` + t('testOrchestration.skipped', { count: skipped }));
       }
     }
-    console.log(`  ⏱ Total time: ${formatDuration(totalDuration)}`);
-    console.log(`  Mode: ${mode}`);
+    console.log(`  ⏱ ` + t('testOrchestration.totalTime', { time: formatDuration(totalDuration) }));
+    console.log('  ' + t('testOrchestration.modeLabel', { mode }));
     console.log('');
 
     // Cleanup
     if (!options.skipCleanup) {
-      console.log('Cleaning up...');
+      console.log(t('testOrchestration.cleaningUp'));
       await ctx.cleanup();
-      console.log('  ✓ Stopped daemon');
-      console.log('  ✓ Deleted temp workspace');
+      console.log('  ✓ ' + t('testOrchestration.daemonStopped'));
+      console.log('  ✓ ' + t('testOrchestration.tempWorkspaceDeleted'));
       console.log('');
     } else {
-      console.log(`\n⚠ Skipping cleanup. Temp workspace: ${ctx.tempWorkspace}\n`);
+      console.log('\n⚠ ' + t('testOrchestration.skippingCleanup', { path: ctx.tempWorkspace }) + '\n');
       await ctx.daemon.stop();
     }
 
-    return passed === results.length ? success() : failure('Some tests failed', ExitCode.GENERAL_ERROR);
+    return passed === results.length ? success() : failure(t('testOrchestration.someTestsFailed'), ExitCode.GENERAL_ERROR);
 
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`\n\x1b[31mFatal error: ${message}\x1b[0m\n`);
+    console.error('\n\x1b[31m' + t('testOrchestration.fatalError', { message }) + '\x1b[0m\n');
 
     if (ctx && !options.skipCleanup) {
       try {
@@ -262,7 +263,7 @@ async function runSingleTest(
     const timer = setTimeout(() => {
       resolve({
         passed: false,
-        message: `Test timed out after ${testTimeout}ms`,
+        message: t('testOrchestration.testTimedOut', { timeout: String(testTimeout) }),
         duration: testTimeout,
       });
     }, testTimeout);
@@ -294,11 +295,11 @@ async function dumpSessionLogs(ctx: TestContext): Promise<void> {
     const sessions = ctx.sessionManager.listSessions({});
     if (sessions.length === 0) return;
 
-    console.log('  📋 Session logs:');
+    console.log('  📋 ' + t('testOrchestration.sessionLogs'));
     for (const session of sessions) {
-      console.log(`    Session ${session.id} (${session.agentRole}): status=${session.status}`);
+      console.log(t('testOrchestration.sessionLogLine', { id: session.id, role: session.agentRole, status: session.status }));
       if (session.terminationReason) {
-        console.log(`      Termination reason: ${session.terminationReason}`);
+        console.log(t('testOrchestration.terminationReason', { reason: session.terminationReason }));
       }
     }
   } catch {
@@ -329,37 +330,37 @@ const testOrchestrationOptions = [
   {
     name: 'test',
     short: 't',
-    description: 'Run specific test by ID (substring match)',
+    description: t('testOrchestration.option.test'),
     hasValue: true,
   },
   {
     name: 'mode',
     short: 'm',
-    description: 'Test mode: mock (default) or real (spawns Claude processes)',
+    description: t('testOrchestration.option.mode'),
     hasValue: true,
   },
   {
     name: 'tag',
-    description: 'Filter tests by tag (e.g., director, worker, steward)',
+    description: t('testOrchestration.option.tag'),
     hasValue: true,
   },
   {
     name: 'bail',
-    description: 'Stop on first failure',
+    description: t('testOrchestration.option.bail'),
   },
   {
     name: 'verbose',
     short: 'v',
-    description: 'Enable verbose logging',
+    description: t('testOrchestration.option.verbose'),
   },
   {
     name: 'timeout',
-    description: 'Timeout for each test in milliseconds',
+    description: t('testOrchestration.option.timeout'),
     hasValue: true,
   },
   {
     name: 'skip-cleanup',
-    description: 'Skip cleanup on failure (for debugging)',
+    description: t('testOrchestration.option.skipCleanup'),
   },
 ];
 
@@ -389,7 +390,7 @@ async function testOrchestrationHandler(
 
 const testOrchestrationCommand: Command = {
   name: 'test-orchestration',
-  description: 'Run orchestration E2E test suite',
+  description: t('testOrchestration.description'),
   usage: 'sf test-orchestration [options]',
   options: testOrchestrationOptions,
   handler: testOrchestrationHandler as Command['handler'],
@@ -436,27 +437,7 @@ async function main() {
     } else if (arg === '--skip-cleanup') {
       options.skipCleanup = true;
     } else if (arg === '--help' || arg === '-h') {
-      console.log(`
-Orchestration E2E Test Suite
-
-Usage: bun run test:orchestration [options]
-
-Options:
-  -t, --test <id>      Run specific test by ID (substring match)
-  -m, --mode <mode>    Test mode: mock (default) or real (spawns Claude processes)
-  --tag <tag>          Filter tests by tag (director, worker, steward, daemon)
-  --bail               Stop on first failure
-  -v, --verbose        Enable verbose logging
-  --timeout <ms>       Timeout for each test in milliseconds
-  --skip-cleanup       Skip cleanup on failure (for debugging)
-  -h, --help           Show this help message
-
-Examples:
-  bun run test:orchestration
-  bun run test:orchestration --mode real --tag worker --bail
-  bun run test:orchestration --mode real --test "worker-marks-task-complete" --verbose --skip-cleanup
-  bun run test:orchestration --test "director" --verbose
-`);
+      console.log(t('testOrchestration.cliHelp'));
       process.exit(0);
     }
   }
@@ -468,7 +449,7 @@ Examples:
 // Run if this file is executed directly
 if (import.meta.main) {
   main().catch((error) => {
-    console.error('Fatal error:', error);
+    console.error(t('testOrchestration.fatalErrorCli', { error: String(error) }));
     process.exit(1);
   });
 }

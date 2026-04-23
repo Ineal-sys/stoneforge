@@ -13,6 +13,7 @@ import type { PluginsConfig } from './plugin-types.js';
 import { discoverPlugins, logPluginWarnings } from './plugin-loader.js';
 import { registerAllPlugins, logConflictWarnings } from './plugin-registry.js';
 import { suggestCommands } from './suggest.js';
+import { t } from './i18n/index.js';
 
 // ============================================================================
 // Command Registry
@@ -98,7 +99,7 @@ function resolveCommand(commandPath: string[]): {
         const subNames = Object.keys(command.subcommands);
         const suggestions = suggestCommands(subName, subNames);
         if (suggestions.length > 0) {
-          subcommandSuggestion = `Unknown subcommand: ${subName}\n\nDid you mean?\n${suggestions.map(s => `  ${s}`).join('\n')}\n\nRun "sf ${command.name} --help" to see available subcommands.`;
+          subcommandSuggestion = t('runner.unknownCommand', { command: subName }) + '\n\n' + t('runner.didYouMean') + '\n' + suggestions.map(s => `  ${s}`).join('\n') + '\n\n' + t('runner.seeHelp');
         }
       }
       break;
@@ -123,7 +124,7 @@ export async function run(argv: string[]): Promise<number> {
     parsed = parseArgs(argv, [], { strict: false });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error(`Error: ${message}`);
+    console.error(t('formatter.error', { message }));
     return ExitCode.INVALID_ARGUMENTS;
   }
 
@@ -150,7 +151,7 @@ export async function run(argv: string[]): Promise<number> {
       parseArgs(argv, [], { strict: true });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      console.error(`Error: ${message}`);
+      console.error(t('formatter.error', { message }));
       return ExitCode.INVALID_ARGUMENTS;
     }
     const help = await import('./commands/help.js').then(m => m.helpCommand);
@@ -165,11 +166,11 @@ export async function run(argv: string[]): Promise<number> {
     const input = commandPath[0];
     const allCommandNames = Array.from(commands.keys());
     const suggestions = suggestCommands(input, allCommandNames);
-    let msg = `Unknown command: ${input}`;
+    let msg = t('runner.unknownCommand', { command: input });
     if (suggestions.length > 0) {
-      msg += `\n\nDid you mean?\n${suggestions.map(s => `  ${s}`).join('\n')}`;
+      msg += `\n\n${t('runner.didYouMean')}\n${suggestions.map(s => `  ${s}`).join('\n')}`;
     }
-    msg += '\n\nRun "sf --help" to see available commands.';
+    msg += '\n\n' + t('runner.seeHelp');
     const result = failure(msg, ExitCode.INVALID_ARGUMENTS);
     return outputResult(result, options);
   }

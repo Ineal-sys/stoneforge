@@ -14,6 +14,7 @@ import { join } from 'node:path';
 import { execSync } from 'node:child_process';
 import type { Command, GlobalOptions, CommandResult } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
+import { t } from '../i18n/index.js';
 
 // ============================================================================
 // Constants
@@ -150,7 +151,7 @@ function cleanupWorktrees(workDir: string): { removed: boolean; pruned: boolean;
       removed = true;
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return { removed: false, pruned: false, error: `Failed to remove ${WORKTREES_DIR}: ${message}` };
+      return { removed: false, pruned: false, error: t('reset.error.failedRemoveWorktrees', { dir: WORKTREES_DIR, message }) };
     }
   }
 
@@ -162,7 +163,7 @@ function cleanupWorktrees(workDir: string): { removed: boolean; pruned: boolean;
     // Git worktree prune might fail if not in a git repo - that's okay
     const message = err instanceof Error ? err.message : String(err);
     if (!message.includes('not a git repository')) {
-      return { removed, pruned: false, error: `Failed to prune git worktrees: ${message}` };
+      return { removed, pruned: false, error: t('reset.error.failedPrune', { message }) };
     }
   }
 
@@ -193,7 +194,7 @@ async function resetHandler(
   // Check if workspace exists
   if (!existsSync(stoneforgeDir)) {
     return failure(
-      `No Stoneforge workspace found at ${stoneforgeDir}`,
+      t('reset.error.noWorkspace', { path: stoneforgeDir }),
       ExitCode.VALIDATION
     );
   }
@@ -203,28 +204,28 @@ async function resetHandler(
   // Confirm unless --force
   if (!options.force) {
     if (isFull) {
-      console.log('This will FULLY reset the Stoneforge workspace:');
-      console.log('  - Stop any running daemon');
-      console.log('  - Delete entire .stoneforge folder (including config)');
-      console.log('  - Remove all worktrees');
-      console.log('  - Prune git worktrees');
-      console.log('  - Reinitialize with default configuration');
+      console.log(t('reset.confirm.fullHeader'));
+      console.log('  - ' + t('reset.confirm.stopDaemon'));
+      console.log('  - ' + t('reset.confirm.deleteFolder'));
+      console.log('  - ' + t('reset.confirm.removeWorktrees'));
+      console.log('  - ' + t('reset.confirm.pruneWorktrees'));
+      console.log('  - ' + t('reset.confirm.reinitialize'));
     } else {
-      console.log('This will reset the Stoneforge workspace:');
-      console.log('  - Stop any running daemon');
-      console.log('  - Remove database (all entities, tasks, etc.)');
-      console.log('  - Remove sync files (elements.jsonl, dependencies.jsonl)');
-      console.log('  - Remove all uploaded files');
-      console.log('  - Remove all worktrees');
-      console.log('  - Prune git worktrees');
+      console.log(t('reset.confirm.header'));
+      console.log('  - ' + t('reset.confirm.stopDaemon'));
+      console.log('  - ' + t('reset.confirm.removeDatabase'));
+      console.log('  - ' + t('reset.confirm.removeSyncFiles'));
+      console.log('  - ' + t('reset.confirm.removeUploads'));
+      console.log('  - ' + t('reset.confirm.removeWorktrees'));
+      console.log('  - ' + t('reset.confirm.pruneWorktrees'));
       console.log('');
-      console.log('Configuration files will be preserved.');
+      console.log(t('reset.confirm.preserveConfig'));
     }
     console.log('');
 
-    const confirmed = await confirm('Are you sure you want to reset the workspace?');
+    const confirmed = await confirm(t('reset.confirm.prompt'));
     if (!confirmed) {
-      return success(null, 'Cancelled');
+      return success(null, t('reset.success.cancelled'));
     }
   }
 
@@ -234,25 +235,25 @@ async function resetHandler(
   const serverUrl = options.server ?? process.env.ORCHESTRATOR_URL ?? DEFAULT_SMITHY_URL;
   const daemonResult = await tryStopDaemon(serverUrl);
   if (daemonResult.stopped) {
-    results.push('Stopped daemon');
+    results.push(t('reset.success.stoppedDaemon'));
   } else if (daemonResult.error) {
-    results.push(`Warning: Could not stop daemon: ${daemonResult.error}`);
+    results.push(t('reset.warning.couldNotStopDaemon', { error: daemonResult.error }));
   }
 
   if (isFull) {
     // Full reset: delete entire .stoneforge folder
     try {
       rmSync(stoneforgeDir, { recursive: true, force: true });
-      results.push('Deleted .stoneforge folder');
+      results.push(t('reset.success.deletedFolder'));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return failure(`Failed to delete .stoneforge folder: ${message}`, ExitCode.GENERAL_ERROR);
+      return failure(t('reset.error.failedDeleteFolder', { message }), ExitCode.GENERAL_ERROR);
     }
   } else {
     // Partial reset: remove only data files
     const dataResult = removeDataFiles(stoneforgeDir);
     if (dataResult.removed.length > 0) {
-      results.push(`Removed data files: ${dataResult.removed.join(', ')}`);
+      results.push(t('reset.success.removedDataFiles', { files: dataResult.removed.join(', ') }));
     }
   }
 
@@ -262,10 +263,10 @@ async function resetHandler(
     return failure(worktreeResult.error, ExitCode.GENERAL_ERROR);
   }
   if (worktreeResult.removed) {
-    results.push('Removed .stoneforge/.worktrees directory');
+    results.push(t('reset.success.removedWorktrees'));
   }
   if (worktreeResult.pruned) {
-    results.push('Pruned git worktrees');
+    results.push(t('reset.success.prunedWorktrees'));
   }
 
   // 4. If full reset, reinitialize
@@ -273,15 +274,15 @@ async function resetHandler(
     const { initCommand } = await import('./init.js');
     const initResult = await initCommand.handler([], options);
     if (initResult.error) {
-      return failure(`Reset complete but init failed: ${initResult.message}`, ExitCode.GENERAL_ERROR);
+      return failure(t('reset.error.initFailed', { message: initResult.message }), ExitCode.GENERAL_ERROR);
     }
-    results.push('Reinitialized workspace');
+    results.push(t('reset.success.reinitialized'));
   }
 
   // Summary
   const summary = results.length > 0
-    ? `Workspace reset complete:\n  ${results.join('\n  ')}`
-    : 'Workspace reset complete (nothing to clean up)';
+    ? t('reset.success.complete', { details: results.join('\n  ') })
+    : t('reset.success.completeNothing');
 
   return success(
     {
@@ -300,50 +301,23 @@ async function resetHandler(
 
 export const resetCommand: Command = {
   name: 'reset',
-  description: 'Reset an Stoneforge workspace',
+  description: t('reset.description'),
   usage: 'sf reset [--force] [--full]',
-  help: `Reset an Stoneforge workspace to a clean state.
-
-By default, this command will:
-  - Stop any running daemon
-  - Remove the database (all entities, tasks, messages, etc.)
-  - Remove sync files (elements.jsonl, dependencies.jsonl)
-  - Remove all uploaded files (.stoneforge/uploads/)
-  - Remove all worktrees (.stoneforge/.worktrees/ directory)
-  - Prune git worktrees
-
-Configuration files (.stoneforge/config.yaml) will be preserved.
-
-With --full, this command will:
-  - Stop any running daemon
-  - Delete the entire .stoneforge folder (including config and worktrees)
-  - Prune git worktrees
-  - Reinitialize with default configuration
-
-Options:
-  --force, -f           Skip confirmation prompt
-  --full                Delete everything and reinitialize
-  --server, -s <url>    Orchestrator server URL (default: ${DEFAULT_SMITHY_URL})
-
-Examples:
-  sf reset              # Interactive confirmation, preserve config
-  sf reset --force      # Skip confirmation, preserve config
-  sf reset --full       # Delete everything and reinitialize
-  sf reset --full -f    # Full reset without confirmation`,
+  help: t('reset.help'),
   options: [
     {
       name: 'force',
       short: 'f',
-      description: 'Skip confirmation prompt',
+      description: t('reset.option.force'),
     },
     {
       name: 'full',
-      description: 'Delete everything and reinitialize',
+      description: t('reset.option.full'),
     },
     {
       name: 'server',
       short: 's',
-      description: `Orchestrator server URL (default: ${DEFAULT_SMITHY_URL})`,
+      description: t('reset.option.server', { default: DEFAULT_SMITHY_URL }),
       hasValue: true,
     },
   ],

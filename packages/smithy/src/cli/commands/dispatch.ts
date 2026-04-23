@@ -9,6 +9,7 @@ import type { Command, GlobalOptions, CommandResult, CommandOption } from '@ston
 import { success, failure, ExitCode, getOutputMode } from '@stoneforge/quarry/cli';
 import type { ElementId, EntityId } from '@stoneforge/core';
 import type { OrchestratorAPI } from '../../api/index.js';
+import { t } from '../i18n/index.js';
 
 // ============================================================================
 // Shared Helpers
@@ -29,7 +30,7 @@ async function createOrchestratorClient(options: GlobalOptions): Promise<{
     if (!stoneforgeDir) {
       return {
         api: null,
-        error: 'No .stoneforge directory found. Run "sf init" first.',
+        error: t('shared.noStoneforge'),
       };
     }
 
@@ -41,7 +42,7 @@ async function createOrchestratorClient(options: GlobalOptions): Promise<{
     return { api };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return { api: null, error: `Failed to initialize API: ${message}` };
+    return { api: null, error: t('shared.apiInitFailed', { message }) };
   }
 }
 
@@ -60,25 +61,25 @@ const dispatchOptions: CommandOption[] = [
   {
     name: 'branch',
     short: 'b',
-    description: 'Git branch for the task',
+    description: t('dispatch.option.branch'),
     hasValue: true,
   },
   {
     name: 'worktree',
     short: 'w',
-    description: 'Worktree path for the task',
+    description: t('dispatch.option.worktree'),
     hasValue: true,
   },
   {
     name: 'session',
     short: 's',
-    description: 'Session ID to associate',
+    description: t('dispatch.option.session'),
     hasValue: true,
   },
   {
     name: 'markAsStarted',
     short: 'm',
-    description: 'Mark the task as started after dispatch',
+    description: t('dispatch.option.markAsStarted'),
   },
 ];
 
@@ -89,12 +90,12 @@ async function dispatchHandler(
   const [taskId, agentId] = args;
 
   if (!taskId || !agentId) {
-    return failure('Usage: sf dispatch <task-id> <agent-id> [options]\nExample: sf dispatch el-abc123 el-agent1', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('dispatch.usageError'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = await createOrchestratorClient(options);
   if (error || !api) {
-    return failure(error ?? 'Failed to create API', ExitCode.GENERAL_ERROR);
+    return failure(error ?? t('shared.failedToCreateApi'), ExitCode.GENERAL_ERROR);
   }
 
   try {
@@ -126,15 +127,14 @@ async function dispatchHandler(
       return success(task.id);
     }
 
-    let message = `Dispatched task ${taskId} to agent ${agentId}`;
-    if (options.markAsStarted) {
-      message += ' (marked as started)';
-    }
+    const message = options.markAsStarted
+      ? t('dispatch.successMarkedStarted', { taskId, agentId })
+      : t('dispatch.success', { taskId, agentId });
 
     return success(task, message);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to dispatch: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('dispatch.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
@@ -144,24 +144,9 @@ async function dispatchHandler(
 
 export const dispatchCommand: Command = {
   name: 'dispatch',
-  description: 'Dispatch a task to an agent',
+  description: t('dispatch.description'),
   usage: 'sf dispatch <task-id> <agent-id> [options]',
-  help: `Dispatch a task to an agent for execution.
-
-Arguments:
-  task-id     Task identifier
-  agent-id    Agent identifier
-
-Options:
-  -b, --branch <branch>      Git branch for the task
-  -w, --worktree <path>      Worktree path for the task
-  -s, --session <id>         Session ID to associate
-  -m, --markAsStarted        Mark the task as started after dispatch
-
-Examples:
-  sf dispatch el-abc123 el-agent1
-  sf dispatch el-abc123 el-agent1 --branch feature/my-task
-  sf dispatch el-abc123 el-agent1 --markAsStarted`,
+  help: t('dispatch.help'),
   options: dispatchOptions,
   handler: dispatchHandler as Command['handler'],
 };

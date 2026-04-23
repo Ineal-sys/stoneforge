@@ -13,6 +13,7 @@ import { existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { Command, CommandResult, GlobalOptions } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
+import { t } from '../i18n/index.js';
 import {
   getConfig,
   getValue,
@@ -42,7 +43,7 @@ async function configShowHandler(
       if (!isValidConfigPath(path)) {
         const validPaths = VALID_CONFIG_PATHS.join(', ');
         return failure(
-          `Unknown configuration key: ${path}\nValid keys: ${validPaths}`,
+          t('config.error.unknownKey', { path, validKeys: validPaths }),
           ExitCode.VALIDATION
         );
       }
@@ -50,13 +51,13 @@ async function configShowHandler(
       const source = getValueSource(path);
       return success(
         { path, value, source },
-        `${path} = ${JSON.stringify(value)} (from ${source})`
+        t('config.success.showValue', { path, value: JSON.stringify(value), source })
       );
     }
 
     // Show all config
     const lines: string[] = [
-      `Configuration (from ${configPath ?? 'defaults'})`,
+      t('config.label.configurationFrom', { path: configPath ?? t('config.label.defaults') }),
       '',
     ];
 
@@ -74,7 +75,7 @@ async function configShowHandler(
     return success(config, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to read configuration: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('config.error.failedRead', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
@@ -87,7 +88,7 @@ async function configSetHandler(
   _options: GlobalOptions
 ): Promise<CommandResult> {
   if (args.length < 2) {
-    return failure('Usage: sf config set <path> <value>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('config.usage.set'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const [path, ...valueParts] = args;
@@ -97,7 +98,7 @@ async function configSetHandler(
   if (!isValidConfigPath(path)) {
     const validPaths = VALID_CONFIG_PATHS.join(', ');
     return failure(
-      `Unknown configuration key: ${path}\nValid keys: ${validPaths}`,
+      t('config.error.unknownKey', { path, validKeys: validPaths }),
       ExitCode.VALIDATION
     );
   }
@@ -114,11 +115,11 @@ async function configSetHandler(
     setValue(path, value as never);
     return success(
       { path, value },
-      `Set ${path} = ${JSON.stringify(value)}`
+      t('config.success.set', { path, value: JSON.stringify(value) })
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to set configuration: ${message}`, ExitCode.VALIDATION);
+    return failure(t('config.error.failedSet', { message }), ExitCode.VALIDATION);
   }
 }
 
@@ -131,7 +132,7 @@ async function configUnsetHandler(
   _options: GlobalOptions
 ): Promise<CommandResult> {
   if (args.length < 1) {
-    return failure('Usage: sf config unset <path>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('config.usage.unset'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const path = args[0];
@@ -140,7 +141,7 @@ async function configUnsetHandler(
   if (!isValidConfigPath(path)) {
     const validPaths = VALID_CONFIG_PATHS.join(', ');
     return failure(
-      `Unknown configuration key: ${path}\nValid keys: ${validPaths}`,
+      t('config.error.unknownKey', { path, validKeys: validPaths }),
       ExitCode.VALIDATION
     );
   }
@@ -149,11 +150,11 @@ async function configUnsetHandler(
     unsetValue(path);
     return success(
       { path },
-      `Unset ${path}`
+      t('config.success.unset', { path })
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to unset configuration: ${message}`, ExitCode.VALIDATION);
+    return failure(t('config.error.failedUnset', { message }), ExitCode.VALIDATION);
   }
 }
 
@@ -189,7 +190,7 @@ async function configEditHandler(
 
     if (!configPath) {
       return failure(
-        'No configuration file found. Use "sf init" to create a workspace first.',
+        t('config.error.noConfigFile'),
         ExitCode.NOT_FOUND
       );
     }
@@ -217,25 +218,25 @@ async function configEditHandler(
 
     if (result.error) {
       return failure(
-        `Failed to open editor "${editor}": ${result.error.message}`,
+        t('config.error.editorFailed', { editor, message: result.error.message }),
         ExitCode.GENERAL_ERROR
       );
     }
 
     if (result.status !== 0) {
       return failure(
-        `Editor exited with status ${result.status}`,
+        t('config.error.editorExited', { status: result.status }),
         ExitCode.GENERAL_ERROR
       );
     }
 
     return success(
       { editor, path: configPath },
-      `Edited ${configPath}`
+      t('config.success.edited', { path: configPath })
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to edit configuration: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('config.error.failedEdit', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
@@ -245,76 +246,37 @@ async function configEditHandler(
 
 export const configCommand: Command = {
   name: 'config',
-  description: 'Manage configuration',
+  description: t('config.description'),
   usage: 'sf config <subcommand> [args]',
-  help: `Manage Stoneforge configuration.
-
-Configuration is loaded from (in order of precedence):
-  1. CLI flags (--db, --actor)
-  2. Environment variables (STONEFORGE_*)
-  3. Config file (.stoneforge/config.yaml)
-  4. Built-in defaults`,
+  help: t('config.help'),
   handler: configShowHandler,
   subcommands: {
     show: {
       name: 'show',
-      description: 'Display current configuration',
+      description: t('config.show.description'),
       usage: 'sf config show [path]',
-      help: `Display the current configuration.
-
-If a path is specified, shows that specific value.
-Otherwise, displays all configuration values.
-
-Examples:
-  sf config show              Show all configuration
-  sf config show actor        Show actor setting
-  sf config show sync.autoExport  Show sync.autoExport setting`,
+      help: t('config.show.help'),
       handler: configShowHandler,
     },
     set: {
       name: 'set',
-      description: 'Set a configuration value',
+      description: t('config.set.description'),
       usage: 'sf config set <path> <value>',
-      help: `Set a configuration value in the config file.
-
-The value will be parsed as JSON if possible, otherwise stored as a string.
-
-Examples:
-  sf config set actor myagent
-  sf config set sync.autoExport true
-  sf config set playbooks.paths '["playbooks", "templates"]'`,
+      help: t('config.set.help'),
       handler: configSetHandler,
     },
     unset: {
       name: 'unset',
-      description: 'Remove a configuration value',
+      description: t('config.unset.description'),
       usage: 'sf config unset <path>',
-      help: `Remove a configuration value from the config file.
-
-The value will fall back to the default.
-
-Examples:
-  sf config unset actor
-  sf config unset sync.autoExport`,
+      help: t('config.unset.help'),
       handler: configUnsetHandler,
     },
     edit: {
       name: 'edit',
-      description: 'Open config file in editor',
+      description: t('config.edit.description'),
       usage: 'sf config edit',
-      help: `Open the configuration file in your default editor.
-
-The editor is determined by (in order of precedence):
-  1. $EDITOR environment variable
-  2. $VISUAL environment variable
-  3. Platform default (vi on Unix, notepad on Windows)
-
-If no config file exists, a default one will be created.
-
-Examples:
-  sf config edit                     Open in default editor
-  EDITOR=nano sf config edit         Open in nano
-  EDITOR="code --wait" sf config edit  Open in VS Code`,
+      help: t('config.edit.help'),
       handler: configEditHandler,
     },
   },

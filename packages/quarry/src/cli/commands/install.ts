@@ -11,6 +11,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Command, GlobalOptions, CommandResult } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
+import { t } from '../i18n/index.js';
 import { suggestCommands } from '../suggest.js';
 
 // ============================================================================
@@ -44,7 +45,7 @@ function findSkillsSourceDir(): string | null {
     return nodeModulesSrcSkillsPath;
   }
 
-  // 3. Try module resolution — works for all package managers (npm, pnpm, yarn, bun)
+  // 3. Try module resolution -- works for all package managers (npm, pnpm, yarn, bun)
   // both local and global installs
   try {
     const require = createRequire(import.meta.url);
@@ -199,7 +200,7 @@ async function installSkillsHandler(
 
   if (!result) {
     return failure(
-      'Could not find skills to install. Make sure @stoneforge/smithy is installed.',
+      t('install.skills.error.notFound'),
       ExitCode.GENERAL_ERROR
     );
   }
@@ -210,7 +211,7 @@ async function installSkillsHandler(
   const lines: string[] = [];
 
   if (installed.length > 0) {
-    lines.push(`Installed ${installed.length} skill(s):`);
+    lines.push(t('install.skills.installed', { count: installed.length }));
     for (const skill of installed) {
       lines.push(`  - ${skill}/`);
     }
@@ -218,7 +219,7 @@ async function installSkillsHandler(
 
   if (skipped.length > 0) {
     if (lines.length > 0) lines.push('');
-    lines.push(`Skipped ${skipped.length} existing skill(s) (use --force to overwrite):`);
+    lines.push(t('install.skills.skipped', { count: skipped.length }));
     for (const skill of skipped) {
       lines.push(`  - ${skill}/`);
     }
@@ -226,18 +227,18 @@ async function installSkillsHandler(
 
   if (errors.length > 0) {
     if (lines.length > 0) lines.push('');
-    lines.push(`Failed to install ${errors.length} skill(s):`);
+    lines.push(t('install.skills.failed', { count: errors.length }));
     for (const error of errors) {
       lines.push(`  - ${error}`);
     }
   }
 
   if (installed.length === 0 && skipped.length === 0 && errors.length === 0) {
-    return failure('No skills were installed', ExitCode.GENERAL_ERROR);
+    return failure(t('install.skills.error.noSkills'), ExitCode.GENERAL_ERROR);
   }
 
   lines.push('');
-  lines.push(`Skills directory: ${targetDir}`);
+  lines.push(t('install.skills.directory', { path: targetDir }));
 
   return success(
     { installed, skipped, errors, targetDir },
@@ -247,13 +248,13 @@ async function installSkillsHandler(
 
 const skillsCommand: Command = {
   name: 'skills',
-  description: 'Install Claude skills to .claude/skills/',
+  description: t('install.skills.description'),
   usage: 'sf install skills [--force]',
   options: [
     {
       name: 'force',
       short: 'f',
-      description: 'Overwrite existing skill files',
+      description: t('install.skills.option.force'),
     },
   ],
   handler: installSkillsHandler,
@@ -265,34 +266,27 @@ const skillsCommand: Command = {
 
 export const installCommand: Command = {
   name: 'install',
-  description: 'Install stoneforge extensions',
+  description: t('install.description'),
   usage: 'sf install <subcommand> [options]',
-  help: `Install stoneforge extensions to the workspace.
-
-Subcommands:
-  skills    Install Claude skills to .claude/skills/
-
-Examples:
-  sf install skills          Install Claude skills to workspace
-  sf install skills --force  Overwrite existing skills`,
+  help: t('install.help'),
   subcommands: {
     skills: skillsCommand,
   },
   handler: async (args, _options): Promise<CommandResult> => {
     if (args.length === 0) {
       return failure(
-        `Missing subcommand. Use 'sf install skills'. Run 'sf install --help' for more information.`,
+        t('install.error.missingSubcommand'),
         ExitCode.INVALID_ARGUMENTS
       );
     }
     // Show "did you mean?" for unknown subcommands
     const subNames = Object.keys(installCommand.subcommands!);
     const suggestions = suggestCommands(args[0], subNames);
-    let msg = `Unknown subcommand: ${args[0]}`;
+    let msg = t('error.unknownSubcommand', { subcommand: args[0] });
     if (suggestions.length > 0) {
-      msg += `\n\nDid you mean?\n${suggestions.map(s => `  ${s}`).join('\n')}`;
+      msg += `\n\n${t('error.didYouMean')}\n${suggestions.map(s => `  ${s}`).join('\n')}`;
     }
-    msg += '\n\nRun "sf install --help" to see available subcommands.';
+    msg += '\n\n' + t('error.runHelp', { command: 'sf install' });
     return failure(msg, ExitCode.INVALID_ARGUMENTS);
   },
 };

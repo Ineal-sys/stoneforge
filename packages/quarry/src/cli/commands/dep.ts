@@ -21,6 +21,7 @@ import {
   getDependencyTypeDisplayName,
 } from '@stoneforge/core';
 import { createAPI } from '../db.js';
+import { t } from '../i18n/index.js';
 
 // ============================================================================
 // dep add Command
@@ -35,14 +36,14 @@ const depAddOptions: CommandOption[] = [
   {
     name: 'type',
     short: 't',
-    description: `Dependency type (${VALID_DEPENDENCY_TYPES.join(', ')})`,
+    description: t('dep.add.typeRequired'),
     hasValue: true,
     required: true,
   },
   {
     name: 'metadata',
     short: 'm',
-    description: 'JSON metadata for the dependency',
+    description: 'JSON metadata',
     hasValue: true,
   },
 ];
@@ -55,21 +56,21 @@ async function depAddHandler(
 
   if (!blockedId || !blockerId) {
     return failure(
-      'Usage: sf dependency add <blocked> <blocker> --type <type>\n\nExample: sf dependency add el-task1 el-task2 --type blocks',
+      t('dep.add.usageRequired'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
 
   if (!options.type) {
     return failure(
-      `Dependency type is required. Use --type <type>\nValid types: ${VALID_DEPENDENCY_TYPES.join(', ')}`,
+      t('dep.add.typeRequired'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
 
   if (!isValidDependencyType(options.type)) {
     return failure(
-      `Invalid dependency type: ${options.type}\nValid types: ${VALID_DEPENDENCY_TYPES.join(', ')}`,
+      t('dep.add.invalidType', { type: options.type }),
       ExitCode.VALIDATION
     );
   }
@@ -83,13 +84,13 @@ async function depAddHandler(
     // Verify blocked element exists
     const blocked = await api.get(blockedId as ElementId);
     if (!blocked) {
-      return failure(`Blocked element not found: ${blockedId}`, ExitCode.NOT_FOUND);
+      return failure(t('crud.show.notFound', { id: blockedId }), ExitCode.NOT_FOUND);
     }
 
     // Verify blocker element exists
     const blocker = await api.get(blockerId as ElementId);
     if (!blocker) {
-      return failure(`Blocker element not found: ${blockerId}`, ExitCode.NOT_FOUND);
+      return failure(t('crud.show.notFound', { id: blockerId }), ExitCode.NOT_FOUND);
     }
 
     // Parse metadata if provided
@@ -99,7 +100,7 @@ async function depAddHandler(
         metadata = JSON.parse(options.metadata);
       } catch {
         return failure(
-          `Invalid JSON metadata: ${options.metadata}`,
+          t('dep.add.invalidType', { type: options.metadata }),
           ExitCode.VALIDATION
         );
       }
@@ -127,7 +128,7 @@ async function depAddHandler(
     const typeName = getDependencyTypeDisplayName(dep.type);
     return success(
       dep,
-      `Added dependency: ${dep.blockedId} --[${typeName}]--> ${dep.blockerId}`
+      t('dep.add.added', { type: typeName, blockedId: dep.blockedId, blockerId: dep.blockerId })
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
@@ -135,24 +136,24 @@ async function depAddHandler(
     // Handle specific error cases
     if (message.includes('cycle') || message.includes('Cycle')) {
       return failure(
-        `Cannot add dependency: would create a cycle\n${message}`,
+        t('dep.add.circularReference'),
         ExitCode.VALIDATION
       );
     }
     if (message.includes('already exists') || message.includes('duplicate')) {
       return failure(
-        `Dependency already exists: ${blockedId} --[${options.type}]--> ${blockerId}`,
+        t('dep.add.alreadyExists'),
         ExitCode.VALIDATION
       );
     }
 
-    return failure(`Failed to add dependency: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('dep.add.failedToAdd', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const depAddCommand: Command = {
   name: 'add',
-  description: 'Add a dependency between elements',
+  description: t('dep.add.description'),
   usage: 'sf dependency add <blocked> <blocker> --type <type> [options]',
   help: `Add a dependency between two elements.
 
@@ -206,7 +207,7 @@ const depRemoveOptions: CommandOption[] = [
   {
     name: 'type',
     short: 't',
-    description: `Dependency type (${VALID_DEPENDENCY_TYPES.join(', ')})`,
+    description: t('dep.add.typeRequired'),
     hasValue: true,
     required: true,
   },
@@ -220,21 +221,21 @@ async function depRemoveHandler(
 
   if (!blockedId || !blockerId) {
     return failure(
-      'Usage: sf dependency remove <blocked> <blocker> --type <type>\nExample: sf dependency remove el-task1 el-task2 --type blocks',
+      t('dep.remove.usageRequired'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
 
   if (!options.type) {
     return failure(
-      `Dependency type is required. Use --type <type>\nValid types: ${VALID_DEPENDENCY_TYPES.join(', ')}`,
+      t('dep.add.typeRequired'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
 
   if (!isValidDependencyType(options.type)) {
     return failure(
-      `Invalid dependency type: ${options.type}\nValid types: ${VALID_DEPENDENCY_TYPES.join(', ')}`,
+      t('dep.add.invalidType', { type: options.type }),
       ExitCode.VALIDATION
     );
   }
@@ -263,24 +264,24 @@ async function depRemoveHandler(
       return success('');
     }
 
-    return success(null, `Removed dependency: ${blockedId} --[${typeName}]--> ${blockerId}`);
+    return success(null, t('dep.remove.removed', { blockedId, blockerId }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
 
     if (message.includes('not found') || message.includes('Not found')) {
       return failure(
-        `Dependency not found: ${blockedId} --[${options.type}]--> ${blockerId}`,
+        t('dep.remove.notFound'),
         ExitCode.NOT_FOUND
       );
     }
 
-    return failure(`Failed to remove dependency: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('dep.remove.failedToRemove', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const depRemoveCommand: Command = {
   name: 'remove',
-  description: 'Remove a dependency between elements',
+  description: t('dep.remove.description'),
   usage: 'sf dependency remove <blocked> <blocker> --type <type>',
   help: `Remove a dependency between two elements.
 
@@ -310,7 +311,7 @@ const depListOptions: CommandOption[] = [
   {
     name: 'type',
     short: 't',
-    description: 'Filter by dependency type',
+    description: t('crud.list.optionDescription.type'),
     hasValue: true,
   },
   {
@@ -330,14 +331,14 @@ async function depListHandler(
 
   if (!id) {
     return failure(
-      'Usage: sf dependency list <id> [options]\nExample: sf dependency list el-task1',
+      t('dep.list.idRequired'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
 
   if (options.type && !isValidDependencyType(options.type)) {
     return failure(
-      `Invalid dependency type: ${options.type}\nValid types: ${VALID_DEPENDENCY_TYPES.join(', ')}`,
+      t('dep.add.invalidType', { type: options.type }),
       ExitCode.VALIDATION
     );
   }
@@ -345,7 +346,7 @@ async function depListHandler(
   const direction = options.direction || 'both';
   if (!['out', 'in', 'both'].includes(direction)) {
     return failure(
-      'Invalid direction. Use "out" (dependencies), "in" (dependents), or "both"',
+      t('dep.list.idRequired'),
       ExitCode.VALIDATION
     );
   }
@@ -359,7 +360,7 @@ async function depListHandler(
     // Verify element exists
     const element = await api.get(id as ElementId);
     if (!element) {
-      return failure(`Element not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('crud.show.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     const types = options.type ? [options.type as DependencyType] : undefined;
@@ -395,7 +396,7 @@ async function depListHandler(
 
     if (direction === 'out' || direction === 'both') {
       if (dependencies.length === 0) {
-        lines.push('No outgoing dependencies');
+        lines.push(t('dep.list.noOutgoing', { id }));
       } else {
         lines.push(`Outgoing dependencies (${dependencies.length}):`);
         const headers = ['BLOCKER', 'TYPE', 'CREATED'];
@@ -414,7 +415,7 @@ async function depListHandler(
 
     if (direction === 'in' || direction === 'both') {
       if (dependents.length === 0) {
-        lines.push('No incoming dependencies');
+        lines.push(t('dep.list.noIncoming', { id }));
       } else {
         lines.push(`Incoming dependencies (${dependents.length}):`);
         const headers = ['BLOCKED', 'TYPE', 'CREATED'];
@@ -430,13 +431,13 @@ async function depListHandler(
     return success({ dependencies, dependents }, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to list dependencies: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('dep.list.failedToList', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const depListCommand: Command = {
   name: 'list',
-  description: 'List dependencies of an element',
+  description: t('dep.list.description'),
   usage: 'sf dependency list <id> [options]',
   help: `List dependencies of an element.
 
@@ -473,7 +474,7 @@ const depTreeOptions: CommandOption[] = [
   {
     name: 'depth',
     short: 'd',
-    description: 'Maximum depth to traverse (default: 5)',
+    description: t('dep.tree.option.depth'),
     hasValue: true,
     defaultValue: '5',
   },
@@ -493,7 +494,7 @@ function toTreeNode(
   // Prevent infinite loops
   if (visited.has(id)) {
     return {
-      label: `${id} (circular reference)`,
+      label: `${id} (${t('dep.add.circularReference').toLowerCase()})`,
       children: [],
     };
   }
@@ -522,14 +523,14 @@ async function depTreeHandler(
 
   if (!id) {
     return failure(
-      'Usage: sf dependency tree <id> [options]\nExample: sf dependency tree el-task1',
+      t('dep.tree.idRequired'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
 
   const depth = options.depth ? parseInt(options.depth, 10) : 5;
   if (isNaN(depth) || depth < 1) {
-    return failure('Depth must be a positive number', ExitCode.VALIDATION);
+    return failure(t('general.limitMustBePositive'), ExitCode.VALIDATION);
   }
 
   const { api, error } = createAPI(options);
@@ -541,7 +542,7 @@ async function depTreeHandler(
     // Verify element exists
     const element = await api.get(id as ElementId);
     if (!element) {
-      return failure(`Element not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('crud.show.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     // Get the dependency tree
@@ -574,15 +575,15 @@ async function depTreeHandler(
     const title = (tree.root.element as { title?: string }).title;
     const rootLabel = title ? `${id} - ${title}` : id;
 
-    lines.push(`Dependency tree for: ${rootLabel}`);
-    lines.push(`  Total nodes: ${tree.nodeCount}`);
-    lines.push(`  Dependency depth: ${tree.dependencyDepth}`);
-    lines.push(`  Dependent depth: ${tree.dependentDepth}`);
+    lines.push(t('dep.tree.treeFor', { id: rootLabel }));
+    lines.push(`  ${t('dep.tree.totalNodes')}: ${tree.nodeCount}`);
+    lines.push(`  ${t('dep.tree.dependencyDepth')}: ${tree.dependencyDepth}`);
+    lines.push(`  ${t('dep.tree.dependentDepth')}: ${tree.dependentDepth}`);
     lines.push('');
 
     // Show dependencies (what this element depends on)
     if (tree.root.dependencies.length > 0) {
-      lines.push('Dependencies (what this depends on):');
+      lines.push(t('dep.tree.dependenciesLabel'));
       const depsTree = toTreeNode(
         { ...tree.root, dependents: [] },
         'deps'
@@ -593,14 +594,14 @@ async function depTreeHandler(
         lines.push(formatter.tree(child));
       });
     } else {
-      lines.push('Dependencies: (none)');
+      lines.push(t('dep.tree.dependenciesNone'));
     }
 
     lines.push('');
 
     // Show dependents (what depends on this element)
     if (tree.root.dependents.length > 0) {
-      lines.push('Dependents (what depends on this):');
+      lines.push(t('dep.tree.dependentsLabel'));
       const dependentsTree = toTreeNode(
         { ...tree.root, dependencies: [] },
         'dependents'
@@ -611,36 +612,21 @@ async function depTreeHandler(
         lines.push(formatter.tree(child));
       });
     } else {
-      lines.push('Dependents: (none)');
+      lines.push(t('dep.tree.dependentsNone'));
     }
 
     return success(tree, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to get dependency tree: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('dep.tree.failedToTree', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const depTreeCommand: Command = {
   name: 'tree',
-  description: 'Show dependency tree for an element',
+  description: t('dep.tree.description'),
   usage: 'sf dependency tree <id> [options]',
-  help: `Show the dependency tree for an element.
-
-Arguments:
-  id    Element identifier
-
-Options:
-  -d, --depth <n>    Maximum depth to traverse (default: 5)
-
-The tree shows both:
-  - Dependencies: Elements this element depends on (downstream)
-  - Dependents: Elements that depend on this element (upstream)
-
-Examples:
-  sf dependency tree el-task1
-  sf dependency tree el-task1 --depth 3
-  sf dependency tree el-task1 --json`,
+  help: t('dep.tree.help'),
   options: depTreeOptions,
   handler: depTreeHandler as Command['handler'],
 };
@@ -651,23 +637,9 @@ Examples:
 
 export const depCommand: Command = {
   name: 'dependency',
-  description: 'Manage dependencies between elements',
+  description: t('dep.description'),
   usage: 'sf dependency <subcommand> [options]',
-  help: `Manage dependencies between elements.
-
-Subcommands:
-  add      Add a dependency between elements
-  remove   Remove a dependency
-  list     List dependencies of an element
-  tree     Show dependency tree for an element
-
-Examples:
-  sf dependency add el-task1 el-task2 --type blocks
-  sf dependency remove el-task1 el-task2 --type blocks
-  sf dependency list el-task1
-  sf dependency tree el-task1
-
-Use "sf dependency <subcommand> --help" for more information.`,
+  help: t('dep.help'),
   options: [],
   handler: depListHandler as Command['handler'], // Default to list when just "sf dep <id>" is used
   subcommands: {

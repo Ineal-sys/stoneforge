@@ -12,6 +12,7 @@
 import * as readline from 'node:readline';
 import type { Command, GlobalOptions, CommandResult, CommandOption } from '@stoneforge/quarry/cli';
 import { success, failure, ExitCode, getOutputMode } from '@stoneforge/quarry/cli';
+import { t } from '../i18n/index.js';
 
 // ============================================================================
 // Constants
@@ -62,7 +63,7 @@ async function serverRequest(
     if (message.includes('ECONNREFUSED') || message.includes('fetch failed')) {
       return {
         ok: false,
-        error: 'Cannot connect to orchestrator server. Is it running?',
+        error: t('daemon.connectFailed'),
       };
     }
     return { ok: false, error: message };
@@ -98,7 +99,7 @@ const daemonOptions: CommandOption[] = [
   {
     name: 'server',
     short: 's',
-    description: `Orchestrator server URL (default: ${DEFAULT_SERVER_URL})`,
+    description: t('daemon.option.server', { url: DEFAULT_SERVER_URL }),
     hasValue: true,
   },
 ];
@@ -117,7 +118,7 @@ async function daemonStartHandler(
   const result = await serverRequest(url, 'POST');
 
   if (!result.ok) {
-    return failure(`Failed to start daemon: ${result.error}`, ExitCode.GENERAL_ERROR);
+    return failure(t('daemon.start.failed', { error: result.error }), ExitCode.GENERAL_ERROR);
   }
 
   const mode = getOutputMode(options);
@@ -131,24 +132,14 @@ async function daemonStartHandler(
     return success(data.status ?? 'started');
   }
 
-  return success(data, data.message ?? 'Daemon started');
+  return success(data, data.message ?? t('daemon.start.started'));
 }
 
 export const daemonStartCommand: Command = {
   name: 'start',
-  description: 'Start the dispatch daemon',
+  description: t('daemon.start.description'),
   usage: 'sf daemon start [options]',
-  help: `Start the dispatch daemon.
-
-The daemon handles automatic task dispatch to agents based on
-configured rules and agent availability.
-
-Options:
-  -s, --server <url>    Orchestrator server URL (default: ${DEFAULT_SERVER_URL})
-
-Examples:
-  sf daemon start
-  sf daemon start --server http://localhost:8080`,
+  help: t('daemon.start.help'),
   options: daemonOptions,
   handler: daemonStartHandler as Command['handler'],
 };
@@ -166,7 +157,7 @@ const daemonStopOptions: CommandOption[] = [
   {
     name: 'force',
     short: 'f',
-    description: 'Skip confirmation prompt',
+    description: t('daemon.stop.option.force'),
   },
 ];
 
@@ -181,7 +172,7 @@ async function daemonStopHandler(
   const statusResult = await serverRequest(statusUrl, 'GET');
 
   if (!statusResult.ok) {
-    return failure(`Failed to check daemon status: ${statusResult.error}`, ExitCode.GENERAL_ERROR);
+    return failure(t('daemon.stop.statusCheckFailed', { error: statusResult.error }), ExitCode.GENERAL_ERROR);
   }
 
   const statusData = statusResult.data as { running?: boolean; status?: string };
@@ -190,18 +181,16 @@ async function daemonStopHandler(
   if (!statusData.running && statusData.status !== 'running') {
     const mode = getOutputMode(options);
     if (mode === 'json') {
-      return success({ status: 'not_running', message: 'Daemon is not running' });
+      return success({ status: 'not_running', message: t('daemon.stop.notRunning') });
     }
-    return success(null, 'Daemon is not running');
+    return success(null, t('daemon.stop.notRunning'));
   }
 
   // Confirm before stopping unless --force is set
   if (!options.force) {
-    const confirmed = await confirm(
-      'Stopping the daemon will halt all automatic task dispatch. Continue?'
-    );
+    const confirmed = await confirm(t('daemon.stop.confirm'));
     if (!confirmed) {
-      return success(null, 'Cancelled');
+      return success(null, t('daemon.stop.cancelled'));
     }
   }
 
@@ -210,7 +199,7 @@ async function daemonStopHandler(
   const result = await serverRequest(stopUrl, 'POST');
 
   if (!result.ok) {
-    return failure(`Failed to stop daemon: ${result.error}`, ExitCode.GENERAL_ERROR);
+    return failure(t('daemon.stop.failed', { error: result.error }), ExitCode.GENERAL_ERROR);
   }
 
   const mode = getOutputMode(options);
@@ -224,26 +213,14 @@ async function daemonStopHandler(
     return success(data.status ?? 'stopped');
   }
 
-  return success(data, data.message ?? 'Daemon stopped');
+  return success(data, data.message ?? t('daemon.stop.stopped'));
 }
 
 export const daemonStopCommand: Command = {
   name: 'stop',
-  description: 'Stop the dispatch daemon',
+  description: t('daemon.stop.description'),
   usage: 'sf daemon stop [options]',
-  help: `Stop the dispatch daemon.
-
-This will halt all automatic task dispatch. You will be prompted
-for confirmation unless --force is specified.
-
-Options:
-  -s, --server <url>    Orchestrator server URL (default: ${DEFAULT_SERVER_URL})
-  -f, --force           Skip confirmation prompt
-
-Examples:
-  sf daemon stop
-  sf daemon stop --force
-  sf daemon stop --server http://localhost:8080`,
+  help: t('daemon.stop.help'),
   options: daemonStopOptions,
   handler: daemonStopHandler as Command['handler'],
 };
@@ -262,7 +239,7 @@ async function daemonStatusHandler(
   const result = await serverRequest(url, 'GET');
 
   if (!result.ok) {
-    return failure(`Failed to get daemon status: ${result.error}`, ExitCode.GENERAL_ERROR);
+    return failure(t('daemon.status.failed', { error: result.error }), ExitCode.GENERAL_ERROR);
   }
 
   const mode = getOutputMode(options);
@@ -292,41 +269,41 @@ async function daemonStatusHandler(
   const lines: string[] = [];
   const isRunning = data.isRunning ?? data.running ?? data.status === 'running';
 
-  lines.push(`Status:    ${isRunning ? 'running' : 'stopped'}`);
+  lines.push(`${t('daemon.status.labelStatus')}:    ${isRunning ? 'running' : 'stopped'}`);
 
   if (data.uptime !== undefined) {
     const uptimeSeconds = Math.floor(data.uptime / 1000);
     const hours = Math.floor(uptimeSeconds / 3600);
     const minutes = Math.floor((uptimeSeconds % 3600) / 60);
     const seconds = uptimeSeconds % 60;
-    lines.push(`Uptime:    ${hours}h ${minutes}m ${seconds}s`);
+    lines.push(`${t('daemon.status.labelUptime')}:    ${hours}h ${minutes}m ${seconds}s`);
   }
 
   if (data.tasksDispatched !== undefined) {
-    lines.push(`Dispatched: ${data.tasksDispatched} task(s)`);
+    lines.push(`${t('daemon.status.labelDispatched')}: ${t('daemon.status.taskCount', { count: data.tasksDispatched })}`);
   }
 
   if (data.lastDispatchAt) {
-    lines.push(`Last dispatch: ${data.lastDispatchAt}`);
+    lines.push(`${t('daemon.status.labelLastDispatch')}: ${data.lastDispatchAt}`);
   }
 
   // Rate limit / sleep status
   if (data.rateLimit) {
     const rl = data.rateLimit;
     lines.push('');
-    lines.push(`Dispatch:  ${rl.isPaused ? '⏸ paused (rate limited)' : '▶ active'}`);
+    lines.push(`${t('daemon.status.labelDispatch')}:  ${rl.isPaused ? '⏸ ' + t('daemon.status.pausedRateLimited') : '▶ ' + t('daemon.status.active')}`);
 
     if (rl.limits.length > 0) {
-      lines.push('Rate-limited executables:');
+      lines.push(t('daemon.status.rateLimitedExecutables'));
       for (const limit of rl.limits) {
         const resetDate = new Date(limit.resetsAt);
-        lines.push(`  - ${limit.executable}: resets ${formatRelativeTime(resetDate)}`);
+        lines.push(`  - ${limit.executable}: ${t('daemon.status.resets', { time: formatRelativeTime(resetDate) })}`);
       }
     }
 
     if (rl.soonestReset) {
       const soonest = new Date(rl.soonestReset);
-      lines.push(`Soonest reset: ${formatRelativeTime(soonest)}`);
+      lines.push(`${t('daemon.status.soonestReset')}: ${formatRelativeTime(soonest)}`);
     }
   }
 
@@ -341,7 +318,7 @@ function formatRelativeTime(date: Date): string {
   const diff = date.getTime() - now;
 
   if (diff <= 0) {
-    return 'now (expired)';
+    return t('daemon.status.nowExpired');
   }
 
   const seconds = Math.floor(diff / 1000);
@@ -354,26 +331,14 @@ function formatRelativeTime(date: Date): string {
   if (hours === 0 && minutes < 5) parts.push(`${seconds % 60}s`);
 
   const timeStr = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-  return `${timeStr} (in ${parts.join(' ')})`;
+  return t('daemon.status.inTime', { time: timeStr, relative: parts.join(' ') });
 }
 
 export const daemonStatusCommand: Command = {
   name: 'status',
-  description: 'Show daemon status',
+  description: t('daemon.status.description'),
   usage: 'sf daemon status [options]',
-  help: `Show the current status of the dispatch daemon.
-
-Displays whether the daemon is running, dispatch statistics, and
-rate limit/sleep status including which executables are limited
-and when they reset.
-
-Options:
-  -s, --server <url>    Orchestrator server URL (default: ${DEFAULT_SERVER_URL})
-
-Examples:
-  sf daemon status
-  sf daemon status --json
-  sf daemon status --server http://localhost:8080`,
+  help: t('daemon.status.help'),
   options: daemonOptions,
   handler: daemonStatusHandler as Command['handler'],
 };
@@ -392,13 +357,13 @@ const daemonSleepOptions: CommandOption[] = [
   {
     name: 'until',
     short: 'u',
-    description: 'Sleep until a specific time (e.g., "3am", "Feb 22 at 9:30am", "tomorrow at 3pm")',
+    description: t('daemon.sleep.option.until'),
     hasValue: true,
   },
   {
     name: 'duration',
     short: 'd',
-    description: 'Sleep for a duration in seconds',
+    description: t('daemon.sleep.option.duration'),
     hasValue: true,
   },
 ];
@@ -412,19 +377,14 @@ async function daemonSleepHandler(
 
   if (!options.until && !options.duration) {
     return failure(
-      'Either --until or --duration is required.\n' +
-      'Examples:\n' +
-      '  sf daemon sleep --until "3am"\n' +
-      '  sf daemon sleep --until "Feb 22 at 9:30am"\n' +
-      '  sf daemon sleep --until "tomorrow at 3pm"\n' +
-      '  sf daemon sleep --duration 3600',
+      t('daemon.sleep.requireUntilOrDuration'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
 
   if (options.until && options.duration) {
     return failure(
-      'Specify either --until or --duration, not both.',
+      t('daemon.sleep.exclusiveOptions'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -436,7 +396,7 @@ async function daemonSleepHandler(
   } else if (options.duration) {
     const duration = Number(options.duration);
     if (isNaN(duration) || duration <= 0) {
-      return failure('Duration must be a positive number (seconds)', ExitCode.INVALID_ARGUMENTS);
+      return failure(t('daemon.sleep.invalidDuration'), ExitCode.INVALID_ARGUMENTS);
     }
     body.duration = duration;
   }
@@ -444,7 +404,7 @@ async function daemonSleepHandler(
   const result = await serverRequest(url, 'POST', body);
 
   if (!result.ok) {
-    return failure(`Failed to put daemon to sleep: ${result.error}`, ExitCode.GENERAL_ERROR);
+    return failure(t('daemon.sleep.failed', { error: result.error }), ExitCode.GENERAL_ERROR);
   }
 
   const mode = getOutputMode(options);
@@ -460,41 +420,17 @@ async function daemonSleepHandler(
 
   const sleepUntilDate = data.sleepUntil ? new Date(data.sleepUntil) : undefined;
   const message = sleepUntilDate
-    ? `Daemon dispatch paused until ${sleepUntilDate.toLocaleString()}`
-    : (data.message ?? 'Daemon dispatch paused');
+    ? t('daemon.sleep.pausedUntil', { time: sleepUntilDate.toLocaleString() })
+    : (data.message ?? t('daemon.sleep.paused'));
 
   return success(data, message);
 }
 
 export const daemonSleepCommand: Command = {
   name: 'sleep',
-  description: 'Pause dispatch until a specified time',
+  description: t('daemon.sleep.description'),
   usage: 'sf daemon sleep [options]',
-  help: `Pause the dispatch daemon until a specified time.
-
-This manually puts the daemon into a rate-limit sleep state,
-pausing all task dispatch until the specified time. Non-dispatch
-polls (inbox, plan auto-complete, etc.) continue running.
-
-Use this as a manual escape hatch when rate limit time parsing
-fails or produces incorrect results.
-
-Options:
-  -s, --server <url>      Orchestrator server URL (default: ${DEFAULT_SERVER_URL})
-  -u, --until <time>      Sleep until a specific time
-  -d, --duration <secs>   Sleep for a duration in seconds
-
-Time formats for --until:
-  "3am"                   Next occurrence of 3:00 AM
-  "9:30pm"                Next occurrence of 9:30 PM
-  "Feb 22 at 9:30am"      Specific date and time
-  "tomorrow at 3pm"       Tomorrow at 3:00 PM
-
-Examples:
-  sf daemon sleep --until "3am"
-  sf daemon sleep --until "Feb 22 at 9:30am"
-  sf daemon sleep --until "tomorrow at 3pm"
-  sf daemon sleep --duration 3600`,
+  help: t('daemon.sleep.help'),
   options: daemonSleepOptions,
   handler: daemonSleepHandler as Command['handler'],
 };
@@ -513,7 +449,7 @@ async function daemonWakeHandler(
   const result = await serverRequest(url, 'POST');
 
   if (!result.ok) {
-    return failure(`Failed to wake daemon: ${result.error}`, ExitCode.GENERAL_ERROR);
+    return failure(t('daemon.wake.failed', { error: result.error }), ExitCode.GENERAL_ERROR);
   }
 
   const mode = getOutputMode(options);
@@ -527,24 +463,14 @@ async function daemonWakeHandler(
     return success('awake');
   }
 
-  return success(data, data.message ?? 'Daemon dispatch resumed. Rate limits cleared.');
+  return success(data, data.message ?? t('daemon.wake.resumed'));
 }
 
 export const daemonWakeCommand: Command = {
   name: 'wake',
-  description: 'Immediately resume dispatch',
+  description: t('daemon.wake.description'),
   usage: 'sf daemon wake [options]',
-  help: `Immediately resume daemon dispatch.
-
-Clears all rate limit entries and the sleep timer, allowing
-the daemon to resume normal task dispatch on the next poll cycle.
-
-Options:
-  -s, --server <url>    Orchestrator server URL (default: ${DEFAULT_SERVER_URL})
-
-Examples:
-  sf daemon wake
-  sf daemon wake --server http://localhost:8080`,
+  help: t('daemon.wake.help'),
   options: daemonOptions,
   handler: daemonWakeHandler as Command['handler'],
 };
@@ -555,30 +481,9 @@ Examples:
 
 export const daemonCommand: Command = {
   name: 'daemon',
-  description: 'Manage the dispatch daemon',
+  description: t('daemon.description'),
   usage: 'sf daemon <subcommand> [options]',
-  help: `Manage the dispatch daemon.
-
-The dispatch daemon handles automatic task assignment to agents
-based on configured rules and agent availability.
-
-Subcommands:
-  start     Start the dispatch daemon
-  stop      Stop the dispatch daemon
-  status    Show daemon status (including rate limit info)
-  sleep     Pause dispatch until a specified time
-  wake      Immediately resume dispatch
-
-Options:
-  -s, --server <url>    Orchestrator server URL (default: ${DEFAULT_SERVER_URL})
-
-Examples:
-  sf daemon start
-  sf daemon stop
-  sf daemon status
-  sf daemon sleep --until "3am"
-  sf daemon sleep --duration 3600
-  sf daemon wake`,
+  help: t('daemon.help'),
   subcommands: {
     start: daemonStartCommand,
     stop: daemonStopCommand,

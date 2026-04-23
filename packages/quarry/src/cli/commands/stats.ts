@@ -8,6 +8,7 @@ import type { Command, GlobalOptions, CommandResult } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
 import type { QuarryAPI } from '../../api/types.js';
 import { createAPI } from '../db.js';
+import { t } from '../i18n/index.js';
 
 // ============================================================================
 // Stats Handler
@@ -39,12 +40,12 @@ async function statsHandler(
     // Build human-readable output
     const lines: string[] = [];
 
-    lines.push('Workspace Statistics');
+    lines.push(t('stats.label.workspaceStats'));
     lines.push('');
 
     // Element counts
-    lines.push('Elements:');
-    lines.push(`  Total: ${stats.totalElements}`);
+    lines.push(t('stats.label.elements'));
+    lines.push(`  ${t('stats.label.total')}: ${stats.totalElements}`);
     for (const [type, count] of Object.entries(stats.elementsByType)) {
       if (count > 0) {
         lines.push(`  ${type}: ${count}`);
@@ -53,25 +54,25 @@ async function statsHandler(
     lines.push('');
 
     // Task status
-    lines.push('Tasks:');
-    lines.push(`  Ready: ${stats.readyTasks}`);
-    lines.push(`  Blocked: ${stats.blockedTasks}`);
+    lines.push(t('stats.label.tasks'));
+    lines.push(`  ${t('stats.label.ready')}: ${stats.readyTasks}`);
+    lines.push(`  ${t('stats.label.blocked')}: ${stats.blockedTasks}`);
     lines.push('');
 
     // Dependencies and events
-    lines.push('Relations:');
-    lines.push(`  Dependencies: ${stats.totalDependencies}`);
-    lines.push(`  Events: ${stats.totalEvents}`);
+    lines.push(t('stats.label.relations'));
+    lines.push(`  ${t('stats.label.dependencies')}: ${stats.totalDependencies}`);
+    lines.push(`  ${t('stats.label.events')}: ${stats.totalEvents}`);
     lines.push('');
 
     // Database size
-    lines.push('Storage:');
-    lines.push(`  Database size: ${formatBytes(stats.databaseSize)}`);
+    lines.push(t('stats.label.storage'));
+    lines.push(`  ${t('stats.label.dbSize')}: ${formatBytes(stats.databaseSize)}`);
 
     return success(stats, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to get stats: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('stats.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
@@ -81,18 +82,8 @@ async function statsHandler(
 
 export const statsCommand: Command = {
   name: 'stats',
-  description: 'Show workspace statistics',
+  description: t('stats.description'),
   usage: 'sf stats',
-  help: `Show statistics about the Stoneforge workspace.
-
-Displays:
-- Total element counts by type
-- Ready and blocked task counts
-- Dependency and event counts
-- Database size
-
-Examples:
-  sf stats              Show all statistics
-  sf stats --json       Output as JSON`,
+  help: t('stats.help'),
   handler: statsHandler,
 };

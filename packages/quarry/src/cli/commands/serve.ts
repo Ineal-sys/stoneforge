@@ -13,6 +13,7 @@ import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Command, GlobalOptions, CommandResult } from '../types.js';
 import { failure, ExitCode } from '../types.js';
+import { t } from '../i18n/index.js';
 import { findStoneforgeDir } from '../../config/file.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -93,26 +94,26 @@ function printBrandedSummary(summary: ServerSummary): void {
   lines.push('');
 
   // Success indicator
-  lines.push(`  ${c.green}✔${c.reset} ${c.bold}Server ready${c.reset}`);
+  lines.push(`  ${c.green}✔${c.reset} ${c.bold}${t('serve.serverReady')}${c.reset}`);
   lines.push('');
 
   // Key-value summary
   const labelWidth = 14;
   const pad = (label: string) => `  ${c.dim}${label.padEnd(labelWidth)}${c.reset}`;
 
-  lines.push(`${pad('Dashboard')}${c.cyan}${summary.url}${c.reset}`);
+  lines.push(`${pad(t('serve.label.dashboard'))}${c.cyan}${summary.url}${c.reset}`);
 
   if (summary.agentCount !== undefined) {
-    lines.push(`${pad('Agents')}${summary.agentCount} loaded`);
+    lines.push(`${pad(t('serve.label.agents'))}${summary.agentCount} ${t('serve.label.loaded')}`);
   }
 
   if (summary.daemonStatus) {
     const statusText = formatDaemonStatus(summary.daemonStatus, c);
-    lines.push(`${pad('Daemon')}${statusText}`);
+    lines.push(`${pad(t('serve.label.daemon'))}${statusText}`);
   }
 
   lines.push('');
-  lines.push(`  ${c.dim}Press Ctrl+C to stop${c.reset}`);
+  lines.push(`  ${c.dim}${t('serve.pressCtrlC')}${c.reset}`);
   lines.push('');
 
   console.log(lines.join('\n'));
@@ -124,13 +125,13 @@ function formatDaemonStatus(
 ): string {
   switch (status) {
     case 'running':
-      return `${c.green}running${c.reset}`;
+      return `${c.green}${t('serve.daemon.running')}${c.reset}`;
     case 'no-git':
-      return `${c.dim}disabled (no git repository)${c.reset}`;
+      return `${c.dim}${t('serve.daemon.noGit')}${c.reset}`;
     case 'disabled':
-      return `${c.dim}disabled (DAEMON_AUTO_START=false)${c.reset}`;
+      return `${c.dim}${t('serve.daemon.disabled')}${c.reset}`;
     case 'stopped-by-user':
-      return `${c.dim}stopped (by user)${c.reset}`;
+      return `${c.dim}${t('serve.daemon.stoppedByUser')}${c.reset}`;
     default:
       return `${c.dim}${status}${c.reset}`;
   }
@@ -186,7 +187,7 @@ function smithyWebRoot(): string | undefined {
 
 /**
  * Open a URL in the user's default browser.
- * Fire-and-forget — failures are logged but never crash the server.
+ * Fire-and-forget -- failures are logged but never crash the server.
  */
 function openInBrowser(url: string): void {
   const platform = process.platform;
@@ -201,7 +202,7 @@ function openInBrowser(url: string): void {
   exec(cmd, (err) => {
     if (err) {
       const c = createColors();
-      console.log(`  ${c.dim}Could not open browser automatically. Visit ${url}${c.reset}`);
+      console.log(`  ${c.dim}${t('serve.browserOpenFailed', { url })}${c.reset}`);
     }
   });
 }
@@ -233,11 +234,11 @@ function writeDashboardMarker(): void {
     mkdirSync(dirname(markerPath), { recursive: true });
     writeFileSync(markerPath, `${process.pid}\n${Date.now()}\n`, 'utf-8');
   } catch {
-    // Non-critical — ignore write failures
+    // Non-critical -- ignore write failures
   }
 }
 
-/** Maximum age (in ms) before a marker file is considered stale — 24 hours. */
+/** Maximum age (in ms) before a marker file is considered stale -- 24 hours. */
 const MARKER_STALE_MS = 24 * 60 * 60 * 1000;
 
 /**
@@ -252,7 +253,7 @@ function hasDashboardMarker(): boolean {
     const stat = statSync(markerPath);
     const ageMs = Date.now() - stat.mtimeMs;
     if (ageMs > MARKER_STALE_MS) {
-      // Stale marker — treat as non-existent
+      // Stale marker -- treat as non-existent
       try { unlinkSync(markerPath); } catch { /* ignore */ }
       return false;
     }
@@ -264,7 +265,7 @@ function hasDashboardMarker(): boolean {
 
 /**
  * Register process exit handlers for graceful shutdown.
- * Note: The dashboard marker is intentionally NOT cleaned up on exit —
+ * Note: The dashboard marker is intentionally NOT cleaned up on exit --
  * it must persist across server restarts so that `sf serve` knows a tab
  * was previously opened and skips opening a new one. Stale markers
  * (>24h) are cleaned up by hasDashboardMarker() instead.
@@ -299,11 +300,11 @@ function waitForReconnect(hasConnectedClients: () => boolean, timeoutMs = 8000, 
 /**
  * Determine whether to open a browser tab.
  *
- * - `--open` flag → always open regardless
- * - No marker file → first-time start → open browser
- * - Fresh marker exists → a tab was previously opened → wait for WebSocket
+ * - `--open` flag -> always open regardless
+ * - No marker file -> first-time start -> open browser
+ * - Fresh marker exists -> a tab was previously opened -> wait for WebSocket
  *   reconnect, only open if no client connects within timeout
- * - Stale marker (>24h) → tab was likely closed long ago → open browser
+ * - Stale marker (>24h) -> tab was likely closed long ago -> open browser
  */
 async function shouldOpenBrowser(
   forceOpen: boolean,
@@ -311,7 +312,7 @@ async function shouldOpenBrowser(
 ): Promise<boolean> {
   if (forceOpen) return true;
   if (!hasDashboardMarker()) return true;
-  // Marker exists — an old tab may still be open. Wait for it to reconnect.
+  // Marker exists -- an old tab may still be open. Wait for it to reconnect.
   if (hasConnectedClients) {
     const reconnected = await waitForReconnect(hasConnectedClients);
     return !reconnected;
@@ -392,12 +393,12 @@ async function startSmithy(options: GlobalOptions): Promise<CommandResult> {
     startSmithyServer = mod.startSmithyServer;
   } else {
     try {
-      // @ts-ignore — smithy is an optional runtime dependency, may not be installed
+      // @ts-ignore -- smithy is an optional runtime dependency, may not be installed
       const mod = await import('@stoneforge/smithy/server');
       startSmithyServer = mod.startSmithyServer;
     } catch {
       return failure(
-        'Smithy is not installed. Install @stoneforge/smithy to use `sf serve smithy`.',
+        t('serve.error.smithyNotInstalled'),
         ExitCode.GENERAL_ERROR
       );
     }
@@ -477,13 +478,13 @@ async function startSmithy(options: GlobalOptions): Promise<CommandResult> {
 
 export const serveCommand: Command = {
   name: 'serve',
-  description: 'Start a Stoneforge server (smithy, quarry)',
+  description: t('serve.description'),
   usage: 'sf serve [quarry|smithy] [options]',
   options: [
-    { name: 'port', short: 'p', description: 'Port to listen on', hasValue: true },
-    { name: 'host', short: 'H', description: 'Host to bind to', hasValue: true, defaultValue: 'localhost' },
-    { name: 'no-open', description: 'Do not open browser automatically', hasValue: false },
-    { name: 'open', description: 'Force open a new browser tab even if one was previously opened', hasValue: false },
+    { name: 'port', short: 'p', description: t('serve.option.port'), hasValue: true },
+    { name: 'host', short: 'H', description: t('serve.option.host'), hasValue: true, defaultValue: 'localhost' },
+    { name: 'no-open', description: t('serve.option.noOpen'), hasValue: false },
+    { name: 'open', description: t('serve.option.open'), hasValue: false },
   ],
   handler: async (args: string[], options: GlobalOptions): Promise<CommandResult> => {
     const target = args[0];
@@ -499,17 +500,17 @@ export const serveCommand: Command = {
 
       if (target) {
         return failure(
-          `Unknown server target: ${target}. Use 'quarry' or 'smithy'.`,
+          t('serve.error.unknownTarget', { target }),
           ExitCode.INVALID_ARGUMENTS
         );
       }
 
-      // No target specified — try smithy first, fall back to quarry
+      // No target specified -- try smithy first, fall back to quarry
       if (getSmithyRegistration()) {
         return await startSmithy(options);
       }
       try {
-        // @ts-ignore — smithy is an optional runtime dependency, may not be installed
+        // @ts-ignore -- smithy is an optional runtime dependency, may not be installed
         await import('@stoneforge/smithy/server');
         return await startSmithy(options);
       } catch {
@@ -517,7 +518,7 @@ export const serveCommand: Command = {
       }
     } catch (error) {
       return failure(
-        `Failed to start server: ${error instanceof Error ? error.message : String(error)}`,
+        t('serve.error.failed', { message: error instanceof Error ? error.message : String(error) }),
         ExitCode.GENERAL_ERROR
       );
     }

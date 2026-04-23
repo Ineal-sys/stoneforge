@@ -5,6 +5,7 @@
  */
 
 import type { OutputMode, CommandResult } from './types.js';
+import { t } from './i18n/index.js';
 
 // ============================================================================
 // Formatter Interface
@@ -55,12 +56,12 @@ class HumanFormatter implements OutputFormatter {
   }
 
   error(result: CommandResult): string {
-    return `Error: ${result.error}`;
+    return t('formatter.error', { error: result.error });
   }
 
   table(headers: string[], rows: unknown[][]): string {
     if (rows.length === 0) {
-      return 'No results';
+      return t('formatter.noResults');
     }
 
     // Calculate column widths
@@ -147,26 +148,26 @@ class VerboseFormatter implements OutputFormatter {
       const details = Object.entries(result.data as Record<string, unknown>)
         .map(([k, v]) => `  ${k}: ${JSON.stringify(v)}`)
         .join('\n');
-      return `${basic}\n\nDetails:\n${details}`;
+      return `${basic}\n\n${t('formatter.details')}:\n${details}`;
     }
 
     return basic;
   }
 
   error(result: CommandResult): string {
-    const lines: string[] = [`Error: ${result.error}`];
+    const lines: string[] = [t('formatter.error', { error: result.error })];
 
     // Add exit code
-    lines.push(`  Code: ${result.exitCode}`);
+    lines.push(`  ${t('formatter.code')}: ${result.exitCode}`);
 
     // Add details if available
     if (result.data && typeof result.data === 'object') {
-      lines.push(`  Details: ${JSON.stringify(result.data)}`);
+      lines.push(`  ${t('formatter.details')}: ${JSON.stringify(result.data)}`);
     }
 
     // Add stack trace hint
     lines.push('');
-    lines.push('For more details, check the application logs.');
+    lines.push(t('formatter.checkLogs'));
 
     return lines.join('\n');
   }
@@ -341,7 +342,7 @@ function formatValue(value: unknown): string {
     return '-';
   }
   if (typeof value === 'boolean') {
-    return value ? 'yes' : 'no';
+    return value ? t('formatter.yes') : t('formatter.no');
   }
   if (Array.isArray(value)) {
     if (value.length === 0) return '-';
@@ -392,17 +393,17 @@ export function getStatusIcon(status: string): string {
  * Event type display names
  */
 export const EVENT_TYPE_DISPLAY: Record<string, string> = {
-  created: 'Created',
-  updated: 'Updated',
-  closed: 'Closed',
-  reopened: 'Reopened',
-  deleted: 'Deleted',
-  dependency_added: 'Dependency Added',
-  dependency_removed: 'Dependency Removed',
-  tag_added: 'Tag Added',
-  tag_removed: 'Tag Removed',
-  member_added: 'Member Added',
-  member_removed: 'Member Removed',
+  created: t('event.created'),
+  updated: t('event.updated'),
+  closed: t('event.closed'),
+  reopened: t('event.reopened'),
+  deleted: t('event.deleted'),
+  dependency_added: t('event.dependencyAdded'),
+  dependency_removed: t('event.dependencyRemoved'),
+  tag_added: t('event.tagAdded'),
+  tag_removed: t('event.tagRemoved'),
+  member_added: t('event.memberAdded'),
+  member_removed: t('event.memberRemoved'),
 };
 
 /**
@@ -444,7 +445,7 @@ export function formatEvent(event: EventData): string {
   const time = formatTimestamp(event.createdAt);
   const actor = event.actor.replace(/^.*:/, ''); // Remove prefix (e.g., "user:alice" -> "alice")
 
-  return `${icon} ${type} by ${actor} at ${time}`;
+  return `${icon} ${type} ${t('event.by')} ${actor} ${t('event.at')} ${time}`;
 }
 
 /**
@@ -458,25 +459,25 @@ export function formatTimestamp(timestamp: string): string {
 
     // Within last minute
     if (diff < 60_000) {
-      return 'just now';
+      return t('time.justNow');
     }
 
     // Within last hour
     if (diff < 3_600_000) {
       const mins = Math.floor(diff / 60_000);
-      return `${mins}m ago`;
+      return t('time.minutesAgo', { count: mins });
     }
 
     // Within last day
     if (diff < 86_400_000) {
       const hours = Math.floor(diff / 3_600_000);
-      return `${hours}h ago`;
+      return t('time.hoursAgo', { count: hours });
     }
 
     // Within last week
     if (diff < 604_800_000) {
       const days = Math.floor(diff / 86_400_000);
-      return `${days}d ago`;
+      return t('time.daysAgo', { count: days });
     }
 
     // Otherwise show date
@@ -491,7 +492,7 @@ export function formatTimestamp(timestamp: string): string {
  */
 export function formatTimeline(events: EventData[]): string {
   if (events.length === 0) {
-    return 'No events';
+    return t('formatter.noEvents');
   }
 
   const lines: string[] = [];
@@ -506,10 +507,10 @@ export function formatTimeline(events: EventData[]): string {
  */
 export function formatEventsTable(events: EventData[]): string {
   if (events.length === 0) {
-    return 'No events';
+    return t('formatter.noEvents');
   }
 
-  const headers = ['TIME', 'TYPE', 'ACTOR', 'CHANGES'];
+  const headers = [t('label.time'), t('label.type'), t('label.actor'), t('label.changes')];
   const rows = events.map(event => {
     const time = formatTimestamp(event.createdAt);
     const type = EVENT_TYPE_DISPLAY[event.eventType] ?? event.eventType;
@@ -539,16 +540,16 @@ export function formatEventsTable(events: EventData[]): string {
  */
 function formatChanges(event: EventData): string {
   if (event.eventType === 'created') {
-    return 'New element';
+    return t('event.newElement');
   }
   if (event.eventType === 'deleted') {
-    return 'Element deleted';
+    return t('event.elementDeleted');
   }
   if (event.eventType === 'closed') {
-    return 'Status → closed';
+    return t('event.statusClosed');
   }
   if (event.eventType === 'reopened') {
-    return 'Status → open';
+    return t('event.statusOpen');
   }
   if (event.eventType === 'dependency_added' || event.eventType === 'dependency_removed') {
     const depInfo = event.newValue ?? event.oldValue;
@@ -559,7 +560,7 @@ function formatChanges(event: EventData): string {
         return `${depType ?? 'dep'}: ${blockerId}`;
       }
     }
-    return event.eventType === 'dependency_added' ? 'Added' : 'Removed';
+    return event.eventType === 'dependency_added' ? t('event.added') : t('event.removed');
   }
 
   // For updates, show changed fields
@@ -573,7 +574,7 @@ function formatChanges(event: EventData): string {
         const oldStr = oldVal === undefined || oldVal === null ? '-' : String(oldVal);
         const newStr = newVal === undefined || newVal === null ? '-' : String(newVal);
         if (oldStr.length > 20) {
-          changes.push(`${key} changed`);
+          changes.push(t('event.fieldChanged', { field: key }));
         } else {
           changes.push(`${key}: ${oldStr} → ${newStr}`);
         }

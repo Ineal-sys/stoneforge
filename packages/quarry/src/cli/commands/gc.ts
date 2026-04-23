@@ -13,6 +13,7 @@ import type { QuarryAPI } from '../../api/types.js';
 import type { Workflow } from '@stoneforge/core';
 import { suggestCommands } from '../suggest.js';
 import { createAPI } from '../db.js';
+import { t } from '../i18n/index.js';
 
 // ============================================================================
 // Constants
@@ -35,18 +36,18 @@ const gcTasksOptions: CommandOption[] = [
   {
     name: 'age',
     short: 'a',
-    description: `Maximum age in days (default: ${DEFAULT_GC_AGE_DAYS})`,
+    description: t('gc.option.age', { default: String(DEFAULT_GC_AGE_DAYS) }),
     hasValue: true,
   },
   {
     name: 'dry-run',
-    description: 'Show what would be deleted without deleting',
+    description: t('gc.option.dryRun'),
     hasValue: false,
   },
   {
     name: 'limit',
     short: 'l',
-    description: 'Maximum number of tasks to delete',
+    description: t('gc.option.limit'),
     hasValue: true,
   },
 ];
@@ -71,7 +72,7 @@ async function gcTasksHandler(
     // Parse limit option
     const limit = options.limit ? parseInt(options.limit, 10) : undefined;
     if (options.limit && (isNaN(limit!) || limit! < 1)) {
-      return failure('Invalid limit value. Must be a positive integer.', ExitCode.INVALID_ARGUMENTS);
+      return failure(t('general.limitMustBePositive'), ExitCode.INVALID_ARGUMENTS);
     }
 
     const dryRun = !!options['dry-run'];
@@ -87,17 +88,17 @@ async function gcTasksHandler(
     if (gcResult.tasksDeleted === 0) {
       return success(
         { deleted: 0 },
-        'No tasks eligible for garbage collection (tasks are now GC\'d via their parent workflows)'
+        t('gc.noTasksEligible')
       );
     }
 
     return success(
       gcResult,
-      `Garbage collected ${gcResult.tasksDeleted} task(s), ${gcResult.dependenciesDeleted} dependency(ies)`
+      t('gc.collectedTasks', { count: gcResult.tasksDeleted })
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to garbage collect tasks: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('gc.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
@@ -178,7 +179,7 @@ async function gcWorkflowsHandler(
     // Parse limit option
     const limit = options.limit ? parseInt(options.limit, 10) : undefined;
     if (options.limit && (isNaN(limit!) || limit! < 1)) {
-      return failure('Invalid limit value. Must be a positive integer.', ExitCode.INVALID_ARGUMENTS);
+      return failure(t('general.limitMustBePositive'), ExitCode.INVALID_ARGUMENTS);
     }
 
     const dryRun = !!options['dry-run'];
@@ -202,7 +203,7 @@ async function gcWorkflowsHandler(
       const toShow = limit ? eligibleWorkflows.slice(0, limit) : eligibleWorkflows;
 
       if (toShow.length === 0) {
-        return success({ wouldDelete: [], count: 0 }, 'No workflows eligible for garbage collection');
+        return success({ wouldDelete: [], count: 0 }, t('gc.noWorkflowsEligible'));
       }
 
       if (mode === 'json') {
@@ -227,7 +228,7 @@ async function gcWorkflowsHandler(
       const table = formatter.table(headers, rows);
       return success(
         { wouldDelete: toShow.map(w => w.id), count: toShow.length },
-        `Would delete ${toShow.length} workflow(s):\n${table}`
+        t('gc.dryRun') + ' ' + t('gc.wouldCollectWorkflows', { count: toShow.length }) + `\n${table}`
       );
     }
 
@@ -239,16 +240,16 @@ async function gcWorkflowsHandler(
     });
 
     if (gcResult.workflowsDeleted === 0) {
-      return success({ deleted: 0 }, 'No workflows eligible for garbage collection');
+      return success({ deleted: 0 }, t('gc.noWorkflowsEligible'));
     }
 
     return success(
       gcResult,
-      `Garbage collected ${gcResult.workflowsDeleted} workflow(s), ${gcResult.tasksDeleted} task(s), ${gcResult.dependenciesDeleted} dependency(ies)`
+      t('gc.collectedWorkflows', { count: gcResult.workflowsDeleted })
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to garbage collect workflows: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('gc.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
@@ -284,7 +285,7 @@ Examples:
 
 export const gcCommand: Command = {
   name: 'gc',
-  description: 'Garbage collect old ephemeral data',
+  description: t('gc.description'),
   usage: 'sf gc <subcommand> [options]',
   help: `Garbage collect old ephemeral data.
 
@@ -317,11 +318,11 @@ Examples:
     // Show "did you mean?" for unknown subcommands
     const subNames = Object.keys(gcCommand.subcommands!);
     const suggestions = suggestCommands(args[0], subNames);
-    let msg = `Unknown subcommand: ${args[0]}`;
+    let msg = t('suggest.unknownSubcommand', { subcommand: args[0] });
     if (suggestions.length > 0) {
-      msg += `\n\nDid you mean?\n${suggestions.map(s => `  ${s}`).join('\n')}`;
+      msg += `\n\n${t('suggest.didYouMean')}\n${suggestions.map(s => `  ${s}`).join('\n')}`;
     }
-    msg += '\n\nRun "sf gc --help" to see available subcommands.';
+    msg += '\n\n' + t('suggest.seeHelp', { command: 'gc' });
     return failure(msg, ExitCode.INVALID_ARGUMENTS);
   },
 };

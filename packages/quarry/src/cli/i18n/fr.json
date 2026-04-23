@@ -1,0 +1,1366 @@
+{
+  "formatter": {
+    "error": "Erreur : {{error}}",
+    "noResults": "Aucun résultat",
+    "details": "Détails",
+    "code": "Code",
+    "checkLogs": "Consultez les journaux pour plus de détails.",
+    "yes": "Oui",
+    "no": "Non",
+    "noEvents": "Aucun événement"
+  },
+  "label": {
+    "time": "Heure",
+    "type": "Type",
+    "actor": "Acteur",
+    "changes": "Modifications"
+  },
+  "time": {
+    "justNow": "à l'instant",
+    "minutesAgo": "il y a {{count}} minute(s)",
+    "hoursAgo": "il y a {{count}} heure(s)",
+    "daysAgo": "il y a {{count}} jour(s)"
+  },
+  "event": {
+    "created": "Créé",
+    "updated": "Mis à jour",
+    "closed": "Fermé",
+    "reopened": "Réouvert",
+    "deleted": "Supprimé",
+    "dependencyAdded": "Dépendance ajoutée",
+    "dependencyRemoved": "Dépendance supprimée",
+    "tagAdded": "Étiquette ajoutée",
+    "tagRemoved": "Étiquette supprimée",
+    "memberAdded": "Membre ajouté",
+    "memberRemoved": "Membre retiré",
+    "by": "par",
+    "at": "à",
+    "newElement": "Nouvel élément",
+    "elementDeleted": "Élément supprimé",
+    "statusClosed": "Statut : fermé",
+    "statusOpen": "Statut : ouvert",
+    "added": "Ajouté",
+    "removed": "Retiré",
+    "fieldChanged": "{{field}} modifié"
+  },
+  "db": {
+    "noDatabase": "Aucune base de données trouvée. Exécutez « sf init » pour initialiser un espace de travail, ou spécifiez un chemin --db",
+    "failedToOpen": "Impossible d'ouvrir la base de données : {{message}}"
+  },
+  "parser": {
+    "optionRequiresValue": "L'option {{option}} requiert une valeur",
+    "unknownOption": "Option inconnue : {{option}}",
+    "requiredOptionMissing": "L'option obligatoire --{{option}} est manquante",
+    "globalOptionsTitle": "Options globales :",
+    "commandOptionsTitle": "Options de commande :"
+  },
+  "runner": {
+    "unknownCommand": "Commande inconnue : {{command}}",
+    "didYouMean": "Vouliez-vous dire ?",
+    "seeHelp": "Exécutez « sf --help » pour voir les commandes disponibles."
+  },
+  "suggest": {
+    "unknownSubcommand": "Sous-commande inconnue : {{subcommand}}",
+    "didYouMean": "Vouliez-vous dire ?",
+    "seeHelp": "Exécutez « sf {{command}} --help » pour voir les sous-commandes disponibles."
+  },
+  "init": {
+    "description": "Initialiser un nouvel espace de travail Stoneforge",
+    "workspaceAlreadyInitialized": "Espace de travail déjà initialisé dans {{path}}",
+    "workspaceInitialized": "Espace de travail initialisé",
+    "workspaceInitializedFromFiles": "Espace de travail initialisé à partir des fichiers existants",
+    "failedToInitialize": "Impossible d'initialiser l'espace de travail : {{message}}",
+    "importedFromJsonl": "{{elements}} élément(s) et {{dependencies}} dépendance(s) importé(s) depuis les fichiers JSONL",
+    "installedSkills": "{{count}} compétence(s) installée(s) dans {{dir}}",
+    "skillsAlreadyInstalled": "Compétences déjà installées ({{count}} ignorée(s))",
+    "skillsSkipped": "Installation des compétences ignorée (aucune source trouvée)",
+    "skillsInstallWarning": "Impossible d'installer {{count}} compétence(s)",
+    "skillsInstallFailed": "Échec de l'installation des compétences : {{message}}",
+    "agentsSkipped": "{{count}} agent(s) existant(s) ignoré(s)",
+    "demoMode": "Mode démonstration actif",
+    "demoModeNotice": "Tous les agents utilisent le fournisseur gratuit {{model}} — aucune clé API requise.",
+    "demoModeDisable": "Désactivez avec demo_mode : false dans .stoneforge/config.yaml",
+    "nextSteps": "Prochaines étapes :",
+    "nextStepServe": "Exécutez sf serve pour démarrer le tableau de bord",
+    "nextStepHelp": "Exécutez sf help pour les commandes disponibles",
+    "presetPrompt": "Choisissez un préréglage de flux de travail :",
+    "presetAuto": "Itération rapide, aucune révision humaine",
+    "presetAutoShort": "Itération rapide, aucune révision humaine",
+    "presetReview": "Les agents fusionnent vers une branche de révision. Vous révisez et fusionnez vers main.",
+    "presetReviewShort": "Vous révisez et fusionnez vers main",
+    "presetApprove": "Les agents nécessitent une approbation pour les actions restreintes. Fusions via des PR GitHub.",
+    "presetApproveShort": "Les agents nécessitent une approbation, fusions via PR",
+    "invalidPreset": "Préréglage invalide « {{preset}} ». Doit être l'un de : {{valid}}",
+    "name": "Nom de l'espace de travail (facultatif)",
+    "actor": "Acteur par défaut pour les opérations",
+    "preset": "Préréglage de flux de travail (auto, review, approve)",
+    "demo": "Activer le mode démonstration avec le fournisseur gratuit opencode/minimax-m2.5-free",
+    "agentsMdCreated": "créé à la racine de l'espace de travail",
+    "skills": "Compétences",
+    "installed": "installées",
+    "installationFailed": "échec de l'installation",
+    "imported": "Importé",
+    "path": "Chemin"
+  },
+  "reset": {
+    "description": "Réinitialiser un espace de travail Stoneforge",
+    "noWorkspace": "Aucun espace de travail Stoneforge trouvé dans {{path}}",
+    "thisWillReset": "Ceci va réinitialiser l'espace de travail Stoneforge :",
+    "thisWillFullyReset": "Ceci va réinitialiser COMPLÈTEMENT l'espace de travail Stoneforge :",
+    "stopDaemon": "Arrêter tout daemon en cours d'exécution",
+    "removeDatabase": "Supprimer la base de données (toutes les entités, tâches, etc.)",
+    "removeSyncFiles": "Supprimer les fichiers de synchronisation (elements.jsonl, dependencies.jsonl)",
+    "removeUploads": "Supprimer tous les fichiers téléversés",
+    "removeWorktrees": "Supprimer tous les arbres de travail",
+    "pruneGitWorktrees": "Élaguer les arbres de travail git",
+    "configPreserved": "Les fichiers de configuration seront préservés.",
+    "deleteFolder": "Supprimer le dossier .stoneforge entier (y compris la configuration)",
+    "reinitialize": "Réinitialiser avec la configuration par défaut",
+    "confirmPrompt": "Êtes-vous sûr de vouloir réinitialiser l'espace de travail ?",
+    "cancelled": "Annulé",
+    "stoppedDaemon": "Daemon arrêté",
+    "couldNotStopDaemon": "Impossible d'arrêter le daemon : {{error}}",
+    "removedDataFiles": "Fichiers de données supprimés : {{files}}",
+    "deletedFolder": "Dossier .stoneforge supprimé",
+    "removedWorktrees": "Répertoire .stoneforge/.worktrees supprimé",
+    "prunedWorktrees": "Arbres de travail git élagués",
+    "reinitialized": "Espace de travail réinitialisé",
+    "resetCompleteButInitFailed": "Réinitialisation terminée mais l'initialisation a échoué : {{message}}",
+    "resetComplete": "Réinitialisation de l'espace de travail terminée",
+    "nothingToClean": "Réinitialisation de l'espace de travail terminée (rien à nettoyer)",
+    "workspaceResetComplete": "Réinitialisation de l'espace de travail terminée :",
+    "failedToDeleteFolder": "Impossible de supprimer le dossier .stoneforge : {{message}}",
+    "failedToPrune": "Impossible d'élaguer les arbres de travail git : {{message}}",
+    "failedToReset": "Impossible de réinitialiser l'espace de travail : {{message}}"
+  },
+  "config": {
+    "description": "Gérer la configuration",
+    "configurationFrom": "Configuration (depuis {{source}})",
+    "unknownKey": "Clé de configuration inconnue : {{key}}",
+    "validKeys": "Clés valides : {{keys}}",
+    "setValue": "{{key}} = {{value}}",
+    "setFrom": "{{key}} = {{value}} (depuis {{source}})",
+    "unsetValue": "{{key}} réinitialisé",
+    "edited": "{{path}} modifié",
+    "noConfigFile": "Aucun fichier de configuration trouvé. Utilisez « sf init » pour créer un espace de travail d'abord.",
+    "failedToRead": "Impossible de lire la configuration : {{message}}",
+    "failedToSet": "Impossible de définir la configuration : {{message}}",
+    "failedToUnset": "Impossible de réinitialiser la configuration : {{message}}",
+    "failedToEdit": "Impossible de modifier la configuration : {{message}}",
+    "failedToOpenEditor": "Impossible d'ouvrir l'éditeur « {{editor}} » : {{message}}",
+    "editorExitStatus": "L'éditeur s'est fermé avec le statut {{status}}"
+  },
+  "help": {
+    "description": "Afficher l'aide",
+    "version": "Afficher la version",
+    "title": "Stoneforge - Système de coordination d'agents",
+    "usage": "Utilisation : stoneforge <commande> [options]",
+    "usageShort": "       sf <commande> [options]",
+    "commands": "Commandes :",
+    "pluginCommands": "Commandes de plugin :",
+    "aliases": "Alias :",
+    "options": "Options :",
+    "subcommands": "Sous-commandes :",
+    "required": "(obligatoire)",
+    "seeHelp": "Utilisez « sf <commande> --help » pour plus d'informations sur une commande.",
+    "versionOutput": "stoneforge v{{version}}",
+    "categories": {
+      "elements": "Éléments",
+      "tasks": "Tâches",
+      "planning": "Planification",
+      "dependencies": "Dépendances",
+      "communication": "Communication",
+      "knowledge": "Connaissances",
+      "organization": "Organisation",
+      "sync": "Synchronisation",
+      "system": "Système",
+      "admin": "Administration",
+      "shell": "Shell"
+    }
+  },
+  "crud": {
+    "create": {
+      "description": "Créer un nouvel élément",
+      "elementTypeRequired": "Le type d'élément est requis. Types valides : {{types}}",
+      "invalidElementType": "Type d'élément invalide : {{type}}. Types valides : {{types}}",
+      "titleRequired": "--title est requis pour la création",
+      "invalidPriority": "La priorité doit être un nombre de 1 à 5",
+      "invalidTaskType": "Type de tâche invalide : {{type}}. Types valides : {{types}}",
+      "invalidPlanStatus": "Statut de plan invalide : {{status}}. Statuts valides : {{statuses}}",
+      "invalidWorkflowMode": "Mode de flux de travail invalide : {{mode}}. Modes valides : {{modes}}",
+      "createdElement": "Élément {{type}} créé : {{id}}",
+      "createdTask": "Tâche créée : {{id}}",
+      "createdPlan": "Plan créé : {{id}}",
+      "createdWorkflow": "Flux de travail créé : {{id}}",
+      "createdPlaybook": "Playbook créé : {{id}}",
+      "createdChannel": "Canal créé : {{id}}",
+      "createdLibrary": "Bibliothèque créée : {{id}}",
+      "createdTeam": "Équipe créée : {{id}}",
+      "createdDocument": "Document créé : {{id}}",
+      "createdEntity": "Entité enregistrée : {{id}}",
+      "failedToCreate": "Impossible de créer : {{message}}",
+      "failedToCreateElement": "Impossible de créer l'élément : {{message}}",
+      "optionDescription": {
+        "type": "Type d'élément (task, plan, workflow, playbook, channel, library, team, document, entity)",
+        "title": "Titre",
+        "description": "Description",
+        "priority": "Priorité (1-5, 1 = la plus haute)",
+        "taskType": "Type de tâche (feature, bug, chore, improvement)",
+        "assignee": "ID de l'entité assignée",
+        "tags": "Étiquettes (répéable)",
+        "status": "Statut initial",
+        "mode": "Mode (ephemeral, durable)",
+        "name": "Nom",
+        "entityType": "Type d'entité (human, agent)",
+        "content": "Contenu textuel",
+        "contentType": "Type de contenu (text, markdown, html)",
+        "category": "Catégorie",
+        "parent": "ID du parent"
+      }
+    },
+    "list": {
+      "description": "Lister les éléments",
+      "noTypeFilter": "Affichage de tous les types. Utilisez --type pour filtrer.",
+      "noElementsFound": "Aucun élément trouvé",
+      "showing": "Affichage de {{shown}} sur {{total}} élément(s)",
+      "failedToList": "Impossible de lister les éléments : {{message}}",
+      "optionDescription": {
+        "type": "Filtrer par type",
+        "status": "Filtrer par statut",
+        "tags": "Filtrer par étiquettes",
+        "limit": "Nombre maximum de résultats",
+        "assignee": "Filtrer par assigné"
+      }
+    },
+    "show": {
+      "description": "Afficher les détails d'un élément",
+      "idRequired": "L'ID de l'élément est requis",
+      "notFound": "Élément introuvable : {{id}}",
+      "failedToShow": "Impossible d'afficher l'élément : {{message}}"
+    },
+    "update": {
+      "description": "Mettre à jour un élément",
+      "idRequired": "L'ID de l'élément est requis",
+      "noChanges": "Aucune modification spécifiée. Utilisez --title, --description, --status, --priority, --tags, ou --assignee.",
+      "notFound": "Élément introuvable : {{id}}",
+      "updatedElement": "Élément {{id}} mis à jour",
+      "updatedStatus": "Statut de {{id}} mis à jour : {{status}}",
+      "failedToUpdate": "Impossible de mettre à jour l'élément : {{message}}",
+      "optionDescription": {
+        "title": "Nouveau titre",
+        "description": "Nouvelle description",
+        "status": "Nouveau statut",
+        "priority": "Nouvelle priorité (1-5)",
+        "tags": "Nouvelles étiquettes (remplace)",
+        "addTags": "Ajouter des étiquettes",
+        "removeTags": "Retirer des étiquettes",
+        "assignee": "ID de l'entité assignée"
+      }
+    },
+    "delete": {
+      "description": "Supprimer un élément",
+      "idRequired": "L'ID de l'élément est requis",
+      "notFound": "Élément introuvable : {{id}}",
+      "alreadyDeleted": "Élément {{id}} déjà supprimé",
+      "deletedElement": "Élément {{id}} supprimé",
+      "failedToDelete": "Impossible de supprimer l'élément : {{message}}",
+      "optionDescription": {
+        "reason": "Raison de la suppression",
+        "force": "Forcer la suppression"
+      }
+    }
+  },
+  "task": {
+    "description": "Gérer les tâches",
+    "notFound": "Tâche introuvable : {{id}}",
+    "notATask": "L'élément {{id}} n'est pas une tâche (type : {{type}})",
+    "statusAlready": "La tâche {{id}} est déjà au statut {{status}}",
+    "ready": {
+      "description": "Lister les tâches prêtes",
+      "noReadyTasks": "Aucune tâche prête",
+      "showing": "{{count}} tâche(s) prête(s)"
+    },
+    "blocked": {
+      "description": "Lister les tâches bloquées",
+      "noBlockedTasks": "Aucune tâche bloquée",
+      "showing": "{{count}} tâche(s) bloquée(s)"
+    },
+    "backlog": {
+      "description": "Lister les tâches en souffrance",
+      "noBacklogTasks": "Aucune tâche en souffrance",
+      "showing": "{{count}} tâche(s) en souffrance"
+    },
+    "close": {
+      "description": "Fermer une tâche",
+      "idRequired": "L'ID de la tâche est requis",
+      "closed": "Tâche {{id}} fermée",
+      "alreadyClosed": "La tâche {{id}} est déjà fermée",
+      "optionDescription": {
+        "reason": "Raison de la fermeture"
+      }
+    },
+    "reopen": {
+      "description": "Réouvrir une tâche",
+      "idRequired": "L'ID de la tâche est requis",
+      "reopened": "Tâche {{id}} réouverte",
+      "alreadyOpen": "La tâche {{id}} est déjà ouverte"
+    },
+    "assign": {
+      "description": "Assigner une tâche",
+      "idRequired": "Utilisation : sf task assign <id-tâche> <id-entité>",
+      "assigned": "Tâche {{taskId}} assignée à {{entityId}}",
+      "unassigned": "Tâche {{taskId}} désassignée",
+      "entityNotFound": "Entité introuvable : {{id}}"
+    },
+    "defer": {
+      "description": "Différer une tâche",
+      "idRequired": "L'ID de la tâche est requis",
+      "deferred": "Tâche {{id}} différée",
+      "alreadyDeferred": "La tâche {{id}} est déjà différée"
+    },
+    "undefer": {
+      "description": "Annuler le report d'une tâche",
+      "idRequired": "L'ID de la tâche est requis",
+      "undeferred": "Report de la tâche {{id}} annulé",
+      "notDeferred": "La tâche {{id}} n'est pas différée"
+    },
+    "describe": {
+      "description": "Gérer la description d'une tâche",
+      "idRequired": "L'ID de la tâche est requis",
+      "noDescription": "Aucune description",
+      "appended": "Ajouté à la description de {{id}}",
+      "updated": "Description de {{id}} mise à jour",
+      "created": "Description de {{id}} créée",
+      "failed": "Impossible de gérer la description : {{message}}"
+    },
+    "activate": {
+      "description": "Activer une tâche",
+      "idRequired": "L'ID de la tâche est requis",
+      "activated": "Tâche {{id}} activée",
+      "alreadyInProgress": "La tâche {{id}} est déjà en cours"
+    },
+    "failed": "Impossible de gérer la tâche : {{message}}",
+    "failedToClose": "Impossible de fermer la tâche : {{message}}",
+    "failedToReopen": "Impossible de réouvrir la tâche : {{message}}",
+    "failedToAssign": "Impossible d'assigner la tâche : {{message}}",
+    "failedToDefer": "Impossible de différer la tâche : {{message}}",
+    "failedToUndefer": "Impossible d'annuler le report : {{message}}",
+    "failedToActivate": "Impossible d'activer la tâche : {{message}}"
+  },
+  "dep": {
+    "description": "Gérer les dépendances",
+    "add": {
+      "description": "Ajouter une dépendance",
+      "usageRequired": "Utilisation : sf dependency add --type=<type> <id-bloqué> <id-bloquant>",
+      "typeRequired": "--type est requis. Types : blocks, awaits, parent-child, relates-to, references, mentions",
+      "idsRequired": "Deux ID d'éléments sont requis",
+      "invalidType": "Type de dépendance invalide : {{type}}",
+      "added": "Dépendance ajoutée : {{type}} {{blockedId}} -> {{blockerId}}",
+      "alreadyExists": "Cette dépendance existe déjà",
+      "circularReference": "Référence circulaire détectée",
+      "failedToAdd": "Impossible d'ajouter la dépendance : {{message}}"
+    },
+    "remove": {
+      "description": "Supprimer une dépendance",
+      "usageRequired": "Utilisation : sf dependency remove <id-bloqué> <id-bloquant>",
+      "idsRequired": "Deux ID d'éléments sont requis",
+      "removed": "Dépendance supprimée : {{blockedId}} -> {{blockerId}}",
+      "notFound": "Dépendance introuvable",
+      "failedToRemove": "Impossible de supprimer la dépendance : {{message}}"
+    },
+    "list": {
+      "description": "Lister les dépendances d'un élément",
+      "idRequired": "L'ID de l'élément est requis",
+      "noOutgoing": "Aucune dépendance sortante pour {{id}}",
+      "noIncoming": "Aucune dépendance entrante pour {{id}}",
+      "failedToList": "Impossible de lister les dépendances : {{message}}"
+    },
+    "tree": {
+      "description": "Afficher l'arbre de dépendances",
+      "idRequired": "L'ID de l'élément est requis",
+      "treeFor": "Arbre de dépendances pour {{id}}",
+      "failedToTree": "Impossible d'afficher l'arbre de dépendances : {{message}}"
+    }
+  },
+  "stats": {
+    "description": "Afficher les statistiques de l'espace de travail",
+    "title": "Statistiques de l'espace de travail",
+    "elements": "Éléments",
+    "total": "Total : {{count}}",
+    "tasks": "Tâches",
+    "ready": "Prêtes : {{count}}",
+    "blocked": "Bloquées : {{count}}",
+    "relations": "Relations",
+    "dependencies": "Dépendances : {{count}}",
+    "events": "Événements : {{count}}",
+    "storage": "Stockage",
+    "databaseSize": "Taille de la base de données : {{size}}",
+    "failedToGetStats": "Impossible d'obtenir les statistiques : {{message}}"
+  },
+  "sync": {
+    "description": "Synchroniser les données JSONL",
+    "export": {
+      "description": "Exporter vers JSONL",
+      "incrementalCompleted": "Exportation incrémentale terminée",
+      "fullCompleted": "Exportation complète terminée",
+      "elementsExported": "{{count}} élément(s) exporté(s)",
+      "dependenciesExported": "{{count}} dépendance(s) exportée(s)",
+      "failedToExport": "Impossible d'exporter : {{message}}"
+    },
+    "import": {
+      "description": "Importer depuis JSONL",
+      "completed": "Importation terminée",
+      "dryRun": "Simulation (dry run)",
+      "elementsImported": "Éléments : {{imported}} importé(s), {{skipped}} ignoré(s)",
+      "dependenciesImported": "Dépendances : {{imported}} importée(s), {{skipped}} ignorée(s)",
+      "conflicts": "{{count}} conflit(s) résolu(s)",
+      "failedToImport": "Impossible d'importer : {{message}}"
+    },
+    "status": {
+      "description": "Afficher le statut de synchronisation",
+      "syncStatus": "Statut de synchronisation",
+      "pendingChanges": "{{count}} changement(s) en attente",
+      "upToDate": "À jour",
+      "runExport": "Exécutez sf export pour synchroniser"
+    }
+  },
+  "externalSync": {
+    "description": "Commandes de synchronisation avec des services externes",
+    "noProviders": "Aucun fournisseur configuré avec des jetons",
+    "noProvidersConfigured": "Aucun fournisseur configuré. Exécutez « sf external-sync config set-token <provider> <token> » d'abord.",
+    "noProvidersWithTokens": "Aucun fournisseur avec des jetons valides trouvé. Exécutez « sf external-sync config set-token <provider> <token> » d'abord.",
+    "requiresSmithy": "La synchronisation externe requiert le paquet @stoneforge/smithy. Assurez-vous qu'il est installé.",
+    "failedToInitSettings": "Impossible d'initialiser les paramètres : {{message}}",
+    "failedToInitProvider": "Impossible d'initialiser le fournisseur : {{message}}",
+    "invalidTypeValue": "Valeur --type invalide « {{value}} ». Doit être l'un de : task, document, all",
+    "invalidTypeValueShort": "Type invalide « {{value}} ». Doit être l'un de : task, document",
+    "invalidProvider": "Fournisseur invalide « {{provider}} ». Doit être l'un de : {{valid}}",
+    "elementNotFound": "Élément introuvable : {{id}}",
+    "elementNotType": "L'élément {{id}} n'est pas un {{type}} (type : {{actualType}})",
+    "elementNotTaskOrDoc": "L'élément {{id}} n'est pas une tâche ou un document (type : {{type}})",
+    "elementNotLinked": "L'élément {{id}} n'est pas lié à un service externe",
+    "failedToUpdateElement": "Impossible de mettre à jour l'élément : {{message}}",
+    "failedToUpdate": "Impossible de mettre à jour {{type}} : {{message}}",
+    "failedToListElements": "Impossible de lister les {{type}}s : {{message}}",
+    "failedToListTasks": "Impossible de lister les tâches : {{message}}",
+    "failedToResolveConflict": "Impossible de résoudre le conflit : {{message}}",
+    "noDefaultProject": "Aucun projet par défaut configuré pour le fournisseur « {{provider}} ». Exécutez « sf external-sync config set-project {{provider}} <project> » d'abord, ou fournissez une URL complète.",
+    "providerNotConfigured": "Le fournisseur « {{provider}} » n'est pas configuré. Exécutez « sf external-sync config set-project {{provider}} <path> » d'abord.",
+    "providerNoToken": "Le fournisseur « {{provider}} » n'a aucun jeton configuré. Exécutez « sf external-sync config set-token {{provider}} <token> » d'abord.",
+    "providerNoProject": "Aucun projet spécifié et le fournisseur « {{provider}} » n'a pas de projet par défaut configuré. Utilisez --project ou exécutez « sf external-sync config set-project {{provider}} <project> » d'abord.",
+    "unsupportedProvider": "Fournisseur non supporté : « {{provider}} ». Fournisseurs supportés : github, linear, notion, folder",
+    "providerNoDocumentSync": "Le fournisseur « {{provider}} » ne supporte pas la synchronisation de documents",
+    "providerNoTaskSync": "Le fournisseur « {{provider}} » ne supporte pas la synchronisation de tâches",
+    "batchSizePositive": "--batch-size doit être un entier positif",
+    "largeSetWarning": "Attention : environ {{count}} éléments à traiter. Cela peut prendre un temps significatif pour de grands ensembles d'éléments.",
+    "largeSetWarningDocs": "Attention : environ {{count}} documents à lier. Cela peut prendre un temps significatif pour de grands ensembles de documents.",
+    "largeSetWarningTasks": "Attention : environ {{count}} tâches à lier. Cela peut prendre un temps significatif pour de grands ensembles de tâches.",
+    "elementNoConflict": "L'élément {{id}} n'a pas de conflit de synchronisation. Seuls les éléments étiquetés avec « sync-conflict » peuvent être résolus.",
+    "keepFlagRequired": "L'option --keep est requise et doit être « local » ou « remote »",
+    "providerFlagRequired": "L'option --provider est requise. Utilisation : sf external-sync link-all --provider <provider>",
+    "tokenWarning": "Attention : Le fournisseur « {{provider}} » n'a aucun jeton configuré. La liaison automatique ne fonctionnera pas tant qu'un jeton n'est pas défini. Exécutez « sf external-sync config set-token {{provider}} <token> ».",
+    "skippedProvidersNoToken": "Fournisseurs ignorés (pas de jeton) : {{providers}}",
+    "rateLimitReached": "Limite de débit atteinte. Réinitialisation à {{date}}. Relancez cette commande après la réinitialisation pour traiter les éléments restants.",
+    "rateLimitReachedNoReset": "Limite de débit atteinte. Relancez cette commande plus tard pour traiter les éléments restants.",
+    "rateLimitHitWhileLinking": "Limite de débit atteinte lors de la liaison de {{id}} : {{message}}",
+    "failedToLinkElement": "Impossible de lier {{id}} : {{message}}",
+    "failedToLinkElementDetail": "Impossible de lier {{id}} : {{message}} — {{detail}}",
+    "config": {
+      "description": "Afficher ou définir la configuration des fournisseurs",
+      "providerRequired": "Fournisseur requis (github, linear, notion, folder)",
+      "tokenRequired": "--token est requis pour {{provider}}",
+      "configured": "{{provider}} configuré",
+      "failedToConfigure": "Impossible de configurer {{provider}} : {{message}}",
+      "title": "Configuration de la synchronisation externe",
+      "enabled": "Activé",
+      "yes": "oui",
+      "no": "non",
+      "conflictStrategy": "Stratégie de conflit",
+      "defaultDirection": "Direction par défaut",
+      "pollInterval": "Intervalle de sondage",
+      "autoLink": "Liaison automatique",
+      "autoLinkProviderTasks": "Fournisseur liaison auto (tâches)",
+      "autoLinkProviderDocs": "Fournisseur liaison auto (docs)",
+      "notSet": "(non défini)",
+      "providers": "Fournisseurs",
+      "noneConfigured": "(aucun configuré)",
+      "providersHint": "Exécutez « sf external-sync config set-token <provider> <token> » pour configurer un fournisseur.",
+      "token": "Jeton",
+      "apiUrl": "URL API",
+      "defaultProject": "Projet par défaut",
+      "default_": "(par défaut)",
+      "setTokenDescription": "Définir le jeton d'authentification pour un fournisseur",
+      "setTokenHelp": "Stocker un jeton d'authentification pour un fournisseur de synchronisation externe.\n\nLe jeton est stocké dans la base de données SQLite locale (non suivi par git).\n\nArguments :\n  provider    Nom du fournisseur (par ex. github, linear)\n  token       Jeton d'authentification",
+      "tokenSetFor": "Jeton défini pour le fournisseur « {{provider}} » ({{token}})",
+      "setProjectDescription": "Définir le projet par défaut pour un fournisseur",
+      "setProjectHelp": "Définir le projet par défaut (par ex. propriétaire/dépôt) pour un fournisseur de synchronisation externe.\n\nUtilisé lors de la liaison de tâches avec des numéros d'issue simples.\n\nArguments :\n  provider    Nom du fournisseur (par ex. github, linear)\n  project     Identifiant du projet (par ex. propriétaire/dépôt pour GitHub)",
+      "defaultProjectSetFor": "Projet par défaut défini pour le fournisseur « {{provider}} » : {{project}}",
+      "setAutoLinkDescription": "Activer la liaison automatique avec un fournisseur",
+      "setAutoLinkHelp": "Activer la liaison automatique pour les nouveaux éléments avec le fournisseur spécifié.\n\nLorsque la liaison automatique est activée, les éléments Stoneforge nouvellement créés\nobtiendront automatiquement un issue ou une page externe correspondant créé et lié.\n\nUtilisez --type pour spécifier si la liaison automatique des tâches ou des documents doit être configurée.\nPar défaut, tâches pour la rétrocompatibilité.\n\nArguments :\n  provider    Nom du fournisseur (github, linear, notion, ou folder)",
+      "autoLinkDocEnabled": "Liaison automatique pour les documents activée avec le fournisseur « {{provider}} ».",
+      "autoLinkTaskEnabled": "Liaison automatique pour les tâches activée avec le fournisseur « {{provider}} ».",
+      "disableAutoLinkDescription": "Désactiver la liaison automatique",
+      "disableAutoLinkHelp": "Désactiver la liaison automatique pour les nouveaux éléments.\n\nEfface le fournisseur de liaison automatique et désactive la création externe automatique.\n\nUtilisez --type pour spécifier quelle liaison automatique désactiver :\n  task      Désactiver uniquement la liaison automatique des tâches\n  document  Désactiver uniquement la liaison automatique des documents\n  all       Désactiver les deux (par défaut)",
+      "autoLinkDocDisabled": "Liaison automatique pour les documents désactivée.",
+      "autoLinkTaskDisabled": "Liaison automatique pour les tâches désactivée.",
+      "autoLinkDisabled": "Liaison automatique désactivée.",
+      "configHelp": "Afficher la configuration actuelle des fournisseurs de synchronisation externe.\n\nLes jetons sont masqués dans la sortie pour des raisons de sécurité."
+    },
+    "link": {
+      "description": "Lier une tâche ou un document à un issue/page externe",
+      "idsRequired": "ID de l'élément et ID externe requis",
+      "linked": "{{elementType}} {{elementId}} lié à {{externalUrl}}",
+      "alreadyLinked": "Déjà lié",
+      "failedToLink": "Impossible de lier : {{message}}",
+      "optionProvider": "Nom du fournisseur (par défaut : github)",
+      "optionType": "Type d'élément : task ou document (par défaut : task)"
+    },
+    "unlink": {
+      "description": "Supprimer le lien externe d'une tâche ou d'un document",
+      "idRequired": "L'ID de l'élément est requis",
+      "unlinked": "{{elementType}} {{elementId}} délié du service externe",
+      "notLinked": "Non lié",
+      "failedToUnlink": "Impossible de délier : {{message}}",
+      "usage": "Utilisation : sf external-sync unlink <id-élément>"
+    },
+    "push": {
+      "description": "Pousser les éléments liés vers le service externe",
+      "pushComplete": "Poussé vers {{provider}}",
+      "pushFailed": "Impossible de pousser vers {{provider}} : {{message}}",
+      "rateLimited": "Limite de débit atteinte pour {{provider}}. Réessayez dans {{seconds}} secondes.",
+      "usage": "Utilisation : sf external-sync push [id-élément...] ou sf external-sync push --all",
+      "pushFailedGeneral": "Échec du push : {{message}}",
+      "result": "Push : {{count}} {{typeLabel}} poussé(s) avec succès",
+      "skipped": "Ignoré(s) : {{count}}",
+      "skippedNoLibrary": "{{count}} document(s) ignoré(s) car dans aucune bibliothèque (utilisez --no-library pour inclure)",
+      "errors": "Erreurs ({{count}}) :",
+      "conflicts": "Conflits ({{count}}) :",
+      "pushing": "Poussé(s)",
+      "optionAll": "Pousser tous les éléments liés",
+      "optionForce": "Pousser tous les éléments liés même s'ils n'ont pas changé",
+      "optionType": "Type d'élément à pousser : task, document, ou all (par défaut : all)",
+      "optionNoLibrary": "Inclure les documents qui ne sont dans aucune bibliothèque (exclus par défaut)"
+    },
+    "pull": {
+      "description": "Tirer les modifications depuis les services externes pour les éléments liés",
+      "pullComplete": "Tiré depuis {{provider}}",
+      "pullFailed": "Impossible de tirer depuis {{provider}} : {{message}}",
+      "rateLimited": "Limite de débit atteinte pour {{provider}}",
+      "pullFailedGeneral": "Échec du pull : {{message}}",
+      "result": "Pull : {{count}} {{typeLabel}} tiré(s) avec succès",
+      "skipped": "Ignoré(s) : {{count}}",
+      "errors": "Erreurs ({{count}}) :",
+      "conflicts": "Conflits ({{count}}) :",
+      "optionProvider": "Fournisseur depuis lequel tirer (par défaut : tous les configurés)",
+      "optionDiscover": "Découvrir les nouveaux issues pas encore liés",
+      "optionType": "Type d'élément à tirer : task, document, ou all (par défaut : all)"
+    },
+    "sync": {
+      "description": "Synchronisation bidirectionnelle avec les services externes",
+      "syncComplete": "Synchronisé avec {{provider}}",
+      "syncFailed": "Impossible de synchroniser avec {{provider}} : {{message}}",
+      "syncFailedGeneral": "Échec de la synchronisation : {{message}}",
+      "dryRunTitle": "Synchronisation (simulation) - affichage des changements prévus",
+      "completeTitle": "Synchronisation bidirectionnelle terminée",
+      "pushed": "Poussé(s) : {{count}} {{typeLabel}}",
+      "pulled": "Tiré(s) : {{count}} {{typeLabel}}",
+      "skipped": "Ignoré(s) : {{count}} (aucun changement)",
+      "errors": "Erreurs ({{count}}) :",
+      "conflicts": "Conflits ({{count}}) :",
+      "optionDryRun": "Afficher les changements prévus sans effectuer de modifications",
+      "optionType": "Type d'élément à synchroniser : task, document, ou all (par défaut : all)"
+    },
+    "status": {
+      "description": "Afficher l'état de synchronisation externe",
+      "linkedItems": "{{count}} élément(s) lié(s)",
+      "lastSync": "Dernière synchronisation : {{time}}",
+      "title": "Statut de synchronisation externe",
+      "enabled": "Activé",
+      "linkedTasks": "Tâches liées",
+      "linkedDocs": "Documents liés",
+      "pendingConflicts": "Conflits en attente",
+      "pollInterval": "Intervalle de sondage",
+      "defaultDirection": "Direction par défaut",
+      "providers": "Fournisseurs",
+      "noneConfigured": "(aucun configuré)",
+      "linkedTaskCount": "{{count}} tâche(s) liée(s)",
+      "linkedDocCount": "{{count}} document(s) lié(s)",
+      "token": "jeton",
+      "project": "projet",
+      "notSet": "(non défini)",
+      "lastSyncCursors": "Derniers curseurs de synchronisation",
+      "conflictsNeedResolution": "{{count}} conflit(s) nécessitent une résolution. Exécutez « sf external-sync resolve <id-tâche> --keep local|remote »."
+    },
+    "resolve": {
+      "description": "Résoudre un conflit de synchronisation",
+      "noConflicts": "Aucun conflit à résoudre",
+      "resolved": "Conflit de synchronisation résolu pour {{type}} {{id}} (conservé : {{kept}})",
+      "failedToResolve": "Impossible de résoudre le conflit : {{message}}",
+      "usage": "Utilisation : sf external-sync resolve <id-élément> --keep local|remote",
+      "optionKeep": "Quelle version conserver : local ou remote"
+    },
+    "linkAll": {
+      "description": "Lier en masse toutes les tâches ou tous les documents non liés à des issues/pages externes",
+      "linked": "{{count}} élément(s) lié(s)",
+      "failedToLinkAll": "Impossible de lier tous les éléments : {{message}}",
+      "usage": "Utilisation : sf external-sync link <{{type}}Id> <url-ou-id-externe>",
+      "optionProvider": "Fournisseur auquel se lier (obligatoire)",
+      "optionProject": "Remplacer le projet par défaut",
+      "optionStatus": "Lier uniquement les éléments avec ce statut (répétable)",
+      "optionDryRun": "Lister les éléments qui seraient liés sans créer d'issues/pages externes",
+      "optionBatchSize": "Combien d'éléments traiter simultanément (par défaut : 10)",
+      "optionForce": "Relier les éléments déjà liés (y compris même fournisseur)",
+      "optionType": "Type d'élément : task ou document (par défaut : task)",
+      "optionNoLibrary": "Inclure les documents qui ne sont dans aucune bibliothèque (exclus par défaut)",
+      "noTasksToRelink": "Aucune tâche trouvée à relier correspondant aux critères spécifiés.",
+      "noUnlinkedTasks": "Aucune tâche non liée trouvée. Utilisez --force pour relier les tâches existantes.",
+      "noDocsToRelink": "Aucun document trouvé à relier correspondant aux critères spécifiés.",
+      "noUnlinkedDocs": "Aucun document non lié trouvé. Utilisez --force pour relier les documents existants.",
+      "dryRunRelinkTasks": "Simulation : Reliage de {{count}} tâche(s) de {{from}} vers {{to}} (--force)",
+      "dryRunPlusTasks": "  Plus {{count}} tâche(s) non liée(s) à lier",
+      "dryRunTasks": "Simulation : {{count}} tâche(s) seraient liées à {{provider}}",
+      "dryRunRelinkDocs": "Simulation : Reliage de {{count}} document(s) de {{from}} vers {{to}} (--force)",
+      "dryRunPlusDocs": "  Plus {{count}} document(s) non lié(s) à lier",
+      "dryRunDocs": "Simulation : {{count}} document(s) seraient liés à {{provider}}",
+      "relinkingDocs": "Reliage de {{count}} document(s) de {{from}} vers {{to}} (--force)",
+      "linkingDocs": "Liaison de {{count}} document(s) non lié(s)",
+      "relinkingTasks": "Reliage de {{count}} tâche(s) de {{from}} vers {{to}} (--force)",
+      "linkingTasks": "Liaison de {{count}} tâche(s) non liée(s)",
+      "linkingDocsProgress": "Liaison des documents",
+      "linkingTasksProgress": "Liaison des tâches",
+      "linkedDocsSummary": "{{count}} documents liés à {{provider}}",
+      "linkedTasksSummary": "{{count}} tâches liées à {{provider}}",
+      "failedCount": "({{count}} échoué(s))",
+      "skippedCount": "({{count}} ignoré(s))",
+      "skippedNoLibrary": "{{count}} document(s) ignoré(s) car dans aucune bibliothèque (utilisez --no-library pour inclure)",
+      "noLinkedElementsFound": "Aucun élément lié{{typeHint}}{{providerHint}} trouvé.",
+      "unlinkedElement": "Délié {{type}} {{id}} ({{provider}}) : {{title}}",
+      "failedToUnlinkElement": "Impossible de délier {{type}} {{id}} : {{message}}",
+      "unlinkedSummary": "Délié {{count}} élément(s)",
+      "dryRunUnlink": "Simulation : {{count}} élément(s) seraient déliés",
+      "linkedElement": "Lié {{id}} → {{url}}"
+    },
+    "unlinkAll": {
+      "description": "Supprimer en masse les liens externes de tous les éléments liés",
+      "unlinked": "{{count}} élément(s) délié(s)",
+      "failedToUnlinkAll": "Impossible de délier tous les éléments : {{message}}",
+      "optionProvider": "Délier uniquement les éléments liés à ce fournisseur",
+      "optionType": "Type d'élément à délier : task, document, ou all (par défaut : all)",
+      "optionDryRun": "Afficher ce qui serait délié sans effectuer de modifications"
+    },
+    "parentHelp": "Gérer la synchronisation bidirectionnelle entre Stoneforge et les services externes\n(GitHub Issues, Linear, etc.).",
+    "parentUsage": "Utilisation : sf external-sync <commande>\n\nCommandes : config, link, link-all, unlink, unlink-all, push, pull, sync, status, resolve\n\nExécutez « sf external-sync --help » pour plus d'informations."
+  },
+  "identity": {
+    "description": "Gérer l'identité et les signatures",
+    "noActor": "Aucun acteur configuré",
+    "actor": "Acteur",
+    "source": "Source",
+    "identityMode": "Mode d'identité",
+    "verified": "Vérifié",
+    "signatureValid": "Signature valide pour {{actor}}",
+    "signatureInvalid": "Signature invalide",
+    "hashMatch": "Le hachage correspond",
+    "hashMismatch": "Le hachage ne correspond pas",
+    "generatedKeypair": "Paire de clés Ed25519 générée",
+    "storePrivateKey": "IMPORTANT : Stockez la clé privée en lieu sûr. Elle ne pourra pas être récupérée.",
+    "whoami": {
+      "description": "Afficher l'identité actuelle"
+    },
+    "failed": "Impossible de gérer l'identité : {{message}}"
+  },
+  "entity": {
+    "description": "Gérer les entités",
+    "register": {
+      "description": "Enregistrer une nouvelle entité",
+      "nameRequired": "--name est requis",
+      "registered": "Entité {{type}} enregistrée : {{id}}",
+      "failedToRegister": "Impossible d'enregistrer l'entité : {{message}}"
+    },
+    "list": {
+      "description": "Lister les entités",
+      "noEntities": "Aucune entité trouvée",
+      "showing": "{{count}} entité(s)"
+    },
+    "reports": {
+      "description": "Afficher les rapports directs",
+      "noDirectReports": "Aucun rapport direct",
+      "managementChain": "Chaîne de gestion :"
+    },
+    "manager": {
+      "set": "Responsable défini pour {{entity}} : {{manager}}",
+      "cleared": "Responsable effacé pour {{entity}}",
+      "noManager": "{{entity}} n'a pas de responsable"
+    },
+    "typeIcons": {
+      "human": "[H]",
+      "agent": "[A]",
+      "system": "[S]",
+      "service": "[S]"
+    },
+    "failed": "Impossible de gérer l'entité : {{message}}"
+  },
+  "admin": {
+    "doctor": {
+      "description": "Vérifier l'état de l'espace de travail",
+      "checking": "Vérification de {{item}}...",
+      "ok": "OK",
+      "warning": "Attention",
+      "error": "Erreur",
+      "workspace": "Espace de travail",
+      "database": "Base de données",
+      "schema": "Schéma",
+      "integrity": "Intégrité",
+      "foreignKeys": "Clés étrangères",
+      "blockedCache": "Cache bloqué",
+      "storage": "Stockage",
+      "runtime": "Exécution",
+      "rateLimits": "Limites de débit",
+      "stuckTasks": "Tâches bloquées",
+      "mergeQueue": "File de fusion",
+      "errorRate": "Taux d'erreur",
+      "agentPool": "Pool d'agents",
+      "diagnostics": "Diagnostics",
+      "allChecksPassed": "Toutes les vérifications ont réussi",
+      "failedChecks": "{{count}} vérification(s) ont échoué",
+      "repairPrompt": "Exécutez sf doctor --repair pour tenter une réparation automatique",
+      "repairComplete": "Réparations terminées",
+      "failedToRepair": "Impossible de réparer : {{message}}",
+      "errorRateNormal": "Taux d'erreur normal : {{hour}} erreurs dans la dernière heure, {{day}} dans le dernier jour",
+      "agentPoolStatus": "Pool d'agents : {{busy}}/{{total}} occupés ({{utilization}} % d'utilisation)",
+      "summary": "Résumé : {{ok}} OK, {{warnings}} avertissement(s), {{errors}} erreur(s)"
+    },
+    "migrate": {
+      "description": "Exécuter les migrations de base de données",
+      "noPendingMigrations": "Aucune migration en attente",
+      "migrated": "{{count}} migration(s) exécutée(s)",
+      "failedToMigrate": "Impossible d'exécuter les migrations : {{message}}"
+    }
+  },
+  "gc": {
+    "description": "Collecte des éléments obsolètes",
+    "noTasksEligible": "Aucune tâche éligible pour la collecte",
+    "noWorkflowsEligible": "Aucun flux de travail éligible pour la collecte",
+    "collectedTasks": "{{count}} tâche(s) collectée(s)",
+    "collectedWorkflows": "{{count}} flux de travail collecté(s)",
+    "dryRun": "Simulation (dry run) :",
+    "wouldCollectTasks": "{{count}} tâche(s) seraient collectée(s)",
+    "wouldCollectWorkflows": "{{count}} flux de travail seraient collectés",
+    "failed": "Impossible d'exécuter la collecte : {{message}}"
+  },
+  "history": {
+    "description": "Afficher l'historique des événements",
+    "idRequired": "L'ID de l'élément est requis",
+    "historyFor": "Historique de {{id}} ({{count}} événement(s))",
+    "noEvents": "Aucun événement trouvé",
+    "eventFilters": "Filtres d'événements : created, updated, closed, reopened, deleted, dependency_added, dependency_removed",
+    "failed": "Impossible d'afficher l'historique : {{message}}"
+  },
+  "log": {
+    "description": "Afficher le journal des opérations",
+    "noEntries": "Aucune entrée de journal trouvée",
+    "operationLog": "Journal des opérations ({{count}} entrée(s))",
+    "levelFilters": "Filtres de niveau : debug, info, warn, error",
+    "categoryFilters": "Filtres de catégorie : create, update, delete, sync, export, import",
+    "failed": "Impossible d'afficher le journal : {{message}}"
+  },
+  "plan": {
+    "description": "Gérer les plans",
+    "create": {
+      "description": "Créer un plan",
+      "titleRequired": "--title est requis pour créer un plan",
+      "created": "Plan créé : {{id}}",
+      "failedToCreate": "Impossible de créer le plan : {{message}}"
+    },
+    "activate": {
+      "description": "Activer un plan",
+      "idRequired": "L'ID du plan est requis",
+      "activated": "Plan {{id}} activé",
+      "alreadyActive": "Le plan {{id}} est déjà actif",
+      "cannotActivate": "Impossible d'activer le plan {{id}} (statut : {{status}})",
+      "failedToActivate": "Impossible d'activer le plan : {{message}}"
+    },
+    "complete": {
+      "description": "Terminer un plan",
+      "idRequired": "L'ID du plan est requis",
+      "completed": "Plan {{id}} terminé",
+      "alreadyCompleted": "Le plan {{id}} est déjà terminé",
+      "cannotComplete": "Impossible de terminer le plan {{id}} (statut : {{status}})",
+      "failedToComplete": "Impossible de terminer le plan : {{message}}"
+    },
+    "cancel": {
+      "description": "Annuler un plan",
+      "idRequired": "L'ID du plan est requis",
+      "cancelled": "Plan {{id}} annulé",
+      "alreadyCancelled": "Le plan {{id}} est déjà annulé",
+      "cannotCancel": "Impossible d'annuler le plan {{id}} (statut : {{status}})",
+      "failedToCancel": "Impossible d'annuler le plan : {{message}}"
+    },
+    "addTask": {
+      "description": "Ajouter une tâche au plan",
+      "idsRequired": "ID du plan et ID de la tâche requis",
+      "added": "Tâche {{taskId}} ajoutée au plan {{planId}}",
+      "alreadyInPlan": "La tâche est déjà dans le plan",
+      "failedToAdd": "Impossible d'ajouter la tâche : {{message}}"
+    },
+    "removeTask": {
+      "description": "Retirer une tâche du plan",
+      "idsRequired": "ID du plan et ID de la tâche requis",
+      "removed": "Tâche {{taskId}} retirée du plan {{planId}}",
+      "notInPlan": "La tâche n'est pas dans le plan",
+      "failedToRemove": "Impossible de retirer la tâche : {{message}}"
+    },
+    "tasks": {
+      "description": "Lister les tâches du plan",
+      "idRequired": "L'ID du plan est requis",
+      "noTasks": "Aucune tâche dans le plan",
+      "showing": "{{count}} tâche(s) dans le plan"
+    },
+    "list": {
+      "description": "Lister les plans",
+      "noPlans": "Aucun plan trouvé",
+      "showing": "{{count}} plan(s)"
+    },
+    "autoCompleteSweep": "Balayage de complétion automatique : {{completed}} tâche(s) terminée(s)"
+  },
+  "workflow": {
+    "description": "Gérer les flux de travail",
+    "create": {
+      "description": "Créer un flux de travail",
+      "titleRequired": "--title est requis pour créer un flux de travail",
+      "created": "Flux de travail créé : {{id}}",
+      "failedToCreate": "Impossible de créer le flux de travail : {{message}}"
+    },
+    "list": {
+      "description": "Lister les flux de travail",
+      "noWorkflows": "Aucun flux de travail trouvé",
+      "showing": "{{count}} flux de travail"
+    },
+    "show": {
+      "description": "Afficher les détails d'un flux de travail",
+      "idRequired": "L'ID du flux de travail est requis",
+      "notFound": "Flux de travail introuvable : {{id}}",
+      "info": "Informations",
+      "progress": "Progression",
+      "metrics": "Métriques"
+    },
+    "delete": {
+      "description": "Supprimer un flux de travail",
+      "idRequired": "L'ID du flux de travail est requis",
+      "deleted": "Flux de travail {{id}} supprimé",
+      "failedToDelete": "Impossible de supprimer le flux de travail : {{message}}"
+    },
+    "promote": {
+      "description": "Promouvoir un flux de travail en mode durable",
+      "idRequired": "L'ID du flux de travail est requis",
+      "promoted": "Flux de travail {{id}} promu en mode durable",
+      "alreadyDurable": "Le flux de travail {{id}} est déjà en mode durable",
+      "failedToPromote": "Impossible de promouvoir le flux de travail : {{message}}"
+    },
+    "gc": {
+      "noEligible": "Aucun flux de travail éphémère terminé éligible pour la collecte",
+      "collected": "{{count}} flux de travail éphémère(s) collecté(s)"
+    },
+    "modeEphemeral": "Éphémère",
+    "modeDurable": "Durable"
+  },
+  "playbook": {
+    "description": "Gérer les playbooks",
+    "create": {
+      "description": "Créer un playbook",
+      "titleRequired": "--title est requis pour créer un playbook",
+      "created": "Playbook créé : {{id}}",
+      "failedToCreate": "Impossible de créer le playbook : {{message}}"
+    },
+    "list": {
+      "description": "Lister les playbooks",
+      "noPlaybooks": "Aucun playbook trouvé",
+      "showing": "{{count}} playbook(s)"
+    },
+    "show": {
+      "description": "Afficher les détails d'un playbook",
+      "idRequired": "L'ID du playbook est requis",
+      "notFound": "Playbook introuvable : {{id}}"
+    },
+    "validate": {
+      "description": "Valider un playbook",
+      "idRequired": "L'ID du playbook est requis",
+      "valid": "Le playbook {{id}} est valide",
+      "hasIssues": "Le playbook {{id}} a {{count}} problème(s)",
+      "failedToValidate": "Impossible de valider le playbook : {{message}}"
+    },
+    "stepParseError": "Erreur d'analyse de l'étape {{index}} : {{message}}",
+    "variableParseError": "Erreur d'analyse de la variable {{name}} : {{message}}"
+  },
+  "channel": {
+    "description": "Gérer les canaux de communication",
+    "create": {
+      "description": "Créer un canal",
+      "nameRequired": "--name est requis pour créer un canal",
+      "createdGroup": "Canal de groupe créé : {{id}}",
+      "createdDirect": "Canal direct créé : {{id}}",
+      "failedToCreate": "Impossible de créer le canal : {{message}}"
+    },
+    "list": {
+      "description": "Lister les canaux",
+      "noChannels": "Aucun canal trouvé",
+      "showing": "{{count}} canal(aux)"
+    },
+    "join": {
+      "description": "Rejoindre un canal",
+      "idRequired": "L'ID du canal est requis",
+      "joined": "A rejoint le canal {{id}}",
+      "alreadyMember": "Déjà membre du canal {{id}}",
+      "cannotJoinDirect": "Impossible de rejoindre un canal direct",
+      "cannotJoinInviteOnly": "Impossible de rejoindre un canal sur invitation sans invitation",
+      "cannotJoinPrivate": "Impossible de rejoindre un canal privé sans invitation",
+      "failedToJoin": "Impossible de rejoindre le canal : {{message}}"
+    },
+    "leave": {
+      "description": "Quitter un canal",
+      "idRequired": "L'ID du canal est requis",
+      "left": "A quitté le canal {{id}}",
+      "notMember": "Vous n'êtes pas membre du canal {{id}}",
+      "cannotLeaveDirect": "Impossible de quitter un canal direct",
+      "failedToLeave": "Impossible de quitter le canal : {{message}}"
+    },
+    "members": {
+      "description": "Lister les membres du canal",
+      "idRequired": "L'ID du canal est requis",
+      "notFound": "Canal introuvable : {{id}}",
+      "members": "{{count}} membre(s)"
+    },
+    "merge": {
+      "description": "Fusionner des canaux",
+      "idsRequired": "ID du canal source et ID du canal cible requis",
+      "merged": "Canal {{sourceId}} fusionné dans {{targetId}}",
+      "failedToMerge": "Impossible de fusionner les canaux : {{message}}"
+    },
+    "cannotModifyDirect": "Impossible de modifier un canal direct"
+  },
+  "library": {
+    "description": "Gérer les bibliothèques",
+    "create": {
+      "description": "Créer une bibliothèque",
+      "nameRequired": "--name est requis pour créer une bibliothèque",
+      "created": "Bibliothèque créée : {{id}}",
+      "failedToCreate": "Impossible de créer la bibliothèque : {{message}}"
+    },
+    "list": {
+      "description": "Lister les bibliothèques",
+      "noLibraries": "Aucune bibliothèque trouvée",
+      "showing": "{{count}} bibliothèque(s)"
+    },
+    "addDocument": {
+      "description": "Ajouter un document à la bibliothèque",
+      "idsRequired": "ID de la bibliothèque et ID du document requis",
+      "added": "Document {{documentId}} ajouté à la bibliothèque {{libraryId}}",
+      "alreadyInLibrary": "Le document est déjà dans la bibliothèque",
+      "failedToAdd": "Impossible d'ajouter le document : {{message}}"
+    },
+    "removeDocument": {
+      "description": "Retirer un document de la bibliothèque",
+      "idsRequired": "ID de la bibliothèque et ID du document requis",
+      "removed": "Document {{documentId}} retiré de la bibliothèque {{libraryId}}",
+      "notInLibrary": "Le document n'est pas dans la bibliothèque",
+      "failedToRemove": "Impossible de retirer le document : {{message}}"
+    },
+    "documents": {
+      "description": "Lister les documents de la bibliothèque",
+      "idRequired": "L'ID de la bibliothèque est requis",
+      "noDocuments": "Aucun document dans la bibliothèque",
+      "showing": "{{count}} document(s)"
+    },
+    "nestedLibrary": "Une bibliothèque ne peut pas être imbriquée",
+    "cannotNestUnderItself": "Une bibliothèque ne peut pas être imbriquée sous elle-même",
+    "delete": {
+      "orphanDocuments": "{{count}} document(s) orphelin(s) (sans bibliothèque parente)",
+      "reassignDocuments": "Utilisez --reassign-to <id-bibliothèque> pour réassigner les documents"
+    }
+  },
+  "team": {
+    "description": "Gérer les équipes (collections d'entités)",
+    "create": {
+      "description": "Créer une équipe",
+      "nameRequired": "--name est requis pour créer une équipe",
+      "created": "Équipe créée : {{id}}",
+      "failedToCreate": "Impossible de créer l'équipe : {{message}}",
+      "optionDescription": {
+        "name": "Nom de l'équipe (obligatoire)",
+        "member": "Ajouter un membre (répétable)",
+        "tag": "Ajouter une étiquette (répéable)"
+      }
+    },
+    "add": {
+      "description": "Ajouter un membre à l'équipe",
+      "idsRequired": "Utilisation : sf team add <id-équipe> <id-entité>",
+      "added": "{{entityId}} ajouté à l'équipe {{teamId}}",
+      "alreadyMember": "{{entityId}} est déjà membre de l'équipe {{teamId}}",
+      "teamNotFound": "Équipe introuvable : {{id}}",
+      "notATeam": "L'élément {{id}} n'est pas une équipe (type : {{type}})",
+      "entityNotFound": "Entité introuvable : {{id}}",
+      "notAnEntity": "L'élément {{id}} n'est pas une entité (type : {{type}})",
+      "failedToAdd": "Impossible d'ajouter le membre : {{message}}"
+    },
+    "remove": {
+      "description": "Retirer un membre de l'équipe",
+      "idsRequired": "Utilisation : sf team remove <id-équipe> <id-entité>",
+      "removed": "{{entityId}} retiré de l'équipe {{teamId}}",
+      "notMember": "{{entityId}} n'est pas membre de l'équipe {{teamId}}",
+      "failedToRemove": "Impossible de retirer le membre : {{message}}"
+    },
+    "delete": {
+      "description": "Supprimer une équipe (suppression logique)",
+      "idRequired": "L'ID de l'équipe est requis",
+      "alreadyDeleted": "L'équipe {{id}} est déjà supprimée",
+      "hasMembersForce": "L'équipe {{id}} a {{count}} membre(s). Utilisez --force pour supprimer.",
+      "deleted": "Équipe {{id}} supprimée{{reason}}",
+      "failedToDelete": "Impossible de supprimer l'équipe : {{message}}",
+      "optionDescription": {
+        "reason": "Raison de la suppression",
+        "force": "Ignorer la confirmation pour les équipes avec des membres"
+      }
+    },
+    "list": {
+      "description": "Lister les équipes",
+      "noTeams": "Aucune équipe trouvée",
+      "showing": "Affichage de {{shown}} sur {{total}} équipe(s)",
+      "optionDescription": {
+        "member": "Filtrer par entité membre",
+        "limit": "Nombre maximum de résultats"
+      }
+    },
+    "members": {
+      "description": "Lister les membres de l'équipe",
+      "idRequired": "L'ID de l'équipe est requis",
+      "noMembers": "Aucun membre",
+      "memberCount": "{{count}} membre(s)"
+    }
+  },
+  "document": {
+    "description": "Gérer les documents",
+    "create": {
+      "description": "Créer un document",
+      "titleRequired": "--title est requis pour créer un document",
+      "created": "Document créé : {{id}}",
+      "failedToCreate": "Impossible de créer le document : {{message}}"
+    },
+    "list": {
+      "description": "Lister les documents",
+      "noDocuments": "Aucun document trouvé",
+      "showing": "{{count}} document(s)"
+    },
+    "search": {
+      "description": "Rechercher des documents",
+      "queryRequired": "La requête de recherche est requise",
+      "noResults": "Aucun résultat trouvé",
+      "results": "{{count}} résultat(s)",
+      "failedToSearch": "Impossible de rechercher : {{message}}"
+    },
+    "show": {
+      "description": "Afficher les détails d'un document",
+      "idRequired": "L'ID du document est requis",
+      "notFound": "Document introuvable : {{id}}"
+    },
+    "update": {
+      "description": "Mettre à jour un document",
+      "idRequired": "L'ID du document est requis",
+      "updated": "Document {{id}} mis à jour",
+      "failedToUpdate": "Impossible de mettre à jour le document : {{message}}"
+    },
+    "history": {
+      "description": "Afficher l'historique des versions d'un document",
+      "idRequired": "L'ID du document est requis",
+      "notFound": "Document introuvable : {{id}}",
+      "versionHistory": "Historique des versions de {{id}}",
+      "noVersions": "Aucune version trouvée"
+    },
+    "rollback": {
+      "description": "Restaurer un document à une version antérieure",
+      "idRequired": "L'ID du document est requis",
+      "versionRequired": "Le numéro de version est requis",
+      "rolledBack": "Document {{id}} restauré à la version {{version}}",
+      "failedToRollback": "Impossible de restaurer le document : {{message}}"
+    },
+    "archive": {
+      "description": "Archiver un document",
+      "idRequired": "L'ID du document est requis",
+      "archived": "Document {{id}} archivé",
+      "alreadyArchived": "Le document {{id}} est déjà archivé",
+      "failedToArchive": "Impossible d'archiver le document : {{message}}"
+    },
+    "unarchive": {
+      "description": "Désarchiver un document",
+      "idRequired": "L'ID du document est requis",
+      "unarchived": "Document {{id}} désarchivé",
+      "notArchived": "Le document {{id}} n'est pas archivé",
+      "failedToUnarchive": "Impossible de désarchiver le document : {{message}}"
+    },
+    "delete": {
+      "description": "Supprimer un document",
+      "idRequired": "L'ID du document est requis",
+      "deleted": "Document {{id}} supprimé",
+      "failedToDelete": "Impossible de supprimer le document : {{message}}"
+    },
+    "reindex": {
+      "description": "Reconstruire l'index de recherche",
+      "reindexed": "{{count}} document(s) réindexé(s)",
+      "failedToReindex": "Impossible de réindexer : {{message}}"
+    }
+  },
+  "docs": {
+    "description": "Gérer la documentation de l'espace de travail",
+    "libraryFound": "Bibliothèque de documentation trouvée : {{id}}",
+    "libraryCreated": "Bibliothèque de documentation créée : {{id}}",
+    "directoryFound": "Répertoire de documentation trouvé : {{dir}}",
+    "directoryCreated": "Répertoire de documentation créé : {{dir}}",
+    "addedToLibrary": "{{count}} fichier(s) ajouté(s) à la bibliothèque de documentation",
+    "skipped": "{{count}} fichier(s) ignoré(s)",
+    "libraryNotFound": "Bibliothèque de documentation introuvable",
+    "directoryNotFound": "Répertoire de documentation introuvable",
+    "failed": "Impossible de gérer la documentation : {{message}}"
+  },
+  "embeddings": {
+    "description": "Gérer les embeddings de documents pour la recherche sémantique",
+    "install": {
+      "description": "Télécharger le modèle d'embedding local",
+      "alreadyInstalled": "Le modèle {{model}} est déjà installé dans {{path}}",
+      "installed": "Modèle d'embedding {{model}} installé dans {{path}}",
+      "placeholderNote": "Note : Utilisation d'une implémentation de substitution. Le téléchargement du modèle ONNX sera ajouté dans une prochaine version.",
+      "failedToInstall": "Impossible d'installer le modèle d'embedding : {{message}}"
+    },
+    "status": {
+      "description": "Afficher la configuration et la disponibilité du modèle",
+      "model": "Modèle : {{model}}",
+      "installed": "Installé : {{status}}",
+      "path": "Chemin : {{path}}",
+      "available": "Disponible : {{status}}",
+      "provider": "Fournisseur : {{name}} ({{dimensions}}d, {{location}})",
+      "error": "Erreur : {{error}}",
+      "runInstall": "Exécutez « sf embeddings install » pour télécharger le modèle."
+    },
+    "reindex": {
+      "description": "Ré-embedder tous les documents",
+      "notInstalled": "Modèle d'embedding non installé. Exécutez « sf embeddings install » d'abord.",
+      "reembedded": "{{count}} document(s) ré-embeddé(s){{errors}}",
+      "withErrors": " ({{count}} erreur(s))",
+      "failedToReindex": "Impossible de réindexer les embeddings : {{message}}"
+    },
+    "search": {
+      "description": "Recherche sémantique (pour test)",
+      "queryRequired": "Utilisation : sf embeddings search <requête>",
+      "notInstalled": "Modèle d'embedding non installé. Exécutez « sf embeddings install » d'abord.",
+      "noResults": "Aucun résultat trouvé",
+      "failedToSearch": "Impossible de rechercher les embeddings : {{message}}"
+    }
+  },
+  "message": {
+    "description": "Envoyer et gérer les messages",
+    "send": {
+      "description": "Envoyer un message à un canal ou une entité",
+      "contentOrFileRequired": "--content ou --file est requis",
+      "cannotSpecifyBoth": "Impossible de spécifier --content et --file simultanément",
+      "channelOrToRequired": "L'une des options --channel, --to ou --reply-to est requise",
+      "replyToNotFound": "Message de référence introuvable : {{id}}",
+      "notAMessage": "L'élément {{id}} n'est pas un message (type : {{type}})",
+      "targetEntityNotFound": "Entité cible introuvable : {{id}}",
+      "targetNotAnEntity": "L'élément {{id}} n'est pas une entité (type : {{type}})",
+      "couldNotDetermineChannel": "Impossible de déterminer le canal",
+      "channelNotFound": "Canal introuvable : {{id}}",
+      "notAChannel": "L'élément {{id}} n'est pas un canal (type : {{type}})",
+      "notAMember": "Vous n'êtes pas membre du canal {{id}}",
+      "fileNotFound": "Fichier introuvable : {{path}}",
+      "threadParentNotFound": "Message parent du fil introuvable : {{id}}",
+      "threadParentNotAMessage": "L'élément {{id}} n'est pas un message (type : {{type}})",
+      "threadParentDifferentChannel": "Le message parent est dans un canal différent",
+      "attachmentNotFound": "Document joint introuvable : {{id}}",
+      "attachmentNotADocument": "La pièce jointe {{id}} n'est pas un document (type : {{type}})",
+      "sent": "Message {{id}} envoyé à {{channel}}{{replyInfo}}",
+      "replyInfo": " (réponse à {{threadId}})",
+      "failedToSend": "Impossible d'envoyer le message : {{message}}"
+    },
+    "reply": {
+      "description": "Répondre à un message (raccourci pour send --reply-to)",
+      "usage": "Utilisation : sf message reply <id-message> --content <texte> | --file <chemin>"
+    },
+    "list": {
+      "description": "Lister les messages d'un canal",
+      "channelRequired": "--channel est requis",
+      "noMessages": "Aucun message trouvé",
+      "messageCount": "{{count}} message(s) dans le canal {{channel}}",
+      "failedToList": "Impossible de lister les messages : {{message}}"
+    },
+    "thread": {
+      "description": "Afficher un fil de discussion",
+      "idRequired": "Utilisation : sf message thread <id-message>",
+      "notFound": "Message introuvable : {{id}}",
+      "notAMessage": "L'élément {{id}} n'est pas un message (type : {{type}})",
+      "noMessages": "Aucun message dans le fil",
+      "rootWith": "Message racine avec",
+      "replyTo": "Réponse à {{threadId}} avec",
+      "replies": "{{count}} réponse(s)",
+      "failedToGetThread": "Impossible d'obtenir le fil : {{message}}"
+    }
+  },
+  "inbox": {
+    "description": "Gérer les notifications de boîte de réception",
+    "list": {
+      "description": "Lister les éléments de la boîte de réception d'une entité",
+      "entityRequired": "Utilisation : sf inbox <entité> [options]",
+      "entityNotFound": "Entité introuvable : {{name}}",
+      "invalidStatus": "Statut invalide : {{status}}. Doit être l'un de : {{valid}}",
+      "limitPositive": "La limite doit être un nombre positif",
+      "noItems": "Aucun élément {{status}} pour {{name}}",
+      "itemCount": "{{count}} élément(s) de boîte de réception pour {{name}}"
+    },
+    "read": {
+      "description": "Marquer un élément comme lu",
+      "idRequired": "Utilisation : sf inbox read <id-élément>",
+      "markedAsRead": "{{id}} marqué comme lu",
+      "notFound": "Élément de boîte de réception introuvable : {{id}}",
+      "failedToMark": "Impossible de marquer comme lu : {{message}}"
+    },
+    "readAll": {
+      "description": "Marquer tous les éléments comme lus",
+      "entityRequired": "Utilisation : sf inbox read-all <entité>",
+      "entityNotFound": "Entité introuvable : {{name}}",
+      "markedCount": "{{count}} élément(s) marqué(s) comme lu(s) pour {{name}}",
+      "failedToMarkAll": "Impossible de marquer tous les éléments comme lus : {{message}}"
+    },
+    "unread": {
+      "description": "Marquer un élément comme non lu",
+      "idRequired": "Utilisation : sf inbox unread <id-élément>",
+      "markedAsUnread": "{{id}} marqué comme non lu",
+      "notFound": "Élément de boîte de réception introuvable : {{id}}",
+      "failedToMark": "Impossible de marquer comme non lu : {{message}}"
+    },
+    "archive": {
+      "description": "Archiver un élément de la boîte de réception",
+      "idRequired": "Utilisation : sf inbox archive <id-élément>",
+      "archived": "{{id}} archivé",
+      "notFound": "Élément de boîte de réception introuvable : {{id}}",
+      "failedToArchive": "Impossible d'archiver : {{message}}"
+    },
+    "count": {
+      "description": "Obtenir le nombre d'éléments non lus",
+      "entityRequired": "Utilisation : sf inbox count <entité>",
+      "entityNotFound": "Entité introuvable : {{name}}",
+      "unreadCount": "{{name}} a {{count}} élément(s) non lu(s)",
+      "failedToCount": "Impossible d'obtenir le nombre de non lus : {{message}}"
+    },
+    "optionDescription": {
+      "all": "Inclure les éléments lus et archivés",
+      "status": "Filtrer par statut : unread, read ou archived",
+      "limit": "Nombre maximum d'éléments à retourner",
+      "full": "Afficher le contenu complet au lieu de l'aperçu tronqué"
+    }
+  },
+  "completion": {
+    "description": "Générer les scripts de complétion shell",
+    "unsupportedShell": "Shell non supporté : {{shell}}. Shells supportés : {{supported}}",
+    "failedToGenerate": "Impossible de générer la complétion : {{message}}",
+    "supportedShells": "Shells supportés :",
+    "shellBash": "Complétion Bash",
+    "shellZsh": "Complétion Zsh",
+    "shellFish": "Complétion Fish"
+  },
+  "alias": {
+    "description": "Afficher les alias de commandes",
+    "noAliases": "Aucun alias défini",
+    "commandAliases": "Alias de commandes :"
+  },
+  "install": {
+    "description": "Installer les extensions stoneforge",
+    "skills": {
+      "description": "Installer les compétences Claude dans .claude/skills/",
+      "notFound": "Impossible de trouver les compétences à installer. Assurez-vous que @stoneforge/smithy est installé.",
+      "installed": "{{count}} compétence(s) installée(s) :",
+      "skipped": "{{count}} compétence(s) existante(s) ignorée(s) (utilisez --force pour écraser) :",
+      "failed": "Impossible d'installer {{count}} compétence(s) :",
+      "noSkillsInstalled": "Aucune compétence n'a été installée",
+      "skillsDirectory": "Répertoire des compétences : {{dir}}",
+      "optionDescription": {
+        "force": "Écraser les fichiers de compétences existants"
+      }
+    },
+    "missingSubcommand": "Sous-commande manquante. Utilisez « sf install skills ». Exécutez « sf install --help » pour plus d'informations."
+  },
+  "serve": {
+    "description": "Démarrer un serveur Stoneforge (smithy, quarry)",
+    "serverReady": "Serveur prêt",
+    "dashboard": "Tableau de bord",
+    "agents": "Agents",
+    "agentsLoaded": "{{count}} chargé(s)",
+    "daemon": "Daemon",
+    "daemonRunning": "en cours d'exécution",
+    "daemonNoGit": "désactivé (pas de dépôt git)",
+    "daemonDisabled": "désactivé (DAEMON_AUTO_START=false)",
+    "daemonStoppedByUser": "arrêté (par l'utilisateur)",
+    "pressCtrlC": "Appuyez sur Ctrl+C pour arrêter",
+    "couldNotOpenBrowser": "Impossible d'ouvrir le navigateur automatiquement. Visitez {{url}}",
+    "smithyNotInstalled": "Smithy n'est pas installé. Installez @stoneforge/smithy pour utiliser « sf serve smithy ».",
+    "unknownTarget": "Cible de serveur inconnue : {{target}}. Utilisez « quarry » ou « smithy ».",
+    "failedToStart": "Impossible de démarrer le serveur : {{message}}",
+    "optionDescription": {
+      "port": "Port d'écoute",
+      "host": "Hôte de liaison",
+      "noOpen": "Ne pas ouvrir le navigateur automatiquement",
+      "open": "Forcer l'ouverture d'un nouvel onglet de navigateur même si un a déjà été ouvert"
+    }
+  },
+  "general": {
+    "usage": "Utilisation",
+    "example": "Exemple",
+    "examples": "Exemples",
+    "arguments": "Arguments",
+    "options": "Options",
+    "subcommands": "Sous-commandes",
+    "note": "Note",
+    "warning": "Attention",
+    "error": "Erreur",
+    "cancelled": "Annulé",
+    "yes": "Oui",
+    "no": "Non",
+    "true": "Vrai",
+    "false": "Faux",
+    "none": "Aucun",
+    "notFound": "Introuvable",
+    "required": "(obligatoire)",
+    "local": "local",
+    "remote": "distant",
+    "limitMustBePositive": "La limite doit être un nombre positif"
+  },
+  "metrics": {
+    "description": "Afficher les métriques des fournisseurs et les statistiques d'utilisation",
+    "title": "Métriques des fournisseurs ({{days}} derniers jours)",
+    "filteredBy": "Filtré par fournisseur : {{provider}}",
+    "noMetrics": "Aucune métrique enregistrée pour la période sélectionnée.",
+    "summary": "Résumé :",
+    "totalTokens": "Total jetons",
+    "inputTokens": "Jetons entrée",
+    "outputTokens": "Jetons sortie",
+    "cacheReadTokens": "Jetons cache lu",
+    "cacheCreationTokens": "Jetons cache créé",
+    "sessions": "Sessions",
+    "estimatedCost": "Coût estimé",
+    "groupBy": "Par {{group}} :",
+    "tokens": "Jetons",
+    "total": "total",
+    "input": "Entrée",
+    "output": "Sortie",
+    "cacheRead": "Cache lu",
+    "cacheCreation": "Cache créé",
+    "avgDuration": "Durée moy.",
+    "errorRate": "Taux d'erreur",
+    "failedLabel": "échoué(s)",
+    "rateLimited": "limité(s) débit",
+    "estCost": "Coût est.",
+    "failed": "Impossible d'obtenir les métriques : {{message}}",
+    "option": {
+      "range": "Plage de temps (ex. 7j, 14j, 30j)",
+      "provider": "Filtrer par nom de fournisseur",
+      "groupBy": "Regrouper par : provider (défaut) ou model"
+    },
+    "help": "Afficher les métriques d'utilisation des fournisseurs LLM, y compris les jetons, coûts estimés, sessions, durée moyenne et taux d'erreur.\n\nOptions :\n  --range, -r    Plage de temps (ex. 7d, 14d, 30d). Défaut : 7d\n  --provider, -p Filtrer par nom de fournisseur (ex. claude-code)\n  --group-by, -g Regrouper par : provider (défaut) ou model\n\nExemples :\n  sf metrics                  Métriques des 7 derniers jours\n  sf metrics --range 30d      Métriques des 30 derniers jours\n  sf metrics --provider claude-code  Filtrer par fournisseur\n  sf metrics --group-by model        Regrouper par modèle\n  sf metrics --json           Sortie JSON"
+  }
+}

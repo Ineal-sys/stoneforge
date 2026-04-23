@@ -14,6 +14,7 @@ import type { QuarryAPI } from '../api/types.js';
 import type { EntityId } from '@stoneforge/core';
 import { OPERATOR_ENTITY_ID } from './commands/init.js';
 import { findStoneforgeDir } from '../config/file.js';
+import { t } from './i18n/index.js';
 
 // ============================================================================
 // Constants
@@ -80,7 +81,7 @@ export function createAPI(options: GlobalOptions, createDb: boolean = false): { 
     return {
       api: null as unknown as QuarryAPI,
       backend: null as unknown as StorageBackend,
-      error: 'No database found. Run "sf init" to initialize a workspace, or specify --db path',
+      error: t('db.noDatabase'),
     };
   }
 
@@ -95,7 +96,7 @@ export function createAPI(options: GlobalOptions, createDb: boolean = false): { 
     return {
       api: null as unknown as QuarryAPI,
       backend: null as unknown as StorageBackend,
-      error: `Failed to open database: ${message}`,
+      error: t('db.failedToOpen', { message }),
     };
   }
 }

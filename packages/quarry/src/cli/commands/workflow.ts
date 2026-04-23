@@ -15,6 +15,7 @@
 import type { Command, GlobalOptions, CommandResult, CommandOption } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
 import { getFormatter, getOutputMode, getStatusIcon } from '../formatter.js';
+import { t } from '../i18n/index.js';
 import {
   createWorkflow,
   WorkflowStatus,
@@ -49,20 +50,20 @@ interface WorkflowCreateOptions {
 const workflowCreateOptions: CommandOption[] = [
   {
     name: 'var',
-    description: 'Set variable (name=value, can be repeated)',
+    description: t('workflow.create.option.var'),
     hasValue: true,
     array: true,
   },
   {
     name: 'ephemeral',
     short: 'e',
-    description: 'Create as ephemeral (not synced)',
+    description: t('workflow.create.option.ephemeral'),
     hasValue: false,
   },
   {
     name: 'title',
     short: 't',
-    description: 'Override workflow title',
+    description: t('workflow.create.option.title'),
     hasValue: true,
   },
 ];
@@ -74,7 +75,7 @@ async function workflowCreateHandler(
   const [playbookNameOrId] = args;
 
   if (!playbookNameOrId) {
-    return failure('Usage: sf workflow create <playbook> [options]\nExample: sf workflow create deploy --var env=prod', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('workflow.create.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options, true);
@@ -93,7 +94,7 @@ async function workflowCreateHandler(
         const eqIndex = varArg.indexOf('=');
         if (eqIndex === -1) {
           return failure(
-            `Invalid variable format: ${varArg}. Use name=value`,
+            t('workflow.create.error.invalidVarFormat', { varArg }),
             ExitCode.VALIDATION
           );
         }
@@ -105,7 +106,7 @@ async function workflowCreateHandler(
 
     // For now, create a workflow directly
     // TODO: When playbook instantiation is implemented, look up playbook and create workflow
-    const title = options.title || `Workflow from ${playbookNameOrId}`;
+    const title = options.title || t('workflow.create.defaultTitle', { playbook: playbookNameOrId });
 
     const input: CreateWorkflowInput = {
       title,
@@ -123,31 +124,18 @@ async function workflowCreateHandler(
       return success(created.id);
     }
 
-    return success(created, `Created workflow ${created.id}${options.ephemeral ? ' (ephemeral)' : ''}`);
+    return success(created, t('workflow.create.success', { id: created.id, ephemeral: options.ephemeral ? t('workflow.create.ephemeralLabel') : '' }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to create workflow: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('workflow.create.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const workflowCreateCommand: Command = {
   name: 'create',
-  description: 'Instantiate a playbook into a workflow',
+  description: t('workflow.create.description'),
   usage: 'sf workflow create <playbook> [options]',
-  help: `Create a workflow by instantiating a playbook template.
-
-Arguments:
-  playbook    Playbook name or ID to instantiate
-
-Options:
-      --var <name=value>  Set variable (can be repeated)
-  -e, --ephemeral         Create as ephemeral (not synced to JSONL)
-  -t, --title <text>      Override workflow title
-
-Examples:
-  sf workflow create deploy --var env=prod --var version=1.2
-  sf workflow create sprint-setup --ephemeral
-  sf workflow create deploy --title "Production Deploy v1.2"`,
+  help: t('workflow.create.help'),
   options: workflowCreateOptions,
   handler: workflowCreateHandler as Command['handler'],
 };
@@ -167,25 +155,25 @@ const workflowListOptions: CommandOption[] = [
   {
     name: 'status',
     short: 's',
-    description: 'Filter by status (pending, running, completed, failed, cancelled)',
+    description: t('workflow.list.option.status'),
     hasValue: true,
   },
   {
     name: 'ephemeral',
     short: 'e',
-    description: 'Show only ephemeral workflows',
+    description: t('workflow.list.option.ephemeral'),
     hasValue: false,
   },
   {
     name: 'durable',
     short: 'd',
-    description: 'Show only durable workflows',
+    description: t('workflow.list.option.durable'),
     hasValue: false,
   },
   {
     name: 'limit',
     short: 'l',
-    description: 'Maximum number of results',
+    description: t('label.limit'),
     hasValue: true,
   },
 ];
@@ -210,7 +198,7 @@ async function workflowListHandler(
       const validStatuses = Object.values(WorkflowStatus);
       if (!validStatuses.includes(options.status as WorkflowStatus)) {
         return failure(
-          `Invalid status: ${options.status}. Must be one of: ${validStatuses.join(', ')}`,
+          t('workflow.error.invalidStatus', { status: options.status, valid: validStatuses.join(', ') }),
           ExitCode.VALIDATION
         );
       }
@@ -220,7 +208,7 @@ async function workflowListHandler(
     if (options.limit) {
       const limit = parseInt(options.limit, 10);
       if (isNaN(limit) || limit < 1) {
-        return failure('Limit must be a positive number', ExitCode.VALIDATION);
+        return failure(t('error.limitPositive'), ExitCode.VALIDATION);
       }
       filter.limit = limit;
     }
@@ -254,45 +242,34 @@ async function workflowListHandler(
     }
 
     if (items.length === 0) {
-      return success(null, 'No workflows found');
+      return success(null, t('workflow.list.empty'));
     }
 
     // Build table
-    const headers = ['ID', 'TITLE', 'STATUS', 'MODE', 'CREATED'];
+    const headers = [t('label.id'), t('label.title'), t('label.status'), t('label.mode'), t('label.created')];
     const rows = items.map((w) => [
       w.id,
       w.title.length > 40 ? w.title.substring(0, 37) + '...' : w.title,
       `${getStatusIcon(w.status)} ${w.status}`,
-      w.ephemeral ? 'ephemeral' : 'durable',
+      w.ephemeral ? t('workflow.label.ephemeral') : t('workflow.label.durable'),
       w.createdAt.split('T')[0],
     ]);
 
     const table = formatter.table(headers, rows);
-    const summary = `\nShowing ${items.length} of ${result.total} workflows`;
+    const summary = `\n${t('workflow.list.summary', { shown: items.length, total: result.total })}`;
 
     return success(items, table + summary);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to list workflows: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('workflow.list.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const workflowListCommand: Command = {
   name: 'list',
-  description: 'List workflows',
+  description: t('workflow.list.description'),
   usage: 'sf workflow list [options]',
-  help: `List workflows with optional filtering.
-
-Options:
-  -s, --status <status>  Filter by status: pending, running, completed, failed, cancelled
-  -e, --ephemeral        Show only ephemeral workflows
-  -d, --durable          Show only durable workflows
-  -l, --limit <n>        Maximum results
-
-Examples:
-  sf workflow list
-  sf workflow list --status running
-  sf workflow list --ephemeral`,
+  help: t('workflow.list.help'),
   options: workflowListOptions,
   handler: workflowListHandler as Command['handler'],
 };
@@ -308,7 +285,7 @@ async function workflowShowHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf workflow show <id>\nExample: sf workflow show el-abc123', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('workflow.show.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -320,17 +297,17 @@ async function workflowShowHandler(
     const workflow = await api.get<Workflow>(id as ElementId);
 
     if (!workflow) {
-      return failure(`Workflow not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('workflow.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     if (workflow.type !== 'workflow') {
-      return failure(`Element ${id} is not a workflow (type: ${workflow.type})`, ExitCode.VALIDATION);
+      return failure(t('workflow.error.notWorkflow', { id, type: workflow.type }), ExitCode.VALIDATION);
     }
 
     // Check if workflow is deleted (tombstone)
     const data = workflow as unknown as Record<string, unknown>;
     if (data.status === 'tombstone' || data.deletedAt) {
-      return failure(`Workflow not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('workflow.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     const mode = getOutputMode(options);
@@ -348,28 +325,28 @@ async function workflowShowHandler(
     let output = formatter.element(workflow as unknown as Record<string, unknown>);
 
     // Add workflow-specific info
-    output += '\n\n--- Workflow Info ---\n';
-    output += `Mode:      ${workflow.ephemeral ? 'ephemeral' : 'durable'}\n`;
+    output += `\n\n${t('workflow.show.infoSection')}\n`;
+    output += `${t('label.mode')}:      ${workflow.ephemeral ? t('workflow.label.ephemeral') : t('workflow.label.durable')}\n`;
     if (workflow.playbookId) {
-      output += `Playbook:  ${workflow.playbookId}\n`;
+      output += `${t('label.playbook')}:  ${workflow.playbookId}\n`;
     }
     if (workflow.startedAt) {
-      output += `Started:   ${workflow.startedAt}\n`;
+      output += `${t('label.started')}:   ${workflow.startedAt}\n`;
     }
     if (workflow.finishedAt) {
-      output += `Finished:  ${workflow.finishedAt}\n`;
+      output += `${t('label.finished')}:  ${workflow.finishedAt}\n`;
     }
     if (workflow.failureReason) {
-      output += `Failure:   ${workflow.failureReason}\n`;
+      output += `${t('label.failure')}:   ${workflow.failureReason}\n`;
     }
     if (workflow.cancelReason) {
-      output += `Cancelled: ${workflow.cancelReason}\n`;
+      output += `${t('label.cancelled')}: ${workflow.cancelReason}\n`;
     }
 
     // Show variables if any
     const varKeys = Object.keys(workflow.variables);
     if (varKeys.length > 0) {
-      output += '\n--- Variables ---\n';
+      output += `\n${t('workflow.show.variablesSection')}\n`;
       for (const key of varKeys) {
         output += `${key}: ${JSON.stringify(workflow.variables[key])}\n`;
       }
@@ -378,22 +355,15 @@ async function workflowShowHandler(
     return success(workflow, output);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to show workflow: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('workflow.show.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const workflowShowCommand: Command = {
   name: 'show',
-  description: 'Show workflow details',
+  description: t('workflow.show.description'),
   usage: 'sf workflow show <id>',
-  help: `Display detailed information about a workflow.
-
-Arguments:
-  id    Workflow identifier (e.g., el-abc123)
-
-Examples:
-  sf workflow show el-abc123
-  sf workflow show el-abc123 --json`,
+  help: t('workflow.show.help'),
   handler: workflowShowHandler as Command['handler'],
 };
 
@@ -411,19 +381,19 @@ const workflowTasksOptions: CommandOption[] = [
   {
     name: 'ready',
     short: 'r',
-    description: 'Show only ready tasks (not blocked, not scheduled for future)',
+    description: t('workflow.tasks.option.ready'),
     hasValue: false,
   },
   {
     name: 'status',
     short: 's',
-    description: 'Filter by status (open, in_progress, blocked, closed, deferred)',
+    description: t('workflow.tasks.option.status'),
     hasValue: true,
   },
   {
     name: 'limit',
     short: 'l',
-    description: 'Maximum number of results',
+    description: t('label.limit'),
     hasValue: true,
   },
 ];
@@ -435,7 +405,7 @@ async function workflowTasksHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf workflow tasks <id>\nExample: sf workflow tasks el-abc123', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('workflow.tasks.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -452,7 +422,7 @@ async function workflowTasksHandler(
       const validStatuses = ['open', 'in_progress', 'blocked', 'closed', 'deferred', 'tombstone'];
       if (!validStatuses.includes(options.status)) {
         return failure(
-          `Invalid status: ${options.status}. Must be one of: ${validStatuses.join(', ')}`,
+          t('workflow.tasks.error.invalidStatus', { status: options.status, valid: validStatuses.join(', ') }),
           ExitCode.VALIDATION
         );
       }
@@ -463,7 +433,7 @@ async function workflowTasksHandler(
     if (options.limit) {
       const limit = parseInt(options.limit, 10);
       if (isNaN(limit) || limit < 1) {
-        return failure('Limit must be a positive number', ExitCode.VALIDATION);
+        return failure(t('error.limitPositive'), ExitCode.VALIDATION);
       }
       filter.limit = limit;
     }
@@ -485,11 +455,11 @@ async function workflowTasksHandler(
     }
 
     if (tasks.length === 0) {
-      return success(null, options.ready ? 'No ready tasks in workflow' : 'No tasks in workflow');
+      return success(null, options.ready ? t('workflow.tasks.noReadyTasks') : t('workflow.tasks.noTasks'));
     }
 
     // Build table
-    const headers = ['ID', 'TITLE', 'STATUS', 'PRIORITY', 'ASSIGNEE'];
+    const headers = [t('label.id'), t('label.title'), t('label.status'), t('label.priority'), t('label.assignee')];
     const rows = tasks.map((t) => [
       t.id,
       t.title.length > 40 ? t.title.substring(0, 37) + '...' : t.title,
@@ -499,34 +469,20 @@ async function workflowTasksHandler(
     ]);
 
     const table = formatter.table(headers, rows);
-    const summary = `\n${tasks.length} task(s)`;
+    const summary = `\n${t('workflow.tasks.summary', { count: tasks.length })}`;
 
     return success(tasks, table + summary);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to list workflow tasks: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('workflow.tasks.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const workflowTasksCommand: Command = {
   name: 'tasks',
-  description: 'List tasks in a workflow',
+  description: t('workflow.tasks.description'),
   usage: 'sf workflow tasks <id> [options]',
-  help: `List all tasks that belong to a workflow.
-
-Arguments:
-  id    Workflow identifier (e.g., el-abc123)
-
-Options:
-  -r, --ready          Show only ready tasks (not blocked, not scheduled for future)
-  -s, --status <s>     Filter by status: open, in_progress, blocked, closed, deferred
-  -l, --limit <n>      Maximum results
-
-Examples:
-  sf workflow tasks el-abc123
-  sf workflow tasks el-abc123 --ready
-  sf workflow tasks el-abc123 --status open
-  sf workflow tasks el-abc123 --json`,
+  help: t('workflow.tasks.help'),
   options: workflowTasksOptions,
   handler: workflowTasksHandler as Command['handler'],
 };
@@ -542,7 +498,7 @@ async function workflowProgressHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf workflow progress <id>\nExample: sf workflow progress el-abc123', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('workflow.progress.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -564,12 +520,12 @@ async function workflowProgressHandler(
     }
 
     // Human-readable output
-    let output = `Workflow Progress: ${id}\n\n`;
-    output += `Total Tasks:   ${progress.totalTasks}\n`;
-    output += `Completion:    ${progress.completionPercentage}%\n`;
-    output += `Ready Tasks:   ${progress.readyTasks}\n`;
-    output += `Blocked Tasks: ${progress.blockedTasks}\n\n`;
-    output += '--- Status Breakdown ---\n';
+    let output = `${t('workflow.progress.title', { id })}\n\n`;
+    output += `${t('workflow.progress.totalTasks')}:   ${progress.totalTasks}\n`;
+    output += `${t('label.completion')}:    ${progress.completionPercentage}%\n`;
+    output += `${t('workflow.progress.readyTasks')}:   ${progress.readyTasks}\n`;
+    output += `${t('workflow.progress.blockedTasks')}: ${progress.blockedTasks}\n\n`;
+    output += `${t('workflow.progress.statusBreakdown')}\n`;
 
     const statusOrder = ['open', 'in_progress', 'blocked', 'closed', 'deferred'];
     for (const status of statusOrder) {
@@ -589,24 +545,15 @@ async function workflowProgressHandler(
     return success(progress, output);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to get workflow progress: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('workflow.progress.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const workflowProgressCommand: Command = {
   name: 'progress',
-  description: 'Show workflow progress metrics',
+  description: t('workflow.progress.description'),
   usage: 'sf workflow progress <id>',
-  help: `Display progress metrics for a workflow.
-
-Shows task status counts, completion percentage, and ready/blocked task counts.
-
-Arguments:
-  id    Workflow identifier (e.g., el-abc123)
-
-Examples:
-  sf workflow progress el-abc123
-  sf workflow progress el-abc123 --json`,
+  help: t('workflow.progress.help'),
   handler: workflowProgressHandler as Command['handler'],
 };
 
@@ -622,7 +569,7 @@ const workflowDeleteOptions: CommandOption[] = [
   {
     name: 'force',
     short: 'f',
-    description: 'Force delete even for durable workflows',
+    description: t('workflow.delete.option.force'),
     hasValue: false,
   },
 ];
@@ -634,7 +581,7 @@ async function workflowDeleteHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf workflow delete <id>\nExample: sf workflow delete el-abc123', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('workflow.delete.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -646,22 +593,22 @@ async function workflowDeleteHandler(
     const workflow = await api.get<Workflow>(id as ElementId);
 
     if (!workflow) {
-      return failure(`Workflow not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('workflow.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     if (workflow.type !== 'workflow') {
-      return failure(`Element ${id} is not a workflow (type: ${workflow.type})`, ExitCode.VALIDATION);
+      return failure(t('workflow.error.notWorkflow', { id, type: workflow.type }), ExitCode.VALIDATION);
     }
 
     // Check if workflow is deleted (tombstone)
     const data = workflow as unknown as Record<string, unknown>;
     if (data.status === 'tombstone' || data.deletedAt) {
-      return failure(`Workflow not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('workflow.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     if (!workflow.ephemeral && !options.force) {
       return failure(
-        `Workflow ${id} is durable. Use --force to delete anyway, or 'sf delete ${id}' for soft delete.`,
+        t('workflow.delete.error.durableWorkflow', { id }),
         ExitCode.VALIDATION
       );
     }
@@ -673,32 +620,19 @@ async function workflowDeleteHandler(
 
     return success(
       result,
-      `Deleted workflow ${id}: ${result.tasksDeleted} task(s), ${result.dependenciesDeleted} dependency(ies) deleted`
+      t('workflow.delete.success', { id, tasksDeleted: result.tasksDeleted, depsDeleted: result.dependenciesDeleted })
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to delete workflow: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('workflow.delete.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const workflowDeleteCommand: Command = {
   name: 'delete',
-  description: 'Delete workflow and all its tasks',
+  description: t('workflow.delete.description'),
   usage: 'sf workflow delete <id>',
-  help: `Delete a workflow and all its tasks immediately (hard delete).
-
-By default, only ephemeral workflows can be deleted. Use --force to delete
-durable workflows as well.
-
-Arguments:
-  id    Workflow identifier
-
-Options:
-  -f, --force    Force delete even for durable workflows
-
-Examples:
-  sf workflow delete el-abc123
-  sf workflow delete el-abc123 --force`,
+  help: t('workflow.delete.help'),
   options: workflowDeleteOptions,
   handler: workflowDeleteHandler as Command['handler'],
 };
@@ -714,7 +648,7 @@ async function workflowPromoteHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf workflow promote <id>\nExample: sf workflow promote el-abc123', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('workflow.promote.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -726,21 +660,21 @@ async function workflowPromoteHandler(
     const workflow = await api.get<Workflow>(id as ElementId);
 
     if (!workflow) {
-      return failure(`Workflow not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('workflow.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     if (workflow.type !== 'workflow') {
-      return failure(`Element ${id} is not a workflow (type: ${workflow.type})`, ExitCode.VALIDATION);
+      return failure(t('workflow.error.notWorkflow', { id, type: workflow.type }), ExitCode.VALIDATION);
     }
 
     // Check if workflow is deleted (tombstone)
     const data = workflow as unknown as Record<string, unknown>;
     if (data.status === 'tombstone' || data.deletedAt) {
-      return failure(`Workflow not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('workflow.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     if (!workflow.ephemeral) {
-      return success(workflow, `Workflow ${id} is already durable`);
+      return success(workflow, t('workflow.promote.alreadyDurable', { id }));
     }
 
     const actor = resolveActor(options);
@@ -755,27 +689,18 @@ async function workflowPromoteHandler(
       { actor }
     );
 
-    return success(updated, `Promoted workflow ${id} to durable`);
+    return success(updated, t('workflow.promote.success', { id }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to promote workflow: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('workflow.promote.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const workflowPromoteCommand: Command = {
   name: 'promote',
-  description: 'Promote ephemeral workflow to durable',
+  description: t('workflow.promote.description'),
   usage: 'sf workflow promote <id>',
-  help: `Promote an ephemeral workflow to durable so it gets synced to JSONL.
-
-After promoting, the workflow and its tasks will be included in exports
-and git sync.
-
-Arguments:
-  id    Workflow identifier
-
-Examples:
-  sf workflow promote el-abc123`,
+  help: t('workflow.promote.help'),
   handler: workflowPromoteHandler as Command['handler'],
 };
 
@@ -792,12 +717,12 @@ const workflowGcOptions: CommandOption[] = [
   {
     name: 'age',
     short: 'a',
-    description: `Maximum age in days (default: ${DEFAULT_GC_AGE_DAYS})`,
+    description: t('workflow.gc.option.age', { default: String(DEFAULT_GC_AGE_DAYS) }),
     hasValue: true,
   },
   {
     name: 'dry-run',
-    description: 'Show what would be deleted without deleting',
+    description: t('workflow.gc.option.dryRun'),
     hasValue: false,
   },
 ];
@@ -817,7 +742,7 @@ async function workflowGcHandler(
     if (options.age) {
       ageDays = parseInt(options.age, 10);
       if (isNaN(ageDays) || ageDays < 0) {
-        return failure('Age must be a non-negative number', ExitCode.VALIDATION);
+        return failure(t('workflow.gc.error.invalidAge'), ExitCode.VALIDATION);
       }
     }
 
@@ -832,7 +757,7 @@ async function workflowGcHandler(
       const eligible = filterGarbageCollectionByAge(allWorkflows, maxAgeMs);
 
       if (eligible.length === 0) {
-        return success({ deleted: 0 }, 'No workflows eligible for garbage collection');
+        return success({ deleted: 0 }, t('workflow.gc.notEligible'));
       }
 
       const mode = getOutputMode(options);
@@ -846,7 +771,7 @@ async function workflowGcHandler(
         return success(eligible.map((w) => w.id).join('\n'));
       }
 
-      const headers = ['ID', 'TITLE', 'STATUS', 'FINISHED'];
+      const headers = [t('label.id'), t('label.title'), t('label.status'), t('label.finished')];
       const rows = eligible.map((w) => [
         w.id,
         w.title.length > 40 ? w.title.substring(0, 37) + '...' : w.title,
@@ -857,7 +782,7 @@ async function workflowGcHandler(
       const table = formatter.table(headers, rows);
       return success(
         { wouldDelete: eligible.map((w) => w.id), count: eligible.length },
-        `Would delete ${eligible.length} workflow(s):\n${table}`
+        t('workflow.gc.wouldDelete', { count: eligible.length }) + `\n${table}`
       );
     }
 
@@ -868,38 +793,24 @@ async function workflowGcHandler(
     });
 
     if (gcResult.workflowsDeleted === 0) {
-      return success({ deleted: 0 }, 'No workflows eligible for garbage collection');
+      return success({ deleted: 0 }, t('workflow.gc.notEligible'));
     }
 
     return success(
       gcResult,
-      `Garbage collected ${gcResult.workflowsDeleted} workflow(s), ${gcResult.tasksDeleted} task(s), ${gcResult.dependenciesDeleted} dependency(ies)`
+      t('workflow.gc.success', { workflows: gcResult.workflowsDeleted, tasks: gcResult.tasksDeleted, deps: gcResult.dependenciesDeleted })
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to garbage collect: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('workflow.gc.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const workflowGcCommand: Command = {
   name: 'gc',
-  description: 'Garbage collect old ephemeral workflows',
+  description: t('workflow.gc.description'),
   usage: 'sf workflow gc [options]',
-  help: `Delete old ephemeral workflows that have reached a terminal state.
-
-Workflows are eligible for garbage collection if they are:
-- Ephemeral (not durable)
-- In a terminal state (completed, failed, or cancelled)
-- Older than the specified age
-
-Options:
-  -a, --age <days>   Maximum age in days (default: ${DEFAULT_GC_AGE_DAYS})
-      --dry-run      Show what would be deleted without deleting
-
-Examples:
-  sf workflow gc
-  sf workflow gc --age 30
-  sf workflow gc --dry-run`,
+  help: t('workflow.gc.help'),
   options: workflowGcOptions,
   handler: workflowGcHandler as Command['handler'],
 };
@@ -910,33 +821,9 @@ Examples:
 
 export const workflowCommand: Command = {
   name: 'workflow',
-  description: 'Manage workflows (executable task sequences)',
+  description: t('workflow.description'),
   usage: 'sf workflow <subcommand> [options]',
-  help: `Manage workflows - executable sequences of tasks.
-
-Workflows can be instantiated from playbook templates or created ad-hoc.
-They support both durable (synced) and ephemeral (temporary) modes.
-
-Subcommands:
-  create     Instantiate a playbook into a workflow
-  list       List workflows
-  show       Show workflow details
-  tasks      List tasks in a workflow
-  progress   Show workflow progress metrics
-  delete     Delete ephemeral workflow and tasks
-  promote    Promote ephemeral to durable
-  gc         Garbage collect old ephemeral workflows
-
-Examples:
-  sf workflow create deploy --var env=prod
-  sf workflow list --status running
-  sf workflow show el-abc123
-  sf workflow tasks el-abc123
-  sf workflow tasks el-abc123 --ready
-  sf workflow progress el-abc123
-  sf workflow delete el-abc123
-  sf workflow promote el-abc123
-  sf workflow gc --age 30`,
+  help: t('workflow.help'),
   subcommands: {
     create: workflowCreateCommand,
     list: workflowListCommand,
@@ -962,11 +849,11 @@ Examples:
     // Show "did you mean?" for unknown subcommands
     const subNames = Object.keys(workflowCommand.subcommands!);
     const suggestions = suggestCommands(args[0], subNames);
-    let msg = `Unknown subcommand: ${args[0]}`;
+    let msg = t('error.unknownSubcommand', { subcommand: args[0] });
     if (suggestions.length > 0) {
-      msg += `\n\nDid you mean?\n${suggestions.map(s => `  ${s}`).join('\n')}`;
+      msg += `\n\n${t('error.didYouMean')}\n${suggestions.map(s => `  ${s}`).join('\n')}`;
     }
-    msg += '\n\nRun "sf workflow --help" to see available subcommands.';
+    msg += '\n\n' + t('error.runHelp', { command: 'sf workflow' });
     return failure(msg, ExitCode.INVALID_ARGUMENTS);
   },
 };

@@ -12,6 +12,7 @@
 
 import type { Command, GlobalOptions, CommandResult, CommandOption } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
+import { t } from '../i18n/index.js';
 import { getFormatter, getOutputMode, formatTimestamp } from '../formatter.js';
 import { createInboxService, type InboxService } from '../../services/inbox.js';
 import { InboxStatus, type InboxItem, type InboxFilter } from '@stoneforge/core';
@@ -94,24 +95,24 @@ const inboxListOptions: CommandOption[] = [
   {
     name: 'all',
     short: 'a',
-    description: 'Include read and archived items',
+    description: t('inbox.list.option.all'),
   },
   {
     name: 'status',
     short: 's',
-    description: 'Filter by status: unread, read, or archived',
+    description: t('inbox.list.option.status'),
     hasValue: true,
   },
   {
     name: 'limit',
     short: 'l',
-    description: 'Maximum number of items to return',
+    description: t('label.limit'),
     hasValue: true,
   },
   {
     name: 'full',
     short: 'F',
-    description: 'Show complete message content instead of truncated preview',
+    description: t('inbox.list.option.full'),
   },
 ];
 
@@ -121,7 +122,7 @@ async function inboxListHandler(
 ): Promise<CommandResult> {
   if (args.length < 1) {
     return failure(
-      'Usage: sf inbox <entity> [options]\nExample: sf inbox alice',
+      t('inbox.list.usage'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -137,7 +138,7 @@ async function inboxListHandler(
     // Resolve entity
     const entity = await resolveEntity(api, entityArg);
     if (!entity) {
-      return failure(`Entity not found: ${entityArg}`, ExitCode.NOT_FOUND);
+      return failure(t('inbox.error.notFound', { id: entityArg }), ExitCode.NOT_FOUND);
     }
 
     // Build filter
@@ -162,7 +163,7 @@ async function inboxListHandler(
     if (options.limit) {
       const limit = parseInt(options.limit, 10);
       if (isNaN(limit) || limit < 1) {
-        return failure('Limit must be a positive number', ExitCode.VALIDATION);
+        return failure(t('error.limitPositive'), ExitCode.VALIDATION);
       }
       filter.limit = limit;
     }
@@ -182,7 +183,7 @@ async function inboxListHandler(
       if (mode === 'quiet') {
         return success('');
       }
-      return success(items, `No ${statusText} inbox items for ${entity.name}`);
+      return success(items, t('inbox.list.empty', { status: statusText, name: entity.name }));
     }
 
     // Fetch message content for each inbox item
@@ -209,7 +210,7 @@ async function inboxListHandler(
     }
 
     // Human-readable table output
-    const headers = ['ID', 'STATUS', 'SOURCE', 'CONTENT', 'CREATED'];
+    const headers = [t('label.id'), 'STATUS', 'SOURCE', 'CONTENT', 'CREATED'];
     const rows = itemsWithContent.map((item) => {
       const statusIcon = getStatusIcon(item.status);
       const content = item.content ?? '';
@@ -229,12 +230,12 @@ async function inboxListHandler(
     });
 
     const table = formatter.table(headers, rows);
-    const summary = `\n${items.length} inbox item(s) for ${entity.name}`;
+    const summary = `\n${t('inbox.list.summary', { count: items.length, name: entity.name })}`;
 
     return success(itemsWithContent, table + summary);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to get inbox: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('inbox.error.failedToGet', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
@@ -253,25 +254,9 @@ function getStatusIcon(status: InboxStatus): string {
 
 export const inboxListCommand: Command = {
   name: 'list',
-  description: 'List inbox items for an entity',
+  description: t('inbox.list.description'),
   usage: 'sf inbox <entity> [options]',
-  help: `List inbox items for an entity.
-
-Arguments:
-  entity    Entity ID or name
-
-Options:
-  -a, --all              Include read and archived items (default: unread only)
-  -s, --status <status>  Filter by status: unread, read, or archived
-  -l, --limit <n>        Maximum number of items to return
-  -F, --full             Show complete message content instead of truncated preview
-
-Examples:
-  sf inbox alice
-  sf inbox alice --full
-  sf inbox alice --all
-  sf inbox alice --status read
-  sf inbox el-abc123 --limit 10`,
+  help: t('inbox.list.help'),
   options: inboxListOptions,
   handler: inboxListHandler as Command['handler'],
 };
@@ -286,7 +271,7 @@ async function inboxReadHandler(
 ): Promise<CommandResult> {
   if (args.length < 1) {
     return failure(
-      'Usage: sf inbox read <item-id>\nExample: sf inbox read inbox-abc123',
+      t('inbox.read.usage'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -311,27 +296,21 @@ async function inboxReadHandler(
       return success(item.id);
     }
 
-    return success(item, `Marked ${itemId} as read`);
+    return success(item, t('inbox.read.success', { id: itemId }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes('not found')) {
-      return failure(`Inbox item not found: ${itemId}`, ExitCode.NOT_FOUND);
+      return failure(t('inbox.error.itemNotFound', { id: itemId }), ExitCode.NOT_FOUND);
     }
-    return failure(`Failed to mark as read: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('inbox.error.failedToMark', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const inboxReadCommand: Command = {
   name: 'read',
-  description: 'Mark an inbox item as read',
+  description: t('inbox.read.description'),
   usage: 'sf inbox read <item-id>',
-  help: `Mark an inbox item as read.
-
-Arguments:
-  item-id    Inbox item ID (e.g., inbox-abc123)
-
-Examples:
-  sf inbox read inbox-abc123`,
+  help: t('inbox.read.help'),
   options: [],
   handler: inboxReadHandler as Command['handler'],
 };
@@ -346,7 +325,7 @@ async function inboxReadAllHandler(
 ): Promise<CommandResult> {
   if (args.length < 1) {
     return failure(
-      'Usage: sf inbox read-all <entity>\nExample: sf inbox read-all alice',
+      t('inbox.readAll.usage'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -362,7 +341,7 @@ async function inboxReadAllHandler(
     // Resolve entity
     const entity = await resolveEntity(api, entityArg);
     if (!entity) {
-      return failure(`Entity not found: ${entityArg}`, ExitCode.NOT_FOUND);
+      return failure(t('inbox.error.notFound', { id: entityArg }), ExitCode.NOT_FOUND);
     }
 
     const count = inboxService.markAllAsRead(entity.id as unknown as EntityId);
@@ -377,25 +356,18 @@ async function inboxReadAllHandler(
       return success(String(count));
     }
 
-    return success({ count }, `Marked ${count} item(s) as read for ${entity.name}`);
+    return success({ count }, t('inbox.readAll.success', { count, name: entity.name }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to mark all as read: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('inbox.error.failedToMark', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const inboxReadAllCommand: Command = {
   name: 'read-all',
-  description: 'Mark all inbox items as read for an entity',
+  description: t('inbox.readAll.description'),
   usage: 'sf inbox read-all <entity>',
-  help: `Mark all unread inbox items as read for an entity.
-
-Arguments:
-  entity    Entity ID or name
-
-Examples:
-  sf inbox read-all alice
-  sf inbox read-all el-abc123`,
+  help: t('inbox.readAll.help'),
   options: [],
   handler: inboxReadAllHandler as Command['handler'],
 };
@@ -410,7 +382,7 @@ async function inboxUnreadHandler(
 ): Promise<CommandResult> {
   if (args.length < 1) {
     return failure(
-      'Usage: sf inbox unread <item-id>\nExample: sf inbox unread inbox-abc123',
+      t('inbox.unread.usage'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -435,27 +407,21 @@ async function inboxUnreadHandler(
       return success(item.id);
     }
 
-    return success(item, `Marked ${itemId} as unread`);
+    return success(item, t('inbox.unread.success', { id: itemId }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes('not found')) {
-      return failure(`Inbox item not found: ${itemId}`, ExitCode.NOT_FOUND);
+      return failure(t('inbox.error.itemNotFound', { id: itemId }), ExitCode.NOT_FOUND);
     }
-    return failure(`Failed to mark as unread: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('inbox.error.failedToMark', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const inboxUnreadCommand: Command = {
   name: 'unread',
-  description: 'Mark an inbox item as unread',
+  description: t('inbox.unread.description'),
   usage: 'sf inbox unread <item-id>',
-  help: `Mark an inbox item as unread.
-
-Arguments:
-  item-id    Inbox item ID (e.g., inbox-abc123)
-
-Examples:
-  sf inbox unread inbox-abc123`,
+  help: t('inbox.unread.help'),
   options: [],
   handler: inboxUnreadHandler as Command['handler'],
 };
@@ -470,7 +436,7 @@ async function inboxArchiveHandler(
 ): Promise<CommandResult> {
   if (args.length < 1) {
     return failure(
-      'Usage: sf inbox archive <item-id>\nExample: sf inbox archive inbox-abc123',
+      t('inbox.archive.usage'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -495,27 +461,21 @@ async function inboxArchiveHandler(
       return success(item.id);
     }
 
-    return success(item, `Archived ${itemId}`);
+    return success(item, t('inbox.archive.success', { id: itemId }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes('not found')) {
-      return failure(`Inbox item not found: ${itemId}`, ExitCode.NOT_FOUND);
+      return failure(t('inbox.error.itemNotFound', { id: itemId }), ExitCode.NOT_FOUND);
     }
-    return failure(`Failed to archive: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('inbox.archive.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const inboxArchiveCommand: Command = {
   name: 'archive',
-  description: 'Archive an inbox item',
+  description: t('inbox.archive.description'),
   usage: 'sf inbox archive <item-id>',
-  help: `Archive an inbox item.
-
-Arguments:
-  item-id    Inbox item ID (e.g., inbox-abc123)
-
-Examples:
-  sf inbox archive inbox-abc123`,
+  help: t('inbox.archive.help'),
   options: [],
   handler: inboxArchiveHandler as Command['handler'],
 };
@@ -530,7 +490,7 @@ async function inboxCountHandler(
 ): Promise<CommandResult> {
   if (args.length < 1) {
     return failure(
-      'Usage: sf inbox count <entity>\nExample: sf inbox count alice',
+      t('inbox.count.usage'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -546,7 +506,7 @@ async function inboxCountHandler(
     // Resolve entity
     const entity = await resolveEntity(api, entityArg);
     if (!entity) {
-      return failure(`Entity not found: ${entityArg}`, ExitCode.NOT_FOUND);
+      return failure(t('inbox.error.notFound', { id: entityArg }), ExitCode.NOT_FOUND);
     }
 
     const count = inboxService.getUnreadCount(entity.id as unknown as EntityId);
@@ -561,25 +521,18 @@ async function inboxCountHandler(
       return success(String(count));
     }
 
-    return success({ count }, `${entity.name} has ${count} unread item(s)`);
+    return success({ count }, t('inbox.count.result', { name: entity.name, count }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to get unread count: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('inbox.error.failedToGet', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const inboxCountCommand: Command = {
   name: 'count',
-  description: 'Get unread inbox count for an entity',
+  description: t('inbox.count.description'),
   usage: 'sf inbox count <entity>',
-  help: `Get the number of unread inbox items for an entity.
-
-Arguments:
-  entity    Entity ID or name
-
-Examples:
-  sf inbox count alice
-  sf inbox count el-abc123`,
+  help: t('inbox.count.help'),
   options: [],
   handler: inboxCountHandler as Command['handler'],
 };
@@ -590,36 +543,9 @@ Examples:
 
 export const inboxCommand: Command = {
   name: 'inbox',
-  description: 'Manage entity inbox notifications',
+  description: t('inbox.description'),
   usage: 'sf inbox <entity> [options] or sf inbox <subcommand>',
-  help: `Manage inbox notifications for entities.
-
-The inbox contains notifications for:
-- Direct messages to the entity
-- Messages that mention the entity
-
-Subcommands:
-  read       Mark an inbox item as read
-  read-all   Mark all items as read for an entity
-  unread     Mark an inbox item as unread
-  archive    Archive an inbox item
-  count      Get unread count for an entity
-
-Without a subcommand, lists inbox items for an entity.
-
-Options for list:
-  -a, --all              Include read and archived items
-  -s, --status <status>  Filter by status: unread, read, archived
-  -l, --limit <n>        Maximum number of items
-  -F, --full             Show complete message content
-
-Examples:
-  sf inbox alice
-  sf inbox alice --all
-  sf inbox alice --full
-  sf inbox read inbox-abc123
-  sf inbox read-all alice
-  sf inbox count alice`,
+  help: t('inbox.help'),
   options: inboxListOptions,
   handler: inboxListHandler as Command['handler'],
   subcommands: {

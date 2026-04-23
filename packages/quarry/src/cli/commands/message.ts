@@ -11,6 +11,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { Command, GlobalOptions, CommandResult, CommandOption } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
+import { t } from '../i18n/index.js';
 import { getFormatter, getOutputMode } from '../formatter.js';
 import {
   createMessage,
@@ -60,48 +61,48 @@ const msgSendOptions: CommandOption[] = [
   {
     name: 'channel',
     short: 'c',
-    description: 'Channel ID to send to (required unless --to or --reply-to is used)',
+    description: t('message.send.option.channel'),
     hasValue: true,
   },
   {
     name: 'to',
     short: 'T',
-    description: 'Entity ID to send DM to (finds or creates DM channel)',
+    description: t('message.send.option.to'),
     hasValue: true,
   },
   {
     name: 'replyTo',
     short: 'r',
-    description: 'Message ID to reply to (auto-sets channel, thread, and swaps sender/recipient in DM)',
+    description: t('message.send.option.replyTo'),
     hasValue: true,
   },
   {
     name: 'content',
     short: 'm',
-    description: 'Message content (text)',
+    description: t('message.send.option.content'),
     hasValue: true,
   },
   {
     name: 'file',
-    description: 'Read content from file',
+    description: t('label.option.file'),
     hasValue: true,
   },
   {
     name: 'thread',
     short: 't',
-    description: 'Reply to message (thread ID)',
+    description: t('message.send.option.thread'),
     hasValue: true,
   },
   {
     name: 'attachment',
     short: 'a',
-    description: 'Attach document ID (can be repeated)',
+    description: t('message.send.option.attachment'),
     hasValue: true,
     array: true,
   },
   {
     name: 'tag',
-    description: 'Add tag (can be repeated)',
+    description: t('label.option.tag'),
     hasValue: true,
     array: true,
   },
@@ -113,16 +114,16 @@ async function msgSendHandler(
 ): Promise<CommandResult> {
   // Must specify either --content or --file
   if (!options.content && !options.file) {
-    return failure('Either --content or --file is required', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('message.error.contentOrFileRequired'), ExitCode.INVALID_ARGUMENTS);
   }
 
   if (options.content && options.file) {
-    return failure('Cannot specify both --content and --file', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('message.error.contentAndFile'), ExitCode.INVALID_ARGUMENTS);
   }
 
   // Must have one of: --channel, --to, or --reply-to
   if (!options.channel && !options.to && !options.replyTo) {
-    return failure('One of --channel, --to, or --reply-to is required', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('message.send.error.channelRequired'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options, true);
@@ -139,10 +140,10 @@ async function msgSendHandler(
     if (options.replyTo) {
       const replyToMessage = await api.get<Message>(options.replyTo as ElementId);
       if (!replyToMessage) {
-        return failure(`Reply-to message not found: ${options.replyTo}`, ExitCode.NOT_FOUND);
+        return failure(t('message.send.error.replyToNotFound', { id: options.replyTo }), ExitCode.NOT_FOUND);
       }
       if (replyToMessage.type !== 'message') {
-        return failure(`Element ${options.replyTo} is not a message (type: ${replyToMessage.type})`, ExitCode.VALIDATION);
+        return failure(t('message.error.notMessage', { id: options.replyTo, type: replyToMessage.type }), ExitCode.VALIDATION);
       }
 
       // Set channel from replied-to message
@@ -171,10 +172,10 @@ async function msgSendHandler(
       // Validate target entity exists
       const targetEntity = await api.get(toEntity as unknown as ElementId);
       if (!targetEntity) {
-        return failure(`Target entity not found: ${toEntity}`, ExitCode.NOT_FOUND);
+        return failure(t('message.send.error.targetNotFound', { id: toEntity }), ExitCode.NOT_FOUND);
       }
       if (targetEntity.type !== 'entity') {
-        return failure(`Element ${toEntity} is not an entity (type: ${targetEntity.type})`, ExitCode.VALIDATION);
+        return failure(t('message.send.error.notAnEntity', { id: toEntity, type: targetEntity.type }), ExitCode.VALIDATION);
       }
 
       // Find existing DM channel
@@ -202,19 +203,19 @@ async function msgSendHandler(
     }
 
     if (!channelId) {
-      return failure('Could not determine channel', ExitCode.GENERAL_ERROR);
+      return failure(t('message.send.error.cannotDetermineChannel'), ExitCode.GENERAL_ERROR);
     }
 
     // Validate channel exists and sender is a member
     const channel = await api.get<Channel>(channelId as unknown as ElementId);
     if (!channel) {
-      return failure(`Channel not found: ${channelId}`, ExitCode.NOT_FOUND);
+      return failure(t('message.error.notFound', { id: channelId }), ExitCode.NOT_FOUND);
     }
     if (channel.type !== 'channel') {
-      return failure(`Element ${channelId} is not a channel (type: ${channel.type})`, ExitCode.VALIDATION);
+      return failure(t('message.error.notChannel', { id: channelId, type: channel.type }), ExitCode.VALIDATION);
     }
     if (!isMember(channel, actor)) {
-      return failure(`You are not a member of channel ${channelId}`, ExitCode.PERMISSION);
+      return failure(t('message.send.error.notMember', { id: channelId }), ExitCode.PERMISSION);
     }
 
     // Get content
@@ -224,7 +225,7 @@ async function msgSendHandler(
     } else {
       const filePath = resolve(options.file!);
       if (!existsSync(filePath)) {
-        return failure(`File not found: ${filePath}`, ExitCode.NOT_FOUND);
+        return failure(t('message.error.notFound', { id: filePath }), ExitCode.NOT_FOUND);
       }
       content = readFileSync(filePath, 'utf-8');
     }
@@ -243,13 +244,13 @@ async function msgSendHandler(
     if (options.thread && !options.replyTo) {
       const threadParent = await api.get<Message>(options.thread as unknown as ElementId);
       if (!threadParent) {
-        return failure(`Thread parent message not found: ${options.thread}`, ExitCode.NOT_FOUND);
+        return failure(t('message.send.error.threadNotFound', { id: options.thread }), ExitCode.NOT_FOUND);
       }
       if (threadParent.type !== 'message') {
-        return failure(`Element ${options.thread} is not a message (type: ${threadParent.type})`, ExitCode.VALIDATION);
+        return failure(t('message.send.error.notAMessage', { id: options.thread, type: threadParent.type }), ExitCode.VALIDATION);
       }
       if (threadParent.channelId !== channelId) {
-        return failure(`Thread parent message is in a different channel`, ExitCode.VALIDATION);
+        return failure(t('message.send.error.threadDifferentChannel'), ExitCode.VALIDATION);
       }
       threadId = options.thread as MessageId;
     }
@@ -264,10 +265,10 @@ async function msgSendHandler(
       for (const attachmentId of attachmentIds) {
         const attachmentDoc = await api.get(attachmentId as ElementId);
         if (!attachmentDoc) {
-          return failure(`Attachment document not found: ${attachmentId}`, ExitCode.NOT_FOUND);
+          return failure(t('message.send.error.attachmentNotFound', { id: attachmentId }), ExitCode.NOT_FOUND);
         }
         if (attachmentDoc.type !== 'document') {
-          return failure(`Attachment ${attachmentId} is not a document (type: ${attachmentDoc.type})`, ExitCode.VALIDATION);
+          return failure(t('message.send.error.attachmentNotDoc', { id: attachmentId, type: attachmentDoc.type }), ExitCode.VALIDATION);
         }
         attachments.push(attachmentId as DocumentId);
       }
@@ -298,40 +299,19 @@ async function msgSendHandler(
       return success(createdMessage.id);
     }
 
-    const replyInfo = threadId ? ` (reply to ${threadId})` : '';
-    return success(createdMessage, `Sent message ${createdMessage.id} to ${channelId}${replyInfo}`);
+    const replyInfo = threadId ? ` (${t('message.send.replyTo', { id: threadId })})` : '';
+    return success(createdMessage, t('message.send.success', { id: createdMessage.id, channelId }) + replyInfo);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to send message: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('message.error.failedToSend', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const msgSendCommand: Command = {
   name: 'send',
-  description: 'Send a message to a channel or entity',
+  description: t('message.send.description'),
   usage: 'sf message send (--channel <id> | --to <entity> | --reply-to <msg>) --content <text> | --file <path> [options]',
-  help: `Send a message to a channel, entity (DM), or as a reply.
-
-Options:
-  -c, --channel <id>      Channel to send to
-  -T, --to <entity>       Entity to send DM to (finds or creates DM channel)
-  -r, --reply-to <msg>    Message ID to reply to (auto-sets channel, thread, swaps sender/recipient in DM)
-  -m, --content <text>    Message content
-      --file <path>       Read content from file
-  -t, --thread <id>       Reply to message (creates thread)
-  -a, --attachment <id>   Attach document (can be repeated)
-      --tag <tag>         Add tag (can be repeated)
-
-When using --to, a DM channel is found or created between you and the target entity.
-When using --reply-to in a DM channel, sender/recipient are automatically swapped.
-
-Examples:
-  sf message send --channel el-abc123 --content "Hello!"
-  sf message send --to el-user456 -m "Direct message"
-  sf message send --reply-to el-msg789 -m "Reply to your message"
-  sf --from agent-1 msg send --to agent-2 -m "Message from agent-1"
-  sf message send -c el-abc123 --file message.txt
-  sf message send -c el-abc123 -m "Reply" --thread el-msg456`,
+  help: t('message.send.help'),
   options: msgSendOptions,
   handler: msgSendHandler as Command['handler'],
 };
@@ -348,7 +328,7 @@ const msgThreadOptions: CommandOption[] = [
   {
     name: 'limit',
     short: 'l',
-    description: 'Maximum number of messages to show',
+    description: t('label.limit'),
     hasValue: true,
   },
 ];
@@ -360,7 +340,7 @@ async function msgThreadHandler(
   const [messageId] = args;
 
   if (!messageId) {
-    return failure('Usage: sf message thread <message-id>\nExample: sf message thread el-msg123', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('message.thread.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -372,10 +352,10 @@ async function msgThreadHandler(
     // Get the root message
     const rootMessage = await api.get<Message>(messageId as ElementId, { hydrate: { content: true } });
     if (!rootMessage) {
-      return failure(`Message not found: ${messageId}`, ExitCode.NOT_FOUND);
+      return failure(t('message.error.notFound', { id: messageId }), ExitCode.NOT_FOUND);
     }
     if (rootMessage.type !== 'message') {
-      return failure(`Element ${messageId} is not a message (type: ${rootMessage.type})`, ExitCode.VALIDATION);
+      return failure(t('message.error.notMessage', { id: messageId, type: rootMessage.type }), ExitCode.VALIDATION);
     }
 
     // Get all messages in the channel
@@ -390,7 +370,7 @@ async function msgThreadHandler(
     if (options.limit) {
       const limit = parseInt(options.limit, 10);
       if (isNaN(limit) || limit < 1) {
-        return failure('Limit must be a positive number', ExitCode.VALIDATION);
+        return failure(t('error.limitPositive'), ExitCode.VALIDATION);
       }
       messages = threadMessages.slice(0, limit);
     }
@@ -416,11 +396,11 @@ async function msgThreadHandler(
     }
 
     if (hydratedMessages.length === 0) {
-      return success(null, 'No messages in thread');
+      return success(null, t('message.thread.empty'));
     }
 
     // Build table
-    const headers = ['ID', 'SENDER', 'CONTENT', 'CREATED'];
+    const headers = [t('label.id'), 'SENDER', 'CONTENT', 'CREATED'];
     const rows = hydratedMessages.map((m) => {
       const contentPreview = (m.content ?? '').substring(0, 40);
       const truncated = contentPreview.length < (m.content?.length ?? 0) ? '...' : '';
@@ -434,32 +414,22 @@ async function msgThreadHandler(
 
     const table = formatter.table(headers, rows);
     const threadInfo = isRootMessage(rootMessage)
-      ? 'Root message with'
-      : 'Reply to ' + rootMessage.threadId + ' with';
+      ? t('message.thread.rootWith')
+      : t('message.thread.replyTo', { id: rootMessage.threadId }) + ' ' + t('message.thread.with');
     const summary = `\n${threadInfo} ${hydratedMessages.length - 1} replies`;
 
     return success(hydratedMessages, table + summary);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to get thread: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('message.error.failedToGet', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const msgThreadCommand: Command = {
   name: 'thread',
-  description: 'View thread messages',
+  description: t('message.thread.description'),
   usage: 'sf message thread <message-id> [options]',
-  help: `View a message thread (root message and all replies).
-
-Arguments:
-  message-id   Message identifier (root or any reply)
-
-Options:
-  -l, --limit <n>   Maximum messages to show
-
-Examples:
-  sf message thread el-msg123
-  sf message thread el-msg123 --limit 10`,
+  help: t('message.thread.help'),
   options: msgThreadOptions,
   handler: msgThreadHandler as Command['handler'],
 };
@@ -479,26 +449,26 @@ const msgListOptions: CommandOption[] = [
   {
     name: 'channel',
     short: 'c',
-    description: 'Channel ID to list messages from (required)',
+    description: t('message.list.option.channel'),
     hasValue: true,
     required: true,
   },
   {
     name: 'sender',
     short: 's',
-    description: 'Filter by sender entity ID',
+    description: t('message.list.option.sender'),
     hasValue: true,
   },
   {
     name: 'limit',
     short: 'l',
-    description: 'Maximum number of messages',
+    description: t('label.limit'),
     hasValue: true,
   },
   {
     name: 'rootOnly',
     short: 'r',
-    description: 'Show only root messages (no replies)',
+    description: t('message.list.option.rootOnly'),
     hasValue: false,
   },
 ];
@@ -508,7 +478,7 @@ async function msgListHandler(
   options: GlobalOptions & MsgListOptions
 ): Promise<CommandResult> {
   if (!options.channel) {
-    return failure('--channel is required', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('message.list.error.channelRequired'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -522,10 +492,10 @@ async function msgListHandler(
     // Validate channel exists
     const channel = await api.get<Channel>(channelId as unknown as ElementId);
     if (!channel) {
-      return failure(`Channel not found: ${channelId}`, ExitCode.NOT_FOUND);
+      return failure(t('message.error.notFound', { id: channelId }), ExitCode.NOT_FOUND);
     }
     if (channel.type !== 'channel') {
-      return failure(`Element ${channelId} is not a channel (type: ${channel.type})`, ExitCode.VALIDATION);
+      return failure(t('message.error.notChannel', { id: channelId, type: channel.type }), ExitCode.VALIDATION);
     }
 
     // Get all messages
@@ -551,7 +521,7 @@ async function msgListHandler(
     if (options.limit) {
       const limit = parseInt(options.limit, 10);
       if (isNaN(limit) || limit < 1) {
-        return failure('Limit must be a positive number', ExitCode.VALIDATION);
+        return failure(t('error.limitPositive'), ExitCode.VALIDATION);
       }
       messages = messages.slice(0, limit);
     }
@@ -577,11 +547,11 @@ async function msgListHandler(
     }
 
     if (hydratedMessages.length === 0) {
-      return success(null, 'No messages found');
+      return success(null, t('message.list.empty'));
     }
 
     // Build table
-    const headers = ['ID', 'SENDER', 'THREAD', 'CONTENT', 'CREATED'];
+    const headers = [t('label.id'), 'SENDER', 'THREAD', 'CONTENT', 'CREATED'];
     const rows = hydratedMessages.map((m) => {
       const contentPreview = (m.content ?? '').substring(0, 35);
       const truncated = contentPreview.length < (m.content?.length ?? 0) ? '...' : '';
@@ -595,31 +565,20 @@ async function msgListHandler(
     });
 
     const table = formatter.table(headers, rows);
-    const summary = `\n${hydratedMessages.length} message(s) in channel ${channelId}`;
+    const summary = `\n${t('message.list.summary', { count: hydratedMessages.length, channelId })}`;
 
     return success(hydratedMessages, table + summary);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to list messages: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('message.error.failedToList', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const msgListCommand: Command = {
   name: 'list',
-  description: 'List messages in a channel',
+  description: t('message.list.description'),
   usage: 'sf message list --channel <id> [options]',
-  help: `List messages in a channel.
-
-Options:
-  -c, --channel <id>   Channel to list messages from (required)
-  -s, --sender <id>    Filter by sender entity
-  -l, --limit <n>      Maximum messages to show
-  -r, --root-only      Show only root messages (no replies)
-
-Examples:
-  sf message list --channel el-abc123
-  sf message list -c el-abc123 --sender el-user456
-  sf message list -c el-abc123 --root-only --limit 20`,
+  help: t('message.list.help'),
   options: msgListOptions,
   handler: msgListHandler as Command['handler'],
 };
@@ -639,24 +598,24 @@ const msgReplyOptions: CommandOption[] = [
   {
     name: 'content',
     short: 'm',
-    description: 'Message content (text)',
+    description: t('message.send.option.content'),
     hasValue: true,
   },
   {
     name: 'file',
-    description: 'Read content from file',
+    description: t('label.option.file'),
     hasValue: true,
   },
   {
     name: 'attachment',
     short: 'a',
-    description: 'Attach document ID (can be repeated)',
+    description: t('message.send.option.attachment'),
     hasValue: true,
     array: true,
   },
   {
     name: 'tag',
-    description: 'Add tag (can be repeated)',
+    description: t('label.option.tag'),
     hasValue: true,
     array: true,
   },
@@ -669,7 +628,7 @@ async function msgReplyHandler(
   const [messageId] = args;
 
   if (!messageId) {
-    return failure('Usage: sf message reply <message-id> --content <text> | --file <path>\nExample: sf message reply el-msg123 --content "Thanks!"', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('message.reply.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   // Delegate to send handler with --reply-to set
@@ -681,30 +640,9 @@ async function msgReplyHandler(
 
 const msgReplyCommand: Command = {
   name: 'reply',
-  description: 'Reply to a message (shorthand for send --reply-to)',
+  description: t('message.reply.description'),
   usage: 'sf message reply <message-id> --content <text> | --file <path> [options]',
-  help: `Reply to a message.
-
-This is a shorthand for "sf message send --reply-to <message-id>".
-It automatically sets the channel and thread from the replied-to message.
-In DM channels, sender/recipient are automatically swapped unless --from is specified.
-
-Arguments:
-  message-id   Message to reply to
-
-Options:
-  -m, --content <text>    Message content
-      --file <path>       Read content from file
-  -a, --attachment <id>   Attach document (can be repeated)
-      --tag <tag>         Add tag (can be repeated)
-
-Use --from (or --actor) to override the sender:
-  sf --from agent-1 msg reply el-msg123 -m "Reply as agent-1"
-
-Examples:
-  sf message reply el-msg123 --content "Thanks for the update!"
-  sf message reply el-msg123 --file response.txt
-  sf --from bot msg reply el-msg123 -m "Automated response"`,
+  help: t('message.reply.help'),
   options: msgReplyOptions,
   handler: msgReplyHandler as Command['handler'],
 };
@@ -715,25 +653,9 @@ Examples:
 
 export const messageCommand: Command = {
   name: 'message',
-  description: 'Send and manage messages',
+  description: t('message.description'),
   usage: 'sf message <subcommand> [options]',
-  help: `Send and manage messages in channels.
-
-Messages are immutable - once sent, they cannot be edited or deleted.
-This ensures a reliable audit trail of all communication.
-
-Subcommands:
-  send     Send a message to a channel, entity, or as a reply
-  reply    Reply to a message (shorthand for send --reply-to)
-  list     List messages in a channel
-  thread   View a message thread
-
-Examples:
-  sf message send --channel el-abc123 --content "Hello!"
-  sf message send --to el-user456 -m "Direct message"
-  sf message reply el-msg789 -m "Reply to your message"
-  sf message list --channel el-abc123
-  sf message thread el-msg456`,
+  help: t('message.help'),
   subcommands: {
     send: msgSendCommand,
     reply: msgReplyCommand,
@@ -745,18 +667,18 @@ Examples:
   handler: async (args, _options): Promise<CommandResult> => {
     if (args.length === 0) {
       return failure(
-        `Usage: sf message <subcommand>. Use 'sf message --help' for available subcommands.`,
+        t('message.usage'),
         ExitCode.INVALID_ARGUMENTS
       );
     }
     // Show "did you mean?" for unknown subcommands
     const subNames = Object.keys(messageCommand.subcommands!);
     const suggestions = suggestCommands(args[0], subNames);
-    let msg = `Unknown subcommand: ${args[0]}`;
+    let msg = t('error.unknownSubcommand', { subcommand: args[0] });
     if (suggestions.length > 0) {
-      msg += `\n\nDid you mean?\n${suggestions.map(s => `  ${s}`).join('\n')}`;
+      msg += '\n' + suggestions.map(s => `  ${s}`).join('\n');
     }
-    msg += '\n\nRun "sf message --help" to see available subcommands.';
+    msg += '\n\n' + t('error.runHelp', { command: 'sf message' });
     return failure(msg, ExitCode.INVALID_ARGUMENTS);
   },
 };

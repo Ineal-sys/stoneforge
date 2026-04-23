@@ -5,6 +5,7 @@
  */
 
 import type { Command, CommandOption } from './types.js';
+import { t } from './i18n/index.js';
 
 // ============================================================================
 // Types
@@ -17,13 +18,13 @@ export type ShellType = 'bash' | 'zsh' | 'fish';
 // ============================================================================
 
 const GLOBAL_OPTIONS: CommandOption[] = [
-  { name: 'db', description: 'Database file path', hasValue: true },
-  { name: 'actor', description: 'Actor name for operations', hasValue: true },
-  { name: 'json', description: 'Output in JSON format' },
-  { name: 'quiet', short: 'q', description: 'Minimal output (IDs only)' },
-  { name: 'verbose', short: 'v', description: 'Enable debug output' },
-  { name: 'help', short: 'h', description: 'Show help' },
-  { name: 'version', short: 'V', description: 'Show version' },
+  { name: 'db', description: t('completion.option.db'), hasValue: true },
+  { name: 'actor', description: t('completion.option.actor'), hasValue: true },
+  { name: 'json', description: t('completion.option.json') },
+  { name: 'quiet', short: 'q', description: t('completion.option.quiet') },
+  { name: 'verbose', short: 'v', description: t('completion.option.verbose') },
+  { name: 'help', short: 'h', description: t('completion.option.help') },
+  { name: 'version', short: 'V', description: t('completion.option.version') },
 ];
 
 // ============================================================================
@@ -301,7 +302,7 @@ export function generateCompletion(shell: ShellType, commands: Command[]): strin
     case 'fish':
       return generateFishCompletion(commands);
     default:
-      throw new Error(`Unsupported shell: ${shell}`);
+      throw new Error(t('completion.error.unsupportedShell', { shell, supported: 'bash, zsh, fish' }));
   }
 }
 
@@ -311,24 +312,15 @@ export function generateCompletion(shell: ShellType, commands: Command[]): strin
 export function getInstallInstructions(shell: ShellType): string {
   switch (shell) {
     case 'bash':
-      return `# Add to ~/.bashrc or ~/.bash_profile:
-source <(sf completion bash)
-
-# Or save to a file:
-sf completion bash > ~/.local/share/bash-completion/completions/sf`;
+      return t('completion.install.bash');
 
     case 'zsh':
-      return `# Add to ~/.zshrc:
-source <(sf completion zsh)
-
-# Or save to a file in your fpath:
-sf completion zsh > ~/.zsh/completions/_sf`;
+      return t('completion.install.zsh');
 
     case 'fish':
-      return `# Save to completions directory:
-sf completion fish > ~/.config/fish/completions/sf.fish`;
+      return t('completion.install.fish');
 
     default:
-      throw new Error(`Unsupported shell: ${shell}`);
+      throw new Error(t('completion.error.unsupportedShell', { shell, supported: 'bash, zsh, fish' }));
   }
 }

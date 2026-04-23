@@ -9,6 +9,7 @@
 import type { Command, GlobalOptions, CommandResult, CommandOption } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
 import { getOutputMode } from '../formatter.js';
+import { t } from '../i18n/index.js';
 import { createEntity, EntityTypeValue, type Entity, type CreateEntityInput } from '@stoneforge/core';
 import type { Element, ElementId, EntityId } from '@stoneforge/core';
 import type { QuarryAPI } from '../../api/types.js';
@@ -44,7 +45,7 @@ async function entityRegisterHandler(
   options: RegisterOptions
 ): Promise<CommandResult> {
   if (args.length === 0) {
-    return failure('Usage: sf entity register <name> [--type <type>]\nExample: sf entity register claude --type agent', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('entity.register.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const name = args[0];
@@ -54,7 +55,7 @@ async function entityRegisterHandler(
   const validTypes = Object.values(EntityTypeValue);
   if (!validTypes.includes(entityType)) {
     return failure(
-      `Invalid entity type: ${entityType}. Must be one of: ${validTypes.join(', ')}`,
+      t('entity.register.error.invalidType', { type: entityType, valid: validTypes.join(', ') }),
       ExitCode.VALIDATION
     );
   }
@@ -73,7 +74,7 @@ async function entityRegisterHandler(
     if (publicKey !== undefined) {
       if (!isValidPublicKey(publicKey)) {
         return failure(
-          'Invalid public key format. Expected base64-encoded Ed25519 public key (44 characters ending with =)',
+          t('entity.register.error.invalidPublicKey'),
           ExitCode.VALIDATION
         );
       }
@@ -104,17 +105,17 @@ async function entityRegisterHandler(
 
     return success(
       created,
-      `Registered ${entityType} entity: ${name} (${created.id})`
+      t('entity.register.success', { type: entityType, name, id: created.id })
     );
   } catch (err) {
     if (err instanceof ValidationError) {
-      return failure(`Validation error: ${err.message}`, ExitCode.VALIDATION);
+      return failure(t('entity.register.error.validation', { message: err.message }), ExitCode.VALIDATION);
     }
     if (err instanceof ConflictError) {
-      return failure(`Entity already exists: ${err.message}`, ExitCode.VALIDATION);
+      return failure(t('entity.register.error.exists', { message: err.message }), ExitCode.VALIDATION);
     }
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to register entity: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('entity.register.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
@@ -122,17 +123,17 @@ const registerOptions: CommandOption[] = [
   {
     name: 'type',
     short: 't',
-    description: 'Entity type: agent, human, or system (default: agent)',
+    description: t('entity.register.option.type'),
     hasValue: true,
   },
   {
     name: 'public-key',
-    description: 'Base64-encoded Ed25519 public key for cryptographic identity',
+    description: t('entity.register.option.publicKey'),
     hasValue: true,
   },
   {
     name: 'tag',
-    description: 'Tag to add to entity (can be repeated)',
+    description: t('entity.register.option.tag'),
     hasValue: true,
     array: true,
   },
@@ -186,31 +187,31 @@ async function entityListHandler(
     }
 
     if (filteredEntities.length === 0) {
-      return success(filteredEntities, 'No entities found.');
+      return success(filteredEntities, t('entity.list.success.noEntities'));
     }
 
     // Human-readable output
     const lines: string[] = [];
-    lines.push('Entities:');
+    lines.push(t('entity.list.label.entities'));
     lines.push('');
 
     for (const entity of filteredEntities) {
       const typeIcon = getEntityTypeIcon(entity.entityType);
-      const keyIndicator = entity.publicKey ? ' 🔑' : '';
+      const keyIndicator = entity.publicKey ? ' \u{1F511}' : '';
       lines.push(`${typeIcon} ${entity.name} (${entity.id})${keyIndicator}`);
-      lines.push(`   Type: ${entity.entityType}`);
+      lines.push(`   ${t('entity.list.label.type')}: ${entity.entityType}`);
       if (entity.tags.length > 0) {
-        lines.push(`   Tags: ${entity.tags.join(', ')}`);
+        lines.push(`   ${t('entity.list.label.tags')}: ${entity.tags.join(', ')}`);
       }
     }
 
     lines.push('');
-    lines.push(`Total: ${filteredEntities.length} entities`);
+    lines.push(t('entity.list.label.total', { count: filteredEntities.length }));
 
     return success(filteredEntities, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to list entities: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('entity.list.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
@@ -231,13 +232,13 @@ const listOptions: CommandOption[] = [
   {
     name: 'type',
     short: 't',
-    description: 'Filter by entity type: agent, human, or system',
+    description: t('entity.list.option.type'),
     hasValue: true,
   },
   {
     name: 'limit',
     short: 'l',
-    description: 'Maximum number of entities to return',
+    description: t('entity.list.option.limit'),
     hasValue: true,
   },
 ];
@@ -272,7 +273,7 @@ async function setManagerHandler(
 ): Promise<CommandResult> {
   if (args.length < 2) {
     return failure(
-      'Usage: sf entity set-manager <entity> <manager>\nExample: sf entity set-manager alice bob',
+      t('entity.setManager.usage'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -288,13 +289,13 @@ async function setManagerHandler(
     // Resolve entity
     const entity = await resolveEntity(api, entityArg);
     if (!entity) {
-      return failure(`Entity not found: ${entityArg}`, ExitCode.NOT_FOUND);
+      return failure(t('entity.error.notFound', { id: entityArg }), ExitCode.NOT_FOUND);
     }
 
     // Resolve manager
     const manager = await resolveEntity(api, managerArg);
     if (!manager) {
-      return failure(`Manager entity not found: ${managerArg}`, ExitCode.NOT_FOUND);
+      return failure(t('entity.setManager.error.managerNotFound', { id: managerArg }), ExitCode.NOT_FOUND);
     }
 
     const actor = getActor(options);
@@ -318,39 +319,25 @@ async function setManagerHandler(
 
     return success(
       updated,
-      `Set ${entity.name}'s manager to ${manager.name}`
+      t('entity.setManager.success', { name: entity.name, managerName: manager.name })
     );
   } catch (err) {
     if (err instanceof ValidationError) {
-      return failure(`Validation error: ${err.message}`, ExitCode.VALIDATION);
+      return failure(t('entity.error.validation', { message: err.message }), ExitCode.VALIDATION);
     }
     if (err instanceof ConflictError) {
-      return failure(`Conflict: ${err.message}`, ExitCode.VALIDATION);
+      return failure(t('entity.error.conflict', { message: err.message }), ExitCode.VALIDATION);
     }
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to set manager: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('entity.setManager.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const setManagerCommand: Command = {
   name: 'set-manager',
-  description: 'Set an entity\'s manager',
+  description: t('entity.setManager.description'),
   usage: 'sf entity set-manager <entity> <manager>',
-  help: `Set the manager for an entity.
-
-Arguments:
-  entity    Entity ID or name to update
-  manager   Manager entity ID or name
-
-The entity will report to the specified manager.
-Validates that:
-- Both entities exist
-- No self-reference
-- No circular management chains
-
-Examples:
-  sf entity set-manager alice bob
-  sf entity set-manager el-abc123 el-def456`,
+  help: t('entity.setManager.help'),
   options: [],
   handler: setManagerHandler as Command['handler'],
 };
@@ -365,7 +352,7 @@ async function clearManagerHandler(
 ): Promise<CommandResult> {
   if (args.length < 1) {
     return failure(
-      'Usage: sf entity clear-manager <entity>\nExample: sf entity clear-manager alice',
+      t('entity.clearManager.usage'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -381,7 +368,7 @@ async function clearManagerHandler(
     // Resolve entity
     const entity = await resolveEntity(api, entityArg);
     if (!entity) {
-      return failure(`Entity not found: ${entityArg}`, ExitCode.NOT_FOUND);
+      return failure(t('entity.error.notFound', { id: entityArg }), ExitCode.NOT_FOUND);
     }
 
     const actor = getActor(options);
@@ -402,27 +389,18 @@ async function clearManagerHandler(
       return success(updated.id);
     }
 
-    return success(updated, `Cleared manager for ${entity.name}`);
+    return success(updated, t('entity.clearManager.success', { name: entity.name }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to clear manager: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('entity.clearManager.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const clearManagerCommand: Command = {
   name: 'clear-manager',
-  description: 'Clear an entity\'s manager',
+  description: t('entity.clearManager.description'),
   usage: 'sf entity clear-manager <entity>',
-  help: `Clear the manager for an entity.
-
-Arguments:
-  entity    Entity ID or name to update
-
-Removes the reporting relationship for the entity.
-
-Examples:
-  sf entity clear-manager alice
-  sf entity clear-manager el-abc123`,
+  help: t('entity.clearManager.help'),
   options: [],
   handler: clearManagerHandler as Command['handler'],
 };
@@ -437,7 +415,7 @@ async function reportsHandler(
 ): Promise<CommandResult> {
   if (args.length < 1) {
     return failure(
-      'Usage: sf entity reports <manager>\nExample: sf entity reports bob',
+      t('entity.reports.usage'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -453,7 +431,7 @@ async function reportsHandler(
     // Resolve manager
     const manager = await resolveEntity(api, managerArg);
     if (!manager) {
-      return failure(`Manager entity not found: ${managerArg}`, ExitCode.NOT_FOUND);
+      return failure(t('entity.reports.error.managerNotFound', { id: managerArg }), ExitCode.NOT_FOUND);
     }
 
     // Get direct reports
@@ -471,39 +449,31 @@ async function reportsHandler(
     }
 
     if (reports.length === 0) {
-      return success(reports, `No direct reports for ${manager.name}`);
+      return success(reports, t('entity.reports.success.noReports', { name: manager.name }));
     }
 
     // Human-readable table output
-    const headers = ['ID', 'NAME', 'TYPE'];
+    const headers = [t('label.id'), t('label.name'), t('label.type')];
     const rows = reports.map((entity) => {
       const e = entity as Entity;
       return [e.id, e.name, e.entityType];
     });
 
     const table = formatter.table(headers, rows);
-    const summary = `\n${reports.length} direct report(s) for ${manager.name}`;
+    const summary = `\n${t('entity.reports.summary', { count: reports.length, name: manager.name })}`;
 
     return success(reports, table + summary);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to get direct reports: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('entity.reports.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const reportsCommand: Command = {
   name: 'reports',
-  description: 'List direct reports for a manager',
+  description: t('entity.reports.description'),
   usage: 'sf entity reports <manager>',
-  help: `List entities that report directly to a manager.
-
-Arguments:
-  manager    Manager entity ID or name
-
-Examples:
-  sf entity reports bob
-  sf entity reports el-abc123
-  sf entity reports bob --json`,
+  help: t('entity.reports.help'),
   options: [],
   handler: reportsHandler as Command['handler'],
 };
@@ -518,7 +488,7 @@ async function chainHandler(
 ): Promise<CommandResult> {
   if (args.length < 1) {
     return failure(
-      'Usage: sf entity chain <entity>\nExample: sf entity chain alice',
+      t('entity.chain.usage'),
       ExitCode.INVALID_ARGUMENTS
     );
   }
@@ -534,7 +504,7 @@ async function chainHandler(
     // Resolve entity
     const entity = await resolveEntity(api, entityArg);
     if (!entity) {
-      return failure(`Entity not found: ${entityArg}`, ExitCode.NOT_FOUND);
+      return failure(t('entity.error.notFound', { id: entityArg }), ExitCode.NOT_FOUND);
     }
 
     // Get management chain
@@ -551,36 +521,25 @@ async function chainHandler(
     }
 
     if (chain.length === 0) {
-      return success(chain, `${entity.name} has no manager`);
+      return success(chain, t('entity.chain.success.noManager', { name: entity.name }));
     }
 
     // Human-readable visual chain
     const names = [entity.name, ...chain.map((e) => (e as Entity).name)];
     const chainDisplay = names.join(' -> ');
 
-    return success(chain, `Management chain: ${chainDisplay}`);
+    return success(chain, t('entity.chain.success.display', { chain: chainDisplay }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to get management chain: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('entity.chain.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const chainCommand: Command = {
   name: 'chain',
-  description: 'Show management chain for an entity',
+  description: t('entity.chain.description'),
   usage: 'sf entity chain <entity>',
-  help: `Show the management chain for an entity.
-
-Arguments:
-  entity    Entity ID or name
-
-Displays the chain from the entity up to the root (CEO/top-level).
-Output format: entity -> manager -> manager's manager -> ... -> root
-
-Examples:
-  sf entity chain alice
-  sf entity chain el-abc123
-  sf entity chain alice --json`,
+  help: t('entity.chain.help'),
   options: [],
   handler: chainHandler as Command['handler'],
 };
@@ -591,72 +550,27 @@ Examples:
 
 export const entityRegisterCommand: Command = {
   name: 'register',
-  description: 'Register a new entity',
+  description: t('entity.register.description'),
   usage: 'sf entity register <name> [--type <type>]',
-  help: `Register a new entity in the system.
-
-Entities represent identities - AI agents, humans, or system processes.
-They are the actors that create and interact with elements.
-
-Options:
-  --type, -t    Entity type: agent, human, or system (default: agent)
-  --public-key  Base64-encoded Ed25519 public key for cryptographic identity
-  --tag         Tag to add to entity (can be repeated)
-
-Examples:
-  sf entity register claude --type agent
-  sf entity register bob --type human
-  sf entity register ci-system --type system
-  sf entity register alice --tag team-alpha --tag frontend`,
+  help: t('entity.register.help'),
   options: registerOptions,
   handler: entityRegisterHandler as Command['handler'],
 };
 
 export const entityListCommand: Command = {
   name: 'list',
-  description: 'List all registered entities',
+  description: t('entity.list.description'),
   usage: 'sf entity list [--type <type>]',
-  help: `List all registered entities.
-
-Options:
-  --type, -t    Filter by entity type: agent, human, or system
-  --limit, -l   Maximum number of entities to return
-
-Examples:
-  sf entity list
-  sf entity list --type agent
-  sf entity list --type human --limit 10
-  sf entity list --json`,
+  help: t('entity.list.help'),
   options: listOptions,
   handler: entityListHandler as Command['handler'],
 };
 
 export const entityCommand: Command = {
   name: 'entity',
-  description: 'Manage entities (agents, humans, systems)',
+  description: t('entity.description'),
   usage: 'sf entity <subcommand>',
-  help: `Manage entities in the system.
-
-Entities represent identities - AI agents, humans, or system processes.
-They are used for attribution, assignment, and access control.
-
-Subcommands:
-  register       Register a new entity
-  list           List all registered entities
-  set-manager    Set an entity's manager
-  clear-manager  Clear an entity's manager
-  reports        List direct reports for a manager
-  chain          Show management chain for an entity
-
-Examples:
-  sf entity register claude --type agent
-  sf entity list
-  sf entity list --type human
-  sf entity set-manager alice bob
-  sf entity reports bob
-  sf entity chain alice
-
-Note: Use 'sf show <id>', 'sf update <id>', 'sf delete <id>' for any element.`,
+  help: t('entity.help'),
   handler: async (args: string[], options: GlobalOptions): Promise<CommandResult> => {
     // Default to list if no subcommand
     return entityListHandler(args, options as ListOptions);

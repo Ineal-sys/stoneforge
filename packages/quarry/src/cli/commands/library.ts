@@ -10,6 +10,7 @@
 
 import type { Command, GlobalOptions, CommandResult, CommandOption } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
+import { t } from '../i18n/index.js';
 import { getFormatter, getOutputMode } from '../formatter.js';
 import {
   createLibrary,
@@ -34,13 +35,13 @@ const libraryCreateOptions: CommandOption[] = [
   {
     name: 'name',
     short: 'n',
-    description: 'Library name (required)',
+    description: t('library.create.option.name'),
     hasValue: true,
     required: true,
   },
   {
     name: 'tag',
-    description: 'Add tag (can be repeated)',
+    description: t('label.option.tag'),
     hasValue: true,
     array: true,
   },
@@ -51,7 +52,7 @@ async function libraryCreateHandler(
   options: GlobalOptions & LibraryCreateOptions
 ): Promise<CommandResult> {
   if (!options.name) {
-    return failure('--name is required for creating a library', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('library.create.error.nameRequired'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options, true);
@@ -82,26 +83,18 @@ async function libraryCreateHandler(
       return success(created.id);
     }
 
-    return success(created, `Created library ${created.id}`);
+    return success(created, t('library.create.success', { id: created.id }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to create library: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('library.error.failedToCreate', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const libraryCreateCommand: Command = {
   name: 'create',
-  description: 'Create a new library',
+  description: t('library.create.description'),
   usage: 'sf library create --name <name> [options]',
-  help: `Create a new document library.
-
-Options:
-  -n, --name <name>  Library name (required)
-      --tag <tag>    Add tag (can be repeated)
-
-Examples:
-  sf library create --name "API Documentation"
-  sf library create -n "Design Docs" --tag design --tag frontend`,
+  help: t('library.create.help'),
   options: libraryCreateOptions,
   handler: libraryCreateHandler as Command['handler'],
 };
@@ -118,7 +111,7 @@ const libraryListOptions: CommandOption[] = [
   {
     name: 'limit',
     short: 'l',
-    description: 'Maximum number of results',
+    description: t('label.limit'),
     hasValue: true,
   },
 ];
@@ -142,7 +135,7 @@ async function libraryListHandler(
     if (options.limit) {
       const limit = parseInt(options.limit, 10);
       if (isNaN(limit) || limit < 1) {
-        return failure('Limit must be a positive number', ExitCode.VALIDATION);
+        return failure(t('error.limitPositive'), ExitCode.VALIDATION);
       }
       filter.limit = limit;
     }
@@ -162,11 +155,11 @@ async function libraryListHandler(
     }
 
     if (items.length === 0) {
-      return success(null, 'No libraries found');
+      return success(null, t('library.list.empty'));
     }
 
     // Build table
-    const headers = ['ID', 'NAME', 'TAGS', 'CREATED'];
+    const headers = [t('label.id'), 'NAME', 'TAGS', 'CREATED'];
     const rows = items.map((l) => [
       l.id,
       l.name.length > 40 ? l.name.substring(0, 37) + '...' : l.name,
@@ -175,27 +168,20 @@ async function libraryListHandler(
     ]);
 
     const table = formatter.table(headers, rows);
-    const summary = `\nShowing ${items.length} of ${result.total} libraries`;
+    const summary = `\n${t('library.list.summary', { shown: items.length, total: result.total })}`;
 
     return success(items, table + summary);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to list libraries: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('library.error.failedToList', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const libraryListCommand: Command = {
   name: 'list',
-  description: 'List libraries',
+  description: t('library.list.description'),
   usage: 'sf library list [options]',
-  help: `List document libraries.
-
-Options:
-  -l, --limit <n>  Maximum results
-
-Examples:
-  sf library list
-  sf library list --limit 10`,
+  help: t('library.list.help'),
   options: libraryListOptions,
   handler: libraryListHandler as Command['handler'],
 };
@@ -211,7 +197,7 @@ async function libraryAddHandler(
   const [libraryId, docId] = args;
 
   if (!libraryId || !docId) {
-    return failure('Usage: sf library add <library-id> <document-id>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('library.add.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -225,19 +211,19 @@ async function libraryAddHandler(
     // Verify library exists
     const library = await api.get<Library>(libraryId as ElementId);
     if (!library) {
-      return failure(`Library not found: ${libraryId}`, ExitCode.NOT_FOUND);
+      return failure(t('library.error.notFound', { id: libraryId }), ExitCode.NOT_FOUND);
     }
     if (library.type !== 'library') {
-      return failure(`Element ${libraryId} is not a library (type: ${library.type})`, ExitCode.VALIDATION);
+      return failure(t('library.error.notLibrary', { id: libraryId, type: library.type }), ExitCode.VALIDATION);
     }
 
     // Verify document exists
     const doc = await api.get<Element>(docId as ElementId);
     if (!doc) {
-      return failure(`Document not found: ${docId}`, ExitCode.NOT_FOUND);
+      return failure(t('library.error.notFound', { id: docId }), ExitCode.NOT_FOUND);
     }
     if (doc.type !== 'document') {
-      return failure(`Element ${docId} is not a document (type: ${doc.type})`, ExitCode.VALIDATION);
+      return failure(t('library.error.notDocument', { id: docId, type: doc.type }), ExitCode.VALIDATION);
     }
 
     // Add parent-child dependency (document is blocked/child, library is blocker/parent)
@@ -254,22 +240,15 @@ async function libraryAddHandler(
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to add document: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('library.error.failedToAdd', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const libraryAddCommand: Command = {
   name: 'add',
-  description: 'Add document to library',
+  description: t('library.add.description'),
   usage: 'sf library add <library-id> <document-id>',
-  help: `Add a document to a library.
-
-Arguments:
-  library-id    Library identifier
-  document-id   Document identifier to add
-
-Examples:
-  sf library add el-lib123 el-doc456`,
+  help: t('library.add.help'),
   handler: libraryAddHandler as Command['handler'],
 };
 
@@ -284,7 +263,7 @@ async function libraryRemoveHandler(
   const [libraryId, docId] = args;
 
   if (!libraryId || !docId) {
-    return failure('Usage: sf library remove <library-id> <document-id>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('library.remove.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -306,22 +285,15 @@ async function libraryRemoveHandler(
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to remove document: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('library.error.failedToRemove', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const libraryRemoveCommand: Command = {
   name: 'remove',
-  description: 'Remove document from library',
+  description: t('library.remove.description'),
   usage: 'sf library remove <library-id> <document-id>',
-  help: `Remove a document from a library.
-
-Arguments:
-  library-id    Library identifier
-  document-id   Document identifier to remove
-
-Examples:
-  sf library remove el-lib123 el-doc456`,
+  help: t('library.remove.help'),
   handler: libraryRemoveHandler as Command['handler'],
 };
 
@@ -336,7 +308,7 @@ async function libraryDocsHandler(
   const [libraryId] = args;
 
   if (!libraryId) {
-    return failure('Usage: sf library docs <library-id>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('library.docs.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -348,10 +320,10 @@ async function libraryDocsHandler(
     // Verify library exists
     const library = await api.get<Library>(libraryId as ElementId);
     if (!library) {
-      return failure(`Library not found: ${libraryId}`, ExitCode.NOT_FOUND);
+      return failure(t('library.error.notFound', { id: libraryId }), ExitCode.NOT_FOUND);
     }
     if (library.type !== 'library') {
-      return failure(`Element ${libraryId} is not a library (type: ${library.type})`, ExitCode.VALIDATION);
+      return failure(t('library.error.notLibrary', { id: libraryId, type: library.type }), ExitCode.VALIDATION);
     }
 
     // Get documents that have parent-child dependency to this library
@@ -360,7 +332,7 @@ async function libraryDocsHandler(
     const docIds = deps.map((d) => d.blockedId);
 
     if (docIds.length === 0) {
-      return success([], `No documents in library ${libraryId}`);
+      return success([], t('library.docs.empty', { id: libraryId }));
     }
 
     // Fetch documents
@@ -384,7 +356,7 @@ async function libraryDocsHandler(
     }
 
     // Build table
-    const headers = ['ID', 'TITLE', 'CREATED'];
+    const headers = [t('label.id'), 'TITLE', 'CREATED'];
     const rows = docs.map((d) => {
       const title = (d as unknown as Record<string, unknown>).title as string || 'Untitled';
       return [
@@ -395,26 +367,21 @@ async function libraryDocsHandler(
     });
 
     const table = formatter.table(headers, rows);
-    const summary = `\n${docs.length} document(s) in library`;
+    const summary = `
+${t('library.docs.summary', { count: docs.length })}`;
 
     return success(docs, table + summary);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to list documents: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('library.error.failedToList', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const libraryDocsCommand: Command = {
   name: 'docs',
-  description: 'List documents in a library',
+  description: t('library.docs.description'),
   usage: 'sf library docs <library-id>',
-  help: `List all documents in a library.
-
-Arguments:
-  library-id    Library identifier
-
-Examples:
-  sf library docs el-lib123`,
+  help: t('library.docs.help'),
   handler: libraryDocsHandler as Command['handler'],
 };
 
@@ -429,7 +396,7 @@ async function libraryNestHandler(
   const [childLibraryId, parentLibraryId] = args;
 
   if (!childLibraryId || !parentLibraryId) {
-    return failure('Usage: sf library nest <child-library-id> <parent-library-id>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('library.nest.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -443,24 +410,24 @@ async function libraryNestHandler(
     // Verify child library exists
     const childLib = await api.get<Library>(childLibraryId as ElementId);
     if (!childLib) {
-      return failure(`Library not found: ${childLibraryId}`, ExitCode.NOT_FOUND);
+      return failure(t('library.error.notFound', { id: childLibraryId }), ExitCode.NOT_FOUND);
     }
     if (childLib.type !== 'library') {
-      return failure(`Element ${childLibraryId} is not a library (type: ${childLib.type})`, ExitCode.VALIDATION);
+      return failure(t('library.error.notLibrary', { id: childLibraryId, type: childLib.type }), ExitCode.VALIDATION);
     }
 
     // Verify parent library exists
     const parentLib = await api.get<Library>(parentLibraryId as ElementId);
     if (!parentLib) {
-      return failure(`Library not found: ${parentLibraryId}`, ExitCode.NOT_FOUND);
+      return failure(t('library.error.notFound', { id: parentLibraryId }), ExitCode.NOT_FOUND);
     }
     if (parentLib.type !== 'library') {
-      return failure(`Element ${parentLibraryId} is not a library (type: ${parentLib.type})`, ExitCode.VALIDATION);
+      return failure(t('library.error.notLibrary', { id: parentLibraryId, type: parentLib.type }), ExitCode.VALIDATION);
     }
 
     // Prevent self-nesting
     if (childLibraryId === parentLibraryId) {
-      return failure('Library cannot be nested under itself', ExitCode.VALIDATION);
+      return failure(t('library.nest.error.selfNest'), ExitCode.VALIDATION);
     }
 
     // Check if child already has a parent (libraries can only have one parent)
@@ -469,7 +436,7 @@ async function libraryNestHandler(
     for (const dep of existingParent) {
       const target = await api.get<Element>(dep.blockerId);
       if (target?.type === 'library') {
-        return failure(`Library ${childLibraryId} already has a parent library`, ExitCode.VALIDATION);
+        return failure(t('library.nest.error.alreadyHasParent', { id: childLibraryId }), ExitCode.VALIDATION);
       }
     }
 
@@ -489,27 +456,17 @@ async function libraryNestHandler(
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes('cycle')) {
-      return failure(`Cannot nest: would create a cycle`, ExitCode.VALIDATION);
+      return failure(t('library.nest.error.wouldCycle'), ExitCode.VALIDATION);
     }
-    return failure(`Failed to nest library: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('library.error.failedToNest', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const libraryNestCommand: Command = {
   name: 'nest',
-  description: 'Nest a library under another (create hierarchy)',
+  description: t('library.nest.description'),
   usage: 'sf library nest <child-library-id> <parent-library-id>',
-  help: `Nest a library under another library to create a hierarchy.
-
-A library can only have one parent library.
-Cycle detection prevents circular nesting.
-
-Arguments:
-  child-library-id   Library to nest (becomes a sub-library)
-  parent-library-id  Library to nest under (becomes parent)
-
-Examples:
-  sf library nest el-sub123 el-parent456`,
+  help: t('library.nest.help'),
   handler: libraryNestHandler as Command['handler'],
 };
 
@@ -524,7 +481,7 @@ async function libraryStatsHandler(
   const [libraryId] = args;
 
   if (!libraryId) {
-    return failure('Usage: sf library stats <library-id>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('library.stats.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -536,10 +493,10 @@ async function libraryStatsHandler(
     // Verify library exists
     const library = await api.get<Library>(libraryId as ElementId);
     if (!library) {
-      return failure(`Library not found: ${libraryId}`, ExitCode.NOT_FOUND);
+      return failure(t('library.error.notFound', { id: libraryId }), ExitCode.NOT_FOUND);
     }
     if (library.type !== 'library') {
-      return failure(`Element ${libraryId} is not a library (type: ${library.type})`, ExitCode.VALIDATION);
+      return failure(t('library.error.notLibrary', { id: libraryId, type: library.type }), ExitCode.VALIDATION);
     }
 
     // Get direct children (documents and sub-libraries that have this library as parent)
@@ -573,31 +530,23 @@ async function libraryStatsHandler(
     }
 
     if (mode === 'quiet') {
-      return success(`${documentCount} docs, ${subLibraryCount} sub-libraries`);
+      return success(t('library.stats.quiet', { documents: documentCount, subLibraries: subLibraryCount }));
     }
 
-    const output = `Library: ${library.name} (${libraryId})
-Documents: ${documentCount}
-Sub-libraries: ${subLibraryCount}`;
+    const output = t('library.stats.output', { name: library.name, id: libraryId, documents: documentCount, subLibraries: subLibraryCount });
 
     return success(stats, output);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to get stats: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('library.error.failedToGet', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const libraryStatsCommand: Command = {
   name: 'stats',
-  description: 'Show library statistics',
+  description: t('library.stats.description'),
   usage: 'sf library stats <library-id>',
-  help: `Show statistics for a library.
-
-Arguments:
-  library-id    Library identifier
-
-Examples:
-  sf library stats el-lib123`,
+  help: t('library.stats.help'),
   handler: libraryStatsHandler as Command['handler'],
 };
 
@@ -620,7 +569,7 @@ async function libraryRootsHandler(
     const libraries = result.items;
 
     if (libraries.length === 0) {
-      return success([], 'No libraries found');
+      return success([], t('library.list.empty'));
     }
 
     // Get all parent-child dependencies where target is a library
@@ -650,11 +599,11 @@ async function libraryRootsHandler(
     }
 
     if (rootLibraries.length === 0) {
-      return success([], 'No root libraries found');
+      return success([], t('library.roots.empty'));
     }
 
     // Build table
-    const headers = ['ID', 'NAME', 'CREATED'];
+    const headers = [t('label.id'), 'NAME', 'CREATED'];
     const rows = rootLibraries.map((l) => [
       l.id,
       l.name.length > 40 ? l.name.substring(0, 37) + '...' : l.name,
@@ -662,23 +611,21 @@ async function libraryRootsHandler(
     ]);
 
     const table = formatter.table(headers, rows);
-    const summary = `\n${rootLibraries.length} root library(ies)`;
+    const summary = `
+${t('library.roots.summary', { count: rootLibraries.length })}`;
 
     return success(rootLibraries, table + summary);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to list root libraries: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('library.error.failedToList', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const libraryRootsCommand: Command = {
   name: 'roots',
-  description: 'List root libraries (not nested under other libraries)',
+  description: t('library.roots.description'),
   usage: 'sf library roots',
-  help: `List all root libraries (libraries not nested under other libraries).
-
-Examples:
-  sf library roots`,
+  help: t('library.roots.help'),
   handler: libraryRootsHandler as Command['handler'],
 };
 
@@ -694,7 +641,7 @@ const libraryDeleteOptions: CommandOption[] = [
   {
     name: 'force',
     short: 'f',
-    description: 'Force deletion even if library has contents',
+    description: t('library.delete.option.force'),
     hasValue: false,
   },
 ];
@@ -706,7 +653,7 @@ async function libraryDeleteHandler(
   const [libraryId] = args;
 
   if (!libraryId) {
-    return failure('Usage: sf library delete <library-id>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('library.delete.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -718,10 +665,10 @@ async function libraryDeleteHandler(
     // Verify library exists
     const library = await api.get<Library>(libraryId as ElementId);
     if (!library) {
-      return failure(`Library not found: ${libraryId}`, ExitCode.NOT_FOUND);
+      return failure(t('library.error.notFound', { id: libraryId }), ExitCode.NOT_FOUND);
     }
     if (library.type !== 'library') {
-      return failure(`Element ${libraryId} is not a library (type: ${library.type})`, ExitCode.VALIDATION);
+      return failure(t('library.error.notLibrary', { id: libraryId, type: library.type }), ExitCode.VALIDATION);
     }
 
     // Check if library has contents
@@ -748,28 +695,15 @@ async function libraryDeleteHandler(
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to delete library: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('library.error.failedToDelete', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const libraryDeleteCommand: Command = {
   name: 'delete',
-  description: 'Delete a library',
+  description: t('library.delete.description'),
   usage: 'sf library delete <library-id> [--force]',
-  help: `Delete a library.
-
-By default, deletion is prevented if the library has contents.
-Use --force to delete anyway (documents and sub-libraries will be orphaned).
-
-Options:
-  -f, --force  Force deletion even with contents
-
-Arguments:
-  library-id    Library identifier
-
-Examples:
-  sf library delete el-lib123
-  sf library delete el-lib123 --force`,
+  help: t('library.delete.help'),
   options: libraryDeleteOptions,
   handler: libraryDeleteHandler as Command['handler'],
 };
@@ -780,37 +714,9 @@ Examples:
 
 export const libraryCommand: Command = {
   name: 'library',
-  description: 'Manage libraries (document collections)',
+  description: t('library.description'),
   usage: 'sf library <subcommand> [options]',
-  help: `Manage libraries - collections of related documents.
-
-Libraries organize documents for knowledge bases, documentation, and
-content management. Documents can belong to multiple libraries.
-Libraries can also be nested hierarchically.
-
-Subcommands:
-  create   Create a new library
-  list     List all libraries
-  roots    List root libraries (not nested)
-  docs     List documents in a library
-  stats    Show library statistics
-  add      Add document to library
-  remove   Remove document from library
-  nest     Nest library under another
-  delete   Delete a library
-
-Examples:
-  sf library create --name "API Documentation"
-  sf library list
-  sf library roots
-  sf library docs el-lib123
-  sf library stats el-lib123
-  sf library add el-lib123 el-doc456
-  sf library remove el-lib123 el-doc456
-  sf library nest el-sub123 el-parent456
-  sf library delete el-lib123
-
-Note: Use 'sf show <id>', 'sf update <id>', 'sf delete <id>' for any element.`,
+  help: t('library.help'),
   subcommands: {
     create: libraryCreateCommand,
     list: libraryListCommand,
@@ -833,11 +739,11 @@ Note: Use 'sf show <id>', 'sf update <id>', 'sf delete <id>' for any element.`,
     // Show "did you mean?" for unknown subcommands
     const subNames = Object.keys(libraryCommand.subcommands!);
     const suggestions = suggestCommands(args[0], subNames);
-    let msg = `Unknown subcommand: ${args[0]}`;
+    let msg = t('error.unknownSubcommand', { subcommand: args[0] });
     if (suggestions.length > 0) {
-      msg += `\n\nDid you mean?\n${suggestions.map(s => `  ${s}`).join('\n')}`;
+      msg += '\n' + suggestions.map(s => `  ${s}`).join('\n');
     }
-    msg += '\n\nRun "sf library --help" to see available subcommands.';
+    msg += '\n\n' + t('error.runHelp', { command: 'sf library' });
     return failure(msg, ExitCode.INVALID_ARGUMENTS);
   },
 };

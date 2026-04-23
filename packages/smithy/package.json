@@ -107,6 +107,7 @@
     "@stoneforge/shared-routes": "workspace:*",
     "@stoneforge/storage": "workspace:*",
     "hono": "^4.7.0",
+    "i18next": "^24.2.2",
     "node-pty": "^1.1.0",
     "ws": "^8.18.0"
   },

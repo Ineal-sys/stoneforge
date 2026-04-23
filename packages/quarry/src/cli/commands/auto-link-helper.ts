@@ -10,6 +10,7 @@ import type { ExternalProvider } from '@stoneforge/core';
 import type { GlobalOptions } from '../types.js';
 import { resolveDatabasePath } from '../db.js';
 import { createStorage, initializeSchema } from '@stoneforge/storage';
+import { t } from '../i18n/index.js';
 
 // ============================================================================
 // Types
@@ -49,7 +50,7 @@ export async function tryCreateProviderForAutoLink(
   try {
     const dbPath = resolveDatabasePath(options);
     if (!dbPath) {
-      return { error: 'No database found' };
+      return { error: t('db.noDatabase') };
     }
 
     const backend = createStorage({ path: dbPath, create: true });
@@ -65,11 +66,11 @@ export async function tryCreateProviderForAutoLink(
 
     const providerConfig = settingsService.getProviderConfig(providerName);
     if (!providerConfig?.token) {
-      return { error: `Provider "${providerName}" has no token configured` };
+      return { error: t('externalSync.push.rateLimited', { provider: providerName, seconds: '0' }) };
     }
 
     if (!providerConfig.defaultProject) {
-      return { error: `Provider "${providerName}" has no default project configured` };
+      return { error: t('externalSync.config.failedToConfigure', { provider: providerName, message: 'no default project' }) };
     }
 
     // Create the provider with the token
@@ -89,7 +90,7 @@ export async function tryCreateProviderForAutoLink(
         apiKey: providerConfig.token,
       });
     } else {
-      return { error: `Unsupported auto-link provider: ${providerName}` };
+      return { error: t('externalSync.config.providerRequired') + `: ${providerName}` };
     }
 
     return { provider, project: providerConfig.defaultProject };
@@ -97,7 +98,7 @@ export async function tryCreateProviderForAutoLink(
     const message = err instanceof Error ? err.message : String(err);
     // If the import fails, the smithy package isn't available
     if (message.includes('Cannot find') || message.includes('MODULE_NOT_FOUND')) {
-      return { error: 'Auto-link requires @stoneforge/smithy package' };
+      return { error: t('install.skills.notFound') };
     }
     return { error: message };
   }

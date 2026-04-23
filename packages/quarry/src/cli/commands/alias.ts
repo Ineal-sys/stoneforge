@@ -7,6 +7,7 @@
 import type { Command, CommandResult } from '../types.js';
 import { success } from '../types.js';
 import { getOutputMode, getFormatter } from '../formatter.js';
+import { t } from '../i18n/index.js';
 import { getAllAliases } from '../runner.js';
 import type { GlobalOptions } from '../types.js';
 
@@ -30,7 +31,7 @@ function aliasHandler(
   }
 
   if (aliasMap.size === 0) {
-    return success(null, 'No aliases defined');
+    return success(null, t('alias.noAliases'));
   }
 
   if (mode === 'quiet') {
@@ -43,7 +44,7 @@ function aliasHandler(
 
   // Human-readable output
   const formatter = getFormatter(mode);
-  const headers = ['ALIAS', 'COMMAND'];
+  const headers = [t('alias.label.alias'), t('alias.label.command')];
   const rows: string[][] = [];
 
   // Sort aliases alphabetically
@@ -56,7 +57,7 @@ function aliasHandler(
   }
 
   const table = formatter.table(headers, rows);
-  return success(null, `Command Aliases:\n\n${table}`);
+  return success(null, `${t('alias.title')}:\n\n${table}`);
 }
 
 // ============================================================================
@@ -65,27 +66,9 @@ function aliasHandler(
 
 export const aliasCommand: Command = {
   name: 'alias',
-  description: 'Show command aliases',
+  description: t('alias.description'),
   usage: 'sf alias',
-  help: `Display all available command aliases.
-
-Aliases provide shorter or more intuitive names for existing commands.
-
-Examples:
-  sf alias              # Show all aliases
-  sf alias --json       # Output as JSON
-
-Built-in aliases:
-  add, new     -> create
-  rm, remove   -> delete
-  ls           -> list
-  s, get       -> show
-  todo, tasks  -> ready
-  done, complete -> close
-  st           -> status
-  dep          -> dependency
-  msg          -> message
-  doc          -> document`,
+  help: t('alias.help'),
   options: [],
   handler: aliasHandler,
 };

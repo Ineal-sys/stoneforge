@@ -14,6 +14,7 @@
 import type { Command, GlobalOptions, CommandResult, CommandOption } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
 import { getFormatter, getOutputMode } from '../formatter.js';
+import { t } from '../i18n/index.js';
 import {
   TaskStatus,
   TaskTypeValue,
@@ -60,25 +61,25 @@ const readyOptions: CommandOption[] = [
   {
     name: 'assignee',
     short: 'a',
-    description: 'Filter by assignee',
+    description: t('ready.option.assignee'),
     hasValue: true,
   },
   {
     name: 'priority',
     short: 'p',
-    description: 'Filter by priority (1-5)',
+    description: t('ready.option.priority'),
     hasValue: true,
   },
   {
     name: 'type',
     short: 't',
-    description: 'Filter by task type (bug, feature, task, chore)',
+    description: t('ready.option.type'),
     hasValue: true,
   },
   {
     name: 'limit',
     short: 'l',
-    description: 'Maximum number of results',
+    description: t('label.limit'),
     hasValue: true,
   },
 ];
@@ -103,7 +104,7 @@ async function readyHandler(
     if (options.priority) {
       const priority = parseInt(options.priority, 10);
       if (isNaN(priority) || priority < 1 || priority > 5) {
-        return failure('Priority must be a number from 1 to 5', ExitCode.VALIDATION);
+        return failure(t('task.error.invalidPriority'), ExitCode.VALIDATION);
       }
       filter.priority = priority as Priority;
     }
@@ -112,7 +113,7 @@ async function readyHandler(
       const validTypes: string[] = Object.values(TaskTypeValue);
       if (!validTypes.includes(options.type)) {
         return failure(
-          `Invalid task type: ${options.type}. Must be one of: ${validTypes.join(', ')}`,
+          t('task.error.invalidType', { type: options.type, valid: validTypes.join(', ') }),
           ExitCode.VALIDATION
         );
       }
@@ -122,7 +123,7 @@ async function readyHandler(
     if (options.limit) {
       const limit = parseInt(options.limit, 10);
       if (isNaN(limit) || limit < 1) {
-        return failure('Limit must be a positive number', ExitCode.VALIDATION);
+        return failure(t('task.error.invalidLimit'), ExitCode.VALIDATION);
       }
       filter.limit = limit;
     }
@@ -144,11 +145,11 @@ async function readyHandler(
 
     // Human-readable output
     if (tasks.length === 0) {
-      return success(null, 'No ready tasks found');
+      return success(null, t('ready.success.noTasks'));
     }
 
     // Build table data
-    const headers = ['ID', 'TITLE', 'PRIORITY', 'ASSIGNEE', 'TYPE'];
+    const headers = [t('label.id'), t('label.title'), t('label.priority'), t('label.assignee'), t('label.type')];
     const rows = tasks.map((task) => [
       task.id,
       task.title.length > 40 ? task.title.substring(0, 37) + '...' : task.title,
@@ -158,37 +159,20 @@ async function readyHandler(
     ]);
 
     const table = formatter.table(headers, rows);
-    const summary = `\n${tasks.length} ready task(s)`;
+    const summary = `\n${t('ready.summary', { count: tasks.length })}`;
 
     return success(tasks, table + summary);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to get ready tasks: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('ready.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const readyCommand: Command = {
   name: 'ready',
-  description: 'List tasks ready for work',
+  description: t('ready.description'),
   usage: 'sf ready [options]',
-  help: `List tasks that are ready for work.
-
-Ready tasks are:
-- Status is 'open' or 'in_progress'
-- Not blocked by any dependency
-- scheduledFor is null or in the past
-
-Options:
-  -a, --assignee <id>    Filter by assignee entity ID
-  -p, --priority <1-5>   Filter by priority
-  -t, --type <type>      Filter by task type (bug, feature, task, chore)
-  -l, --limit <n>        Maximum number of results
-
-Examples:
-  sf ready
-  sf ready --assignee alice
-  sf ready --priority 1
-  sf ready -a alice -p 1 -l 10`,
+  help: t('ready.help'),
   options: readyOptions,
   handler: readyHandler as Command['handler'],
 };
@@ -206,13 +190,13 @@ const backlogOptions: CommandOption[] = [
   {
     name: 'priority',
     short: 'p',
-    description: 'Filter by priority (1-5)',
+    description: t('ready.option.priority'),
     hasValue: true,
   },
   {
     name: 'limit',
     short: 'l',
-    description: 'Maximum number of results',
+    description: t('label.limit'),
     hasValue: true,
   },
 ];
@@ -232,7 +216,7 @@ async function backlogHandler(
     if (options.priority) {
       const priority = parseInt(options.priority, 10);
       if (isNaN(priority) || priority < 1 || priority > 5) {
-        return failure('Priority must be a number from 1 to 5', ExitCode.VALIDATION);
+        return failure(t('task.error.invalidPriority'), ExitCode.VALIDATION);
       }
       filter.priority = priority as Priority;
     }
@@ -240,7 +224,7 @@ async function backlogHandler(
     if (options.limit) {
       const limit = parseInt(options.limit, 10);
       if (isNaN(limit) || limit < 1) {
-        return failure('Limit must be a positive number', ExitCode.VALIDATION);
+        return failure(t('task.error.invalidLimit'), ExitCode.VALIDATION);
       }
       filter.limit = limit;
     }
@@ -259,10 +243,10 @@ async function backlogHandler(
     }
 
     if (tasks.length === 0) {
-      return success(null, 'No backlog tasks found');
+      return success(null, t('backlog.success.noTasks'));
     }
 
-    const headers = ['ID', 'TITLE', 'PRIORITY', 'TYPE', 'CREATED'];
+    const headers = [t('label.id'), t('label.title'), t('label.priority'), t('label.type'), t('label.created')];
     const rows = tasks.map((task) => [
       task.id,
       task.title.length > 40 ? task.title.substring(0, 37) + '...' : task.title,
@@ -272,31 +256,20 @@ async function backlogHandler(
     ]);
 
     const table = formatter.table(headers, rows);
-    const summary = `\n${tasks.length} backlog task(s)`;
+    const summary = `\n${t('backlog.summary', { count: tasks.length })}`;
 
     return success(tasks, table + summary);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to get backlog tasks: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('backlog.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const backlogCommand: Command = {
   name: 'backlog',
-  description: 'List tasks in backlog',
+  description: t('backlog.description'),
   usage: 'sf backlog [options]',
-  help: `List tasks in backlog (not ready for work, needs triage).
-
-Backlog tasks are excluded from ready() and won't be auto-dispatched.
-
-Options:
-  -p, --priority <1-5>   Filter by priority
-  -l, --limit <n>        Maximum number of results
-
-Examples:
-  sf backlog
-  sf backlog --priority 1
-  sf backlog -l 10`,
+  help: t('backlog.help'),
   options: backlogOptions,
   handler: backlogHandler as Command['handler'],
 };
@@ -315,19 +288,19 @@ const blockedOptions: CommandOption[] = [
   {
     name: 'assignee',
     short: 'a',
-    description: 'Filter by assignee',
+    description: t('ready.option.assignee'),
     hasValue: true,
   },
   {
     name: 'priority',
     short: 'p',
-    description: 'Filter by priority (1-5)',
+    description: t('ready.option.priority'),
     hasValue: true,
   },
   {
     name: 'limit',
     short: 'l',
-    description: 'Maximum number of results',
+    description: t('label.limit'),
     hasValue: true,
   },
 ];
@@ -352,7 +325,7 @@ async function blockedHandler(
     if (options.priority) {
       const priority = parseInt(options.priority, 10);
       if (isNaN(priority) || priority < 1 || priority > 5) {
-        return failure('Priority must be a number from 1 to 5', ExitCode.VALIDATION);
+        return failure(t('task.error.invalidPriority'), ExitCode.VALIDATION);
       }
       filter.priority = priority as Priority;
     }
@@ -360,7 +333,7 @@ async function blockedHandler(
     if (options.limit) {
       const limit = parseInt(options.limit, 10);
       if (isNaN(limit) || limit < 1) {
-        return failure('Limit must be a positive number', ExitCode.VALIDATION);
+        return failure(t('task.error.invalidLimit'), ExitCode.VALIDATION);
       }
       filter.limit = limit;
     }
@@ -382,11 +355,11 @@ async function blockedHandler(
 
     // Human-readable output
     if (tasks.length === 0) {
-      return success(null, 'No blocked tasks found');
+      return success(null, t('blocked.success.noTasks'));
     }
 
     // Build table data
-    const headers = ['ID', 'TITLE', 'BLOCKED BY', 'REASON'];
+    const headers = [t('label.id'), t('label.title'), t('blocked.label.blockedBy'), t('blocked.label.reason')];
     const rows = tasks.map((task: BlockedTask) => [
       task.id,
       task.title.length > 30 ? task.title.substring(0, 27) + '...' : task.title,
@@ -395,30 +368,20 @@ async function blockedHandler(
     ]);
 
     const table = formatter.table(headers, rows);
-    const summary = `\n${tasks.length} blocked task(s)`;
+    const summary = `\n${t('blocked.summary', { count: tasks.length })}`;
 
     return success(tasks, table + summary);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to get blocked tasks: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('blocked.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const blockedCommand: Command = {
   name: 'blocked',
-  description: 'List blocked tasks with reasons',
+  description: t('blocked.description'),
   usage: 'sf blocked [options]',
-  help: `List tasks that are blocked with blocking details.
-
-Options:
-  -a, --assignee <id>    Filter by assignee entity ID
-  -p, --priority <1-5>   Filter by priority
-  -l, --limit <n>        Maximum number of results
-
-Examples:
-  sf blocked
-  sf blocked --assignee alice
-  sf blocked --json`,
+  help: t('blocked.help'),
   options: blockedOptions,
   handler: blockedHandler as Command['handler'],
 };
@@ -435,7 +398,7 @@ const closeOptions: CommandOption[] = [
   {
     name: 'reason',
     short: 'r',
-    description: 'Close reason',
+    description: t('close.option.reason'),
     hasValue: true,
   },
 ];
@@ -447,7 +410,7 @@ async function closeHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf task close <id> [--reason "reason"]', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('close.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -459,22 +422,22 @@ async function closeHandler(
     // Get the task
     const task = await api.get<Task>(id as ElementId);
     if (!task) {
-      return failure(`Task not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('task.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     if (task.type !== 'task') {
-      return failure(`Element is not a task: ${id}`, ExitCode.VALIDATION);
+      return failure(t('task.error.notATask', { id }), ExitCode.VALIDATION);
     }
 
     // Check if already closed
     if (task.status === TaskStatus.CLOSED) {
-      return failure(`Task is already closed: ${id}`, ExitCode.VALIDATION);
+      return failure(t('close.error.alreadyClosed', { id }), ExitCode.VALIDATION);
     }
 
     // Check if transition is valid
     if (!isValidStatusTransition(task.status, TaskStatus.CLOSED)) {
       return failure(
-        `Cannot close task with status '${task.status}'`,
+        t('close.error.invalidStatus', { status: task.status }),
         ExitCode.VALIDATION
       );
     }
@@ -501,28 +464,18 @@ async function closeHandler(
       return success(updated.id);
     }
 
-    return success(updated, `Closed task ${id}`);
+    return success(updated, t('close.success', { id }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to close task: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('close.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const closeCommand: Command = {
   name: 'close',
-  description: 'Close a task',
+  description: t('close.description'),
   usage: 'sf close <id> [options]',
-  help: `Close a task, marking it as completed.
-
-Arguments:
-  id    Task identifier (e.g., el-abc123)
-
-Options:
-  -r, --reason <text>    Close reason
-
-Examples:
-  sf close el-abc123
-  sf close el-abc123 --reason "Fixed in PR #42"`,
+  help: t('close.help'),
   options: closeOptions,
   handler: closeHandler as Command['handler'],
 };
@@ -539,7 +492,7 @@ const reopenOptions: CommandOption[] = [
   {
     name: 'message',
     short: 'm',
-    description: 'Message to append to the task description explaining why it was reopened',
+    description: t('reopen.option.message'),
     hasValue: true,
   },
 ];
@@ -551,7 +504,7 @@ async function reopenHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf task reopen <id> [--message "reason"]', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('reopen.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -563,16 +516,16 @@ async function reopenHandler(
     // Get the task
     const task = await api.get<Task>(id as ElementId);
     if (!task) {
-      return failure(`Task not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('task.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     if (task.type !== 'task') {
-      return failure(`Element is not a task: ${id}`, ExitCode.VALIDATION);
+      return failure(t('task.error.notATask', { id }), ExitCode.VALIDATION);
     }
 
     // Check if not closed
     if (task.status !== TaskStatus.CLOSED) {
-      return failure(`Task is not closed (status: ${task.status})`, ExitCode.VALIDATION);
+      return failure(t('reopen.error.notClosed', { status: task.status }), ExitCode.VALIDATION);
     }
 
     // Update status to OPEN (clears closedAt)
@@ -617,7 +570,7 @@ async function reopenHandler(
 
     // If message provided, append to or create description document
     if (options.message) {
-      const reopenLine = `**Re-opened** — Task was closed but incomplete. Message: ${options.message}`;
+      const reopenLine = t('reopen.reopenLine', { message: options.message });
       if (task.descriptionRef) {
         try {
           const doc = await api.get<Document>(task.descriptionRef as unknown as ElementId);
@@ -659,28 +612,18 @@ async function reopenHandler(
       return success(updated.id);
     }
 
-    return success(finalTask ?? updated, `Reopened task ${id}`);
+    return success(finalTask ?? updated, t('reopen.success', { id }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to reopen task: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('reopen.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const reopenCommand: Command = {
   name: 'reopen',
-  description: 'Reopen a closed task',
+  description: t('reopen.description'),
   usage: 'sf reopen <id> [--message "reason"]',
-  help: `Reopen a previously closed task, clearing assignment and merge metadata.
-
-Arguments:
-  id    Task identifier (e.g., el-abc123)
-
-Options:
-  -m, --message   Message to append to the task description
-
-Examples:
-  sf reopen el-abc123
-  sf reopen el-abc123 --message "Work was incomplete, needs fixes"`,
+  help: t('reopen.help'),
   options: reopenOptions,
   handler: reopenHandler as Command['handler'],
 };
@@ -697,7 +640,7 @@ const assignOptions: CommandOption[] = [
   {
     name: 'unassign',
     short: 'u',
-    description: 'Remove assignment',
+    description: t('assign.option.unassign'),
   },
 ];
 
@@ -708,11 +651,11 @@ async function assignHandler(
   const [id, assignee] = args;
 
   if (!id) {
-    return failure('Usage: sf task assign <id> [assignee] [--unassign]', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('assign.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   if (!assignee && !options.unassign) {
-    return failure('Specify an assignee or use --unassign to remove assignment', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('assign.error.specifyAssignee'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -724,11 +667,11 @@ async function assignHandler(
     // Get the task
     const task = await api.get<Task>(id as ElementId);
     if (!task) {
-      return failure(`Task not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('task.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     if (task.type !== 'task') {
-      return failure(`Element is not a task: ${id}`, ExitCode.VALIDATION);
+      return failure(t('task.error.notATask', { id }), ExitCode.VALIDATION);
     }
 
     // Update assignment
@@ -753,31 +696,20 @@ async function assignHandler(
     }
 
     const message = options.unassign
-      ? `Unassigned task ${id}`
-      : `Assigned task ${id} to ${assignee}`;
+      ? t('assign.success.unassigned', { id })
+      : t('assign.success.assigned', { id, assignee });
     return success(updated, message);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to assign task: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('assign.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const assignCommand: Command = {
   name: 'assign',
-  description: 'Assign a task to an entity',
+  description: t('assign.description'),
   usage: 'sf assign <id> [assignee]',
-  help: `Assign a task to an entity.
-
-Arguments:
-  id        Task identifier (e.g., el-abc123)
-  assignee  Entity to assign to
-
-Options:
-  -u, --unassign    Remove assignment
-
-Examples:
-  sf assign el-abc123 alice
-  sf assign el-abc123 --unassign`,
+  help: t('assign.help'),
   options: assignOptions,
   handler: assignHandler as Command['handler'],
 };
@@ -793,7 +725,7 @@ interface DeferOptions {
 const deferOptions: CommandOption[] = [
   {
     name: 'until',
-    description: 'Schedule for date (ISO format)',
+    description: t('defer.option.until'),
     hasValue: true,
   },
 ];
@@ -805,7 +737,7 @@ async function deferHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf task defer <id> [--until date]', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('defer.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -817,17 +749,17 @@ async function deferHandler(
     // Get the task
     const task = await api.get<Task>(id as ElementId);
     if (!task) {
-      return failure(`Task not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('task.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     if (task.type !== 'task') {
-      return failure(`Element is not a task: ${id}`, ExitCode.VALIDATION);
+      return failure(t('task.error.notATask', { id }), ExitCode.VALIDATION);
     }
 
     // Check if transition is valid
     if (!isValidStatusTransition(task.status, TaskStatus.DEFERRED)) {
       return failure(
-        `Cannot defer task with status '${task.status}'`,
+        t('defer.error.invalidStatus', { status: task.status }),
         ExitCode.VALIDATION
       );
     }
@@ -837,7 +769,7 @@ async function deferHandler(
     if (options.until) {
       const date = new Date(options.until);
       if (isNaN(date.getTime())) {
-        return failure(`Invalid date format: ${options.until}`, ExitCode.VALIDATION);
+        return failure(t('defer.error.invalidDate', { value: options.until }), ExitCode.VALIDATION);
       }
       scheduledFor = date.toISOString();
     }
@@ -869,30 +801,20 @@ async function deferHandler(
     }
 
     const message = scheduledFor
-      ? `Deferred task ${id} until ${new Date(scheduledFor).toLocaleDateString()}`
-      : `Deferred task ${id}`;
+      ? t('defer.success.withDate', { id, date: new Date(scheduledFor).toLocaleDateString() })
+      : t('defer.success', { id });
     return success(updated, message);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to defer task: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('defer.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const deferCommand: Command = {
   name: 'defer',
-  description: 'Defer a task',
+  description: t('defer.description'),
   usage: 'sf defer <id> [options]',
-  help: `Defer a task, putting it on hold.
-
-Arguments:
-  id    Task identifier (e.g., el-abc123)
-
-Options:
-  --until <date>    Schedule for a specific date (ISO format)
-
-Examples:
-  sf defer el-abc123
-  sf defer el-abc123 --until 2024-03-01`,
+  help: t('defer.help'),
   options: deferOptions,
   handler: deferHandler as Command['handler'],
 };
@@ -908,7 +830,7 @@ async function undeferHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf task undefer <id>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('undefer.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -920,16 +842,16 @@ async function undeferHandler(
     // Get the task
     const task = await api.get<Task>(id as ElementId);
     if (!task) {
-      return failure(`Task not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('task.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     if (task.type !== 'task') {
-      return failure(`Element is not a task: ${id}`, ExitCode.VALIDATION);
+      return failure(t('task.error.notATask', { id }), ExitCode.VALIDATION);
     }
 
     // Check if deferred
     if (task.status !== TaskStatus.DEFERRED) {
-      return failure(`Task is not deferred (status: ${task.status})`, ExitCode.VALIDATION);
+      return failure(t('undefer.error.notDeferred', { status: task.status }), ExitCode.VALIDATION);
     }
 
     // Update the task - reopen it
@@ -956,24 +878,18 @@ async function undeferHandler(
       return success(updated.id);
     }
 
-    return success(updated, `Undeferred task ${id}`);
+    return success(updated, t('undefer.success', { id }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to undefer task: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('undefer.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const undeferCommand: Command = {
   name: 'undefer',
-  description: 'Remove deferral from a task',
+  description: t('undefer.description'),
   usage: 'sf undefer <id>',
-  help: `Remove deferral from a task, making it ready for work again.
-
-Arguments:
-  id    Task identifier (e.g., el-abc123)
-
-Examples:
-  sf undefer el-abc123`,
+  help: t('undefer.help'),
   options: [],
   handler: undeferHandler as Command['handler'],
 };
@@ -993,23 +909,23 @@ const describeOptions: CommandOption[] = [
   {
     name: 'content',
     short: 'c',
-    description: 'Description content (text)',
+    description: t('describe.option.content'),
     hasValue: true,
   },
   {
     name: 'file',
     short: 'f',
-    description: 'Read description from file',
+    description: t('describe.option.file'),
     hasValue: true,
   },
   {
     name: 'show',
     short: 's',
-    description: 'Show current description instead of setting it',
+    description: t('describe.option.show'),
   },
   {
     name: 'append',
-    description: 'Append to existing description instead of replacing',
+    description: t('describe.option.append'),
   },
 ];
 
@@ -1020,7 +936,7 @@ async function describeHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf task describe <id> --content <text> | --file <path> | --show', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('describe.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -1032,11 +948,11 @@ async function describeHandler(
     // Get the task
     const task = await api.get<Task>(id as ElementId);
     if (!task) {
-      return failure(`Task not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('task.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     if (task.type !== 'task') {
-      return failure(`Element is not a task: ${id}`, ExitCode.VALIDATION);
+      return failure(t('task.error.notATask', { id }), ExitCode.VALIDATION);
     }
 
     // Show mode - display current description
@@ -1047,13 +963,13 @@ async function describeHandler(
         if (mode === 'json') {
           return success({ taskId: id, description: null });
         }
-        return success(null, `Task ${id} has no description`);
+        return success(null, t('describe.success.noDescription', { id }));
       }
 
       // Get the description document
       const doc = await api.get<Document>(task.descriptionRef as ElementId);
       if (!doc) {
-        return failure(`Description document not found: ${task.descriptionRef}`, ExitCode.NOT_FOUND);
+        return failure(t('describe.error.docNotFound', { ref: task.descriptionRef }), ExitCode.NOT_FOUND);
       }
 
       if (mode === 'json') {
@@ -1064,16 +980,16 @@ async function describeHandler(
         return success(doc.content);
       }
 
-      return success(doc, `Description for task ${id}:\n\n${doc.content}`);
+      return success(doc, t('describe.success.show', { id, content: doc.content }));
     }
 
     // Set mode - must specify either --content or --file
     if (!options.content && !options.file) {
-      return failure('Either --content, --file, or --show is required', ExitCode.INVALID_ARGUMENTS);
+      return failure(t('describe.error.contentOrFileRequired'), ExitCode.INVALID_ARGUMENTS);
     }
 
     if (options.content && options.file) {
-      return failure('Cannot specify both --content and --file', ExitCode.INVALID_ARGUMENTS);
+      return failure(t('describe.error.contentAndFile'), ExitCode.INVALID_ARGUMENTS);
     }
 
     // Get new content
@@ -1083,7 +999,7 @@ async function describeHandler(
     } else {
       const filePath = resolve(options.file!);
       if (!fileExists(filePath)) {
-        return failure(`File not found: ${filePath}`, ExitCode.NOT_FOUND);
+        return failure(t('describe.error.fileNotFound', { path: filePath }), ExitCode.NOT_FOUND);
       }
       content = readFileSync(filePath, 'utf-8');
     }
@@ -1117,8 +1033,8 @@ async function describeHandler(
         return success(task.descriptionRef);
       }
 
-      const action = options.append ? 'Appended to' : 'Updated';
-      return success(updated, `${action} description for task ${id} (document ${task.descriptionRef}, version ${updated.version})`);
+      const action = options.append ? t('describe.label.appended') : t('describe.label.updated');
+      return success(updated, t('describe.success.updated', { action, id, ref: task.descriptionRef, version: updated.version }));
     } else {
       // Create new description document
       const docInput = {
@@ -1145,38 +1061,19 @@ async function describeHandler(
         return success(created.id);
       }
 
-      return success(created, `Created description for task ${id} (document ${created.id})`);
+      return success(created, t('describe.success.created', { id, docId: created.id }));
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to update task description: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('describe.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const describeCommand: Command = {
   name: 'describe',
-  description: 'Set or show task description',
+  description: t('describe.description'),
   usage: 'sf task describe <id> --content <text> | --file <path> | --show',
-  help: `Set or show the description for a task.
-
-Task descriptions are stored as separate versioned documents. If the task
-already has a description, it will be updated (creating a new version).
-If not, a new document will be created and linked to the task.
-
-Arguments:
-  id    Task identifier (e.g., el-abc123)
-
-Options:
-  -c, --content <text>  Description content (inline)
-  -f, --file <path>     Read description from file
-  -s, --show            Show current description instead of setting it
-      --append          Append to existing description instead of replacing
-
-Examples:
-  sf task describe el-abc123 --content "Implement the login feature"
-  sf task describe el-abc123 --file description.md
-  sf task describe el-abc123 --show
-  sf task describe el-abc123 --append --content "Additional notes"`,
+  help: t('describe.help'),
   options: describeOptions,
   handler: describeHandler as Command['handler'],
 };
@@ -1192,7 +1089,7 @@ async function activateHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf task activate <id>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('activate.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -1203,15 +1100,15 @@ async function activateHandler(
   try {
     const task = await api.get<Task>(id as ElementId);
     if (!task) {
-      return failure(`Task not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('task.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     if (task.type !== 'task') {
-      return failure(`Element is not a task: ${id}`, ExitCode.VALIDATION);
+      return failure(t('task.error.notATask', { id }), ExitCode.VALIDATION);
     }
 
     if (task.status !== TaskStatus.BACKLOG) {
-      return failure(`Task is not in backlog (status: ${task.status})`, ExitCode.VALIDATION);
+      return failure(t('activate.error.notBacklog', { status: task.status }), ExitCode.VALIDATION);
     }
 
     const updated = updateTaskStatus(task, {
@@ -1232,24 +1129,18 @@ async function activateHandler(
       return success(updated.id);
     }
 
-    return success(updated, `Activated task ${id} (moved from backlog to open)`);
+    return success(updated, t('activate.success', { id }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to activate task: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('activate.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const activateCommand: Command = {
   name: 'activate',
-  description: 'Move a task from backlog to open',
+  description: t('activate.description'),
   usage: 'sf task activate <id>',
-  help: `Move a task from backlog status to open status.
-
-Arguments:
-  id    Task identifier
-
-Examples:
-  sf task activate el-abc123`,
+  help: t('activate.help'),
   options: [],
   handler: activateHandler as Command['handler'],
 };
@@ -1260,24 +1151,9 @@ Examples:
 
 const taskCreateCommand: Command = {
   name: 'create',
-  description: 'Create a new task',
+  description: t('taskCreate.description'),
   usage: 'sf task create [options]',
-  help: `Create a new task.
-
-Options:
-  -t, --title <text>      Task title (required)
-  -d, --description <text> Task description (creates a linked document)
-  -p, --priority <1-5>    Priority (1=critical, 5=minimal, default=3)
-  -c, --complexity <1-5>  Complexity (1=trivial, 5=very complex, default=3)
-      --type <type>       Task type: bug, feature, task, chore
-  -a, --assignee <id>     Assignee entity ID
-      --tag <tag>         Add a tag (can be repeated)
-      --plan <id|name>    Plan to attach this task to
-
-Examples:
-  sf task create --title "Fix login bug" --priority 1 --type bug
-  sf task create -t "Add dark mode" --tag ui --tag feature
-  sf task create -t "Implement feature X" --plan "My Plan"`,
+  help: t('taskCreate.help'),
   options: createOptions,
   handler: ((args: string[], options: GlobalOptions) =>
     createHandler(['task', ...args], options)) as Command['handler'],
@@ -1288,7 +1164,7 @@ const taskListOptions: CommandOption[] = [
   ...listOptions,
   {
     name: 'ready',
-    description: 'Show only dispatch-ready tasks (mutually exclusive with --status)',
+    description: t('taskList.option.ready'),
   },
 ];
 
@@ -1310,7 +1186,7 @@ async function taskListHandler(
   // Validate mutual exclusivity of --ready and --status
   if (options.ready && options.status) {
     return failure(
-      'Cannot use --ready and --status together. Use --ready to show dispatch-ready tasks, or --status to filter by raw status.',
+      t('taskList.error.readyAndStatus'),
       ExitCode.VALIDATION
     );
   }
@@ -1374,11 +1250,11 @@ async function taskListHandler(
 
       // Human-readable output
       if (tasks.length === 0) {
-        return success(null, 'No ready tasks found');
+        return success(null, t('ready.success.noTasks'));
       }
 
       // Build table data (same format as sf task list)
-      const headers = ['ID', 'TYPE', 'TITLE/NAME', 'STATUS', 'PRIORITY', 'ASSIGNEE', 'CREATED'];
+      const headers = [t('label.id'), t('label.type'), t('label.titleName'), t('label.status'), t('label.priority'), t('label.assignee'), t('label.created')];
       const rows = tasks.map((task) => {
         const title = task.title.length > 40 ? task.title.substring(0, 37) + '...' : task.title;
         const statusIcon = task.status === TaskStatus.OPEN ? '\u25CB' : '\u25D4';
@@ -1396,12 +1272,12 @@ async function taskListHandler(
       });
 
       const table = formatter.table(headers, rows);
-      const summary = `\n${tasks.length} dispatch-ready task(s)`;
+      const summary = `\n${t('taskList.readySummary', { count: tasks.length })}`;
 
       return success(tasks, table + summary);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return failure(`Failed to list ready tasks: ${message}`, ExitCode.GENERAL_ERROR);
+      return failure(t('taskList.error.failedReady', { message }), ExitCode.GENERAL_ERROR);
     }
   }
 
@@ -1411,97 +1287,36 @@ async function taskListHandler(
 
 const taskListCommand: Command = {
   name: 'list',
-  description: 'List tasks',
+  description: t('taskList.description'),
   usage: 'sf task list [options]',
-  help: `List tasks with optional filtering.
-
-Options:
-  -s, --status <status> Filter by status
-      --ready           Show only dispatch-ready tasks (accounts for blocked
-                        cache, draft plans, scheduled-for-future, ephemeral
-                        workflows, and plan-level blocking). Mutually exclusive
-                        with --status.
-  -p, --priority <1-5>  Filter by priority
-  -a, --assignee <id>   Filter by assignee
-      --tag <tag>       Filter by tag (can be repeated)
-  -l, --limit <n>       Maximum results (default: 50)
-  -o, --offset <n>      Skip first n results
-
-Examples:
-  sf task list
-  sf task list --status open
-  sf task list --ready
-  sf task list --ready --assignee alice
-  sf task list --priority 1 --status in_progress`,
+  help: t('taskList.help'),
   options: taskListOptions,
   handler: taskListHandler as Command['handler'],
 };
 
 const taskShowCommand: Command = {
   name: 'show',
-  description: 'Show task details',
+  description: t('taskShow.description'),
   usage: 'sf task show <id> [options]',
-  help: `Show detailed information about a task.
-
-Arguments:
-  id    Task identifier (e.g., el-abc123)
-
-Options:
-  -e, --events            Include recent events/history
-      --events-limit <n>  Maximum events to show (default: 10)
-
-Examples:
-  sf task show el-abc123
-  sf task show el-abc123 --events`,
+  help: t('taskShow.help'),
   options: showOptions,
   handler: showHandler as Command['handler'],
 };
 
 const taskUpdateCommand: Command = {
   name: 'update',
-  description: 'Update a task',
+  description: t('taskUpdate.description'),
   usage: 'sf task update <id> [options]',
-  help: `Update fields on an existing task.
-
-Arguments:
-  id    Task identifier (e.g., el-abc123)
-
-Options:
-  -t, --title <text>       New title
-  -d, --description <text> New description (updates linked document)
-  -p, --priority <1-5>     New priority
-  -c, --complexity <1-5>   New complexity
-  -s, --status <status>    New status (open, in_progress, backlog, review, closed, deferred)
-  -a, --assignee <id>      New assignee (empty string to unassign)
-      --metadata <json>    JSON metadata to merge (null values remove keys)
-      --tag <tag>          Replace all tags
-      --add-tag <tag>      Add a tag
-      --remove-tag <tag>   Remove a tag
-
-Examples:
-  sf task update el-abc123 --title "New Title"
-  sf task update el-abc123 --priority 1 --status in_progress
-  sf task update el-abc123 -d "Updated description text"`,
+  help: t('taskUpdate.help'),
   options: updateOptions,
   handler: updateHandler as Command['handler'],
 };
 
 const taskDeleteCommand: Command = {
   name: 'delete',
-  description: 'Delete a task',
+  description: t('taskDelete.description'),
   usage: 'sf task delete <id> [options]',
-  help: `Soft-delete a task.
-
-Arguments:
-  id    Task identifier (e.g., el-abc123)
-
-Options:
-  -r, --reason <text>    Deletion reason
-  -f, --force            Skip confirmation
-
-Examples:
-  sf task delete el-abc123
-  sf task delete el-abc123 --reason "Duplicate entry"`,
+  help: t('taskDelete.help'),
   options: deleteOptions,
   handler: deleteHandler as Command['handler'],
 };
@@ -1543,57 +1358,25 @@ const allTaskSubcommands: Record<string, Command> = {
 
 export const taskCommand: Command = {
   name: 'task',
-  description: 'Task management',
+  description: t('task.description'),
   usage: 'sf task <subcommand> [options]',
-  help: `Task management - create, list, and manage tasks.
-
-CRUD:
-  create      Create a new task
-  list        List tasks
-  show        Show task details
-  update      Update a task
-  delete      Delete a task
-
-Status:
-  ready       List tasks ready for work
-  blocked     List blocked tasks with reasons
-  backlog     List backlog tasks
-  close       Close a task
-  reopen      Reopen a closed task
-  activate    Move a task from backlog to open
-
-Assignment:
-  assign      Assign a task to an entity
-
-Scheduling:
-  defer       Defer a task
-  undefer     Remove deferral from a task
-
-Description:
-  describe    Set or show task description
-
-Examples:
-  sf task create --title "Fix login bug" --priority 1
-  sf task list --status open
-  sf task ready
-  sf task close el-abc123
-  sf task describe el-abc123 --show`,
+  help: t('task.help'),
   subcommands: allTaskSubcommands,
   handler: async (args, _options): Promise<CommandResult> => {
     if (args.length === 0) {
       return failure(
-        'Usage: sf task <subcommand>. Use "sf task --help" for available subcommands.',
+        t('task.error.usage'),
         ExitCode.INVALID_ARGUMENTS
       );
     }
     // Show "did you mean?" for unknown subcommands
     const subNames = Object.keys(allTaskSubcommands);
     const suggestions = suggestCommands(args[0], subNames);
-    let msg = `Unknown subcommand: ${args[0]}`;
+    let msg = t('task.error.unknownSubcommand', { subcommand: args[0] });
     if (suggestions.length > 0) {
-      msg += `\n\nDid you mean?\n${suggestions.map(s => `  ${s}`).join('\n')}`;
+      msg += `\n\n${t('label.didYouMean')}\n${suggestions.map(s => `  ${s}`).join('\n')}`;
     }
-    msg += '\n\nRun "sf task --help" to see available subcommands.';
+    msg += `\n\n${t('task.error.usage')}`;
     return failure(msg, ExitCode.INVALID_ARGUMENTS);
   },
 };

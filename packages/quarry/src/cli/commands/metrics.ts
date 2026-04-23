@@ -10,6 +10,7 @@
 
 import type { Command, GlobalOptions, CommandResult, CommandOption } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
+import { t } from '../i18n/index.js';
 import { createAPI } from '../db.js';
 import type { StorageBackend } from '@stoneforge/storage';
 import {
@@ -330,14 +331,14 @@ async function metricsHandler(
     const lines: string[] = [];
     const groupLabel = groupBy === 'provider' ? 'Provider' : 'Model';
 
-    lines.push(`Provider Metrics (last ${days} days)`);
+    lines.push(t('metrics.title', { days }));
     if (providerFilter) {
-      lines.push(`Filtered by provider: ${providerFilter}`);
+      lines.push(t('metrics.filteredBy', { provider: providerFilter }));
     }
     lines.push('');
 
     if (metrics.length === 0) {
-      lines.push('No metrics recorded for the selected time range.');
+      lines.push(t('metrics.noMetrics'));
       return success(summary, lines.join('\n'));
     }
 
@@ -345,42 +346,42 @@ async function metricsHandler(
     const totalCacheRead = metrics.reduce((s, m) => s + m.totalCacheReadTokens, 0);
     const totalCacheCreation = metrics.reduce((s, m) => s + m.totalCacheCreationTokens, 0);
 
-    lines.push('Summary:');
-    lines.push(`  Total tokens:          ${formatNumber(totals.totalTokens)}`);
-    lines.push(`  Input tokens:          ${formatNumber(totals.totalInputTokens)}`);
-    lines.push(`  Output tokens:         ${formatNumber(totals.totalOutputTokens)}`);
-    lines.push(`  Cache read tokens:     ${formatNumber(totalCacheRead)}`);
-    lines.push(`  Cache creation tokens: ${formatNumber(totalCacheCreation)}`);
-    lines.push(`  Sessions:              ${formatNumber(totals.sessionCount)}`);
-    lines.push(`  Estimated cost:        ${formatCost(totals.estimatedCost.totalCost)}`);
+    lines.push(t('metrics.summary'));
+    lines.push(`  ${t('metrics.totalTokens')}:          ${formatNumber(totals.totalTokens)}`);
+    lines.push(`  ${t('metrics.inputTokens')}:          ${formatNumber(totals.totalInputTokens)}`);
+    lines.push(`  ${t('metrics.outputTokens')}:         ${formatNumber(totals.totalOutputTokens)}`);
+    lines.push(`  ${t('metrics.cacheReadTokens')}:     ${formatNumber(totalCacheRead)}`);
+    lines.push(`  ${t('metrics.cacheCreationTokens')}: ${formatNumber(totalCacheCreation)}`);
+    lines.push(`  ${t('metrics.sessions')}:              ${formatNumber(totals.sessionCount)}`);
+    lines.push(`  ${t('metrics.estimatedCost')}:        ${formatCost(totals.estimatedCost.totalCost)}`);
     lines.push('');
 
     // Per-group breakdown
-    lines.push(`By ${groupLabel}:`);
+    lines.push(t('metrics.groupBy', { group: groupLabel }));
     lines.push('');
 
     for (const m of metrics) {
       lines.push(`  ${m.group}`);
-      lines.push(`    Tokens:           ${formatNumber(m.totalTokens)} total`);
-      lines.push(`      Input:          ${formatNumber(m.totalInputTokens)}`);
-      lines.push(`      Output:         ${formatNumber(m.totalOutputTokens)}`);
-      lines.push(`      Cache read:     ${formatNumber(m.totalCacheReadTokens)}`);
-      lines.push(`      Cache creation: ${formatNumber(m.totalCacheCreationTokens)}`);
-      lines.push(`    Sessions:         ${formatNumber(m.sessionCount)}`);
-      lines.push(`    Avg duration:     ${formatDuration(m.avgDurationMs)}`);
-      lines.push(`    Error rate:       ${(m.errorRate * 100).toFixed(1)}% (${m.failedCount} failed, ${m.rateLimitedCount} rate limited)`);
-      lines.push(`    Est. cost:        ${formatCost(m.estimatedCost.totalCost)}`);
-      lines.push(`      Input:          ${formatCost(m.estimatedCost.inputCost)}`);
-      lines.push(`      Output:         ${formatCost(m.estimatedCost.outputCost)}`);
-      lines.push(`      Cache read:     ${formatCost(m.estimatedCost.cacheReadCost)}`);
-      lines.push(`      Cache creation: ${formatCost(m.estimatedCost.cacheCreationCost)}`);
+      lines.push(`    ${t('metrics.tokens')}:           ${formatNumber(m.totalTokens)} ${t('metrics.total')}`);
+      lines.push(`      ${t('metrics.input')}:          ${formatNumber(m.totalInputTokens)}`);
+      lines.push(`      ${t('metrics.output')}:         ${formatNumber(m.totalOutputTokens)}`);
+      lines.push(`      ${t('metrics.cacheRead')}:     ${formatNumber(m.totalCacheReadTokens)}`);
+      lines.push(`      ${t('metrics.cacheCreation')}: ${formatNumber(m.totalCacheCreationTokens)}`);
+      lines.push(`    ${t('metrics.sessions')}:         ${formatNumber(m.sessionCount)}`);
+      lines.push(`    ${t('metrics.avgDuration')}:     ${formatDuration(m.avgDurationMs)}`);
+      lines.push(`    ${t('metrics.errorRate')}:       ${(m.errorRate * 100).toFixed(1)}% (${m.failedCount} ${t('metrics.failedLabel')}, ${m.rateLimitedCount} ${t('metrics.rateLimited')})`);
+      lines.push(`    ${t('metrics.estCost')}:        ${formatCost(m.estimatedCost.totalCost)}`);
+      lines.push(`      ${t('metrics.input')}:          ${formatCost(m.estimatedCost.inputCost)}`);
+      lines.push(`      ${t('metrics.output')}:         ${formatCost(m.estimatedCost.outputCost)}`);
+      lines.push(`      ${t('metrics.cacheRead')}:     ${formatCost(m.estimatedCost.cacheReadCost)}`);
+      lines.push(`      ${t('metrics.cacheCreation')}: ${formatCost(m.estimatedCost.cacheCreationCost)}`);
       lines.push('');
     }
 
     return success(summary, lines.join('\n'));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to get metrics: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('metrics.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
@@ -392,19 +393,19 @@ const metricsOptions: CommandOption[] = [
   {
     name: 'range',
     short: 'r',
-    description: 'Time range (e.g., 7d, 14d, 30d)',
+    description: t('metrics.option.range'),
     hasValue: true,
   },
   {
     name: 'provider',
     short: 'p',
-    description: 'Filter by provider name',
+    description: t('metrics.option.provider'),
     hasValue: true,
   },
   {
     name: 'group-by',
     short: 'g',
-    description: 'Group by: provider (default) or model',
+    description: t('metrics.option.groupBy'),
     hasValue: true,
   },
 ];
@@ -415,22 +416,9 @@ const metricsOptions: CommandOption[] = [
 
 export const metricsCommand: Command = {
   name: 'metrics',
-  description: 'Show provider metrics and usage statistics',
+  description: t('metrics.description'),
   usage: 'sf metrics [options]',
-  help: `Show LLM provider usage metrics including token counts, estimated costs,
-session counts, average duration, and error rates.
-
-Options:
-  --range, -r    Time range (e.g., 7d, 14d, 30d). Default: 7d
-  --provider, -p Filter by provider name (e.g., claude-code)
-  --group-by, -g Group by: provider (default) or model
-
-Examples:
-  sf metrics                  Show metrics for last 7 days
-  sf metrics --range 30d      Show metrics for last 30 days
-  sf metrics --provider claude-code  Filter by provider
-  sf metrics --group-by model        Group by model
-  sf metrics --json           Output as JSON`,
+  help: t('metrics.help'),
   handler: metricsHandler,
   options: metricsOptions,
 };

@@ -6,6 +6,7 @@
 
 import type { GlobalOptions, ParsedCommandLine, CommandOption } from './types.js';
 import { DEFAULT_GLOBAL_OPTIONS } from './types.js';
+import { t } from './i18n/index.js';
 
 // ============================================================================
 // Case Conversion Utilities
@@ -175,7 +176,7 @@ export function parseArgs(
         if (globalDef.hasValue) {
           const value = optValue ?? argv[++i];
           if (value === undefined || value.startsWith('-')) {
-            throw new Error(`Option ${optName} requires a value`);
+            throw new Error(t('parser.optionRequiresValue', { option: optName }));
           }
           (options[globalDef.key] as string) = unescapeShellArtifacts(value);
         } else {
@@ -191,7 +192,7 @@ export function parseArgs(
         if (cmdDef.hasValue) {
           const value = optValue ?? argv[++i];
           if (value === undefined || (value.startsWith('-') && value !== '-')) {
-            throw new Error(`Option ${optName} requires a value`);
+            throw new Error(t('parser.optionRequiresValue', { option: optName }));
           }
           const unescapedValue = unescapeShellArtifacts(value);
           if (cmdDef.array) {
@@ -214,7 +215,7 @@ export function parseArgs(
 
       // Unknown option
       if (strict) {
-        throw new Error(`Unknown option: ${optName}`);
+        throw new Error(t('parser.unknownOption', { option: optName }));
       }
       // In non-strict mode, skip unknown options (and their values if using = syntax)
       i++;
@@ -262,7 +263,7 @@ export function validateRequiredOptions(
 ): void {
   for (const opt of definitions) {
     if (opt.required && commandOptions[opt.name] === undefined) {
-      throw new Error(`Required option --${camelToKebab(opt.name)} is missing`);
+      throw new Error(t('parser.requiredOptionMissing', { option: camelToKebab(opt.name) }));
     }
   }
 }
@@ -275,17 +276,7 @@ export function validateRequiredOptions(
  * Generates help text for global options
  */
 export function getGlobalOptionsHelp(): string {
-  return `Global Options:
-  --db <path>            Database file path
-  --actor <name>         Actor name for operations
-  --from <name>          Alias for --actor
-  --sign-key <key>       Private key for signing (base64 PKCS8)
-  --sign-key-file <path> Path to file containing private key
-  --json                 Output in JSON format
-  -q, --quiet            Minimal output (IDs only)
-  -v, --verbose          Enable debug output
-  -h, --help             Show help
-  -V, --version          Show version`;
+  return t('parser.globalOptionsTitle');
 }
 
 /**
@@ -294,12 +285,12 @@ export function getGlobalOptionsHelp(): string {
 export function getCommandOptionsHelp(options: CommandOption[]): string {
   if (options.length === 0) return '';
 
-  const lines = ['Command Options:'];
+  const lines = [t('parser.commandOptionsTitle')];
   for (const opt of options) {
     const shortPart = opt.short ? `-${opt.short}, ` : '    ';
     const displayName = camelToKebab(opt.name);
     const valuePart = opt.hasValue ? ` <${displayName}>` : '';
-    const requiredPart = opt.required ? ' (required)' : '';
+    const requiredPart = opt.required ? ` (${t('general.required')})` : '';
     lines.push(`  ${shortPart}--${displayName}${valuePart}${requiredPart}`);
     lines.push(`        ${opt.description}`);
   }

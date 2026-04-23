@@ -17,6 +17,7 @@
 import type { Command, GlobalOptions, CommandResult, CommandOption } from '../types.js';
 import { success, failure, ExitCode } from '../types.js';
 import { getFormatter, getOutputMode, getStatusIcon } from '../formatter.js';
+import { t } from '../i18n/index.js';
 import { createPlan, PlanStatus, canAutoComplete, TaskStatus, type CreatePlanInput, type Plan } from '@stoneforge/core';
 import type { Task } from '@stoneforge/core';
 import type { Element, ElementId, EntityId } from '@stoneforge/core';
@@ -38,19 +39,19 @@ const planCreateOptions: CommandOption[] = [
   {
     name: 'title',
     short: 't',
-    description: 'Plan title (required)',
+    description: t('plan.create.option.title'),
     hasValue: true,
     required: true,
   },
   {
     name: 'status',
     short: 's',
-    description: 'Initial status (draft, active). Default: draft',
+    description: t('plan.create.option.status'),
     hasValue: true,
   },
   {
     name: 'tag',
-    description: 'Add a tag (can be repeated)',
+    description: t('plan.create.option.tag'),
     hasValue: true,
     array: true,
   },
@@ -61,7 +62,7 @@ async function planCreateHandler(
   options: GlobalOptions & PlanCreateOptions
 ): Promise<CommandResult> {
   if (!options.title) {
-    return failure('--title is required for creating a plan', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('plan.create.error.titleRequired'), ExitCode.INVALID_ARGUMENTS);
   }
 
   // Validate status if provided
@@ -69,7 +70,7 @@ async function planCreateHandler(
     const validStatuses: PlanStatus[] = [PlanStatus.DRAFT, PlanStatus.ACTIVE];
     if (!validStatuses.includes(options.status as PlanStatus)) {
       return failure(
-        `Invalid initial status: ${options.status}. Must be one of: draft, active`,
+        t('plan.create.error.invalidStatus', { status: options.status }),
         ExitCode.VALIDATION
       );
     }
@@ -99,28 +100,18 @@ async function planCreateHandler(
     const plan = await createPlan(input);
     const created = await api.create(plan as unknown as Element & Record<string, unknown>);
 
-    return success(created, `Created plan ${created.id}`);
+    return success(created, t('plan.create.success', { id: created.id }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to create plan: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('plan.create.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const planCreateCommand: Command = {
   name: 'create',
-  description: 'Create a new plan',
+  description: t('plan.create.description'),
   usage: 'sf plan create --title <title> [options]',
-  help: `Create a new plan to organize related tasks.
-
-Options:
-  -t, --title <text>    Plan title (required)
-  -s, --status <status> Initial status: draft (default) or active
-      --tag <tag>       Add a tag (can be repeated)
-
-Examples:
-  sf plan create --title "Q1 Feature Roadmap"
-  sf plan create -t "Sprint 3" --status active
-  sf plan create --title "Bug Backlog" --tag urgent --tag backend`,
+  help: t('plan.create.help'),
   options: planCreateOptions,
   handler: planCreateHandler as Command['handler'],
 };
@@ -139,19 +130,19 @@ const planListOptions: CommandOption[] = [
   {
     name: 'status',
     short: 's',
-    description: 'Filter by status (draft, active, completed, cancelled)',
+    description: t('plan.list.option.status'),
     hasValue: true,
   },
   {
     name: 'tag',
-    description: 'Filter by tag (can be repeated for AND)',
+    description: t('plan.list.option.tag'),
     hasValue: true,
     array: true,
   },
   {
     name: 'limit',
     short: 'l',
-    description: 'Maximum number of results',
+    description: t('label.limit'),
     hasValue: true,
   },
 ];
@@ -176,7 +167,7 @@ async function planListHandler(
       const validStatuses = Object.values(PlanStatus);
       if (!validStatuses.includes(options.status as PlanStatus)) {
         return failure(
-          `Invalid status: ${options.status}. Must be one of: ${validStatuses.join(', ')}`,
+          t('plan.error.invalidStatus', { status: options.status, valid: validStatuses.join(', ') }),
           ExitCode.VALIDATION
         );
       }
@@ -192,7 +183,7 @@ async function planListHandler(
     if (options.limit) {
       const limit = parseInt(options.limit, 10);
       if (isNaN(limit) || limit < 1) {
-        return failure('Limit must be a positive number', ExitCode.VALIDATION);
+        return failure(t('error.limitPositive'), ExitCode.VALIDATION);
       }
       filter.limit = limit;
     }
@@ -217,11 +208,11 @@ async function planListHandler(
     }
 
     if (items.length === 0) {
-      return success(null, 'No plans found');
+      return success(null, t('plan.list.empty'));
     }
 
     // Build table with progress info
-    const headers = ['ID', 'TITLE', 'STATUS', 'PROGRESS', 'CREATED'];
+    const headers = [t('label.id'), t('label.title'), t('label.status'), t('label.progress'), t('label.created')];
     const rows: string[][] = [];
 
     for (const plan of items) {
@@ -240,30 +231,20 @@ async function planListHandler(
     }
 
     const table = formatter.table(headers, rows);
-    const summary = `\nShowing ${items.length} of ${result.total} plans`;
+    const summary = `\n${t('plan.list.summary', { shown: items.length, total: result.total })}`;
 
     return success(items, table + summary);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to list plans: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('plan.list.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const planListCommand: Command = {
   name: 'list',
-  description: 'List plans',
+  description: t('plan.list.description'),
   usage: 'sf plan list [options]',
-  help: `List plans with optional filtering.
-
-Options:
-  -s, --status <status> Filter by status: draft, active, completed, cancelled
-      --tag <tag>       Filter by tag (can be repeated)
-  -l, --limit <n>       Maximum results
-
-Examples:
-  sf plan list
-  sf plan list --status active
-  sf plan list --tag sprint --tag q1`,
+  help: t('plan.list.help'),
   options: planListOptions,
   handler: planListHandler as Command['handler'],
 };
@@ -280,7 +261,7 @@ const planShowOptions: CommandOption[] = [
   {
     name: 'tasks',
     short: 't',
-    description: 'Include task list',
+    description: t('plan.show.option.tasks'),
     hasValue: false,
   },
 ];
@@ -292,7 +273,7 @@ async function planShowHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf plan show <id>\nExample: sf plan show el-abc123', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('plan.show.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -304,11 +285,11 @@ async function planShowHandler(
     const plan = await api.get<Plan>(id as ElementId);
 
     if (!plan) {
-      return failure(`Plan not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('plan.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     if (plan.type !== 'plan') {
-      return failure(`Element ${id} is not a plan (type: ${plan.type})`, ExitCode.VALIDATION);
+      return failure(t('plan.error.notPlan', { id, type: plan.type }), ExitCode.VALIDATION);
     }
 
     // Get progress
@@ -335,18 +316,18 @@ async function planShowHandler(
     let output = formatter.element(plan as unknown as Record<string, unknown>);
 
     // Add progress section
-    output += '\n\n--- Task Progress ---\n';
-    output += `Total:       ${progress.totalTasks}\n`;
-    output += `Completed:   ${progress.completedTasks}\n`;
-    output += `In Progress: ${progress.inProgressTasks}\n`;
-    output += `Blocked:     ${progress.blockedTasks}\n`;
-    output += `Ready:       ${progress.remainingTasks}\n`;
-    output += `Progress:    ${progress.completionPercentage}%`;
+    output += `\n\n${t('plan.show.taskProgress')}\n`;
+    output += `${t('label.total')}:       ${progress.totalTasks}\n`;
+    output += `${t('label.completed')}:   ${progress.completedTasks}\n`;
+    output += `${t('label.inProgress')}: ${progress.inProgressTasks}\n`;
+    output += `${t('label.blocked')}:     ${progress.blockedTasks}\n`;
+    output += `${t('label.ready')}:       ${progress.remainingTasks}\n`;
+    output += `${t('label.progress')}:    ${progress.completionPercentage}%`;
 
     // Add tasks section if requested
     if (tasks && tasks.length > 0) {
-      output += '\n\n--- Tasks ---\n';
-      const taskHeaders = ['ID', 'TITLE', 'STATUS', 'PRIORITY'];
+      output += `\n\n${t('plan.show.tasksSection')}\n`;
+      const taskHeaders = [t('label.id'), t('label.title'), t('label.status'), t('label.priority')];
       const taskRows = tasks.map((t) => [
         t.id,
         t.title.length > 40 ? t.title.substring(0, 37) + '...' : t.title,
@@ -355,32 +336,21 @@ async function planShowHandler(
       ]);
       output += formatter.table(taskHeaders, taskRows);
     } else if (options.tasks) {
-      output += '\n\n--- Tasks ---\nNo tasks';
+      output += `\n\n${t('plan.show.tasksSection')}\n${t('plan.show.noTasks')}`;
     }
 
     return success({ plan, progress }, output);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to show plan: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('plan.show.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const planShowCommand: Command = {
   name: 'show',
-  description: 'Show plan details',
+  description: t('plan.show.description'),
   usage: 'sf plan show <id> [options]',
-  help: `Display detailed information about a plan including progress.
-
-Arguments:
-  id    Plan identifier (e.g., el-abc123)
-
-Options:
-  -t, --tasks    Include list of tasks in the plan
-
-Examples:
-  sf plan show el-abc123
-  sf plan show el-abc123 --tasks
-  sf plan show el-abc123 --json`,
+  help: t('plan.show.help'),
   options: planShowOptions,
   handler: planShowHandler as Command['handler'],
 };
@@ -396,7 +366,7 @@ async function planActivateHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf plan activate <id>\nExample: sf plan activate el-abc123', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('plan.activate.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -408,20 +378,20 @@ async function planActivateHandler(
     const plan = await api.get<Plan>(id as ElementId);
 
     if (!plan) {
-      return failure(`Plan not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('plan.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     if (plan.type !== 'plan') {
-      return failure(`Element ${id} is not a plan (type: ${plan.type})`, ExitCode.VALIDATION);
+      return failure(t('plan.error.notPlan', { id, type: plan.type }), ExitCode.VALIDATION);
     }
 
     if (plan.status === PlanStatus.ACTIVE) {
-      return success(plan, `Plan ${id} is already active`);
+      return success(plan, t('plan.activate.alreadyActive', { id }));
     }
 
     if (plan.status !== PlanStatus.DRAFT) {
       return failure(
-        `Cannot activate plan: current status is '${plan.status}'. Only draft plans can be activated.`,
+        t('plan.activate.error.wrongStatus', { status: plan.status }),
         ExitCode.VALIDATION
       );
     }
@@ -429,24 +399,18 @@ async function planActivateHandler(
     const actor = resolveActor(options);
     const updated = await api.update<Plan>(id as ElementId, { status: PlanStatus.ACTIVE }, { actor });
 
-    return success(updated, `Activated plan ${id}`);
+    return success(updated, t('plan.activate.success', { id }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to activate plan: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('plan.activate.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const planActivateCommand: Command = {
   name: 'activate',
-  description: 'Activate a draft plan',
+  description: t('plan.activate.description'),
   usage: 'sf plan activate <id>',
-  help: `Transition a plan from draft to active status.
-
-Arguments:
-  id    Plan identifier
-
-Examples:
-  sf plan activate el-abc123`,
+  help: t('plan.activate.help'),
   handler: planActivateHandler as Command['handler'],
 };
 
@@ -461,7 +425,7 @@ async function planCompleteHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf plan complete <id>\nExample: sf plan complete el-abc123', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('plan.complete.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -473,20 +437,20 @@ async function planCompleteHandler(
     const plan = await api.get<Plan>(id as ElementId);
 
     if (!plan) {
-      return failure(`Plan not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('plan.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     if (plan.type !== 'plan') {
-      return failure(`Element ${id} is not a plan (type: ${plan.type})`, ExitCode.VALIDATION);
+      return failure(t('plan.error.notPlan', { id, type: plan.type }), ExitCode.VALIDATION);
     }
 
     if (plan.status === PlanStatus.COMPLETED) {
-      return success(plan, `Plan ${id} is already completed`);
+      return success(plan, t('plan.complete.alreadyCompleted', { id }));
     }
 
     if (plan.status !== PlanStatus.ACTIVE) {
       return failure(
-        `Cannot complete plan: current status is '${plan.status}'. Only active plans can be completed.`,
+        t('plan.complete.error.wrongStatus', { status: plan.status }),
         ExitCode.VALIDATION
       );
     }
@@ -499,24 +463,18 @@ async function planCompleteHandler(
       { actor }
     );
 
-    return success(updated, `Completed plan ${id}`);
+    return success(updated, t('plan.complete.success', { id }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to complete plan: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('plan.complete.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const planCompleteCommand: Command = {
   name: 'complete',
-  description: 'Complete an active plan',
+  description: t('plan.complete.description'),
   usage: 'sf plan complete <id>',
-  help: `Transition a plan from active to completed status.
-
-Arguments:
-  id    Plan identifier
-
-Examples:
-  sf plan complete el-abc123`,
+  help: t('plan.complete.help'),
   handler: planCompleteHandler as Command['handler'],
 };
 
@@ -532,7 +490,7 @@ const planCancelOptions: CommandOption[] = [
   {
     name: 'reason',
     short: 'r',
-    description: 'Cancellation reason',
+    description: t('plan.cancel.option.reason'),
     hasValue: true,
   },
 ];
@@ -544,7 +502,7 @@ async function planCancelHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf plan cancel <id>\nExample: sf plan cancel el-abc123', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('plan.cancel.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -556,20 +514,20 @@ async function planCancelHandler(
     const plan = await api.get<Plan>(id as ElementId);
 
     if (!plan) {
-      return failure(`Plan not found: ${id}`, ExitCode.NOT_FOUND);
+      return failure(t('plan.error.notFound', { id }), ExitCode.NOT_FOUND);
     }
 
     if (plan.type !== 'plan') {
-      return failure(`Element ${id} is not a plan (type: ${plan.type})`, ExitCode.VALIDATION);
+      return failure(t('plan.error.notPlan', { id, type: plan.type }), ExitCode.VALIDATION);
     }
 
     if (plan.status === PlanStatus.CANCELLED) {
-      return success(plan, `Plan ${id} is already cancelled`);
+      return success(plan, t('plan.cancel.alreadyCancelled', { id }));
     }
 
     if (plan.status === PlanStatus.COMPLETED) {
       return failure(
-        `Cannot cancel plan: current status is '${plan.status}'. Completed plans cannot be cancelled.`,
+        t('plan.cancel.error.completedCannotCancel', { status: plan.status }),
         ExitCode.VALIDATION
       );
     }
@@ -586,28 +544,18 @@ async function planCancelHandler(
 
     const updated = await api.update<Plan>(id as ElementId, updates, { actor });
 
-    return success(updated, `Cancelled plan ${id}`);
+    return success(updated, t('plan.cancel.success', { id }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to cancel plan: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('plan.cancel.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const planCancelCommand: Command = {
   name: 'cancel',
-  description: 'Cancel a plan',
+  description: t('plan.cancel.description'),
   usage: 'sf plan cancel <id> [options]',
-  help: `Cancel a draft or active plan.
-
-Arguments:
-  id    Plan identifier
-
-Options:
-  -r, --reason <text>    Cancellation reason
-
-Examples:
-  sf plan cancel el-abc123
-  sf plan cancel el-abc123 --reason "Requirements changed"`,
+  help: t('plan.cancel.help'),
   options: planCancelOptions,
   handler: planCancelHandler as Command['handler'],
 };
@@ -623,7 +571,7 @@ async function planAddTaskHandler(
   const [planId, taskId] = args;
 
   if (!planId || !taskId) {
-    return failure('Usage: sf plan add-task <plan-id> <task-id>\nExample: sf plan add-task el-plan123 el-task456', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('plan.addTask.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -635,14 +583,14 @@ async function planAddTaskHandler(
     // Verify plan exists
     const plan = await api.get<Plan>(planId as ElementId);
     if (!plan) {
-      return failure(`Plan not found: ${planId}`, ExitCode.NOT_FOUND);
+      return failure(t('plan.error.notFound', { id: planId }), ExitCode.NOT_FOUND);
     }
     if (plan.type !== 'plan') {
-      return failure(`Element ${planId} is not a plan (type: ${plan.type})`, ExitCode.VALIDATION);
+      return failure(t('plan.error.notPlan', { id: planId, type: plan.type }), ExitCode.VALIDATION);
     }
     if (plan.status === PlanStatus.CANCELLED) {
       return failure(
-        `Cannot add task to plan with status 'cancelled'`,
+        t('plan.addTask.error.cancelledPlan'),
         ExitCode.VALIDATION
       );
     }
@@ -650,34 +598,27 @@ async function planAddTaskHandler(
     // Verify task exists
     const task = await api.get<Task>(taskId as ElementId);
     if (!task) {
-      return failure(`Task not found: ${taskId}`, ExitCode.NOT_FOUND);
+      return failure(t('plan.addTask.error.taskNotFound', { id: taskId }), ExitCode.NOT_FOUND);
     }
     if (task.type !== 'task') {
-      return failure(`Element ${taskId} is not a task (type: ${task.type})`, ExitCode.VALIDATION);
+      return failure(t('plan.addTask.error.notTask', { id: taskId, type: task.type }), ExitCode.VALIDATION);
     }
 
     const actor = resolveActor(options);
     await api.addTaskToPlan(taskId as ElementId, planId as ElementId, { actor });
 
-    return success({ planId, taskId }, `Added task ${taskId} to plan ${planId}`);
+    return success({ planId, taskId }, t('plan.addTask.success', { taskId, planId }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to add task to plan: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('plan.addTask.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const planAddTaskCommand: Command = {
   name: 'add-task',
-  description: 'Add a task to a plan',
+  description: t('plan.addTask.description'),
   usage: 'sf plan add-task <plan-id> <task-id>',
-  help: `Add an existing task to a plan.
-
-Arguments:
-  plan-id    Plan identifier
-  task-id    Task identifier to add
-
-Examples:
-  sf plan add-task el-plan123 el-task456`,
+  help: t('plan.addTask.help'),
   handler: planAddTaskHandler as Command['handler'],
 };
 
@@ -692,7 +633,7 @@ async function planRemoveTaskHandler(
   const [planId, taskId] = args;
 
   if (!planId || !taskId) {
-    return failure('Usage: sf plan remove-task <plan-id> <task-id>\nExample: sf plan remove-task el-plan123 el-task456', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('plan.removeTask.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -704,25 +645,18 @@ async function planRemoveTaskHandler(
     const actor = resolveActor(options);
     await api.removeTaskFromPlan(taskId as ElementId, planId as ElementId, actor);
 
-    return success({ planId, taskId }, `Removed task ${taskId} from plan ${planId}`);
+    return success({ planId, taskId }, t('plan.removeTask.success', { taskId, planId }));
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to remove task from plan: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('plan.removeTask.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const planRemoveTaskCommand: Command = {
   name: 'remove-task',
-  description: 'Remove a task from a plan',
+  description: t('plan.removeTask.description'),
   usage: 'sf plan remove-task <plan-id> <task-id>',
-  help: `Remove a task from a plan.
-
-Arguments:
-  plan-id    Plan identifier
-  task-id    Task identifier to remove
-
-Examples:
-  sf plan remove-task el-plan123 el-task456`,
+  help: t('plan.removeTask.help'),
   handler: planRemoveTaskHandler as Command['handler'],
 };
 
@@ -739,13 +673,13 @@ const planTasksOptions: CommandOption[] = [
   {
     name: 'status',
     short: 's',
-    description: 'Filter by task status',
+    description: t('plan.tasks.option.status'),
     hasValue: true,
   },
   {
     name: 'limit',
     short: 'l',
-    description: 'Maximum number of results',
+    description: t('label.limit'),
     hasValue: true,
   },
 ];
@@ -757,7 +691,7 @@ async function planTasksHandler(
   const [planId] = args;
 
   if (!planId) {
-    return failure('Usage: sf plan tasks <plan-id>\nExample: sf plan tasks el-abc123', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('plan.tasks.usage'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -777,7 +711,7 @@ async function planTasksHandler(
     if (options.limit) {
       limit = parseInt(options.limit, 10);
       if (isNaN(limit) || limit < 1) {
-        return failure('Limit must be a positive number', ExitCode.VALIDATION);
+        return failure(t('error.limitPositive'), ExitCode.VALIDATION);
       }
     }
 
@@ -800,10 +734,10 @@ async function planTasksHandler(
     }
 
     if (tasks.length === 0) {
-      return success(null, 'No tasks in plan');
+      return success(null, t('plan.tasks.empty'));
     }
 
-    const headers = ['ID', 'TITLE', 'STATUS', 'PRIORITY', 'ASSIGNEE'];
+    const headers = [t('label.id'), t('label.title'), t('label.status'), t('label.priority'), t('label.assignee')];
     const rows = tasks.map((t) => [
       t.id,
       t.title.length > 40 ? t.title.substring(0, 37) + '...' : t.title,
@@ -813,29 +747,18 @@ async function planTasksHandler(
     ]);
 
     const table = formatter.table(headers, rows);
-    return success(tasks, table + `\n${tasks.length} task(s)`);
+    return success(tasks, table + `\n${t('plan.tasks.summary', { count: tasks.length })}`);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to list plan tasks: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('plan.tasks.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const planTasksCommand: Command = {
   name: 'tasks',
-  description: 'List tasks in a plan',
+  description: t('plan.tasks.description'),
   usage: 'sf plan tasks <plan-id> [options]',
-  help: `List tasks belonging to a plan.
-
-Arguments:
-  plan-id    Plan identifier
-
-Options:
-  -s, --status <status>  Filter by status
-  -l, --limit <n>        Maximum results
-
-Examples:
-  sf plan tasks el-abc123
-  sf plan tasks el-abc123 --status open`,
+  help: t('plan.tasks.help'),
   options: planTasksOptions,
   handler: planTasksHandler as Command['handler'],
 };
@@ -851,7 +774,7 @@ interface PlanAutoCompleteOptions {
 const planAutoCompleteOptions: CommandOption[] = [
   {
     name: 'dry-run',
-    description: 'Show what would be auto-completed without making changes',
+    description: t('plan.autoComplete.option.dryRun'),
     hasValue: false,
   },
 ];
@@ -877,7 +800,7 @@ async function planAutoCompleteHandler(
     if (activePlans.length === 0) {
       return success(
         { checked: 0, autoCompleted: [], skipped: [], dryRun: isDryRun },
-        'No active plans found. Nothing to do.'
+        t('plan.autoComplete.noActivePlans')
       );
     }
 
@@ -920,13 +843,13 @@ async function planAutoCompleteHandler(
           const nonClosed = tasks.filter((t) => t.status !== TaskStatus.CLOSED);
           const reason =
             tasks.length === 0
-              ? 'no tasks'
-              : `${nonClosed.length} non-closed task(s)`;
+              ? t('plan.autoComplete.reason.noTasks')
+              : t('plan.autoComplete.reason.nonClosedTasks', { count: nonClosed.length });
           skipped.push({ id: plan.id, title: plan.title, reason });
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        skipped.push({ id: plan.id, title: plan.title, reason: `error: ${message}` });
+        skipped.push({ id: plan.id, title: plan.title, reason: t('plan.autoComplete.reason.error', { message }) });
       }
     }
 
@@ -937,21 +860,21 @@ async function planAutoCompleteHandler(
       return success({ checked: activePlans.length, autoCompleted, skipped, dryRun: isDryRun });
     }
 
-    const prefix = isDryRun ? '[DRY RUN] ' : '';
-    let output = `${prefix}Plan auto-complete sweep\n`;
+    const prefix = isDryRun ? t('plan.autoComplete.dryRunPrefix') : '';
+    let output = `${prefix}${t('plan.autoComplete.sweepTitle')}\n`;
     output += `${'─'.repeat(40)}\n`;
-    output += `Checked:        ${activePlans.length} active plan(s)\n`;
-    output += `Auto-completed: ${autoCompleted.length}\n`;
+    output += `${t('plan.autoComplete.checked', { count: activePlans.length })}\n`;
+    output += `${t('plan.autoComplete.autoCompletedCount', { count: autoCompleted.length })}\n`;
 
     if (autoCompleted.length > 0) {
-      output += `\n${isDryRun ? 'Would auto-complete' : 'Auto-completed'}:\n`;
+      output += `\n${isDryRun ? t('plan.autoComplete.wouldAutoComplete') : t('plan.autoComplete.autoCompletedLabel')}:\n`;
       for (const plan of autoCompleted) {
         output += `  ✓ ${plan.id}  ${plan.title}\n`;
       }
     }
 
     if (autoCompleted.length === 0) {
-      output += `\nNo plans eligible for auto-completion.`;
+      output += `\n${t('plan.autoComplete.notEligible')}`;
     }
 
     return success(
@@ -960,26 +883,15 @@ async function planAutoCompleteHandler(
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to run auto-complete sweep: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('plan.autoComplete.error.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 const planAutoCompleteCommand: Command = {
   name: 'auto-complete',
-  description: 'Auto-complete active plans where all tasks are closed',
+  description: t('plan.autoComplete.description'),
   usage: 'sf plan auto-complete [options]',
-  help: `Scan all active plans and transition those with all tasks closed to completed status.
-
-This command is idempotent and safe to run at any time. It serves as both a
-backfill tool for stuck plans and an ongoing maintenance command.
-
-Options:
-      --dry-run    Show what would be auto-completed without making changes
-
-Examples:
-  sf plan auto-complete
-  sf plan auto-complete --dry-run
-  sf plan auto-complete --json`,
+  help: t('plan.autoComplete.help'),
   options: planAutoCompleteOptions,
   handler: planAutoCompleteHandler as Command['handler'],
 };
@@ -990,29 +902,9 @@ Examples:
 
 export const planCommand: Command = {
   name: 'plan',
-  description: 'Manage plans (task collections)',
+  description: t('plan.description'),
   usage: 'sf plan <subcommand> [options]',
-  help: `Manage plans - collections of related tasks.
-
-Subcommands:
-  create        Create a new plan
-  list          List plans
-  show          Show plan details with progress
-  activate      Activate a draft plan
-  complete      Complete an active plan
-  cancel        Cancel a plan
-  add-task      Add a task to a plan
-  remove-task   Remove a task from a plan
-  tasks         List tasks in a plan
-  auto-complete Sweep active plans and auto-complete eligible ones
-
-Examples:
-  sf plan create --title "Q1 Roadmap"
-  sf plan list --status active
-  sf plan show el-abc123 --tasks
-  sf plan activate el-abc123
-  sf plan add-task el-plan123 el-task456
-  sf plan auto-complete --dry-run`,
+  help: t('plan.help'),
   subcommands: {
     create: planCreateCommand,
     list: planListCommand,
@@ -1040,11 +932,11 @@ Examples:
     // Show "did you mean?" for unknown subcommands
     const subNames = Object.keys(planCommand.subcommands!);
     const suggestions = suggestCommands(args[0], subNames);
-    let msg = `Unknown subcommand: ${args[0]}`;
+    let msg = t('error.unknownSubcommand', { subcommand: args[0] });
     if (suggestions.length > 0) {
-      msg += `\n\nDid you mean?\n${suggestions.map(s => `  ${s}`).join('\n')}`;
+      msg += `\n\n${t('error.didYouMean')}\n${suggestions.map(s => `  ${s}`).join('\n')}`;
     }
-    msg += '\n\nRun "sf plan --help" to see available subcommands.';
+    msg += '\n\n' + t('error.runHelp', { command: 'sf plan' });
     return failure(msg, ExitCode.INVALID_ARGUMENTS);
   },
 };

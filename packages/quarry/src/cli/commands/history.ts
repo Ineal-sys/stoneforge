@@ -12,6 +12,7 @@ import type { ElementId, EntityId } from '@stoneforge/core';
 import type { QuarryAPI } from '../../api/types.js';
 import type { EventFilter, EventType } from '@stoneforge/core';
 import { createAPI } from '../db.js';
+import { t } from '../i18n/index.js';
 
 // ============================================================================
 // History Command
@@ -70,7 +71,7 @@ async function historyHandler(
   const [id] = args;
 
   if (!id) {
-    return failure('Usage: sf history <id>', ExitCode.INVALID_ARGUMENTS);
+    return failure(t('history.idRequired'), ExitCode.INVALID_ARGUMENTS);
   }
 
   const { api, error } = createAPI(options);
@@ -85,7 +86,7 @@ async function historyHandler(
     if (options.limit) {
       const limit = parseInt(options.limit, 10);
       if (isNaN(limit) || limit < 1) {
-        return failure('Limit must be a positive number', ExitCode.VALIDATION);
+        return failure(t('general.limitMustBePositive'), ExitCode.VALIDATION);
       }
       filter.limit = limit;
     } else {
@@ -144,7 +145,7 @@ async function historyHandler(
 
     // Human-readable output
     if (events.length === 0) {
-      return success([], 'No events found');
+      return success([], t('history.noEvents'));
     }
 
     let output: string;
@@ -154,17 +155,17 @@ async function historyHandler(
       output = formatTimeline(events as EventData[]);
     }
 
-    const header = `History for ${id} (${events.length} events):\n\n`;
+    const header = t('history.historyFor', { id, count: events.length }) + '\n\n';
     return success(events, header + output);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    return failure(`Failed to get history: ${message}`, ExitCode.GENERAL_ERROR);
+    return failure(t('history.failed', { message }), ExitCode.GENERAL_ERROR);
   }
 }
 
 export const historyCommand: Command = {
   name: 'history',
-  description: 'Show event history for an element',
+  description: t('history.description'),
   usage: 'sf history <id> [options]',
   help: `Display the event history/timeline for an element.
 

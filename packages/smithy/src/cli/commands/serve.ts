@@ -5,6 +5,8 @@
 import { existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { t } from '../i18n/index.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -13,11 +15,11 @@ const __dirname = dirname(__filename);
  */
 export const serveSmithyCommand = {
   name: 'serve smithy',
-  description: 'Start the Stoneforge orchestrator server and dashboard',
+  description: t('serve.smithy.description'),
   usage: 'sf serve smithy [options]',
   options: [
-    { name: 'port', short: 'p', description: 'Port to listen on', hasValue: true, defaultValue: '3457' },
-    { name: 'host', short: 'H', description: 'Host to bind to', hasValue: true, defaultValue: 'localhost' },
+    { name: 'port', short: 'p', description: t('serve.smithy.option.port'), hasValue: true, defaultValue: '3457' },
+    { name: 'host', short: 'H', description: t('serve.smithy.option.host'), hasValue: true, defaultValue: 'localhost' },
   ],
   handler: async (_args: string[], options: Record<string, unknown>) => {
     try {
@@ -37,14 +39,14 @@ export const serveSmithyCommand = {
         webRoot: hasWebAssets ? webRoot : undefined,
       });
 
-      console.log(`[orchestrator] Smithy server running at http://${host}:${actualPort}`);
+      console.log(t('serve.smithy.running', { host, port: String(actualPort) }));
 
       // Keep the process alive — never resolve so main() doesn't call process.exit()
       return await new Promise<never>(() => {});
     } catch (error) {
       return {
         exitCode: 1,
-        error: `Failed to start smithy server: ${error instanceof Error ? error.message : String(error)}`,
+        error: t('serve.smithy.failed', { error: error instanceof Error ? error.message : String(error) }),
       };
     }
   },
@@ -55,7 +57,7 @@ export const serveSmithyCommand = {
  */
 export const serveCommand = {
   name: 'serve',
-  description: 'Start the Stoneforge server (aliases to serve smithy when installed)',
+  description: t('serve.description'),
   usage: 'sf serve [options]',
   options: serveSmithyCommand.options,
   handler: serveSmithyCommand.handler,
