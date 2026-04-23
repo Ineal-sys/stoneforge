@@ -25,6 +25,7 @@ import {
 import { useState, useRef, useEffect } from 'react'
 import { Tooltip } from './Tooltip'
 import { PresenceDot } from './PresenceDot'
+import { WorkspaceIconMark, isIconImage } from './WorkspaceIconMark'
 import type { WorkspaceInfo, AppMode, StoneforgeUser } from '../mock-data'
 
 interface ActivityRailProps {
@@ -197,7 +198,9 @@ export function ActivityRail({ activeView, onNavigate, theme, onToggleTheme, wor
                   onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = 'var(--color-surface-hover)'; e.currentTarget.style.color = 'var(--color-text)' } }}
                   onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'var(--color-bg)'; e.currentTarget.style.color = 'var(--color-text-secondary)' } }}
                 >
-                  {ws.icon}
+                  {isIconImage(ws.icon)
+                    ? <img src={ws.icon} alt="" draggable={false} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
+                    : ws.icon}
                   {/* Active indicator — left bar, colored by status */}
                   {isActive && (
                     <div style={{
@@ -296,12 +299,7 @@ export function ActivityRail({ activeView, onNavigate, theme, onToggleTheme, wor
                         onMouseEnter={e => e.currentTarget.style.background = 'var(--color-surface-hover)'}
                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                       >
-                        <span style={{
-                          width: 20, height: 20, borderRadius: 'var(--radius-sm)',
-                          background: 'var(--color-surface-active)', color: 'var(--color-text-secondary)',
-                          fontSize: 9, fontWeight: 700,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                        }}>{ws.icon}</span>
+                        <WorkspaceIconMark icon={ws.icon} size={20} fontSize={9} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontWeight: 500 }}>{ws.name}</div>
                           {ws.repo && <div style={{ fontSize: 10, color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-mono)' }}>{ws.repo}</div>}

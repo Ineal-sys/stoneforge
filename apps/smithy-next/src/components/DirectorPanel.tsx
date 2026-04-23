@@ -45,6 +45,7 @@ import {
 import { Tooltip } from './Tooltip'
 import { AvatarStack } from './AvatarStack'
 import { UserAvatar } from './UserAvatar'
+import { WorkspaceIconMark } from './WorkspaceIconMark'
 import { useMentionAutocomplete, MentionDropdown } from './MentionAutocomplete'
 import { useTeamContext } from '../TeamContext'
 import type { DirectorSession, DirectorMessage, WorkspaceInfo, WorkspaceThread } from '../mock-data'
@@ -1260,12 +1261,7 @@ function CrossWorkspaceThreadsView({
                     transform: isOpen ? 'none' : 'rotate(-90deg)',
                     transition: 'transform var(--duration-fast)',
                   }} />
-                  <span style={{
-                    width: 18, height: 18, borderRadius: 'var(--radius-sm)',
-                    background: 'var(--color-surface-active)', color: 'var(--color-text-secondary)',
-                    fontSize: 9, fontWeight: 700,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  }}>{ws.icon}</span>
+                  <WorkspaceIconMark icon={ws.icon} size={18} fontSize={9} />
                   <span style={{ flex: 1 }}>{ws.name}</span>
                   {runningCount > 0 && (
                     <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--color-success)', background: 'var(--color-success-subtle)', padding: '1px 6px', borderRadius: 'var(--radius-full)' }}>

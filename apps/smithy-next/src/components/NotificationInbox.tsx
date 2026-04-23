@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Bell, CheckCircle2, AlertCircle, GitPullRequest, CircleDot, MessageCircle, Settings, AtSign, UserPlus, Shield } from 'lucide-react'
 import { Tooltip } from './Tooltip'
+import { WorkspaceIconMark } from './WorkspaceIconMark'
 import { TEAM_MEMBERS } from '../mock-data'
 import type { NotificationItem, WorkspaceInfo } from '../mock-data'
 
@@ -290,15 +291,7 @@ function NotificationRow({ notification, workspace, isTeamMode = false, onClick 
           {actor.avatar}
         </span>
       ) : (
-        <span style={{
-          width: 20, height: 20, borderRadius: 'var(--radius-sm)',
-          background: 'var(--color-surface-active)', color: 'var(--color-text-secondary)',
-          fontSize: 10, fontWeight: 700,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          marginTop: 1,
-        }}>
-          {workspace?.icon || '?'}
-        </span>
+        <WorkspaceIconMark icon={workspace?.icon} size={20} fontSize={10} style={{ marginTop: 1 }} />
       )}
 
       {/* Content */}
