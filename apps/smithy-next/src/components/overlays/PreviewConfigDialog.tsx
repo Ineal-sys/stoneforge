@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
 import { X, Pencil, Trash2, Plus, ArrowLeft } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import type { PreviewEnvironment } from '../../mock-data'
 
 interface PreviewConfigDialogProps {
@@ -9,6 +10,7 @@ interface PreviewConfigDialogProps {
 }
 
 export function PreviewConfigDialog({ environments, onClose, onSave }: PreviewConfigDialogProps) {
+  const { t } = useTranslation('smithyNext')
   const [envs, setEnvs] = useState<PreviewEnvironment[]>([...environments])
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [draft, setDraft] = useState<Partial<PreviewEnvironment>>({})
@@ -83,8 +85,8 @@ export function PreviewConfigDialog({ environments, onClose, onSave }: PreviewCo
           )}
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', flex: 1 }}>
             {editingIndex !== null
-              ? (editingIndex === -1 ? 'Add Environment' : 'Edit Environment')
-              : 'Preview Environments'}
+              ? (editingIndex === -1 ? t('preview.addEnvironment') : t('preview.editEnvironment'))
+              : t('preview.previewEnvironments')}
           </span>
           <button
             onClick={onClose}
@@ -103,8 +105,7 @@ export function PreviewConfigDialog({ environments, onClose, onSave }: PreviewCo
           {editingIndex !== null ? (
             /* ── Edit form ── */
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <FormField label="Name" required>
-                <input
+              <FormField label={t('preview.name')} required>                <input
                   value={draft.name || ''}
                   onChange={e => setDraft(p => ({ ...p, name: e.target.value }))}
                   placeholder="e.g. Frontend App"
@@ -112,7 +113,7 @@ export function PreviewConfigDialog({ environments, onClose, onSave }: PreviewCo
                   style={inputStyle}
                 />
               </FormField>
-              <FormField label="URL">
+              <FormField label={t('preview.url')}>
                 <input
                   value={draft.url || ''}
                   onChange={e => setDraft(p => ({ ...p, url: e.target.value }))}
@@ -120,7 +121,7 @@ export function PreviewConfigDialog({ environments, onClose, onSave }: PreviewCo
                   style={{ ...inputStyle, fontFamily: 'var(--font-mono)' }}
                 />
               </FormField>
-              <FormField label="Port">
+              <FormField label={t('preview.port')}>
                 <input
                   type="number"
                   value={draft.port || ''}
@@ -129,7 +130,7 @@ export function PreviewConfigDialog({ environments, onClose, onSave }: PreviewCo
                   style={{ ...inputStyle, width: 100 }}
                 />
               </FormField>
-              <FormField label="Start Command">
+              <FormField label={t('preview.startCommand')}>
                 <AutoExpandTextarea
                   value={draft.startCommand || ''}
                   onChange={v => setDraft(p => ({ ...p, startCommand: v }))}
@@ -137,7 +138,7 @@ export function PreviewConfigDialog({ environments, onClose, onSave }: PreviewCo
                   maxRows={6}
                 />
               </FormField>
-              <FormField label="Branch Filter" helper="Only show for branches matching this pattern">
+              <FormField label={t('preview.branchFilter')} helper={t('preview.branchFilterHelper')}>
                 <input
                   value={draft.branchFilter || ''}
                   onChange={e => setDraft(p => ({ ...p, branchFilter: e.target.value }))}
@@ -151,7 +152,7 @@ export function PreviewConfigDialog({ environments, onClose, onSave }: PreviewCo
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {envs.length === 0 ? (
                 <div style={{ padding: '20px 0', textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 12 }}>
-                  No environments configured yet
+                  {t('preview.noEnvironmentsConfiguredYet')}
                 </div>
               ) : envs.map((env, i) => (
                 <div
@@ -173,14 +174,14 @@ export function PreviewConfigDialog({ environments, onClose, onSave }: PreviewCo
                   <button
                     onClick={() => editEnv(i)}
                     style={listBtnStyle}
-                    title="Edit"
+                    title={t('preview.edit')}
                   >
                     <Pencil size={12} strokeWidth={1.5} />
                   </button>
                   <button
                     onClick={() => deleteEnv(i)}
                     style={{ ...listBtnStyle, color: 'var(--color-danger)' }}
-                    title="Delete"
+                    title={t('preview.delete')}
                   >
                     <Trash2 size={12} strokeWidth={1.5} />
                   </button>
@@ -198,7 +199,7 @@ export function PreviewConfigDialog({ environments, onClose, onSave }: PreviewCo
                 onMouseLeave={e => (e.currentTarget.style.background = 'none')}
               >
                 <Plus size={13} strokeWidth={1.5} />
-                Add Environment
+                {t('preview.addEnvironment')}
               </button>
             </div>
           )}
@@ -211,7 +212,7 @@ export function PreviewConfigDialog({ environments, onClose, onSave }: PreviewCo
         }}>
           {editingIndex !== null ? (
             <>
-              <button onClick={() => { setEditingIndex(null); setDraft({}) }} style={secondaryBtnStyle}>Cancel</button>
+              <button onClick={() => { setEditingIndex(null); setDraft({}) }} style={secondaryBtnStyle}>{t('preview.cancel')}</button>
               <button
                 onClick={saveDraft}
                 disabled={!draft.name?.trim() || !draft.url?.trim()}
@@ -220,13 +221,13 @@ export function PreviewConfigDialog({ environments, onClose, onSave }: PreviewCo
                   opacity: (!draft.name?.trim() || !draft.url?.trim()) ? 0.5 : 1,
                 }}
               >
-                {editingIndex === -1 ? 'Add' : 'Save'}
+                {editingIndex === -1 ? t('preview.add') : t('preview.save')}
               </button>
             </>
           ) : (
             <>
-              <button onClick={onClose} style={secondaryBtnStyle}>Cancel</button>
-              <button onClick={handleSave} style={primaryBtnStyle}>Save</button>
+              <button onClick={onClose} style={secondaryBtnStyle}>{t('preview.cancel')}</button>
+              <button onClick={handleSave} style={primaryBtnStyle}>{t('preview.save')}</button>
             </>
           )}
         </div>

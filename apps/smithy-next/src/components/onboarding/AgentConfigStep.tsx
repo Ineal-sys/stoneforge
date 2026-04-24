@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, type Dispatch } from 'react'
 import { Bot, ChevronDown, Check, Plus, Minus } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import {
   AGENT_PROVIDERS, MODELS_BY_PROVIDER, EFFORT_LEVELS,
   type OnboardingState, type OnboardingAction,
@@ -13,15 +14,16 @@ interface Props {
 type DropdownId = `${number}-${'provider' | 'model' | 'effort'}`
 
 export function AgentConfigStep({ state, dispatch }: Props) {
+  const { t } = useTranslation('smithyNext')
   const [openDropdown, setOpenDropdown] = useState<DropdownId | null>(null)
 
   return (
     <div>
       <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', marginBottom: 4 }}>
-        Default Agents
+        {t('onboarding.agentConfig.title')}
       </h3>
       <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginBottom: 20 }}>
-        Configure the compute agents for your workspace. Role definitions determine what each agent does — you can assign them later.
+        {t('onboarding.agentConfig.description')}
       </p>
 
       <div style={{
@@ -37,7 +39,7 @@ export function AgentConfigStep({ state, dispatch }: Props) {
         }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ color: 'var(--color-primary)' }}><Bot size={14} /></span>
-            Agents ({state.agents.length})
+            {t('onboarding.agentConfig.agents', { count: state.agents.length })}
           </span>
           <button
             onClick={() => dispatch({ type: 'ADD_AGENT' })}
@@ -52,7 +54,7 @@ export function AgentConfigStep({ state, dispatch }: Props) {
             onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.color = 'var(--color-primary)' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-secondary)' }}
           >
-            <Plus size={11} /> Add
+            <Plus size={11} /> {t('onboarding.agentConfig.add')}
           </button>
         </div>
 
@@ -207,13 +209,14 @@ function AgentPillDropdown({ label, items, value, onChange, open, onToggle, onCl
 }
 
 function RemoveButton({ onClick }: { onClick: () => void }) {
+  const { t } = useTranslation('smithyNext')
   const [hovered, setHovered] = useState(false)
   return (
     <button
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      title="Remove agent"
+      title={t('onboarding.agentConfig.removeAgent')}
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         width: 20, height: 20, borderRadius: 'var(--radius-sm)',

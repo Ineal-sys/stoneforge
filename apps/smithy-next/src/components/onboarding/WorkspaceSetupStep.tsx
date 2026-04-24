@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, type Dispatch } from 'react'
 import { Zap, Eye, ShieldCheck, ChevronDown, Search, Check, GitBranch } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import {
   WORKFLOW_PRESETS, AGENT_PROVIDERS, MOCK_BRANCHES,
   type OnboardingState, type OnboardingAction, type WorkflowPreset, type AgentProviderType,
@@ -17,6 +18,7 @@ const PRESET_ICONS: Record<string, React.ReactNode> = {
 }
 
 export function WorkspaceSetupStep({ state, dispatch }: Props) {
+  const { t } = useTranslation('smithyNext')
   const [providerOpen, setProviderOpen] = useState(false)
   const [branchOpen, setBranchOpen] = useState(false)
   const [branchSearch, setBranchSearch] = useState('')
@@ -49,10 +51,10 @@ export function WorkspaceSetupStep({ state, dispatch }: Props) {
       {/* Section: Workflow Preset */}
       <div style={{ marginBottom: 32 }}>
         <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', marginBottom: 4 }}>
-          Workspace Preset
+          {t('onboarding.workspaceSetup.title')}
         </h3>
         <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginBottom: 16 }}>
-          Controls how agents merge code and what permissions they have
+          {t('onboarding.workspaceSetup.description')}
         </p>
 
         <div className="onboarding-cards" style={{ display: 'flex', gap: 12, alignItems: 'stretch' }}>
@@ -78,7 +80,7 @@ export function WorkspaceSetupStep({ state, dispatch }: Props) {
         {/* Agent Provider */}
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
-            Agent Provider
+            {t('onboarding.workspaceSetup.agentProvider')}
           </label>
           <div ref={providerRef} style={{ position: 'relative' }}>
             <button
@@ -122,7 +124,7 @@ export function WorkspaceSetupStep({ state, dispatch }: Props) {
         {/* Default Branch */}
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
-            Default Branch
+            {t('onboarding.workspaceSetup.defaultBranch')}
           </label>
           <div ref={branchRef} style={{ position: 'relative' }}>
             <button
@@ -157,7 +159,7 @@ export function WorkspaceSetupStep({ state, dispatch }: Props) {
                       ref={branchInputRef}
                       value={branchSearch}
                       onChange={e => setBranchSearch(e.target.value)}
-                      placeholder="Search branches..."
+                      placeholder={t('onboarding.workspaceSetup.searchBranches')}
                       style={{
                         border: 'none', background: 'none', outline: 'none', width: '100%',
                         color: 'var(--color-text)', fontSize: 12,
@@ -180,7 +182,7 @@ export function WorkspaceSetupStep({ state, dispatch }: Props) {
                   ))}
                   {filteredBranches.length === 0 && (
                     <div style={{ padding: '12px 16px', fontSize: 12, color: 'var(--color-text-tertiary)' }}>
-                      No matching branches
+                      {t('onboarding.workspaceSetup.noMatchingBranches')}
                     </div>
                   )}
                 </div>
@@ -198,6 +200,7 @@ export function WorkspaceSetupStep({ state, dispatch }: Props) {
 function PresetCard({ icon, name, description, selected, recommended, onClick }: {
   icon: React.ReactNode; name: string; description: string; selected: boolean; recommended?: boolean; onClick: () => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -210,7 +213,7 @@ function PresetCard({ icon, name, description, selected, recommended, onClick }:
           padding: '2px 10px', borderRadius: 'var(--radius-full)',
           whiteSpace: 'nowrap',
         }}>
-          Recommended
+          {t('onboarding.workspaceSetup.recommended')}
         </div>
       )}
       <button
@@ -232,7 +235,7 @@ function PresetCard({ icon, name, description, selected, recommended, onClick }:
               fontSize: 11, fontWeight: 500, color: 'var(--color-success)',
               background: 'color-mix(in srgb, var(--color-success) 12%, transparent)',
               padding: '1px 8px', borderRadius: 'var(--radius-full)',
-            }}>current</span>
+            }}>{t('onboarding.workspaceSetup.current')}</span>
           )}
         </div>
         <p style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--color-text-secondary)', margin: 0 }}>

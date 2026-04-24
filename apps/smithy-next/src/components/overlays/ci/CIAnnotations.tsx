@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { XCircle, AlertTriangle, Info, ChevronDown, ChevronRight } from 'lucide-react'
 import type { CIAnnotation } from './ci-types'
+import { useTranslation } from '@/i18n'
 
 interface CIAnnotationsProps {
   annotations: CIAnnotation[]
 }
 
 export function CIAnnotations({ annotations }: CIAnnotationsProps) {
+  const { t } = useTranslation('smithyNext')
   const [expanded, setExpanded] = useState(true)
 
   if (annotations.length === 0) return null
@@ -16,9 +18,9 @@ export function CIAnnotations({ annotations }: CIAnnotationsProps) {
   const notices = annotations.filter(a => a.level === 'notice')
 
   const parts: string[] = []
-  if (errors.length) parts.push(`${errors.length} error${errors.length > 1 ? 's' : ''}`)
-  if (warnings.length) parts.push(`${warnings.length} warning${warnings.length > 1 ? 's' : ''}`)
-  if (notices.length) parts.push(`${notices.length} notice${notices.length > 1 ? 's' : ''}`)
+  if (errors.length) parts.push(t('ci.annotationErrors', { count: errors.length }))
+  if (warnings.length) parts.push(t('ci.annotationWarnings', { count: warnings.length }))
+  if (notices.length) parts.push(t('ci.annotationNotices', { count: notices.length }))
 
   return (
     <div style={{ borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', overflow: 'hidden' }}>

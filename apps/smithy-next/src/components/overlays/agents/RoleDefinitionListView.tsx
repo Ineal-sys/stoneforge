@@ -1,4 +1,5 @@
 import { useState, useRef, useMemo } from 'react'
+import { useTranslation } from '@/i18n'
 import { Search, X, Filter, ChevronRight, Plus, SlidersHorizontal } from 'lucide-react'
 import type { RoleDefinition, RoleDefinitionCategory } from './agent-types'
 
@@ -22,6 +23,7 @@ function getCategoryBadge(category?: RoleDefinitionCategory) {
 type CategoryFilterValue = 'all' | 'orchestrator' | 'executor' | 'reviewer' | 'custom'
 
 export function RoleDefinitionListView({ roleDefinitions, onSelectRoleDefinition, onCreateRoleDefinition }: RoleDefinitionListViewProps) {
+  const { t } = useTranslation('smithyNext')
   const [searchQuery, setSearchQuery] = useState('')
   const [searchExpanded, setSearchExpanded] = useState(false)
   const [filterOpen, setFilterOpen] = useState(false)
@@ -56,18 +58,18 @@ export function RoleDefinitionListView({ roleDefinitions, onSelectRoleDefinition
   }, [roleDefinitions, searchQuery, categoryFilter])
 
   const categoryOptions: { value: CategoryFilterValue; label: string }[] = [
-    { value: 'all', label: 'All' },
-    { value: 'orchestrator', label: 'Orchestrator' },
-    { value: 'executor', label: 'Executor' },
-    { value: 'reviewer', label: 'Reviewer' },
-    { value: 'custom', label: 'Custom' },
+    { value: 'all', label: t('agents.roleList.all') },
+    { value: 'orchestrator', label: t('agents.roleList.orchestrator') },
+    { value: 'executor', label: t('agents.roleList.executor') },
+    { value: 'reviewer', label: t('agents.roleList.reviewer') },
+    { value: 'custom', label: t('agents.roleList.custom') },
   ]
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Toolbar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', flexShrink: 0, borderBottom: '1px solid var(--color-border-subtle)' }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>Role Definitions</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{t('agents.roleList.roleDefinitions')}</span>
 
         <div style={{ flex: 1 }} />
 
@@ -76,7 +78,7 @@ export function RoleDefinitionListView({ roleDefinitions, onSelectRoleDefinition
           <div className="rd-search-desktop" style={{ display: 'flex' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: 200, height: 26, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '0 8px' }}>
               <Search size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
-              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search roles..." style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
+              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t('agents.roleList.searchRoles')} style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
               {searchQuery && <button onClick={() => setSearchQuery('')} style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', padding: 0, display: 'flex' }}><X size={11} strokeWidth={2} /></button>}
             </div>
           </div>
@@ -84,7 +86,7 @@ export function RoleDefinitionListView({ roleDefinitions, onSelectRoleDefinition
             {searchExpanded ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: 180, height: 26, background: 'var(--color-surface)', border: '1px solid var(--color-border-focus)', borderRadius: 'var(--radius-sm)', padding: '0 8px' }}>
                 <Search size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
-                <input ref={searchInputRef} autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search..." onBlur={() => { if (!searchQuery) setSearchExpanded(false) }} style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
+                <input ref={searchInputRef} autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t('agents.roleList.search')} onBlur={() => { if (!searchQuery) setSearchExpanded(false) }} style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
                 <button onClick={() => { setSearchQuery(''); setSearchExpanded(false) }} style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', padding: 0, display: 'flex' }}><X size={11} strokeWidth={2} /></button>
               </div>
             ) : (
@@ -101,7 +103,7 @@ export function RoleDefinitionListView({ roleDefinitions, onSelectRoleDefinition
           background: categoryFilter !== 'all' ? 'var(--color-primary-subtle)' : 'var(--color-surface)',
           color: categoryFilter !== 'all' ? 'var(--color-text-accent)' : 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11, fontWeight: 500,
         }}>
-          <Filter size={12} strokeWidth={1.5} /> Filter
+          <Filter size={12} strokeWidth={1.5} /> {t('agents.roleList.filter')}
         </button>
 
         {/* Display button */}
@@ -110,7 +112,7 @@ export function RoleDefinitionListView({ roleDefinitions, onSelectRoleDefinition
           background: displayOpen ? 'var(--color-surface-active)' : 'var(--color-surface)',
           color: displayOpen ? 'var(--color-text)' : 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11, fontWeight: 500,
         }}>
-          <SlidersHorizontal size={12} strokeWidth={1.5} /> Display
+          <SlidersHorizontal size={12} strokeWidth={1.5} /> {t('agents.roleList.display')}
         </button>
 
         {/* New Role Definition */}
@@ -119,7 +121,7 @@ export function RoleDefinitionListView({ roleDefinitions, onSelectRoleDefinition
           background: 'var(--color-primary)', border: 'none', borderRadius: 'var(--radius-sm)',
           color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
         }}>
-          <Plus size={12} strokeWidth={1.5} /> New Role Definition
+          <Plus size={12} strokeWidth={1.5} /> {t('agents.roleList.newRoleDefinition')}
         </button>
       </div>
 
@@ -144,7 +146,7 @@ export function RoleDefinitionListView({ roleDefinitions, onSelectRoleDefinition
       <div style={{ flex: 1, overflow: 'auto' }}>
         {filtered.length === 0 && (
           <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 13 }}>
-            No role definitions found
+            {t('agents.roleList.noRoleDefinitionsFound')}
           </div>
         )}
         {filtered.map(rd => (
@@ -164,6 +166,7 @@ export function RoleDefinitionListView({ roleDefinitions, onSelectRoleDefinition
 }
 
 function RoleDefinitionRow({ roleDefinition, onClick }: { roleDefinition: RoleDefinition; onClick: () => void }) {
+  const { t } = useTranslation('smithyNext')
   const [hovered, setHovered] = useState(false)
   const badge = getCategoryBadge(roleDefinition.category)
 
@@ -212,7 +215,7 @@ function RoleDefinitionRow({ roleDefinition, onClick }: { roleDefinition: RoleDe
           fontSize: 10, fontWeight: 500, padding: '2px 8px', borderRadius: 'var(--radius-full)',
           background: 'var(--color-surface)', color: 'var(--color-text-tertiary)', flexShrink: 0,
         }}>
-          Built-in
+          {t('agents.roleList.builtIn')}
         </span>
       )}
 

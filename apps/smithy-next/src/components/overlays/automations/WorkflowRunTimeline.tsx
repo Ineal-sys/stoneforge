@@ -1,6 +1,7 @@
 import { Bot, Terminal } from 'lucide-react'
 import type { WFStepRun } from './wf-types'
 import { Tooltip } from '../../Tooltip'
+import { useTranslation } from '@/i18n'
 
 interface WorkflowRunTimelineProps {
   steps: WFStepRun[]
@@ -31,6 +32,7 @@ const BAR_H = 20
 const BAR_GAP = 4
 
 export function WorkflowRunTimeline({ steps, totalDuration }: WorkflowRunTimelineProps) {
+  const { t } = useTranslation('smithyNext')
   const totalSec = parseDuration(totalDuration) || 1
 
   // Build bar data with start/end percentages
@@ -55,7 +57,7 @@ export function WorkflowRunTimeline({ steps, totalDuration }: WorkflowRunTimelin
     const secs = s % 60
     markers.push({
       pct,
-      label: i === 0 ? 'Start' : i === markerCount ? 'End' : mins > 0 ? `${mins}m${secs > 0 ? ` ${secs}s` : ''}` : `${secs}s`,
+      label: i === 0 ? t('automations.start') : i === markerCount ? t('automations.end') : mins > 0 ? `${mins}m${secs > 0 ? ` ${secs}s` : ''}` : `${secs}s`,
     })
   }
 

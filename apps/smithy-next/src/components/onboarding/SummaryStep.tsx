@@ -1,4 +1,5 @@
 import { Zap, Eye, ShieldCheck, Bot, Check } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import {
   WORKFLOW_PRESETS, AGENT_PROVIDERS, MODELS_BY_PROVIDER, EFFORT_LEVELS,
   type OnboardingState,
@@ -33,53 +34,54 @@ const MODE_LABELS: Record<string, string> = {
 }
 
 export function SummaryStep({ state }: Props) {
+  const { t } = useTranslation('smithyNext')
   const preset = WORKFLOW_PRESETS.find(p => p.id === state.workflowPreset)
   const providerName = AGENT_PROVIDERS.find(p => p.id === state.agentProvider)?.name || ''
 
   return (
     <div>
       <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', marginBottom: 4 }}>
-        Review Configuration
+        {t('onboarding.summary.title')}
       </h3>
       <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginBottom: 24 }}>
-        Review your workspace settings before launching. You can change these later in Settings.
+        {t('onboarding.summary.description')}
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* Workspace */}
-        <SummarySection title="Workspace">
-          <SummaryRow label="Workspace Preset" value={
+        <SummarySection title={t('onboarding.summary.workspace')}>
+          <SummaryRow label={t('onboarding.summary.workspacePreset')} value={
             <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ color: 'var(--color-primary)' }}>{PRESET_ICONS[state.workflowPreset]}</span>
               {preset?.name}
             </span>
           } />
-          <SummaryRow label="Agent Provider" value={providerName} />
-          <SummaryRow label="Default Branch" value={
+          <SummaryRow label={t('onboarding.summary.agentProvider')} value={providerName} />
+          <SummaryRow label={t('onboarding.summary.defaultBranch')} value={
             <code style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>{state.defaultBranch}</code>
           } />
         </SummarySection>
 
         {/* Runtime */}
-        <SummarySection title="Runtime">
-          <SummaryRow label="Mode" value={MODE_LABELS[state.runtimeMode] || state.runtimeMode} />
+        <SummarySection title={t('onboarding.summary.runtime')}>
+          <SummaryRow label={t('onboarding.summary.mode')} value={MODE_LABELS[state.runtimeMode] || state.runtimeMode} />
           {state.runtimeMode === 'worktrees' && (
-            <SummaryRow label="Worktree Path" value={
+            <SummaryRow label={t('onboarding.summary.worktreePath')} value={
               <code style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>{state.worktreePath}</code>
             } />
           )}
           {state.runtimeMode === 'docker' && (
-            <SummaryRow label="Docker Image" value={
+            <SummaryRow label={t('onboarding.summary.dockerImage')} value={
               <code style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>{state.dockerImage}</code>
             } />
           )}
           {state.runtimeMode === 'sandbox' && (
-            <SummaryRow label="Sandbox" value="Cloud sandbox (auto-provisioned)" />
+            <SummaryRow label="Sandbox" value={t('onboarding.summary.cloudSandboxAuto')} />
           )}
         </SummarySection>
 
         {/* Agents */}
-        <SummarySection title="Agents">
+        <SummarySection title={t('onboarding.summary.agents')}>
           {state.agents.map((agent, i) => {
             const models = MODELS_BY_PROVIDER[agent.provider]
             const modelName = models.find(m => m.id === agent.model)?.name || agent.model
@@ -107,17 +109,17 @@ export function SummaryStep({ state }: Props) {
         </SummarySection>
 
         {/* Integrations */}
-        <SummarySection title="Integrations">
-          <SummaryRow label="Issue Sync" value={SYNC_LABELS[state.issueSync]}
+        <SummarySection title={t('onboarding.summary.integrations')}>
+          <SummaryRow label={t('onboarding.summary.issueSync')} value={SYNC_LABELS[state.issueSync]}
             check={state.issueSync !== 'none'} />
-          <SummaryRow label="MR Sync" value={SYNC_LABELS[state.mrSync]}
+          <SummaryRow label={t('onboarding.summary.mrSync')} value={SYNC_LABELS[state.mrSync]}
             check={state.mrSync !== 'none'} />
-          <SummaryRow label="Doc Sync" value={
+          <SummaryRow label={t('onboarding.summary.docSync')} value={
             state.docSync === 'repo-folder' || state.docSync === 'obsidian'
               ? <span>{SYNC_LABELS[state.docSync]} <code style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text-tertiary)' }}>({state.docPath})</code></span>
               : SYNC_LABELS[state.docSync]
           } check={state.docSync !== 'none'} />
-          <SummaryRow label="Notifications" value={SYNC_LABELS[state.notificationEndpoint]}
+          <SummaryRow label={t('onboarding.summary.notifications')} value={SYNC_LABELS[state.notificationEndpoint]}
             check={state.notificationEndpoint !== 'none'} />
         </SummarySection>
       </div>

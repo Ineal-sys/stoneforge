@@ -1,5 +1,6 @@
 import { X, ExternalLink, Clock } from 'lucide-react'
 import type { SessionAgent, Session } from './session-types'
+import { useTranslation } from '@/i18n'
 
 interface SessionAgentDetailProps {
   agent: SessionAgent
@@ -16,6 +17,7 @@ const statusColors: Record<string, string> = {
 }
 
 export function SessionAgentDetail({ agent, allSessions, onClose, onNavigateToAgent, onNavigateToSession }: SessionAgentDetailProps) {
+  const { t } = useTranslation('smithyNext')
   // Get recent sessions for this agent from the full sessions list
   const agentSessions = allSessions.filter(s => s.agent.id === agent.id).slice(0, 5)
 
@@ -71,8 +73,8 @@ export function SessionAgentDetail({ agent, allSessions, onClose, onNavigateToAg
 
         {/* Model info */}
         <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', display: 'flex', gap: 12 }}>
-          <span>Model <strong style={{ fontWeight: 500 }}>{agent.model}</strong></span>
-          <span>Provider <strong style={{ fontWeight: 500 }}>{agent.provider}</strong></span>
+          <span>{t('sessions.model')} <strong style={{ fontWeight: 500 }}>{agent.model}</strong></span>
+          <span>{t('sessions.provider')} <strong style={{ fontWeight: 500 }}>{agent.provider}</strong></span>
         </div>
 
         {/* View agent details link */}
@@ -85,7 +87,7 @@ export function SessionAgentDetail({ agent, allSessions, onClose, onNavigateToAg
               display: 'flex', alignItems: 'center', gap: 4, padding: 0,
             }}
           >
-            View agent details <ExternalLink size={11} />
+            {t('sessions.viewAgentDetails')} <ExternalLink size={11} />
           </button>
         )}
       </div>
@@ -95,7 +97,7 @@ export function SessionAgentDetail({ agent, allSessions, onClose, onNavigateToAg
         {/* Role prompt */}
         <section>
           <h4 style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', margin: '0 0 8px' }}>
-            Role prompt
+            {t('sessions.rolePrompt')}
           </h4>
           <pre style={{
             background: 'var(--color-surface)',
@@ -119,7 +121,7 @@ export function SessionAgentDetail({ agent, allSessions, onClose, onNavigateToAg
         {/* Recent sessions */}
         <section>
           <h4 style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', margin: '0 0 8px' }}>
-            Recent sessions
+            {t('sessions.recentSessions')}
             <span style={{
               fontSize: 11, fontWeight: 400, marginLeft: 6,
               color: 'var(--color-text-tertiary)',
@@ -128,7 +130,7 @@ export function SessionAgentDetail({ agent, allSessions, onClose, onNavigateToAg
             </span>
           </h4>
           {agentSessions.length === 0 ? (
-            <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>No sessions</span>
+            <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>{t('sessions.noSessions')}</span>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {agentSessions.map(s => (

@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useRef } from 'react'
 import { Search, ChevronDown, X } from 'lucide-react'
 import type { Session, SessionEventType } from './session-types'
+import { useTranslation } from '@/i18n'
 import { SessionDetailHeader } from './SessionDetailHeader'
 import { SessionTimeline } from './SessionTimeline'
 import { SessionEventList } from './SessionEventList'
@@ -28,12 +29,12 @@ interface SessionDetailViewProps {
 
 type ViewMode = 'chat' | 'transcript'
 
-const eventTypeOptions: { value: SessionEventType | 'all'; label: string }[] = [
-  { value: 'all', label: 'All events' },
-  { value: 'user_message', label: 'User messages' },
-  { value: 'agent_message', label: 'Agent messages' },
-  { value: 'tool_call', label: 'Tool calls' },
-  { value: 'system_message', label: 'System messages' },
+const eventTypeOptions: { value: SessionEventType | 'all'; labelKey: string }[] = [
+  { value: 'all', labelKey: 'sessions.allEvents' },
+  { value: 'user_message', labelKey: 'sessions.userMessages' },
+  { value: 'agent_message', labelKey: 'sessions.agentMessages' },
+  { value: 'tool_call', labelKey: 'sessions.toolCalls' },
+  { value: 'system_message', labelKey: 'sessions.systemMessages' },
 ]
 
 export function SessionDetailView({
@@ -42,6 +43,7 @@ export function SessionDetailView({
   compact,
 }: SessionDetailViewProps) {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(initialEventId ?? null)
+  const { t } = useTranslation('smithyNext')
   const [rightPanel, setRightPanel] = useState<'event' | 'agent' | null>(initialEventId ? 'event' : null)
   const [panelWidth, setPanelWidth] = useState(380)
   const [eventTypeFilter, setEventTypeFilter] = useState<SessionEventType | 'all'>('all')
@@ -167,7 +169,7 @@ export function SessionDetailView({
             transition: 'all var(--duration-fast)',
           }}
         >
-          Transcript
+          {t('sessions.transcript')}
         </button>
         <button
           onClick={() => setViewMode('chat')}
@@ -179,7 +181,7 @@ export function SessionDetailView({
             transition: 'all var(--duration-fast)',
           }}
         >
-          Chat
+          {t('sessions.chat')}
         </button>
 
         {/* Event type filter (transcript mode only) */}
@@ -198,7 +200,7 @@ export function SessionDetailView({
                 cursor: 'pointer',
               }}
             >
-              {eventTypeOptions.find(o => o.value === eventTypeFilter)?.label}
+              {t(eventTypeOptions.find(o => o.value === eventTypeFilter)?.labelKey ?? '')}
               <ChevronDown size={12} />
             </button>
             {filterOpen && (
@@ -227,7 +229,7 @@ export function SessionDetailView({
                       if (eventTypeFilter !== opt.value) e.currentTarget.style.background = 'none'
                     }}
                   >
-                    {opt.label}
+                    {t(opt.labelKey)}
                   </button>
                 ))}
               </div>
@@ -244,7 +246,7 @@ export function SessionDetailView({
               autoFocus
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search events..."
+              placeholder={t('sessions.searchEvents')}
               style={{
                 width: 200,
                 padding: '4px 8px',

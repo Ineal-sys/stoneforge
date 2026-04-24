@@ -3,6 +3,7 @@ import { Bot, Terminal, ChevronDown, ChevronRight, RotateCcw, Clock, Trash2, Gri
 import type { WFStep, WFAgentStep, WFScriptStep, WFScriptRuntime } from './wf-types'
 import { mockAgentsExtended, mockRoleDefinitions } from '../agents/agent-mock-data'
 import { Tooltip } from '../../Tooltip'
+import { useTranslation } from '@/i18n'
 
 interface WorkflowStepCardProps {
   step: WFStep
@@ -13,11 +14,12 @@ interface WorkflowStepCardProps {
   focused?: boolean
 }
 
-const runtimeLabels: Record<WFScriptRuntime, string> = {
-  shell: 'Shell', python: 'Python', nodejs: 'Node.js', typescript: 'TypeScript',
+const runtimeLabelKeys: Record<WFScriptRuntime, string> = {
+  shell: 'automations.shell', python: 'automations.python', nodejs: 'automations.nodejs', typescript: 'automations.typescript',
 }
 
 export function WorkflowStepCard({ step, index, mode, onChange, onDelete, focused }: WorkflowStepCardProps) {
+  const { t } = useTranslation('smithyNext')
   const [expanded, setExpanded] = useState(mode === 'edit' || !!focused)
   const cardRef = useRef<HTMLDivElement>(null)
 
@@ -74,7 +76,7 @@ export function WorkflowStepCard({ step, index, mode, onChange, onDelete, focuse
               flex: 1, border: 'none', background: 'transparent', outline: 'none',
               fontSize: 13, fontWeight: 500, color: 'var(--color-text)', fontFamily: 'inherit',
             }}
-            placeholder="Step name"
+            placeholder={t('automations.stepName')}
           />
         ) : (
           <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: 'var(--color-text)' }}>{step.name}</span>
@@ -86,7 +88,7 @@ export function WorkflowStepCard({ step, index, mode, onChange, onDelete, focuse
           color: isAgent ? 'var(--color-text-accent)' : 'var(--color-text-tertiary)',
           fontWeight: 500, textTransform: 'uppercase', flexShrink: 0,
         }}>
-          {isAgent ? 'Agent' : 'Script'}
+          {isAgent ? t('automations.agent') : t('automations.script')}
         </span>
 
         {mode === 'view' && (
@@ -123,12 +125,12 @@ export function WorkflowStepCard({ step, index, mode, onChange, onDelete, focuse
             <div style={{ display: 'flex', gap: 12, marginTop: 8, fontSize: 11, color: 'var(--color-text-tertiary)' }}>
               {step.retryCount > 0 && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                  <RotateCcw size={10} strokeWidth={1.5} /> Retry {step.retryCount}x ({step.retryDelaySeconds}s delay)
+                  <RotateCcw size={10} strokeWidth={1.5} /> {t('automations.retryInfo', { count: step.retryCount, delay: step.retryDelaySeconds })}
                 </span>
               )}
               {step.timeoutSeconds > 0 && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                  <Clock size={10} strokeWidth={1.5} /> Timeout {step.timeoutSeconds}s
+                  <Clock size={10} strokeWidth={1.5} /> {t('automations.timeoutInfo', { seconds: step.timeoutSeconds })}
                 </span>
               )}
             </div>
@@ -142,21 +144,21 @@ export function WorkflowStepCard({ step, index, mode, onChange, onDelete, focuse
                 color: 'var(--color-text-tertiary)', fontSize: 11, cursor: 'pointer', padding: 0,
               }}>
                 {advancedOpen ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
-                Advanced
+                {t('automations.advanced')}
               </button>
               {advancedOpen && (
                 <div style={{ display: 'flex', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
-                  <FieldGroup label="Retries">
+                  <FieldGroup label={t('automations.retries')}>
                     <input type="number" min={0} max={5} value={step.retryCount}
                       onChange={e => onChange?.({ ...step, retryCount: Number(e.target.value) } as WFStep)}
                       style={inputStyle} />
                   </FieldGroup>
-                  <FieldGroup label="Retry delay (s)">
+                  <FieldGroup label={t('automations.retryDelayS')}>
                     <input type="number" min={0} value={step.retryDelaySeconds}
                       onChange={e => onChange?.({ ...step, retryDelaySeconds: Number(e.target.value) } as WFStep)}
                       style={inputStyle} />
                   </FieldGroup>
-                  <FieldGroup label="Timeout (s)">
+                  <FieldGroup label={t('automations.timeoutS')}>
                     <input type="number" min={0} value={step.timeoutSeconds}
                       onChange={e => onChange?.({ ...step, timeoutSeconds: Number(e.target.value) } as WFStep)}
                       style={inputStyle} />
@@ -172,6 +174,7 @@ export function WorkflowStepCard({ step, index, mode, onChange, onDelete, focuse
 }
 
 function AgentStepContent({ step, mode, onChange }: { step: WFAgentStep; mode: 'view' | 'edit'; onChange?: (s: WFStep) => void }) {
+  const { t } = useTranslation('smithyNext')
   const [rdPickerOpen, setRdPickerOpen] = useState(false)
   const [pickerPos, setPickerPos] = useState<{ top: number; left: number; width: number } | null>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -189,7 +192,7 @@ function AgentStepContent({ step, mode, onChange }: { step: WFAgentStep; mode: '
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Role Definition:</span>
+          <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('automations.roleDefinition')}</span>
           {selectedRd ? (
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '2px 8px',
@@ -200,7 +203,7 @@ function AgentStepContent({ step, mode, onChange }: { step: WFAgentStep; mode: '
               {selectedRd.category && <span style={{ fontSize: 9, color: 'var(--color-text-tertiary)' }}>{selectedRd.category}</span>}
             </span>
           ) : (
-            <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>None selected</span>
+            <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>{t('automations.noneSelected')}</span>
           )}
           {tags.length > 0 && (
             <Tooltip label={`Required agent tags: ${tags.join(', ')}`}>
@@ -222,14 +225,14 @@ function AgentStepContent({ step, mode, onChange }: { step: WFAgentStep; mode: '
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <FieldGroup label="Role Definition">
+      <FieldGroup label={t('automations.roleDefinition').replace(' :', '')}>
         <div style={{ position: 'relative' }}>
           <button ref={triggerRef} onClick={() => rdPickerOpen ? setRdPickerOpen(false) : openPicker()} style={{
             ...inputStyle, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             cursor: 'pointer', textAlign: 'left',
           }}>
             <span style={{ color: selectedRd ? 'var(--color-text)' : 'var(--color-text-tertiary)' }}>
-              {selectedRd ? selectedRd.name : 'Select role definition...'}
+              {selectedRd ? selectedRd.name : t('automations.selectRoleDefinition')}
             </span>
             <ChevronDown size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />
           </button>
@@ -256,7 +259,7 @@ function AgentStepContent({ step, mode, onChange }: { step: WFAgentStep; mode: '
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 12, color: 'var(--color-text)', fontWeight: selected ? 500 : 400 }}>
                           {rd.name}
-                          {rd.builtIn && <span style={{ fontSize: 9, color: 'var(--color-text-tertiary)', marginLeft: 4 }}>built-in</span>}
+                          {rd.builtIn && <span style={{ fontSize: 9, color: 'var(--color-text-tertiary)', marginLeft: 4 }}>{t('automations.builtIn')}</span>}
                         </div>
                         {rd.description && <div style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>{rd.description}</div>}
                       </div>
@@ -273,12 +276,12 @@ function AgentStepContent({ step, mode, onChange }: { step: WFAgentStep; mode: '
           )}
         </div>
       </FieldGroup>
-      <FieldGroup label="Required Agent Tags (optional)">
+      <FieldGroup label={t('automations.requiredAgentTags')}>
         <input value={tags.join(', ')} onChange={e => onChange?.({ ...step, requiredAgentTags: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
-          style={inputStyle} placeholder="e.g. fast, local, gpu" />
+          style={inputStyle} placeholder={t('automations.tagsPlaceholder')} />
         {tags.length > 0 && !hasMatchingAgent && (
           <div style={{ fontSize: 11, color: 'var(--color-danger)', marginTop: 4 }}>
-            ⚠ No enabled agent matches these tags
+            {t('automations.noMatchingAgentWarning')}
           </div>
         )}
       </FieldGroup>
@@ -287,16 +290,17 @@ function AgentStepContent({ step, mode, onChange }: { step: WFAgentStep; mode: '
 }
 
 function ScriptStepContent({ step, mode, onChange }: { step: WFScriptStep; mode: 'view' | 'edit'; onChange?: (s: WFStep) => void }) {
+  const { t } = useTranslation('smithyNext')
   if (mode === 'view') {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Runtime:</span>
+          <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('automations.runtime')}</span>
           <span style={{
             fontSize: 10, padding: '2px 6px', borderRadius: 'var(--radius-sm)',
             background: 'var(--color-surface)', color: 'var(--color-text-secondary)', fontWeight: 500,
           }}>
-            {runtimeLabels[step.runtime]}
+            {t(runtimeLabelKeys[step.runtime])}
           </span>
         </div>
         <div style={{
@@ -313,21 +317,21 @@ function ScriptStepContent({ step, mode, onChange }: { step: WFScriptStep; mode:
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <FieldGroup label="Runtime">
+      <FieldGroup label={t('automations.runtime').replace(' :', '')}>
         <select value={step.runtime} onChange={e => onChange?.({ ...step, runtime: e.target.value as WFScriptRuntime })}
           style={{ ...inputStyle, width: 160 }}>
-          <option value="shell">Shell</option>
-          <option value="nodejs">Node.js</option>
-          <option value="python">Python</option>
-          <option value="typescript">TypeScript</option>
+          <option value="shell">{t('automations.shell')}</option>
+          <option value="nodejs">{t('automations.nodejs')}</option>
+          <option value="python">{t('automations.python')}</option>
+          <option value="typescript">{t('automations.typescript')}</option>
         </select>
       </FieldGroup>
-      <FieldGroup label="Code">
+      <FieldGroup label={t('automations.code')}>
         <textarea value={step.code} onChange={e => onChange?.({ ...step, code: e.target.value })}
           rows={4} style={{ ...textareaStyle, fontFamily: 'var(--font-mono)', tabSize: 2 }}
           onInput={e => autoResize(e.currentTarget, 12)}
           ref={el => { if (el && step.code) autoResize(el, 12) }}
-          placeholder="Enter the script code..." />
+          placeholder={t('automations.enterScriptCode')} />
       </FieldGroup>
     </div>
   )

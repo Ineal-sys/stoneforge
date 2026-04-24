@@ -1,5 +1,6 @@
 import { Bot, FileCode, GitPullRequest, ChevronRight, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from '@/i18n'
 import type { AgentSession } from './editor-mock-data'
 
 interface Props {
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export function EditorAgentChangesPanel({ sessions, onOpenFile }: Props) {
+  const { t } = useTranslation('smithyNext')
   const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set([sessions[0]?.sessionId]))
 
   const toggleSession = (id: string) => {
@@ -28,7 +30,7 @@ export function EditorAgentChangesPanel({ sessions, onOpenFile }: Props) {
         textTransform: 'uppercase',
         letterSpacing: '0.05em',
       }}>
-        Agent Changes
+        {t('editor.agentChanges')}
       </div>
 
       <div style={{ flex: 1, overflow: 'auto', padding: '0 0 8px' }}>
@@ -82,7 +84,7 @@ export function EditorAgentChangesPanel({ sessions, onOpenFile }: Props) {
                   fontSize: 11,
                 }}>
                   <span style={{ color: 'var(--color-text-tertiary)' }}>
-                    {session.filesChanged.length} file{session.filesChanged.length !== 1 ? 's' : ''}
+                    {session.filesChanged.length === 1 ? t('editor.fileCount', { count: session.filesChanged.length }) : t('editor.fileCountPlural', { count: session.filesChanged.length })}
                   </span>
                   <span style={{ color: 'var(--color-success)' }}>+{totalAdded}</span>
                   {totalDeleted > 0 && <span style={{ color: 'var(--color-danger)' }}>-{totalDeleted}</span>}
@@ -143,7 +145,7 @@ export function EditorAgentChangesPanel({ sessions, onOpenFile }: Props) {
             color: 'var(--color-text-tertiary)',
           }}>
             <Bot size={28} strokeWidth={1} />
-            <span style={{ fontSize: 12 }}>No agent changes</span>
+            <span style={{ fontSize: 12 }}>{t('editor.noAgentChanges')}</span>
           </div>
         )}
       </div>

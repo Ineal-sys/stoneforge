@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { Search, SlidersHorizontal, Filter, X, ChevronRight, FileText, FileCode, FileType, Link2, Plus, Check } from 'lucide-react'
 import type { Document, Library, DocSortField } from './doc-types'
+import { useTranslation } from '@/i18n'
 
 interface DocListViewProps {
   documents: Document[]
@@ -16,11 +17,11 @@ interface DocListViewProps {
 
 // ── Constants ──
 
-const categoryLabels: Record<string, string> = {
-  spec: 'Spec', prd: 'PRD', 'decision-log': 'ADR', changelog: 'Changelog',
-  tutorial: 'Tutorial', 'how-to': 'How-to', explanation: 'Explanation',
-  reference: 'Reference', runbook: 'Runbook', 'meeting-notes': 'Meeting Notes',
-  'post-mortem': 'Post-mortem', other: 'Other',
+const categoryKeyMap: Record<string, string> = {
+  spec: 'documents.spec', prd: 'documents.prd', 'decision-log': 'documents.decisionLog', changelog: 'documents.changelog',
+  tutorial: 'documents.tutorial', 'how-to': 'documents.howTo', explanation: 'documents.explanation',
+  reference: 'documents.reference', runbook: 'documents.runbook', 'meeting-notes': 'documents.meetingNotes',
+  'post-mortem': 'documents.postMortem', other: 'documents.other',
 }
 
 const categoryColors: Record<string, string> = {
@@ -67,6 +68,7 @@ type GroupField = 'library' | 'category' | 'status' | 'none'
 function DocRow({ doc, libraries, isSelected, onSelect, searchQuery }: {
   doc: Document; libraries: Library[]; isSelected: boolean; onSelect: () => void; searchQuery: string
 }) {
+  const { t } = useTranslation('smithyNext')
   const library = doc.libraryId ? libraries.find(l => l.id === doc.libraryId) : null
   const parentLib = library?.parentId ? libraries.find(l => l.id === library.parentId) : null
   const libPath = parentLib ? `${parentLib.name} / ${library!.name}` : library?.name || null
@@ -110,7 +112,7 @@ function DocRow({ doc, libraries, isSelected, onSelect, searchQuery }: {
             {renderTitle()}
           </span>
           {doc.status === 'archived' && (
-            <span style={{ fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text-tertiary)' }}>Archived</span>
+            <span style={{ fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text-tertiary)' }}>{t('documents.archived')}</span>
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--color-text-tertiary)' }}>
@@ -139,7 +141,7 @@ function DocRow({ doc, libraries, isSelected, onSelect, searchQuery }: {
           color: categoryColors[doc.category] || 'var(--color-text-tertiary)',
           textTransform: 'uppercase', letterSpacing: '0.02em', whiteSpace: 'nowrap',
         }}>
-          {categoryLabels[doc.category] || doc.category}
+          {t(categoryKeyMap[doc.category] || `documents.${doc.category}`)}
         </span>
 
         {/* Tags (first 2) */}
@@ -191,20 +193,21 @@ function FilterPanel({ filters, onAddFilter, onClose, libraries }: {
   filters: ActiveFilter[]; onAddFilter: (f: ActiveFilter) => void; onClose: () => void; libraries: Library[]
 }) {
   const [tab, setTab] = useState<FilterField>('category')
+  const { t } = useTranslation('smithyNext')
 
   const tabs: { key: FilterField; label: string }[] = [
-    { key: 'category', label: 'Category' },
-    { key: 'contentType', label: 'Type' },
-    { key: 'library', label: 'Library' },
-    { key: 'status', label: 'Status' },
+    { key: 'category', label: t('documents.category') },
+    { key: 'contentType', label: t('documents.type') },
+    { key: 'library', label: t('documents.library') },
+    { key: 'status', label: t('documents.status') },
   ]
 
   const items: { value: string; label: string }[] = (() => {
     switch (tab) {
-      case 'category': return Object.entries(categoryLabels).map(([v, l]) => ({ value: v, label: l }))
-      case 'contentType': return [{ value: 'markdown', label: 'Markdown' }, { value: 'text', label: 'Text' }, { value: 'json', label: 'JSON' }]
-      case 'library': return [{ value: '__none__', label: 'No library' }, ...libraries.filter(l => l.parentId === null).map(l => ({ value: l.id, label: l.name }))]
-      case 'status': return [{ value: 'active', label: 'Active' }, { value: 'archived', label: 'Archived' }]
+      case 'category': return Object.entries(categoryKeyMap).map(([v, key]) => ({ value: v, label: t(key) }))
+      case 'contentType': return [{ value: 'markdown', label: t('documents.markdown') }, { value: 'text', label: t('documents.text') }, { value: 'json', label: t('documents.json') }]
+      case 'library': return [{ value: '__none__', label: t('documents.noLibrary') }, ...libraries.filter(l => l.parentId === null).map(l => ({ value: l.id, label: l.name }))]
+      case 'status': return [{ value: 'active', label: t('documents.active') }, { value: 'archived', label: t('documents.archived') }]
       default: return []
     }
   })()
@@ -278,16 +281,17 @@ function DisplayPanel({ groupBy, sortBy, sortAsc, onGroupChange, onSortChange, o
   groupBy: GroupField; sortBy: DocSortField; sortAsc: boolean
   onGroupChange: (g: GroupField) => void; onSortChange: (s: DocSortField) => void; onSortDirChange: (a: boolean) => void; onClose: () => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const groupOptions: { value: GroupField; label: string }[] = [
-    { value: 'none', label: 'No grouping' },
-    { value: 'library', label: 'Library' },
-    { value: 'category', label: 'Category' },
-    { value: 'status', label: 'Status' },
+    { value: 'none', label: t('documents.noGrouping') },
+    { value: 'library', label: t('documents.library') },
+    { value: 'category', label: t('documents.category') },
+    { value: 'status', label: t('documents.status') },
   ]
   const sortOptions: { value: DocSortField; label: string }[] = [
-    { value: 'updatedAt', label: 'Last updated' },
-    { value: 'createdAt', label: 'Created' },
-    { value: 'title', label: 'Title' },
+    { value: 'updatedAt', label: t('documents.lastUpdated') },
+    { value: 'createdAt', label: t('documents.created') },
+    { value: 'title', label: t('documents.title') },
   ]
 
   return (
@@ -301,7 +305,7 @@ function DisplayPanel({ groupBy, sortBy, sortAsc, onGroupChange, onSortChange, o
       }}>
         {/* Group by */}
         <div style={{ padding: '8px 8px 4px' }}>
-          <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0 4px 4px' }}>Group by</div>
+          <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0 4px 4px' }}>{t('documents.groupBy')}</div>
           {groupOptions.map(opt => (
             <button
               key={opt.value}
@@ -324,7 +328,7 @@ function DisplayPanel({ groupBy, sortBy, sortAsc, onGroupChange, onSortChange, o
         <div style={{ borderTop: '1px solid var(--color-border-subtle)', margin: '0 8px' }} />
         {/* Sort by */}
         <div style={{ padding: '4px 8px 8px' }}>
-          <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '4px 4px' }}>Sort by</div>
+          <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '4px 4px' }}>{t('documents.sortBy')}</div>
           {sortOptions.map(opt => (
             <button
               key={opt.value}
@@ -357,6 +361,7 @@ function DisplayPanel({ groupBy, sortBy, sortAsc, onGroupChange, onSortChange, o
 
 export function DocListView({ documents, libraries, selectedDocId, selectedLibraryId, onSelectDoc, onCreateDoc, showLibraryFilter: _showLibraryFilter, onLibraryChange }: DocListViewProps) {
   const [search, setSearch] = useState('')
+  const { t } = useTranslation('smithyNext')
   const [filters, setFilters] = useState<ActiveFilter[]>([])
   const [filterOpen, setFilterOpen] = useState(false)
   const [displayOpen, setDisplayOpen] = useState(false)
@@ -425,7 +430,7 @@ export function DocListView({ documents, libraries, selectedDocId, selectedLibra
     for (const doc of filteredDocs) {
       let key: string, title: string, dotColor: string
       if (groupBy === 'library') {
-        if (!doc.libraryId) { key = '__none__'; title = 'No Library'; dotColor = '#6b7280' }
+        if (!doc.libraryId) { key = '__none__'; title = t('documents.noLibraryGroup'); dotColor = '#6b7280' }
         else {
           key = doc.libraryId
           const lib = libraries.find(l => l.id === doc.libraryId)
@@ -434,11 +439,11 @@ export function DocListView({ documents, libraries, selectedDocId, selectedLibra
         }
       } else if (groupBy === 'category') {
         key = doc.category
-        title = categoryLabels[doc.category] || doc.category
+        title = t(categoryKeyMap[doc.category] || `documents.${doc.category}`)
         dotColor = categoryDotColors[doc.category] || '#6b7280'
       } else {
         key = doc.status
-        title = doc.status === 'active' ? 'Active' : 'Archived'
+        title = doc.status === 'active' ? t('documents.active') : t('documents.archived')
         dotColor = doc.status === 'active' ? '#22c55e' : '#6b7280'
       }
 
@@ -466,7 +471,7 @@ export function DocListView({ documents, libraries, selectedDocId, selectedLibra
         borderBottom: '1px solid var(--color-border-subtle)', flexWrap: 'wrap',
       }}>
         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>
-          Documents
+          {t('documents.documents')}
         </span>
 
         {/* Library scope indicator (from tree) */}
@@ -505,7 +510,7 @@ export function DocListView({ documents, libraries, selectedDocId, selectedLibra
         }}>
           <Search size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
           <input
-            placeholder="Search documents..."
+            placeholder={t('documents.searchDocuments')}
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{
@@ -531,7 +536,7 @@ export function DocListView({ documents, libraries, selectedDocId, selectedLibra
             }}
           >
             <Filter size={12} strokeWidth={1.5} />
-            Filter{filters.length > 0 && ` (${filters.length})`}
+            {t('documents.filter')}{filters.length > 0 && ` (${filters.length})`}
           </button>
           {filterOpen && (
             <FilterPanel
@@ -556,7 +561,7 @@ export function DocListView({ documents, libraries, selectedDocId, selectedLibra
             }}
           >
             <SlidersHorizontal size={12} strokeWidth={1.5} />
-            Display
+            {t('documents.display')}
           </button>
           {displayOpen && (
             <DisplayPanel
@@ -580,7 +585,7 @@ export function DocListView({ documents, libraries, selectedDocId, selectedLibra
           }}
         >
           <Plus size={12} strokeWidth={2} />
-          New
+          {t('documents.new')}
         </button>
       </div>
 
@@ -589,9 +594,9 @@ export function DocListView({ documents, libraries, selectedDocId, selectedLibra
         {filteredDocs.length === 0 ? (
           <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>
             <FileText size={32} strokeWidth={1} style={{ opacity: 0.4, margin: '0 auto 8px' }} />
-            <div style={{ fontSize: 13 }}>{search || filters.length > 0 ? 'No documents match your filters' : 'No documents yet'}</div>
+            <div style={{ fontSize: 13 }}>{search || filters.length > 0 ? t('documents.noDocumentsMatchFilters') : t('documents.noDocumentsYet')}</div>
             <div style={{ fontSize: 11, marginTop: 4 }}>
-              {search || filters.length > 0 ? 'Try adjusting your search or filters' : 'Create your first document to get started'}
+              {search || filters.length > 0 ? t('documents.tryAdjustingSearch') : t('documents.createFirstDocument')}
             </div>
           </div>
         ) : (

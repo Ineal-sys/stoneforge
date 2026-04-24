@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X, Hash, Lock } from 'lucide-react'
 import type { MsgEntity } from './message-types'
+import { useTranslation } from '@/i18n'
 
 interface CreateChannelDialogProps {
   entities: MsgEntity[]
@@ -9,6 +10,7 @@ interface CreateChannelDialogProps {
 }
 
 export function CreateChannelDialog({ entities, onClose, onCreate }: CreateChannelDialogProps) {
+  const { t } = useTranslation('smithyNext')
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [visibility, setVisibility] = useState<'public' | 'private'>('private')
@@ -46,7 +48,7 @@ export function CreateChannelDialog({ entities, onClose, onCreate }: CreateChann
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '12px 16px', borderBottom: '1px solid var(--color-border-subtle)',
         }}>
-          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>New Discussion Channel</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>{t('messages.newDiscussionChannel')}</span>
           <button onClick={onClose} style={{
             width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer',
@@ -60,12 +62,12 @@ export function CreateChannelDialog({ entities, onClose, onCreate }: CreateChann
         <div style={{ flex: 1, padding: '16px', overflow: 'auto' }}>
           {/* Name */}
           <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Channel name
+            {t('messages.channelName')}
           </label>
           <input
             value={name}
             onChange={e => setName(e.target.value)}
-            placeholder="e.g. Architecture Review"
+            placeholder={t('messages.channelNamePlaceholder')}
             autoFocus
             style={{
               width: '100%', padding: '6px 10px', fontSize: 13,
@@ -77,12 +79,12 @@ export function CreateChannelDialog({ entities, onClose, onCreate }: CreateChann
 
           {/* Description */}
           <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Description
+            {t('messages.description')}
           </label>
           <textarea
             value={description}
             onChange={e => setDescription(e.target.value)}
-            placeholder="Set a topic for agents to discuss..."
+            placeholder={t('messages.descriptionPlaceholder')}
             rows={2}
             style={{
               width: '100%', padding: '6px 10px', fontSize: 13, resize: 'none',
@@ -94,12 +96,12 @@ export function CreateChannelDialog({ entities, onClose, onCreate }: CreateChann
 
           {/* Visibility */}
           <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Visibility
+            {t('messages.visibility')}
           </label>
           <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
             {([
-              { v: 'public' as const, icon: Hash, label: 'Public' },
-              { v: 'private' as const, icon: Lock, label: 'Private' },
+              { v: 'public' as const, icon: Hash, label: t('messages.public') },
+              { v: 'private' as const, icon: Lock, label: t('messages.private') },
             ]).map(opt => (
               <button key={opt.v} onClick={() => setVisibility(opt.v)} style={{
                 display: 'flex', alignItems: 'center', gap: 6,
@@ -117,7 +119,7 @@ export function CreateChannelDialog({ entities, onClose, onCreate }: CreateChann
 
           {/* Members */}
           <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Members
+            {t('messages.membersLabel')}
           </label>
           <div style={{ maxHeight: 200, overflow: 'auto' }}>
             {entities.map(e => (
@@ -157,7 +159,7 @@ export function CreateChannelDialog({ entities, onClose, onCreate }: CreateChann
             background: 'var(--color-surface)', border: '1px solid var(--color-border-subtle)',
             borderRadius: 'var(--radius-sm)', color: 'var(--color-text-secondary)', cursor: 'pointer',
           }}>
-            Cancel
+            {t('messages.cancel')}
           </button>
           <button onClick={handleCreate} disabled={!canCreate} style={{
             padding: '6px 14px', fontSize: 12, fontWeight: 500,
@@ -166,7 +168,7 @@ export function CreateChannelDialog({ entities, onClose, onCreate }: CreateChann
             color: canCreate ? 'white' : 'var(--color-text-tertiary)',
             cursor: canCreate ? 'pointer' : 'default',
           }}>
-            Create
+            {t('messages.create')}
           </button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useRef, useState, useMemo } from 'react'
+import { useTranslation } from '@/i18n'
 import {
   ArrowLeft,
   Bell,
@@ -58,21 +59,22 @@ interface SettingsOverlayProps {
 
 type Section = 'general' | 'notifications' | 'integrations' | 'account' | 'organization' | 'members' | 'roles'
 
-const baseSections: { id: Section; label: string; icon: typeof Bell }[] = [
-  { id: 'general', label: 'General', icon: Settings },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'integrations', label: 'Integrations', icon: Link2 },
-  { id: 'account', label: 'Account', icon: User },
+const baseSections: { id: Section; labelKey: string; icon: typeof Bell }[] = [
+  { id: 'general', labelKey: 'settings.nav.general', icon: Settings },
+  { id: 'notifications', labelKey: 'settings.nav.notifications', icon: Bell },
+  { id: 'integrations', labelKey: 'settings.nav.integrations', icon: Link2 },
+  { id: 'account', labelKey: 'settings.nav.account', icon: User },
 ]
 
-const teamSections: { id: Section; label: string; icon: typeof Bell }[] = [
-  { id: 'organization', label: 'Organization', icon: Building2 },
-  { id: 'members', label: 'Members', icon: Users },
-  { id: 'roles', label: 'Roles & Access', icon: Shield },
+const teamSections: { id: Section; labelKey: string; icon: typeof Bell }[] = [
+  { id: 'organization', labelKey: 'settings.nav.organization', icon: Building2 },
+  { id: 'members', labelKey: 'settings.nav.members', icon: Users },
+  { id: 'roles', labelKey: 'settings.nav.roles', icon: Shield },
 ]
 
 export function SettingsOverlay({ onBack, initialSection, appMode, onToggleMode, activeWorkspace, onUpdateActiveWorkspace }: SettingsOverlayProps) {
   const { isTeamMode } = useTeamContext()
+  const { t } = useTranslation('smithyNext')
   const sections = useMemo(() => {
     if (isTeamMode) return [...baseSections, ...teamSections]
     return baseSections
@@ -89,7 +91,7 @@ export function SettingsOverlay({ onBack, initialSection, appMode, onToggleMode,
       case 'organization': return isTeamMode ? <OrganizationSection /> : null
       case 'members': return isTeamMode ? <MembersSection /> : null
       case 'roles': return isTeamMode ? <RolesAccessSection /> : null
-      default: return <PlaceholderSection title={sections.find(s => s.id === activeSection)?.label || ''} />
+      default: return <PlaceholderSection title={t(sections.find(s => s.id === activeSection)?.labelKey || '')} />
     }
   }
 
@@ -113,7 +115,7 @@ export function SettingsOverlay({ onBack, initialSection, appMode, onToggleMode,
         >
           <ArrowLeft size={14} strokeWidth={1.5} />
         </button>
-        <h1 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text)' }}>Settings</h1>
+        <h1 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text)' }}>{t('settings.title')}</h1>
       </div>
 
       {/* Body */}
@@ -154,7 +156,7 @@ export function SettingsOverlay({ onBack, initialSection, appMode, onToggleMode,
                   onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = isActive ? 'var(--color-surface-active)' : 'transparent' }}
                 >
                   <s.icon size={15} strokeWidth={1.5} />
-                  {s.label}
+                  {t(s.labelKey)}
                 </button>
               </div>
             )
@@ -178,6 +180,7 @@ function GeneralSection({ appMode, onToggleMode, activeWorkspace, onUpdateActive
   activeWorkspace?: WorkspaceInfo
   onUpdateActiveWorkspace?: (updates: { name?: string; icon?: string; description?: string }) => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const isSolo = appMode !== 'team'
 
   // Workspace identity — derived from props so updates reflect everywhere (Activity Rail, TopBar, etc.)
@@ -217,17 +220,17 @@ function GeneralSection({ appMode, onToggleMode, activeWorkspace, onUpdateActive
   return (
     <div style={{ maxWidth: 800 }}>
       {/* ── Workspace identity ── */}
-      <SectionHeader title="Workspace" description="Identity and appearance of this workspace" />
+      <SectionHeader title={t('settings.general.workspace.title')} description={t('settings.general.workspace.description')} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 32 }}>
-        <InputRow label="Name" placeholder="Stoneforge" value={wsName} onChange={setWsName} />
-        <TextareaRow label="Description" placeholder="What this workspace is for..." value={wsDescription} onChange={setWsDescription} />
+        <InputRow label={t('settings.general.workspace.name')} placeholder={t('settings.general.workspace.namePlaceholder')} value={wsName} onChange={setWsName} />
+        <TextareaRow label={t('settings.general.workspace.descriptionLabel')} placeholder={t('settings.general.workspace.descriptionPlaceholder')} value={wsDescription} onChange={setWsDescription} />
         <IconRow icon={wsIcon} onChange={setWsIcon} />
       </div>
 
       {/* ── Workspace Mode ── */}
       {onToggleMode && (
         <div style={{ marginBottom: 32 }}>
-          <SectionHeader title="Workspace mode" description="Solo is for individual work. Team enables presence, shared workspaces, and cross-agent coordination." />
+          <SectionHeader title={t('settings.general.mode.title')} description={t('settings.general.mode.description')} />
           <div style={{
             display: 'inline-flex',
             borderRadius: 'var(--radius-md)',
@@ -249,7 +252,7 @@ function GeneralSection({ appMode, onToggleMode, activeWorkspace, onUpdateActive
               onMouseLeave={e => { if (!isSolo) e.currentTarget.style.background = 'transparent' }}
             >
               <User size={14} strokeWidth={1.5} />
-              Solo
+              {t('settings.general.mode.solo')}
             </button>
             <div style={{ width: 1, background: 'var(--color-border)' }} />
             <button
@@ -267,7 +270,7 @@ function GeneralSection({ appMode, onToggleMode, activeWorkspace, onUpdateActive
               onMouseLeave={e => { if (isSolo) e.currentTarget.style.background = 'transparent' }}
             >
               <Users size={14} strokeWidth={1.5} />
-              Team
+              {t('settings.general.mode.team')}
             </button>
           </div>
         </div>
@@ -276,28 +279,28 @@ function GeneralSection({ appMode, onToggleMode, activeWorkspace, onUpdateActive
       {/* ── Workflow preset (promoted selector) ── */}
       <div style={{ marginBottom: 32 }}>
         <SectionHeader
-          title="Workflow preset"
-          description="How agents merge code. This sets the default behavior across all agents in the workspace."
+          title={t('settings.general.workflow.title')}
+          description={t('settings.general.workflow.description')}
         />
         <WorkflowPresetSelector value={workflowPreset} onChange={setWorkflowPreset} />
       </div>
 
       {/* ── Git ── */}
       <div style={{ marginBottom: 32 }}>
-        <SectionHeader title="Git" description="Default branch and worktree management" />
+        <SectionHeader title={t('settings.general.git.title')} description={t('settings.general.git.description')} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <InputRow label="Default branch" placeholder="main" value={defaultBranch} onChange={setDefaultBranch} />
-          <InputRow label="Worktree dir" placeholder=".stoneforge/.worktrees/" value={worktreeDir} onChange={setWorktreeDir} />
-          <ToggleRow label="Auto-merge passing branches" checked={autoMerge} onChange={setAutoMerge} icon={GitBranch} />
+          <InputRow label={t('settings.general.git.defaultBranch')} placeholder={t('settings.general.git.defaultBranchPlaceholder')} value={defaultBranch} onChange={setDefaultBranch} />
+          <InputRow label={t('settings.general.git.worktreeDir')} placeholder={t('settings.general.git.worktreeDirPlaceholder')} value={worktreeDir} onChange={setWorktreeDir} />
+          <ToggleRow label={t('settings.general.git.autoMerge')} checked={autoMerge} onChange={setAutoMerge} icon={GitBranch} />
         </div>
       </div>
 
       {/* ── Agent defaults ── */}
       <div style={{ marginBottom: 32 }}>
-        <SectionHeader title="Agent defaults" description="Default provider and model when creating new agents" />
+        <SectionHeader title={t('settings.general.agentDefaults.title')} description={t('settings.general.agentDefaults.description')} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <SelectRow
-            label="Default provider"
+            label={t('settings.general.agentDefaults.defaultProvider')}
             value={defaultProvider}
             onChange={v => setDefaultProvider(v as AgentProviderType)}
             options={AGENT_PROVIDERS.map(p => ({ value: p.id, label: p.name }))}
@@ -305,7 +308,7 @@ function GeneralSection({ appMode, onToggleMode, activeWorkspace, onUpdateActive
           {AGENT_PROVIDERS.map(p => (
             <SelectRow
               key={p.id}
-              label={`${p.name} model`}
+              label={t('settings.general.agentDefaults.modelLabel', { provider: p.name })}
               value={defaultModels[p.id]}
               onChange={v => setDefaultModels(prev => ({ ...prev, [p.id]: v }))}
               options={MODELS_BY_PROVIDER[p.id].map(m => ({ value: m.id, label: m.name }))}
@@ -316,27 +319,27 @@ function GeneralSection({ appMode, onToggleMode, activeWorkspace, onUpdateActive
 
       {/* ── Director ── */}
       <div style={{ marginBottom: 32 }}>
-        <SectionHeader title="Director" description="Configure the director agent's coordination behavior" />
+        <SectionHeader title={t('settings.general.director.title')} description={t('settings.general.director.description')} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <ToggleRow label="Auto-forward inbox messages" checked={directorForward} onChange={setDirectorForward} icon={Bot} />
+          <ToggleRow label={t('settings.general.director.autoForward')} checked={directorForward} onChange={setDirectorForward} icon={Bot} />
         </div>
       </div>
 
       {/* ── Housekeeping ── */}
       <div style={{ marginBottom: 32 }}>
-        <SectionHeader title="Housekeeping" description="Automatic cleanup of short-lived workspace data" />
+        <SectionHeader title={t('settings.general.housekeeping.title')} description={t('settings.general.housekeeping.description')} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <SelectRow
-            label="Keep ephemeral tasks for"
+            label={t('settings.general.housekeeping.ephemeralRetention')}
             value={ephemeralRetention}
             onChange={setEphemeralRetention}
             options={[
-              { value: '1h', label: '1 hour' },
-              { value: '6h', label: '6 hours' },
-              { value: '12h', label: '12 hours' },
-              { value: '24h', label: '24 hours' },
-              { value: '7d', label: '7 days' },
-              { value: '30d', label: '30 days' },
+              { value: '1h', label: t('settings.general.housekeeping.retentionOptions.1h') },
+              { value: '6h', label: t('settings.general.housekeeping.retentionOptions.6h') },
+              { value: '12h', label: t('settings.general.housekeeping.retentionOptions.12h') },
+              { value: '24h', label: t('settings.general.housekeeping.retentionOptions.24h') },
+              { value: '7d', label: t('settings.general.housekeeping.retentionOptions.7d') },
+              { value: '30d', label: t('settings.general.housekeeping.retentionOptions.30d') },
             ]}
           />
         </div>
@@ -347,32 +350,34 @@ function GeneralSection({ appMode, onToggleMode, activeWorkspace, onUpdateActive
         <div style={{ marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 600, color: 'var(--color-danger)' }}>
             <AlertTriangle size={14} strokeWidth={1.5} />
-            Danger zone
+            {t('settings.general.dangerZone.title')}
           </div>
           <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginTop: 2 }}>
-            Destructive actions. Proceed with care.
+            {t('settings.general.dangerZone.description')}
           </div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <DangerAction
             icon={RotateCcw}
-            label="Reset all settings"
-            description="Restore every setting on this workspace to its default value"
-            confirmLabel="Reset settings"
+            label={t('settings.general.dangerZone.resetSettings')}
+            description={t('settings.general.dangerZone.resetSettingsDescription')}
+            confirmLabel={t('settings.general.dangerZone.resetSettingsConfirm')}
             confirming={confirmReset}
             onClick={() => setConfirmReset(true)}
             onConfirm={() => setConfirmReset(false)}
             onCancel={() => setConfirmReset(false)}
+            cancelLabel={t('settings.general.dangerZone.cancel')}
           />
           <DangerAction
             icon={Trash2}
-            label="Delete workspace"
-            description="Permanently remove this workspace, its history, and all local worktrees"
-            confirmLabel="Delete workspace"
+            label={t('settings.general.dangerZone.deleteWorkspace')}
+            description={t('settings.general.dangerZone.deleteWorkspaceDescription')}
+            confirmLabel={t('settings.general.dangerZone.deleteWorkspaceConfirm')}
             confirming={confirmDelete}
             onClick={() => setConfirmDelete(true)}
             onConfirm={() => setConfirmDelete(false)}
             onCancel={() => setConfirmDelete(false)}
+            cancelLabel={t('settings.general.dangerZone.cancel')}
           />
         </div>
       </div>
@@ -383,6 +388,7 @@ function GeneralSection({ appMode, onToggleMode, activeWorkspace, onUpdateActive
 // ── Workflow preset selector (promoted radio group) ──
 
 function WorkflowPresetSelector({ value, onChange }: { value: WorkflowPreset; onChange: (v: WorkflowPreset) => void }) {
+  const { t } = useTranslation('smithyNext')
   const iconMap: Record<string, typeof Zap> = {
     'auto': Zap,
     'review': Eye,
@@ -430,11 +436,11 @@ function WorkflowPresetSelector({ value, onChange }: { value: WorkflowPreset; on
                   fontSize: 13, fontWeight: 600,
                   color: selected ? 'var(--color-text-accent)' : 'var(--color-text)',
                 }}>
-                  {preset.name}
+                  {t(`settings.general.workflow.${preset.id}.name`)}
                 </span>
               </div>
               <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', lineHeight: 1.4 }}>
-                {preset.description}
+                {t(`settings.general.workflow.${preset.id}.description`)}
               </div>
             </div>
           </button>
@@ -455,6 +461,7 @@ function DangerAction({
   onClick,
   onConfirm,
   onCancel,
+  cancelLabel,
 }: {
   icon: typeof Trash2
   label: string
@@ -464,7 +471,9 @@ function DangerAction({
   onClick: () => void
   onConfirm: () => void
   onCancel: () => void
+  cancelLabel?: string
 }) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12,
@@ -519,7 +528,7 @@ function DangerAction({
               cursor: 'pointer',
             }}
           >
-            Cancel
+            {cancelLabel || t('settings.general.dangerZone.cancel')}
           </button>
         </div>
       )}
@@ -531,10 +540,11 @@ function DangerAction({
 
 function AccountSection() {
   const { currentUser, isTeamMode, org } = useTeamContext()
+  const { t } = useTranslation('smithyNext')
 
   return (
     <div style={{ maxWidth: 800 }}>
-      <SectionHeader title="Account" description="Your profile and connection status" />
+      <SectionHeader title={t('settings.account.title')} description={t('settings.account.description')} />
 
       {/* Profile card */}
       <div style={{
@@ -560,10 +570,10 @@ function AccountSection() {
             {isTeamMode ? (
               <>
                 <Building2 size={11} strokeWidth={1.5} />
-                Connected to {org?.name} (Team)
+                {t('settings.account.connectedToTeam', { orgName: org?.name })}
               </>
             ) : (
-              <>Solo Mode</>
+              <>{t('settings.account.soloMode')}</>
             )}
           </div>
         </div>
@@ -573,7 +583,7 @@ function AccountSection() {
       {isTeamMode && (
         <div style={{ marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', width: 80 }}>Role</span>
+            <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', width: 80 }}>{t('settings.account.role')}</span>
             <span style={{
               padding: '2px 8px',
               borderRadius: 'var(--radius-sm)',
@@ -586,24 +596,24 @@ function AccountSection() {
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', width: 80 }}>Teams</span>
+            <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', width: 80 }}>{t('settings.account.teams')}</span>
             <span style={{ fontSize: 13, color: 'var(--color-text)' }}>
-              {org?.teams.filter(t => t.memberIds.includes(currentUser.id)).map(t => t.name).join(', ') || 'None'}
+              {org?.teams.filter(t => t.memberIds.includes(currentUser.id)).map(t => t.name).join(', ') || t('settings.account.none')}
             </span>
           </div>
         </div>
       )}
 
       {/* Preferences */}
-      <SectionHeader title="Preferences" description="Personal settings" />
+      <SectionHeader title={t('settings.account.preferences.title')} description={t('settings.account.preferences.description')} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <SelectRow label="Language" value="en" options={[
+        <SelectRow label={t('settings.account.preferences.language')} value="en" options={[
           { value: 'en', label: 'English' },
           { value: 'es', label: 'Español' },
           { value: 'fr', label: 'Français' },
           { value: 'de', label: 'Deutsch' },
         ]} onChange={() => {}} />
-        <SelectRow label="Timezone" value="pst" options={[
+        <SelectRow label={t('settings.account.preferences.timezone')} value="pst" options={[
           { value: 'pst', label: 'Pacific (UTC-8)' },
           { value: 'est', label: 'Eastern (UTC-5)' },
           { value: 'utc', label: 'UTC' },
@@ -618,6 +628,7 @@ function AccountSection() {
 
 function OrganizationSection() {
   const { org } = useTeamContext()
+  const { t } = useTranslation('smithyNext')
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set())
   const [copiedOrgId, setCopiedOrgId] = useState(false)
 
@@ -692,7 +703,7 @@ function OrganizationSection() {
 
   return (
     <div style={{ maxWidth: 800 }}>
-      <SectionHeader title="Organization" description="Manage your organization settings" />
+      <SectionHeader title={t('settings.organization.title')} description={t('settings.organization.description')} />
 
       {/* Org header */}
       <div style={{
@@ -741,7 +752,7 @@ function OrganizationSection() {
                 padding: 2, color: 'var(--color-text-tertiary)',
                 display: 'flex', alignItems: 'center',
               }}
-              title="Copy org ID"
+              title={t('settings.organization.copyOrgIdTitle')}
             >
               {copiedOrgId ? <Check size={12} strokeWidth={1.5} style={{ color: 'var(--color-success)' }} /> : <Copy size={12} strokeWidth={1.5} />}
             </button>
@@ -751,7 +762,7 @@ function OrganizationSection() {
 
       {/* Teams list */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <SectionHeader title="Teams" description={`${teams.length} team${teams.length !== 1 ? 's' : ''} in your organization`} />
+        <SectionHeader title={t('settings.organization.teams.title')} description={t('settings.organization.teams.description', { count: teams.length })} />
         {!creatingTeam && (
           <button
             onClick={() => setCreatingTeam(true)}
@@ -769,7 +780,7 @@ function OrganizationSection() {
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-secondary)' }}
           >
             <Plus size={13} strokeWidth={1.5} />
-            New team
+            {t('settings.organization.teams.newTeam')}
           </button>
         )}
       </div>
@@ -789,7 +800,7 @@ function OrganizationSection() {
             value={newTeamName}
             onChange={e => setNewTeamName(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') createTeam(); if (e.key === 'Escape') { setCreatingTeam(false); setNewTeamName('') } }}
-            placeholder="Team name..."
+            placeholder={t('settings.organization.teams.teamNamePlaceholder')}
             style={{
               flex: 1, height: 26, padding: '0 8px',
               background: 'var(--color-bg)', border: '1px solid var(--color-border)',
@@ -808,7 +819,7 @@ function OrganizationSection() {
               fontSize: 11, fontWeight: 500, cursor: newTeamName.trim() ? 'pointer' : 'default',
             }}
           >
-            Create
+            {t('settings.organization.teams.create')}
           </button>
           <button
             onClick={() => { setCreatingTeam(false); setNewTeamName('') }}
@@ -877,7 +888,7 @@ function OrganizationSection() {
                   )}
                 </button>
                 <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap' }}>
-                  {members.length} member{members.length !== 1 ? 's' : ''}
+                  {t('settings.organization.teams.memberCount', { count: members.length })}
                 </span>
                 {/* Edit button */}
                 <button
@@ -888,7 +899,7 @@ function OrganizationSection() {
                     color: 'var(--color-text-tertiary)', cursor: 'pointer',
                     transition: 'all var(--duration-fast)',
                   }}
-                  title="Rename team"
+                  title={t('settings.organization.teams.renameTeamTitle')}
                   onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-surface-hover)'; e.currentTarget.style.color = 'var(--color-text)' }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-text-tertiary)' }}
                 >
@@ -903,7 +914,7 @@ function OrganizationSection() {
                     color: 'var(--color-text-tertiary)', cursor: 'pointer',
                     transition: 'all var(--duration-fast)',
                   }}
-                  title="Delete team"
+                  title={t('settings.organization.teams.deleteTeamTitle')}
                   onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-danger-subtle)'; e.currentTarget.style.color = 'var(--color-danger)' }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-text-tertiary)' }}
                 >
@@ -920,7 +931,7 @@ function OrganizationSection() {
                   borderTop: '1px solid var(--color-danger)',
                   fontSize: 12, color: 'var(--color-text)',
                 }}>
-                  <span style={{ flex: 1 }}>Delete <strong>{team.name}</strong>? Members won't be removed from the org.</span>
+                  <span style={{ flex: 1 }}>{t('settings.organization.teams.deleteConfirmMessage', { teamName: team.name })}</span>
                   <button
                     onClick={() => deleteTeam(team.id)}
                     style={{
@@ -930,7 +941,7 @@ function OrganizationSection() {
                       color: 'white', fontSize: 11, fontWeight: 500, cursor: 'pointer',
                     }}
                   >
-                    Delete
+                    {t('settings.organization.teams.delete')}
                   </button>
                   <button
                     onClick={() => setConfirmDeleteTeam(null)}
@@ -941,7 +952,7 @@ function OrganizationSection() {
                       color: 'var(--color-text-secondary)', fontSize: 11, fontWeight: 500, cursor: 'pointer',
                     }}
                   >
-                    Cancel
+                    {t('settings.organization.teams.cancel')}
                   </button>
                 </div>
               )}
@@ -954,7 +965,7 @@ function OrganizationSection() {
                 }}>
                   {/* Members sub-section */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-                    <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Members</div>
+                    <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('settings.organization.teams.membersSubsection')}</div>
                     {nonMembers.length > 0 && (
                       <button
                         onClick={() => setAddingMemberToTeam(addingMemberToTeam === team.id ? null : team.id)}
@@ -970,7 +981,7 @@ function OrganizationSection() {
                         onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-tertiary)' }}
                       >
                         <UserPlus size={10} strokeWidth={1.5} />
-                        Add
+                        {t('settings.organization.teams.add')}
                       </button>
                     )}
                   </div>
@@ -1008,7 +1019,7 @@ function OrganizationSection() {
                   )}
 
                   {members.length === 0 && (
-                    <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', padding: '4px 0' }}>No members yet</div>
+                    <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', padding: '4px 0' }}>{t('settings.organization.teams.noMembers')}</div>
                   )}
                   {members.map(m => (
                     <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1022,7 +1033,7 @@ function OrganizationSection() {
                           color: 'var(--color-text-tertiary)', cursor: 'pointer',
                           transition: 'all var(--duration-fast)',
                         }}
-                        title={`Remove ${m.name}`}
+                        title={t('settings.organization.teams.removeTitle', { name: m.name })}
                         onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-danger-subtle)'; e.currentTarget.style.color = 'var(--color-danger)' }}
                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-text-tertiary)' }}
                       >
@@ -1034,7 +1045,7 @@ function OrganizationSection() {
                   {/* Workspaces */}
                   {workspaces.length > 0 && (
                     <>
-                      <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 6, marginBottom: 2 }}>Workspaces</div>
+                      <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 6, marginBottom: 2 }}>{t('settings.organization.teams.workspacesSubsection')}</div>
                       {workspaces.map(w => (
                         <div key={w.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <WorkspaceIconMark icon={w.icon} size={18} fontSize={10} fontWeight={600} />
@@ -1051,7 +1062,7 @@ function OrganizationSection() {
       </div>
 
       {/* Workspaces with team access */}
-      <SectionHeader title="Workspaces" description="Workspaces accessible by your organization" />
+      <SectionHeader title={t('settings.organization.workspaces.title')} description={t('settings.organization.workspaces.description')} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {mockWorkspaces.slice(0, 6).map(w => {
           const accessTeams = teams.filter(t => t.workspaceIds.includes(w.id))
@@ -1075,7 +1086,7 @@ function OrganizationSection() {
                   </span>
                 ))}
                 {accessTeams.length === 0 && (
-                  <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>No team assigned</span>
+                  <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>{t('settings.organization.workspaces.noTeamAssigned')}</span>
                 )}
               </div>
             </div>
@@ -1090,6 +1101,7 @@ function OrganizationSection() {
 
 function MembersSection() {
   const { org, currentUser: cUser } = useTeamContext()
+  const { t } = useTranslation('smithyNext')
   const [search, setSearch] = useState('')
   const [roles, setRoles] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {}
@@ -1107,7 +1119,7 @@ function MembersSection() {
 
   return (
     <div style={{ maxWidth: 800 }}>
-      <SectionHeader title="Members" description={`${org.members.length} members in ${org.name}`} />
+      <SectionHeader title={t('settings.members.title')} description={t('settings.members.description', { count: org.members.length, orgName: org.name })} />
 
       {/* Search + invite */}
       <div style={{
@@ -1125,7 +1137,7 @@ function MembersSection() {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search members..."
+            placeholder={t('settings.members.searchPlaceholder')}
             style={{
               flex: 1, border: 'none', background: 'transparent',
               color: 'var(--color-text)', fontSize: 12, outline: 'none',
@@ -1145,7 +1157,7 @@ function MembersSection() {
           onMouseLeave={e => e.currentTarget.style.opacity = '1'}
         >
           <UserPlus size={13} strokeWidth={1.5} />
-          Invite member
+          {t('settings.members.inviteMember')}
         </button>
       </div>
 
@@ -1164,10 +1176,10 @@ function MembersSection() {
           background: 'var(--color-bg-secondary)',
           borderBottom: '1px solid var(--color-border-subtle)',
         }}>
-          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Name</span>
-          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Email</span>
-          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Role</span>
-          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Status</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('settings.members.table.name')}</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('settings.members.table.email')}</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('settings.members.table.role')}</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('settings.members.table.status')}</span>
           <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5 }}></span>
         </div>
 
@@ -1193,7 +1205,7 @@ function MembersSection() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
                 <UserAvatar user={m} size={24} showPresence />
                 <span style={{ fontSize: 13, color: 'var(--color-text)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {m.name}{isMe && <span style={{ color: 'var(--color-text-tertiary)', fontWeight: 400 }}> (you)</span>}
+                  {m.name}{isMe && <span style={{ color: 'var(--color-text-tertiary)', fontWeight: 400 }}> {t('settings.members.table.you')}</span>}
                 </span>
               </div>
 
@@ -1218,9 +1230,9 @@ function MembersSection() {
                   opacity: isMe ? 0.6 : 1,
                 }}
               >
-                <option value="admin">Admin</option>
-                <option value="member">Member</option>
-                <option value="viewer">Viewer</option>
+                <option value="admin">{t('settings.members.roles.admin')}</option>
+                <option value="member">{t('settings.members.roles.member')}</option>
+                <option value="viewer">{t('settings.members.roles.viewer')}</option>
               </select>
 
               {/* Presence */}
@@ -1247,7 +1259,7 @@ function MembersSection() {
                       cursor: 'pointer',
                       transition: 'all var(--duration-fast)',
                     }}
-                    title="Remove member"
+                    title={t('settings.members.removeMemberTitle')}
                     onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-danger-subtle)'; e.currentTarget.style.color = 'var(--color-danger)' }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-text-tertiary)' }}
                   >
@@ -1264,7 +1276,7 @@ function MembersSection() {
             padding: 24,
             textAlign: 'center', fontSize: 12, color: 'var(--color-text-tertiary)',
           }}>
-            No members match "{search}"
+            {t('settings.members.noResults', { search })}
           </div>
         )}
       </div>
@@ -1276,6 +1288,7 @@ function MembersSection() {
 
 function RolesAccessSection() {
   const { org } = useTeamContext()
+  const { t } = useTranslation('smithyNext')
   const [accessMatrix, setAccessMatrix] = useState<Record<string, Set<string>>>(() => {
     const matrix: Record<string, Set<string>> = {}
     if (org) {
@@ -1333,7 +1346,7 @@ function RolesAccessSection() {
 
   return (
     <div style={{ maxWidth: 800 }}>
-      <SectionHeader title="Roles & Access" description="Configure workspace access for teams and members" />
+      <SectionHeader title={t('settings.roles.title')} description={t('settings.roles.description')} />
 
       {/* Access matrix */}
       <div style={{
@@ -1356,7 +1369,7 @@ function RolesAccessSection() {
                 position: 'sticky', left: 0, background: 'var(--color-bg-secondary)',
                 minWidth: 120,
               }}>
-                Workspace
+                {t('settings.roles.workspaceColumn')}
               </th>
               {allEntities.map(e => (
                 <th key={e.id} style={{
@@ -1430,11 +1443,11 @@ function RolesAccessSection() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <Users size={11} strokeWidth={1.5} style={{ color: 'var(--color-text-accent)' }} />
-          Team — toggling grants/revokes access for all team members
+          {t('settings.roles.legendTeam')}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <User size={11} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />
-          Individual — grants/revokes access for a single member
+          {t('settings.roles.legendIndividual')}
         </div>
       </div>
     </div>
@@ -1444,6 +1457,7 @@ function RolesAccessSection() {
 // ── Notifications Section ──
 
 function NotificationsSection() {
+  const { t } = useTranslation('smithyNext')
   const [events, setEvents] = useState({
     agentCompleted: true,
     agentError: true,
@@ -1461,31 +1475,31 @@ function NotificationsSection() {
   return (
     <div style={{ maxWidth: 800 }}>
       {/* Event types */}
-      <SectionHeader title="Notification events" description="Choose which events trigger notifications" />
+      <SectionHeader title={t('settings.notifications.events.title')} description={t('settings.notifications.events.description')} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 32 }}>
-        <ToggleRow label="Agent completed task" checked={events.agentCompleted} onChange={v => setEvents(e => ({ ...e, agentCompleted: v }))} />
-        <ToggleRow label="Agent encountered error" checked={events.agentError} onChange={v => setEvents(e => ({ ...e, agentError: v }))} />
-        <ToggleRow label="Merge request ready for review" checked={events.mrReview} onChange={v => setEvents(e => ({ ...e, mrReview: v }))} />
-        <ToggleRow label="CI/CD pipeline failed" checked={events.ciFailed} onChange={v => setEvents(e => ({ ...e, ciFailed: v }))} />
-        <ToggleRow label="CI/CD pipeline passed" checked={events.ciPassed} onChange={v => setEvents(e => ({ ...e, ciPassed: v }))} />
-        <ToggleRow label="Agent needs input / decision" checked={events.agentNeedsInput} onChange={v => setEvents(e => ({ ...e, agentNeedsInput: v }))} />
+        <ToggleRow label={t('settings.notifications.events.agentCompleted')} checked={events.agentCompleted} onChange={v => setEvents(e => ({ ...e, agentCompleted: v }))} />
+        <ToggleRow label={t('settings.notifications.events.agentError')} checked={events.agentError} onChange={v => setEvents(e => ({ ...e, agentError: v }))} />
+        <ToggleRow label={t('settings.notifications.events.mrReview')} checked={events.mrReview} onChange={v => setEvents(e => ({ ...e, mrReview: v }))} />
+        <ToggleRow label={t('settings.notifications.events.ciFailed')} checked={events.ciFailed} onChange={v => setEvents(e => ({ ...e, ciFailed: v }))} />
+        <ToggleRow label={t('settings.notifications.events.ciPassed')} checked={events.ciPassed} onChange={v => setEvents(e => ({ ...e, ciPassed: v }))} />
+        <ToggleRow label={t('settings.notifications.events.agentNeedsInput')} checked={events.agentNeedsInput} onChange={v => setEvents(e => ({ ...e, agentNeedsInput: v }))} />
       </div>
 
       {/* Toast preferences */}
-      <SectionHeader title="Toast notifications" description="Configure how toast notifications appear" />
+      <SectionHeader title={t('settings.notifications.toast.title')} description={t('settings.notifications.toast.description')} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 16 }}>
-        <ToggleRow label="Enable toast notifications" checked={toastEnabled} onChange={setToastEnabled} />
-        <SelectRow label="Auto-dismiss after" value={toastDuration} options={[
-          { value: '5s', label: '5 seconds' },
-          { value: '8s', label: '8 seconds' },
-          { value: '15s', label: '15 seconds' },
-          { value: 'never', label: 'Never' },
+        <ToggleRow label={t('settings.notifications.toast.enabled')} checked={toastEnabled} onChange={setToastEnabled} />
+        <SelectRow label={t('settings.notifications.toast.autoDismiss')} value={toastDuration} options={[
+          { value: '5s', label: t('settings.notifications.toast.dismissOptions.5s') },
+          { value: '8s', label: t('settings.notifications.toast.dismissOptions.8s') },
+          { value: '15s', label: t('settings.notifications.toast.dismissOptions.15s') },
+          { value: 'never', label: t('settings.notifications.toast.dismissOptions.never') },
         ]} onChange={setToastDuration} />
-        <SelectRow label="Position" value={toastPosition} options={[
-          { value: 'bottom-right', label: 'Bottom right' },
-          { value: 'top-right', label: 'Top right' },
+        <SelectRow label={t('settings.notifications.toast.position')} value={toastPosition} options={[
+          { value: 'bottom-right', label: t('settings.notifications.toast.positionOptions.bottomRight') },
+          { value: 'top-right', label: t('settings.notifications.toast.positionOptions.topRight') },
         ]} onChange={setToastPosition} />
-        <ToggleRow label="Play sound" checked={soundEnabled} onChange={setSoundEnabled} icon={Volume2} />
+        <ToggleRow label={t('settings.notifications.toast.playSound')} checked={soundEnabled} onChange={setSoundEnabled} icon={Volume2} />
       </div>
 
       {/* Hint: external messaging moved */}
@@ -1499,7 +1513,7 @@ function NotificationsSection() {
       }}>
         <MessageSquare size={13} strokeWidth={1.5} style={{ marginTop: 1, flexShrink: 0, color: 'var(--color-text-tertiary)' }} />
         <span>
-          Looking for Slack, Discord, or Telegram? External notification routing moved to the <strong style={{ color: 'var(--color-text)' }}>Integrations</strong> tab.
+          {t('settings.notifications.externalHint')}
         </span>
       </div>
     </div>
@@ -1529,32 +1543,73 @@ interface IntegrationChoice {
   shareGithubHint?: boolean
 }
 
-const ISSUE_SYNC_OPTIONS: IntegrationChoice[] = [
-  { id: 'none', name: 'None', description: "Use Stoneforge's built-in issue tracking" },
-  { id: 'linear', name: 'Linear', description: 'Two-way sync with Linear projects', requiresAuth: true, authButton: 'Connect with Linear', authDetail: 'Grants read/write access to issues in your selected teams.' },
-  { id: 'github', name: 'GitHub Issues', description: 'Two-way sync with GitHub Issues', requiresAuth: true, authButton: 'Connect with GitHub', authDetail: 'Install the Stoneforge GitHub App and pick an org + repo.', hasOrgRepo: true },
+interface IntegrationChoiceKeys {
+  id: string
+  nameKey: string
+  descriptionKey: string
+  requiresAuth?: boolean
+  authButtonKey?: string
+  authDetailKey?: string
+  hasPath?: boolean
+  pathLabelKey?: string
+  pathPlaceholderKey?: string
+  hasOrgRepo?: boolean
+  hasChannel?: boolean
+  channelLabelKey?: string
+  shareGithubHint?: boolean
+}
+
+const ISSUE_SYNC_OPTION_KEYS: IntegrationChoiceKeys[] = [
+  { id: 'none', nameKey: 'settings.integrations.issueSync.noneName', descriptionKey: 'settings.integrations.issueSync.noneDescription' },
+  { id: 'linear', nameKey: 'settings.integrations.issueSync.linearName', descriptionKey: 'settings.integrations.issueSync.linearDescription', requiresAuth: true, authButtonKey: 'settings.integrations.issueSync.linearAuthButton', authDetailKey: 'settings.integrations.issueSync.linearAuthDetail' },
+  { id: 'github', nameKey: 'settings.integrations.issueSync.githubName', descriptionKey: 'settings.integrations.issueSync.githubDescription', requiresAuth: true, authButtonKey: 'settings.integrations.issueSync.githubAuthButton', authDetailKey: 'settings.integrations.issueSync.githubAuthDetail', hasOrgRepo: true },
 ]
 
-const MR_SYNC_OPTIONS: IntegrationChoice[] = [
-  { id: 'none', name: 'None', description: "Use Stoneforge's built-in merge requests" },
-  { id: 'github', name: 'GitHub Pull Requests', description: 'Two-way sync with GitHub PRs', requiresAuth: true, authButton: 'Connect with GitHub', authDetail: 'Grants access to pull requests on your selected repo.', hasOrgRepo: true, shareGithubHint: true },
+const MR_SYNC_OPTION_KEYS: IntegrationChoiceKeys[] = [
+  { id: 'none', nameKey: 'settings.integrations.mrSync.noneName', descriptionKey: 'settings.integrations.mrSync.noneDescription' },
+  { id: 'github', nameKey: 'settings.integrations.mrSync.githubName', descriptionKey: 'settings.integrations.mrSync.githubDescription', requiresAuth: true, authButtonKey: 'settings.integrations.mrSync.githubAuthButton', authDetailKey: 'settings.integrations.mrSync.githubAuthDetail', hasOrgRepo: true, shareGithubHint: true },
 ]
 
-const DOC_SYNC_OPTIONS: IntegrationChoice[] = [
-  { id: 'none', name: 'None', description: "Use Stoneforge's built-in documentation" },
-  { id: 'repo-folder', name: 'Repo folder', description: 'Sync docs from a folder in your repository', hasPath: true, pathLabel: 'Folder path', pathPlaceholder: 'docs/' },
-  { id: 'notion', name: 'Notion', description: 'Two-way sync with Notion pages', requiresAuth: true, authButton: 'Connect with Notion', authDetail: 'Create an internal integration, then share target pages with it.' },
-  { id: 'obsidian', name: 'Obsidian', description: 'Sync with a local Obsidian vault', hasPath: true, pathLabel: 'Vault path', pathPlaceholder: '~/Documents/MyVault' },
+const DOC_SYNC_OPTION_KEYS: IntegrationChoiceKeys[] = [
+  { id: 'none', nameKey: 'settings.integrations.docSync.noneName', descriptionKey: 'settings.integrations.docSync.noneDescription' },
+  { id: 'repo-folder', nameKey: 'settings.integrations.docSync.repoFolderName', descriptionKey: 'settings.integrations.docSync.repoFolderDescription', hasPath: true, pathLabelKey: 'settings.integrations.docSync.repoFolderPathLabel', pathPlaceholderKey: 'settings.integrations.docSync.repoFolderPathPlaceholder' },
+  { id: 'notion', nameKey: 'settings.integrations.docSync.notionName', descriptionKey: 'settings.integrations.docSync.notionDescription', requiresAuth: true, authButtonKey: 'settings.integrations.docSync.notionAuthButton', authDetailKey: 'settings.integrations.docSync.notionAuthDetail' },
+  { id: 'obsidian', nameKey: 'settings.integrations.docSync.obsidianName', descriptionKey: 'settings.integrations.docSync.obsidianDescription', hasPath: true, pathLabelKey: 'settings.integrations.docSync.obsidianPathLabel', pathPlaceholderKey: 'settings.integrations.docSync.obsidianPathPlaceholder' },
 ]
 
-const NOTIFICATION_OPTIONS: IntegrationChoice[] = [
-  { id: 'none', name: 'None', description: 'In-app notifications only' },
-  { id: 'slack', name: 'Slack', description: 'Send notifications to a Slack channel', requiresAuth: true, authButton: 'Add to Slack', authDetail: 'Sends task updates, merge requests, and CI results to a channel you choose.', hasChannel: true, channelLabel: 'Channel' },
-  { id: 'discord', name: 'Discord', description: 'Send notifications to a Discord channel', requiresAuth: true, authButton: 'Add to Discord', authDetail: 'Sends task updates, merge requests, and CI results to a channel you choose.', hasChannel: true, channelLabel: 'Channel' },
-  { id: 'telegram', name: 'Telegram', description: 'Send notifications via Telegram bot', requiresAuth: true, authButton: 'Open @StoneforgeBot', authDetail: 'Start a chat with the bot, then use /connect to link your workspace.' },
+const NOTIFICATION_OPTION_KEYS: IntegrationChoiceKeys[] = [
+  { id: 'none', nameKey: 'settings.integrations.notifications.noneName', descriptionKey: 'settings.integrations.notifications.noneDescription' },
+  { id: 'slack', nameKey: 'settings.integrations.notifications.slackName', descriptionKey: 'settings.integrations.notifications.slackDescription', requiresAuth: true, authButtonKey: 'settings.integrations.notifications.slackAuthButton', authDetailKey: 'settings.integrations.notifications.slackAuthDetail', hasChannel: true, channelLabelKey: 'settings.integrations.notifications.slackChannelLabel' },
+  { id: 'discord', nameKey: 'settings.integrations.notifications.discordName', descriptionKey: 'settings.integrations.notifications.discordDescription', requiresAuth: true, authButtonKey: 'settings.integrations.notifications.discordAuthButton', authDetailKey: 'settings.integrations.notifications.discordAuthDetail', hasChannel: true, channelLabelKey: 'settings.integrations.notifications.discordChannelLabel' },
+  { id: 'telegram', nameKey: 'settings.integrations.notifications.telegramName', descriptionKey: 'settings.integrations.notifications.telegramDescription', requiresAuth: true, authButtonKey: 'settings.integrations.notifications.telegramAuthButton', authDetailKey: 'settings.integrations.notifications.telegramAuthDetail' },
 ]
+
+function resolveOptions(t: (key: string) => string, keys: IntegrationChoiceKeys[]): IntegrationChoice[] {
+  return keys.map(k => ({
+    id: k.id,
+    name: t(k.nameKey),
+    description: t(k.descriptionKey),
+    requiresAuth: k.requiresAuth,
+    authButton: k.authButtonKey ? t(k.authButtonKey) : undefined,
+    authDetail: k.authDetailKey ? t(k.authDetailKey) : undefined,
+    hasPath: k.hasPath,
+    pathLabel: k.pathLabelKey ? t(k.pathLabelKey) : undefined,
+    pathPlaceholder: k.pathPlaceholderKey ? t(k.pathPlaceholderKey) : undefined,
+    hasOrgRepo: k.hasOrgRepo,
+    hasChannel: k.hasChannel,
+    channelLabel: k.channelLabelKey ? t(k.channelLabelKey) : undefined,
+    shareGithubHint: k.shareGithubHint,
+  }))
+}
 
 function IntegrationsSection() {
+  const { t } = useTranslation('smithyNext')
+
+  const ISSUE_SYNC_OPTIONS = useMemo(() => resolveOptions(t, ISSUE_SYNC_OPTION_KEYS), [t])
+  const MR_SYNC_OPTIONS = useMemo(() => resolveOptions(t, MR_SYNC_OPTION_KEYS), [t])
+  const DOC_SYNC_OPTIONS = useMemo(() => resolveOptions(t, DOC_SYNC_OPTION_KEYS), [t])
+  const NOTIFICATION_OPTIONS = useMemo(() => resolveOptions(t, NOTIFICATION_OPTION_KEYS), [t])
+
   // Selection state
   const [issueSync, setIssueSync] = useState<string>('none')
   const [mrSync, setMrSync] = useState<string>('none')
@@ -1585,8 +1640,8 @@ function IntegrationsSection() {
   return (
     <div style={{ maxWidth: 800 }}>
       <IntegrationSyncGroup
-        title="Issue sync"
-        description="Where task issues live. Stoneforge will keep them in sync two-way."
+        title={t('settings.integrations.issueSync.title')}
+        description={t('settings.integrations.issueSync.description')}
         value={issueSync}
         onChange={setIssueSync}
         options={ISSUE_SYNC_OPTIONS}
@@ -1610,7 +1665,7 @@ function IntegrationsSection() {
             return (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <SelectRow
-                  label="Linear team"
+                  label={t('settings.integrations.issueSync.linearTeamLabel')}
                   value="team-stoneforge"
                   onChange={() => {}}
                   options={[
@@ -1627,8 +1682,8 @@ function IntegrationsSection() {
       />
 
       <IntegrationSyncGroup
-        title="Merge request sync"
-        description="Where merge requests are tracked. Choose GitHub to use native PRs."
+        title={t('settings.integrations.mrSync.title')}
+        description={t('settings.integrations.mrSync.description')}
         value={mrSync}
         onChange={setMrSync}
         options={MR_SYNC_OPTIONS}
@@ -1654,8 +1709,8 @@ function IntegrationsSection() {
       />
 
       <IntegrationSyncGroup
-        title="Documentation sync"
-        description="Where long-form docs are stored and synced."
+        title={t('settings.integrations.docSync.title')}
+        description={t('settings.integrations.docSync.description')}
         value={docSync}
         onChange={setDocSync}
         options={DOC_SYNC_OPTIONS}
@@ -1666,20 +1721,20 @@ function IntegrationsSection() {
           if (option.id === 'repo-folder') {
             return (
               <PathPickerRow
-                label="Folder path"
+                label={DOC_SYNC_OPTIONS.find(o => o.id === 'repo-folder')?.pathLabel || 'Folder path'}
                 value={docPath}
                 onChange={setDocPath}
-                placeholder="docs/"
+                placeholder={DOC_SYNC_OPTIONS.find(o => o.id === 'repo-folder')?.pathPlaceholder || 'docs/'}
               />
             )
           }
           if (option.id === 'obsidian') {
             return (
               <PathPickerRow
-                label="Vault path"
+                label={DOC_SYNC_OPTIONS.find(o => o.id === 'obsidian')?.pathLabel || 'Vault path'}
                 value={obsidianPath}
                 onChange={setObsidianPath}
-                placeholder="~/Documents/MyVault"
+                placeholder={DOC_SYNC_OPTIONS.find(o => o.id === 'obsidian')?.pathPlaceholder || '~/Documents/MyVault'}
               />
             )
           }
@@ -1688,8 +1743,8 @@ function IntegrationsSection() {
       />
 
       <IntegrationSyncGroup
-        title="Notifications"
-        description="Where the workspace sends external notifications about tasks, MRs, and CI."
+        title={t('settings.integrations.notifications.title')}
+        description={t('settings.integrations.notifications.description')}
         value={notification}
         onChange={setNotification}
         options={NOTIFICATION_OPTIONS}
@@ -1700,12 +1755,12 @@ function IntegrationsSection() {
         renderConfig={(option) => {
           if (option.id === 'slack') {
             return (
-              <InputRow label="Channel" placeholder="#agent-updates" value={slackChannel} onChange={setSlackChannel} />
+              <InputRow label={NOTIFICATION_OPTIONS.find(o => o.id === 'slack')?.channelLabel || 'Channel'} placeholder={t('settings.integrations.notifications.slackChannelPlaceholder')} value={slackChannel} onChange={setSlackChannel} />
             )
           }
           if (option.id === 'discord') {
             return (
-              <InputRow label="Channel" placeholder="#agents" value={discordChannel} onChange={setDiscordChannel} />
+              <InputRow label={NOTIFICATION_OPTIONS.find(o => o.id === 'discord')?.channelLabel || 'Channel'} placeholder={t('settings.integrations.notifications.discordChannelPlaceholder')} value={discordChannel} onChange={setDiscordChannel} />
             )
           }
           return null
@@ -1740,6 +1795,7 @@ function IntegrationSyncGroup({
   sharedGithubActive?: boolean
   isLast?: boolean
 }) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div style={{ marginBottom: isLast ? 0 : 32 }}>
       <SectionHeader title={title} description={description} />
@@ -1795,7 +1851,7 @@ function IntegrationSyncGroup({
                       {option.name}
                     </span>
                     {option.requiresAuth && selected && (
-                      <StatusChip status={isShared ? 'connected' : status} label={isShared ? 'Using shared GitHub connection' : undefined} />
+                      <StatusChip status={isShared ? 'connected' : status} label={isShared ? t('settings.integrations.shared.usingSharedGithub') : undefined} />
                     )}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginTop: 2, lineHeight: 1.4 }}>
@@ -1835,7 +1891,7 @@ function IntegrationSyncGroup({
                           onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                         >
                           <ExternalLink size={12} strokeWidth={1.5} />
-                          {option.authButton || 'Connect'}
+                          {option.authButton || t('settings.integrations.shared.connect')}
                         </button>
                       ) : (
                         <button
@@ -1852,7 +1908,7 @@ function IntegrationSyncGroup({
                           onMouseEnter={e => { e.currentTarget.style.color = 'var(--color-danger)'; e.currentTarget.style.borderColor = 'var(--color-danger)' }}
                           onMouseLeave={e => { e.currentTarget.style.color = 'var(--color-text-secondary)'; e.currentTarget.style.borderColor = 'var(--color-border)' }}
                         >
-                          Disconnect
+                          {t('settings.integrations.shared.disconnect')}
                         </button>
                       )}
                     </div>
@@ -1871,10 +1927,11 @@ function IntegrationSyncGroup({
 }
 
 function StatusChip({ status, label }: { status: IntegrationStatus; label?: string }) {
+  const { t } = useTranslation('smithyNext')
   const config: Record<IntegrationStatus, { color: string; bg: string; text: string }> = {
-    connected: { color: 'var(--color-success)', bg: 'var(--color-success-subtle, rgba(34,197,94,0.12))', text: 'Connected' },
-    partial: { color: 'var(--color-warning)', bg: 'var(--color-warning-subtle, rgba(245,158,11,0.12))', text: 'Action required' },
-    disconnected: { color: 'var(--color-text-tertiary)', bg: 'var(--color-surface-active)', text: 'Not connected' },
+    connected: { color: 'var(--color-success)', bg: 'var(--color-success-subtle, rgba(34,197,94,0.12))', text: t('settings.integrations.shared.statusConnected') },
+    partial: { color: 'var(--color-warning)', bg: 'var(--color-warning-subtle, rgba(245,158,11,0.12))', text: t('settings.integrations.shared.statusPartial') },
+    disconnected: { color: 'var(--color-text-tertiary)', bg: 'var(--color-surface-active)', text: t('settings.integrations.shared.statusDisconnected') },
   }
   const c = config[status]
   return (
@@ -1901,20 +1958,21 @@ function GithubRepoPicker({
   orgs: string[]
   repos: Record<string, string[]>
 }) {
+  const { t } = useTranslation('smithyNext')
   const availableRepos = org ? (repos[org] || []) : []
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <SelectRow
-        label="Organization"
+        label={t('settings.integrations.shared.organization')}
         value={org}
         onChange={(v) => { onOrgChange(v); onRepoChange('') }}
-        options={[{ value: '', label: 'Select an org...' }, ...orgs.map(o => ({ value: o, label: o }))]}
+        options={[{ value: '', label: t('settings.integrations.shared.selectOrg') }, ...orgs.map(o => ({ value: o, label: o }))]}
       />
       <SelectRow
-        label="Repository"
+        label={t('settings.integrations.shared.repository')}
         value={repo}
         onChange={onRepoChange}
-        options={[{ value: '', label: org ? 'Select a repo...' : 'Choose an org first' }, ...availableRepos.map(r => ({ value: r, label: r }))]}
+        options={[{ value: '', label: org ? t('settings.integrations.shared.selectRepo') : t('settings.integrations.shared.chooseOrgFirst') }, ...availableRepos.map(r => ({ value: r, label: r }))]}
       />
     </div>
   )
@@ -1953,12 +2011,13 @@ function PathPickerRow({ label, value, onChange, placeholder }: {
 }
 
 function PlaceholderSection({ title }: { title: string }) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       height: 200, color: 'var(--color-text-tertiary)', fontSize: 13,
     }}>
-      {title} settings — coming soon
+      {t('settings.placeholder.comingSoon', { title })}
     </div>
   )
 }
@@ -2044,6 +2103,7 @@ function SelectRow({ label, value, options, onChange }: {
 }
 
 function IconRow({ icon, onChange }: { icon: string; onChange: (next: string) => void }) {
+  const { t } = useTranslation('smithyNext')
   const fileRef = useRef<HTMLInputElement | null>(null)
   const hasImage = isIconImage(icon)
   const letterValue = hasImage ? '' : icon
@@ -2059,7 +2119,7 @@ function IconRow({ icon, onChange }: { icon: string; onChange: (next: string) =>
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
-      <span style={{ width: 100, fontSize: 12, color: 'var(--color-text-secondary)', flexShrink: 0 }}>Icon</span>
+      <span style={{ width: 100, fontSize: 12, color: 'var(--color-text-secondary)', flexShrink: 0 }}>{t('settings.general.workspace.icon')}</span>
       {/* Live preview — matches ActivityRail / TopBar / WorkspacesOverlay */}
       <WorkspaceIconMark icon={icon} fallback="?" size={28} fontSize={11} />
       <input
@@ -2072,7 +2132,7 @@ function IconRow({ icon, onChange }: { icon: string; onChange: (next: string) =>
         placeholder="S"
         maxLength={2}
         disabled={hasImage}
-        title={hasImage ? 'Remove the uploaded image to edit the letter mark' : '1–2 letters'}
+        title={hasImage ? t('settings.general.workspace.iconHasImageTitle') : t('settings.general.workspace.iconLetterTitle')}
         style={{
           width: 64, height: 30, padding: '0 10px',
           background: 'var(--color-surface)', border: '1px solid var(--color-border)',
@@ -2110,12 +2170,12 @@ function IconRow({ icon, onChange }: { icon: string; onChange: (next: string) =>
         onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-surface)'; e.currentTarget.style.color = 'var(--color-text-secondary)' }}
       >
         <Upload size={12} strokeWidth={1.6} />
-        {hasImage ? 'Replace image' : 'Upload image'}
+        {hasImage ? t('settings.general.workspace.iconReplaceImage') : t('settings.general.workspace.iconUploadImage')}
       </button>
       {hasImage && (
         <button
           onClick={() => onChange('')}
-          title="Remove image and revert to letter mark"
+          title={t('settings.general.workspace.iconRemoveTitle')}
           style={{
             height: 30, padding: '0 10px',
             display: 'flex', alignItems: 'center', gap: 4,
@@ -2128,11 +2188,11 @@ function IconRow({ icon, onChange }: { icon: string; onChange: (next: string) =>
           onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-text-tertiary)' }}
         >
           <X size={12} strokeWidth={1.8} />
-          Remove
+          {t('settings.general.workspace.iconRemove')}
         </button>
       )}
       <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginLeft: 'auto', textAlign: 'right', maxWidth: 220 }}>
-        {hasImage ? 'Custom image. Shown in the switcher, notifications, and top bar.' : '1–2 letters or an uploaded image.'}
+        {hasImage ? t('settings.general.workspace.iconHintImage') : t('settings.general.workspace.iconHintLetters')}
       </span>
     </div>
   )

@@ -1,4 +1,5 @@
 import { ArrowLeft } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 
 interface PlaceholderOverlayProps {
   title: string
@@ -6,6 +7,7 @@ interface PlaceholderOverlayProps {
 }
 
 export function PlaceholderOverlay({ title, onBack }: PlaceholderOverlayProps) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div style={{ height: '100%', overflow: 'auto', padding: '24px 32px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
@@ -28,7 +30,7 @@ export function PlaceholderOverlay({ title, onBack }: PlaceholderOverlayProps) {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         height: 300, color: 'var(--color-text-tertiary)', fontSize: 14,
       }}>
-        {title} view — coming soon
+        {t('placeholder.viewComingSoon', { title })}
       </div>
     </div>
   )

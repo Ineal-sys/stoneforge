@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { X, FileText, FileCode, FileType, ChevronDown } from 'lucide-react'
 import type { Document, Library, ContentType, DocumentCategory } from './doc-types'
+import { useTranslation } from '@/i18n'
 
 interface CreateDocumentDialogProps {
   isOpen: boolean
@@ -10,20 +11,20 @@ interface CreateDocumentDialogProps {
   onCreate: (doc: Document) => void
 }
 
-const categoryOptions: { value: DocumentCategory; label: string }[] = [
-  { value: 'spec', label: 'Spec' },
-  { value: 'prd', label: 'PRD' },
-  { value: 'decision-log', label: 'Decision Log (ADR)' },
-  { value: 'tutorial', label: 'Tutorial' },
-  { value: 'how-to', label: 'How-to Guide' },
-  { value: 'explanation', label: 'Explanation' },
-  { value: 'reference', label: 'Reference' },
-  { value: 'runbook', label: 'Runbook' },
-  { value: 'meeting-notes', label: 'Meeting Notes' },
-  { value: 'changelog', label: 'Changelog' },
-  { value: 'post-mortem', label: 'Post-mortem' },
-  { value: 'other', label: 'Other' },
-]
+const categoryKeyMap: Record<DocumentCategory, string> = {
+  spec: 'documents.spec',
+  prd: 'documents.prd',
+  'decision-log': 'documents.decisionLog',
+  tutorial: 'documents.tutorial',
+  'how-to': 'documents.howTo',
+  explanation: 'documents.explanation',
+  reference: 'documents.reference',
+  runbook: 'documents.runbook',
+  'meeting-notes': 'documents.meetingNotes',
+  changelog: 'documents.changelog',
+  'post-mortem': 'documents.postMortem',
+  other: 'documents.other',
+}
 
 const contentTypeIcons: Record<ContentType, typeof FileText> = {
   markdown: FileText,
@@ -32,6 +33,7 @@ const contentTypeIcons: Record<ContentType, typeof FileText> = {
 }
 
 export function CreateDocumentDialog({ isOpen, libraries, selectedLibraryId, onClose, onCreate }: CreateDocumentDialogProps) {
+  const { t } = useTranslation('smithyNext')
   const [title, setTitle] = useState('')
   const [contentType, setContentType] = useState<ContentType>('markdown')
   const [category, setCategory] = useState<DocumentCategory>('spec')
@@ -93,7 +95,7 @@ export function CreateDocumentDialog({ isOpen, libraries, selectedLibraryId, onC
   }
 
   // Build flat library options with indentation
-  const libraryOptions: { id: string | null; name: string; depth: number }[] = [{ id: null, name: 'No library', depth: 0 }]
+  const libraryOptions: { id: string | null; name: string; depth: number }[] = [{ id: null, name: t('documents.noLibrary'), depth: 0 }]
   const addLibChildren = (parentId: string | null, depth: number) => {
     libraries.filter(l => l.parentId === parentId).forEach(l => {
       libraryOptions.push({ id: l.id, name: l.name, depth })
@@ -126,7 +128,7 @@ export function CreateDocumentDialog({ isOpen, libraries, selectedLibraryId, onC
           display: 'flex', alignItems: 'center', padding: '12px 16px',
           borderBottom: '1px solid var(--color-border-subtle)',
         }}>
-          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', flex: 1 }}>New Document</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', flex: 1 }}>{t('documents.newDocument')}</span>
           <button
             onClick={onClose}
             style={{
@@ -145,13 +147,13 @@ export function CreateDocumentDialog({ isOpen, libraries, selectedLibraryId, onC
         <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           {/* Title */}
           <div>
-            <label style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 4 }}>Title</label>
+            <label style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 4 }}>{t('documents.title')}</label>
             <input
               ref={titleRef}
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              placeholder="Untitled"
+              placeholder={t('documents.untitled')}
               onKeyDown={e => { if (e.key === 'Enter') handleCreate() }}
               style={{
                 width: '100%', height: 32, padding: '0 10px', border: '1px solid var(--color-border)',
@@ -164,7 +166,7 @@ export function CreateDocumentDialog({ isOpen, libraries, selectedLibraryId, onC
 
           {/* Content Type */}
           <div>
-            <label style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 4 }}>Content type</label>
+            <label style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 4 }}>{t('documents.contentType')}</label>
             <div style={{ display: 'flex', gap: 2, background: 'var(--color-surface)', borderRadius: 'var(--radius-sm)', padding: 2 }}>
               {(['markdown', 'text', 'json'] as ContentType[]).map(ct => {
                 const Icon = contentTypeIcons[ct]
@@ -195,7 +197,7 @@ export function CreateDocumentDialog({ isOpen, libraries, selectedLibraryId, onC
           <div style={{ display: 'flex', gap: 8 }}>
             {/* Category */}
             <div style={{ flex: 1 }}>
-              <label style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 4 }}>Category</label>
+              <label style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 4 }}>{t('documents.category')}</label>
               <div style={{ position: 'relative' }}>
                 <select
                   value={category}
@@ -207,8 +209,8 @@ export function CreateDocumentDialog({ isOpen, libraries, selectedLibraryId, onC
                     fontSize: 12, outline: 'none', fontFamily: 'var(--font-sans)', cursor: 'pointer',
                   }}
                 >
-                  {categoryOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  {(Object.entries(categoryKeyMap) as [DocumentCategory, string][]).map(([value, key]) => (
+                    <option key={value} value={value}>{t(key)}</option>
                   ))}
                 </select>
                 <ChevronDown size={12} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)', pointerEvents: 'none' }} />
@@ -217,7 +219,7 @@ export function CreateDocumentDialog({ isOpen, libraries, selectedLibraryId, onC
 
             {/* Library */}
             <div style={{ flex: 1 }}>
-              <label style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 4 }}>Library</label>
+              <label style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 4 }}>{t('documents.library')}</label>
               <div style={{ position: 'relative' }}>
                 <select
                   value={libraryId || ''}
@@ -242,7 +244,7 @@ export function CreateDocumentDialog({ isOpen, libraries, selectedLibraryId, onC
 
           {/* Tags */}
           <div>
-            <label style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 4 }}>Tags</label>
+            <label style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', display: 'block', marginBottom: 4 }}>{t('documents.tags')}</label>
             <div style={{
               display: 'flex', flexWrap: 'wrap', gap: 4, padding: '4px 8px', minHeight: 32,
               border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)',
@@ -264,7 +266,7 @@ export function CreateDocumentDialog({ isOpen, libraries, selectedLibraryId, onC
                 value={tagInput}
                 onChange={e => setTagInput(e.target.value)}
                 onKeyDown={handleTagKeyDown}
-                placeholder={tags.length === 0 ? 'Add tags (press Enter)' : ''}
+                placeholder={tags.length === 0 ? t('documents.addTagsPlaceholder') : ''}
                 style={{
                   flex: 1, minWidth: 80, border: 'none', background: 'transparent',
                   color: 'var(--color-text)', fontSize: 12, outline: 'none',

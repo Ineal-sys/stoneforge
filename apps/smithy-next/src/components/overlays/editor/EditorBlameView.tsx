@@ -1,3 +1,4 @@
+import { useTranslation } from '@/i18n'
 import { Bot } from 'lucide-react'
 import { highlightLine, detectLanguage } from '../mr/syntax-highlight'
 import type { EditorBlameBlock } from './editor-mock-data'
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export function EditorBlameView({ content, filePath, blameBlocks }: Props) {
+  const { t } = useTranslation('smithyNext')
   const lines = content.split('\n')
   const language = detectLanguage(filePath)
   const gutterWidth = Math.max(3, String(lines.length).length) * 8 + 24

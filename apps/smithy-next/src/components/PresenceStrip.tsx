@@ -1,27 +1,22 @@
 import type { StoneforgeUser, PresenceEntry } from '../mock-data'
+import { useTranslation } from '@/i18n'
 import { UserAvatar } from './UserAvatar'
 import { Tooltip } from './Tooltip'
 
-interface PresenceStripProps {
-  users: StoneforgeUser[]
-  presence: PresenceEntry[]
-  max?: number
-}
-
-const viewLabels: Record<string, string> = {
-  kanban: 'Tasks',
-  'merge-requests': 'Merge Requests',
-  ci: 'CI/CD',
-  preview: 'Preview',
-  automations: 'Automations',
-  sessions: 'Sessions',
-  agents: 'Agents',
-  editor: 'Editor',
-  runtimes: 'Runtimes',
-  settings: 'Settings',
-}
-
-export function PresenceStrip({ users, presence, max = 4 }: PresenceStripProps) {
+export function PresenceStrip({ users, presence, max = 4 }: { users: StoneforgeUser[]; presence: PresenceEntry[]; max?: number }) {
+  const { t } = useTranslation('smithyNext')
+  const viewLabels: Record<string, string> = {
+    kanban: t('presence.tasks'),
+    'merge-requests': t('presence.mergeRequests'),
+    ci: t('presence.ciCd'),
+    preview: t('presence.preview'),
+    automations: t('presence.automations'),
+    sessions: t('presence.sessions'),
+    agents: t('presence.agents'),
+    editor: t('presence.editor'),
+    runtimes: t('presence.runtimes'),
+    settings: t('presence.settings'),
+  }
   const visible = users.slice(0, max)
   const overflow = users.length - max
 
@@ -30,7 +25,7 @@ export function PresenceStrip({ users, presence, max = 4 }: PresenceStripProps) 
       {visible.map((user, i) => {
         const entry = presence.find(p => p.userId === user.id)
         const viewLabel = entry?.activeView ? viewLabels[entry.activeView] || entry.activeView : undefined
-        const tooltip = `${user.name}${viewLabel ? ` — viewing ${viewLabel}` : ''}`
+        const tooltip = `${user.name}${viewLabel ? ` — ${t('presence.viewing')} ${viewLabel}` : ''}`
 
         return (
           <Tooltip key={user.id} label={tooltip} placement="bottom">
@@ -49,7 +44,7 @@ export function PresenceStrip({ users, presence, max = 4 }: PresenceStripProps) 
         )
       })}
       {overflow > 0 && (
-        <Tooltip label={`${overflow} more`} placement="bottom">
+        <Tooltip label={t('presence.more', { count: overflow })} placement="bottom">
           <div
             style={{
               width: 22,

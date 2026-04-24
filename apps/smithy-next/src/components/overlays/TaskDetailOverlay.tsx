@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowUp, ArrowDown, Send, Plus, MoreHorizontal, GitBranch, L
 import type { Task } from '../../mock-data'
 import { KANBAN_COLUMNS, ASSIGNEES, COMPLEXITY_LEVELS, mockDirectors, mockWhiteboards } from '../../mock-data'
 import { useTeamContext } from '../../TeamContext'
+import { useTranslation } from '@/i18n'
 import { UserAvatar } from '../UserAvatar'
 import { AvatarStack } from '../AvatarStack'
 import { useMentionAutocomplete, MentionDropdown } from '../MentionAutocomplete'
@@ -34,6 +35,7 @@ interface TaskDetailOverlayProps {
 }
 
 export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavigate, onViewDiff, onNavigateToTask, onNavigateToPreview, onSelectDirector, onSelectAgent, onOpenInEditor, onNavigateToWhiteboard, siblingIds }: TaskDetailOverlayProps) {
+  const { t } = useTranslation('smithyNext')
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [commentInput, setCommentInput] = useState('')
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
@@ -74,7 +76,7 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
 
         {/* More menu — right after ID */}
         <div ref={moreMenuTriggerRef} style={{ position: 'relative' }}>
-          <HeaderIconButton icon={<MoreHorizontal size={14} strokeWidth={1.5} />} tooltip="More options" onClick={() => setMoreMenuOpen(!moreMenuOpen)} />
+          <HeaderIconButton icon={<MoreHorizontal size={14} strokeWidth={1.5} />} tooltip={t('taskDetail.moreOptions')} onClick={() => setMoreMenuOpen(!moreMenuOpen)} />
           {moreMenuOpen && <MoreOptionsMenu task={task} onClose={() => setMoreMenuOpen(false)} triggerRef={moreMenuTriggerRef} />}
         </div>
 
@@ -100,19 +102,19 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
           <AlertTriangle size={14} strokeWidth={1.5} style={{ color: 'var(--color-warning)', flexShrink: 0 }} />
           <span style={{ flex: 1 }}>
             {isTeamMode && task.claimedBy.launchedByUserId
-              ? `${task.claimedBy.agentName} (launched by ${getUserById(task.claimedBy.launchedByUserId)?.name || 'unknown'}) is working on this task. Assign your agent anyway?`
-              : `${task.claimedBy.agentName} is already working on this task. Assign another agent anyway?`}
+              ? t('taskDetail.claimWarningTeam', { agentName: task.claimedBy.agentName, userName: getUserById(task.claimedBy.launchedByUserId)?.name || 'unknown' })
+              : t('taskDetail.claimWarningOther', { agentName: task.claimedBy.agentName })}
           </span>
           <button onClick={() => setClaimDismissed(true)} style={{
             padding: '3px 10px', fontSize: 12, fontWeight: 500, border: 'none',
             borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)',
             color: 'var(--color-text-secondary)', cursor: 'pointer',
-          }}>Dismiss</button>
+          }}>{t('taskDetail.dismiss')}</button>
           <button onClick={() => setClaimDismissed(true)} style={{
             padding: '3px 10px', fontSize: 12, fontWeight: 500, border: 'none',
             borderRadius: 'var(--radius-sm)', background: 'var(--color-warning-subtle, var(--color-surface))',
             color: 'var(--color-warning)', cursor: 'pointer',
-          }}>Assign Anyway</button>
+          }}>{t('taskDetail.assignAnyway')}</button>
         </div>
       )}
 
@@ -130,7 +132,7 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
             {task.description ? (
               <div style={{ fontSize: 14, color: 'var(--color-text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{task.description}</div>
             ) : (
-              <div style={{ fontSize: 14, color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>Add description...</div>
+              <div style={{ fontSize: 14, color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>{t('taskDetail.addDescription')}</div>
             )}
           </div>
 
@@ -139,16 +141,16 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
             <button style={{ width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text-tertiary)', cursor: 'pointer' }}
               onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-surface-hover)'; e.currentTarget.style.color = 'var(--color-text-secondary)' }}
               onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-surface)'; e.currentTarget.style.color = 'var(--color-text-tertiary)' }}
-              title="Add reaction">
+              title={t('taskDetail.addReaction')}>
               <Smile size={15} strokeWidth={1.5} />
             </button>
             <button style={{ width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text-tertiary)', cursor: 'pointer' }}
               onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-surface-hover)'; e.currentTarget.style.color = 'var(--color-text-secondary)' }}
               onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-surface)'; e.currentTarget.style.color = 'var(--color-text-tertiary)' }}
-              title="Attach images, files or videos">
+              title={t('taskDetail.attachFiles')}>
               <Paperclip size={15} strokeWidth={1.5} />
             </button>
-            <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Attach images, files or videos</span>
+            <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('taskDetail.attachFiles')}</span>
           </div>
 
           {/* Acceptance Criteria */}
@@ -162,7 +164,7 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
                   <>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                       <ListChecks size={14} strokeWidth={1.5} style={{ color: allPassing ? 'var(--color-success)' : 'var(--color-text-tertiary)' }} />
-                      <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)' }}>Acceptance Criteria</span>
+                      <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)' }}>{t('taskDetail.acceptanceCriteria')}</span>
                       <span style={{
                         fontSize: 11,
                         color: allPassing ? 'var(--color-success)' : 'var(--color-text-tertiary)',
@@ -176,7 +178,7 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
                           borderRadius: 'var(--radius-sm)',
                           background: 'var(--color-success-subtle)',
                           color: 'var(--color-success)',
-                        }}>All passing</span>
+                        }}>{t('taskDetail.allPassing')}</span>
                       )}
                     </div>
                     {/* Progress bar */}
@@ -229,7 +231,7 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
                   </>
                 )}
                 <button style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, padding: '6px 0', border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 12 }}>
-                  <Plus size={13} strokeWidth={1.5} /> Add acceptance criteria
+                  <Plus size={13} strokeWidth={1.5} /> {t('taskDetail.addAcceptanceCriteria')}
                 </button>
               </div>
             )
@@ -241,7 +243,7 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
               <>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                   <Layers size={14} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />
-                  <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)' }}>Sub-tasks</span>
+                  <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)' }}>{t('taskDetail.subTasks')}</span>
                   <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>
                     {subTasks.filter(s => s.status === 'done').length}/{subTasks.length}
                   </span>
@@ -269,7 +271,7 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
               </>
             )}
             <button style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, padding: '6px 0', border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 12 }}>
-              <Plus size={13} strokeWidth={1.5} /> Add sub-tasks
+              <Plus size={13} strokeWidth={1.5} /> {t('taskDetail.addSubTasks')}
             </button>
           </div>
 
@@ -282,7 +284,7 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
               <div style={{ marginBottom: 24 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                   <Link size={14} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />
-                  <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)' }}>Dependencies</span>
+                  <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)' }}>{t('taskDetail.dependencies')}</span>
                   <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>
                     {doneCount}/{deps.length}
                   </span>
@@ -314,9 +316,9 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
           {/* Activity */}
           <div style={{ borderTop: '1px solid var(--color-border-subtle)', paddingTop: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <h3 style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', margin: 0 }}>Activity</h3>
+              <h3 style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', margin: 0 }}>{t('taskDetail.activity')}</h3>
             </div>
-            {getActivity(task, currentUser.name, currentUser.avatar, isTeamMode, getUserById).map((entry, i, arr) => (
+            {getActivity(task, currentUser.name, currentUser.avatar, isTeamMode, getUserById, t).map((entry, i, arr) => (
               <div key={i} style={{ display: 'flex', gap: 12, padding: '10px 0', borderBottom: i < arr.length - 1 ? '1px solid var(--color-border-subtle)' : 'none' }}>
                 {entry.user ? (
                   <UserAvatar user={entry.user} size={28} showPresence={isTeamMode} />
@@ -327,7 +329,7 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
                   <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>
                     {entry.text}
                     {isTeamMode && entry.launchedByName && (
-                      <span style={{ color: 'var(--color-text-tertiary)', fontSize: 12 }}> (launched by {entry.launchedByName})</span>
+                      <span style={{ color: 'var(--color-text-tertiary)', fontSize: 12 }}> {t('taskDetail.launchedBy', { userName: entry.launchedByName })}</span>
                     )}
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 2 }}>{entry.time}</div>
@@ -344,7 +346,7 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
                     value={commentInput}
                     onChange={e => mention.handleChange(e.target.value)}
                     onKeyDown={mention.handleKeyDown}
-                    placeholder={isTeamMode ? 'Leave a comment... (@ to mention)' : 'Leave a comment...'}
+                    placeholder={isTeamMode ? t('taskDetail.leaveCommentMention') : t('taskDetail.leaveComment')}
                     style={{ flex: 1, background: 'var(--color-surface)', border: 'none', borderRadius: 'var(--radius-sm)', padding: '8px 12px', color: 'var(--color-text)', fontSize: 13, outline: 'none' }}
                   />
                   <button style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-primary)', border: 'none', borderRadius: 'var(--radius-sm)', color: 'white', cursor: 'pointer' }}>
@@ -369,13 +371,13 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
         <div className="task-detail-sidebar" style={{ width: 280, minWidth: 280, borderLeft: '1px solid var(--color-border)', overflow: 'auto', padding: 16, flexShrink: 0 }}>
           {/* Copy buttons */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginBottom: 12, justifyContent: 'flex-end' }}>
-            <HeaderIconButton icon={<Link size={13} strokeWidth={1.5} />} tooltip="Copy task link" onClick={() => {}} />
-            <HeaderIconButton icon={<Clipboard size={13} strokeWidth={1.5} />} tooltip={`Copy ID: ${task.id}`} onClick={() => {}} />
-            {task.branch && <HeaderIconButton icon={<GitBranch size={13} strokeWidth={1.5} />} tooltip={`Copy branch: ${task.branch}`} onClick={() => {}} />}
-            <HeaderIconButton icon={<Copy size={13} strokeWidth={1.5} />} tooltip="Copy as prompt" onClick={() => {}} />
+            <HeaderIconButton icon={<Link size={13} strokeWidth={1.5} />} tooltip={t('taskDetail.copyTaskLink')} onClick={() => {}} />
+            <HeaderIconButton icon={<Clipboard size={13} strokeWidth={1.5} />} tooltip={t('taskDetail.copyId', { taskId: task.id })} onClick={() => {}} />
+            {task.branch && <HeaderIconButton icon={<GitBranch size={13} strokeWidth={1.5} />} tooltip={t('taskDetail.copyBranch', { branch: task.branch })} onClick={() => {}} />}
+            <HeaderIconButton icon={<Copy size={13} strokeWidth={1.5} />} tooltip={t('taskDetail.copyAsPrompt')} onClick={() => {}} />
           </div>
 
-          <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)', marginBottom: 12 }}>Properties</div>
+          <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)', marginBottom: 12 }}>{t('taskDetail.properties')}</div>
 
           {/* Status */}
           <div style={{ position: 'relative', marginBottom: 4 }}>
@@ -388,7 +390,7 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
               const ac = task.acceptanceCriteria
               if (!ac || ac.length === 0) return undefined
               const unchecked = ac.filter(c => !c.checked).length
-              return unchecked > 0 ? { done: `${unchecked} acceptance criteria not yet passing` } : undefined
+              return unchecked > 0 ? { done: t('taskDetail.acceptanceCriteriaNotPassing', { count: unchecked }) } : undefined
             })()} />}
           </div>
 
@@ -406,7 +408,7 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
           <div style={{ position: 'relative', marginBottom: 4 }}>
             <PropertyPill
               icon={task.assignee ? <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--color-primary-muted)', color: 'var(--color-text-accent)', fontSize: 8, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{task.assignee.avatar}</div> : undefined}
-              label={task.assignee?.name || 'Assign'}
+              label={task.assignee?.name || t('taskDetail.assign')}
               onClick={() => setOpenDropdown(openDropdown === 'assignee' ? null : 'assignee')}
             />
             {openDropdown === 'assignee' && <AssigneeDropdown current={task.assignee?.name} onSelect={name => {
@@ -417,7 +419,7 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
 
           {/* Labels */}
           <div style={{ position: 'relative', marginBottom: 12 }}>
-            <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)', marginBottom: 4, marginTop: 8 }}>Labels</div>
+            <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)', marginBottom: 4, marginTop: 8 }}>{t('taskDetail.labels')}</div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
               {task.labels.map(l => (
                 <span key={l} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text-secondary)' }}>{l}</span>
@@ -432,12 +434,12 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
 
           {/* Estimate */}
           <div style={{ position: 'relative', marginBottom: 4 }}>
-            <PropertyRow label="Complexity" value={task.estimate ? COMPLEXITY_LABEL(task.estimate) : 'None'} onClick={() => setOpenDropdown(openDropdown === 'estimate' ? null : 'estimate')} />
+            <PropertyRow label={t('taskDetail.complexity')} value={task.estimate ? COMPLEXITY_LABEL(task.estimate) : t('taskDetail.none')} onClick={() => setOpenDropdown(openDropdown === 'estimate' ? null : 'estimate')} />
             {openDropdown === 'estimate' && <EstimateDropdown current={task.estimate} onSelect={n => update({ estimate: n as Task['estimate'] })} onClose={() => setOpenDropdown(null)} position={{ top: 30, left: 0 }} />}
           </div>
 
           {/* Due date */}
-          <PropertyRow label="Due date" value={task.dueDate || 'None'} onClick={() => {}} />
+          <PropertyRow label={t('taskDetail.dueDate')} value={task.dueDate || t('taskDetail.none')} onClick={() => {}} />
 
           {/* Creator — shown only when a human created the task */}
           {task.creatorId && (() => {
@@ -445,7 +447,7 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
             if (!creator) return null
             return (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', fontSize: 12 }}>
-                <span style={{ color: 'var(--color-text-tertiary)' }}>Creator</span>
+                <span style={{ color: 'var(--color-text-tertiary)' }}>{t('taskDetail.creator')}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   {isTeamMode ? (
                     <UserAvatar user={creator} size={16} showPresence />
@@ -476,7 +478,7 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
                   onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border-subtle)'; e.currentTarget.style.color = 'var(--color-text-tertiary)' }}
                 >
                   <ExternalLink size={10} strokeWidth={1.5} />
-                  Editor
+                  {t('taskDetail.editor')}
                 </button>
               )}
             </div>
@@ -492,7 +494,7 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
           />
 
           {/* Required Role Tags */}
-          <RequiredAgentTags tags={task.requiredRoleDefinitionTags || []} onChange={tags => update({ requiredRoleDefinitionTags: tags.length > 0 ? tags : undefined })} label="Required Role Tags" />
+          <RequiredAgentTags tags={task.requiredRoleDefinitionTags || []} onChange={tags => update({ requiredRoleDefinitionTags: tags.length > 0 ? tags : undefined })} label={t('taskDetail.requiredRoleTags')} />
 
           {/* 6.1 Watchers section (team-mode only) */}
           {isTeamMode && (
@@ -500,7 +502,7 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <Eye size={13} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />
-                  <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)' }}>Watchers</span>
+                  <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)' }}>{t('taskDetail.watchers')}</span>
                 </div>
                 <button
                   onClick={() => {
@@ -517,7 +519,7 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
                   }}
                 >
                   {(task.watchers || []).includes(currentUser.id) ? <EyeOff size={11} strokeWidth={1.5} /> : <Eye size={11} strokeWidth={1.5} />}
-                  {(task.watchers || []).includes(currentUser.id) ? 'Unwatch' : 'Watch'}
+                  {(task.watchers || []).includes(currentUser.id) ? t('taskDetail.unwatch') : t('taskDetail.watch')}
                 </button>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -556,58 +558,58 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
             <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)', marginBottom: 8, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Stoneforge</div>
 
             {task.blocked && (
-              <LinkRow label="Status" value="Blocked" color="var(--color-danger)" onClick={() => {}} />
+              <LinkRow label={t('taskDetail.status')} value={t('taskDetail.blocked')} color="var(--color-danger)" onClick={() => {}} />
             )}
             {task.sessionStatus && (() => {
               const director = mockDirectors.find(d => d.name === task.assignee?.name)
               return (
                 <LinkRow
-                  label="Director Session"
+                  label={t('taskDetail.directorSession')}
                   value={`${task.assignee?.name?.replace('Director ', '') || ''} · ${task.sessionStatus}`}
                   color={task.sessionStatus === 'running' ? 'var(--color-success)' : task.sessionStatus === 'error' ? 'var(--color-danger)' : 'var(--color-text-tertiary)'}
                   onClick={() => director && onSelectDirector?.(director.id)}
-                  action={director ? 'Open chat →' : undefined}
+                  action={director ? t('taskDetail.openChat') : undefined}
                 />
               )
             })()}
             {task.agentName && (task.status === 'in_progress' || task.status === 'in_review') && (
               <LinkRow
-                label="Agent Session"
+                label={t('taskDetail.agentSession')}
                 value={`${task.agentName} · ${task.sessionStatus === 'running' ? 'running' : 'idle'}`}
                 color={task.sessionStatus === 'running' ? 'var(--color-success)' : 'var(--color-text-tertiary)'}
                 onClick={() => task.agentSessionId && onSelectAgent?.(task.agentSessionId)}
-                action={task.agentSessionId ? 'View agent →' : undefined}
+                action={task.agentSessionId ? t('taskDetail.viewAgent') : undefined}
               />
             )}
             {task.reviewAgentName && task.status === 'in_review' && (
               <LinkRow
-                label="Review Session"
+                label={t('taskDetail.reviewSession')}
                 value={`${task.reviewAgentName} · reviewing`}
                 color="var(--color-warning)"
                 onClick={() => task.reviewAgentSessionId && onSelectAgent?.(task.reviewAgentSessionId)}
-                action={task.reviewAgentSessionId ? 'View agent →' : undefined}
+                action={task.reviewAgentSessionId ? t('taskDetail.viewAgent') : undefined}
               />
             )}
             {task.ciStatus && task.ciStatus !== 'none' && (
-              <LinkRow label="CI/CD" value={task.ciStatus} color={task.ciStatus === 'pass' ? 'var(--color-success)' : task.ciStatus === 'fail' ? 'var(--color-danger)' : 'var(--color-warning)'} onClick={() => onNavigate('ci')} action="View pipeline →" />
+              <LinkRow label={t('taskDetail.ciCd')} value={task.ciStatus} color={task.ciStatus === 'pass' ? 'var(--color-success)' : task.ciStatus === 'fail' ? 'var(--color-danger)' : 'var(--color-warning)'} onClick={() => onNavigate('ci')} action={t('taskDetail.viewPipeline')} />
             )}
             {task.mrStatus && task.mrStatus !== 'none' && (
-              <LinkRow label="Merge Request" value={task.mrStatus.replace(/_/g, ' ')} color={task.mrStatus === 'merged' ? 'var(--color-primary)' : task.mrStatus === 'needs_review' ? 'var(--color-warning)' : 'var(--color-text-secondary)'} onClick={() => onNavigate('merge-requests')} action="Open MR →" />
+              <LinkRow label={t('taskDetail.mergeRequest')} value={task.mrStatus.replace(/_/g, ' ')} color={task.mrStatus === 'merged' ? 'var(--color-primary)' : task.mrStatus === 'needs_review' ? 'var(--color-warning)' : 'var(--color-text-secondary)'} onClick={() => onNavigate('merge-requests')} action={t('taskDetail.openMR')} />
             )}
             {task.mrStatus && task.mrStatus !== 'none' && onNavigateToPreview && (
-              <LinkRow label="Preview" value="Ready" color="var(--color-success)" onClick={() => onNavigateToPreview(task.id)} action="View preview →" />
+              <LinkRow label={t('taskDetail.preview')} value={t('taskDetail.ready')} color="var(--color-success)" onClick={() => onNavigateToPreview(task.id)} action={t('taskDetail.viewPreview')} />
             )}
             {(() => {
               if (!task.whiteboardId) return null
               const wb = mockWhiteboards.find(w => w.id === task.whiteboardId)
               if (!wb) return null
-              return <LinkRow label="Whiteboard" value={wb.title} color="var(--color-primary)" onClick={() => onNavigateToWhiteboard?.(wb.directorId)} action="View whiteboard →" />
+              return <LinkRow label={t('taskDetail.whiteboard')} value={wb.title} color="var(--color-primary)" onClick={() => onNavigateToWhiteboard?.(wb.directorId)} action={t('taskDetail.viewWhiteboard')} />
             })()}
             {task.planName && (
-              <LinkRow label="Plan" value={task.planName} color="var(--color-text-secondary)" onClick={() => onNavigate('plans')} action="View plan →" />
+              <LinkRow label={t('taskDetail.plan')} value={task.planName} color="var(--color-text-secondary)" onClick={() => onNavigate('plans')} action={t('taskDetail.viewPlan')} />
             )}
             {task.branch && (
-              <LinkRow label="Changes" value="View diff" color="var(--color-text-tertiary)" onClick={() => onViewDiff(task.id, task.branch!)} action="View diff →" />
+              <LinkRow label={t('taskDetail.changes')} value={t('taskDetail.viewDiff')} color="var(--color-text-tertiary)" onClick={() => onViewDiff(task.id, task.branch!)} action={t('taskDetail.viewDiffAction')} />
             )}
           </div>
         </div>
@@ -617,6 +619,7 @@ export function TaskDetailOverlay({ task, allTasks, onBack, onUpdateTask, onNavi
 }
 
 function RequiredRoleDropdown({ roleDefinitionId, onChange }: { roleDefinitionId?: string; onChange: (id: string | null) => void }) {
+  const { t } = useTranslation('smithyNext')
   const [open, setOpen] = useState(false)
   const selected = roleDefinitionId ? mockRoleDefinitions.find(r => r.id === roleDefinitionId) : null
   const categoryColors: Record<string, { bg: string; text: string }> = {
@@ -627,7 +630,7 @@ function RequiredRoleDropdown({ roleDefinitionId, onChange }: { roleDefinitionId
 
   return (
     <div style={{ marginTop: 8, marginBottom: 4, position: 'relative' }}>
-      <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)', marginBottom: 4 }}>Required Role</div>
+      <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)', marginBottom: 4 }}>{t('taskDetail.requiredRole')}</div>
       <button
         onClick={() => setOpen(!open)}
         style={{
@@ -637,7 +640,7 @@ function RequiredRoleDropdown({ roleDefinitionId, onChange }: { roleDefinitionId
         }}
       >
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {selected ? selected.name : 'None'}
+          {selected ? selected.name : t('taskDetail.none')}
         </span>
         <ChevronDown size={11} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
       </button>
@@ -656,7 +659,7 @@ function RequiredRoleDropdown({ roleDefinitionId, onChange }: { roleDefinitionId
               border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontSize: 12,
               color: 'var(--color-text-tertiary)',
             }}>
-              None
+              {t('taskDetail.none')}
             </button>
             {mockRoleDefinitions.map(rd => {
               const isSelected = rd.id === roleDefinitionId
@@ -688,6 +691,7 @@ function RequiredRoleDropdown({ roleDefinitionId, onChange }: { roleDefinitionId
 }
 
 function RequiredAgentTags({ tags, onChange, label = 'Required Agent Tags' }: { tags: string[]; onChange: (tags: string[]) => void; label?: string }) {
+  const { t } = useTranslation('smithyNext')
   const [input, setInput] = useState('')
   const removeTag = (tag: string) => onChange(tags.filter(t => t !== tag))
   const addTag = (raw: string) => {
@@ -736,7 +740,7 @@ function RequiredAgentTags({ tags, onChange, label = 'Required Agent Tags' }: { 
               onChange(tags.slice(0, -1))
             }
           }}
-          placeholder={tags.length === 0 ? 'Add tag...' : 'Add...'}
+          placeholder={tags.length === 0 ? t('taskDetail.addTag') : t('taskDetail.add')}
           style={{
             flex: 1, minWidth: 60, height: 22, padding: '0 4px', fontSize: 11,
             background: 'transparent', border: 'none', outline: 'none',
@@ -806,6 +810,7 @@ function HeaderIconButton({ icon, tooltip, onClick }: { icon: React.ReactNode; t
 }
 
 function MoreOptionsMenu({ task, onClose, triggerRef }: { task: Task; onClose: () => void; triggerRef: React.RefObject<HTMLDivElement | null> }) {
+  const { t } = useTranslation('smithyNext')
   const ref = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState({ top: 0, left: 0 })
 
@@ -830,21 +835,21 @@ function MoreOptionsMenu({ task, onClose, triggerRef }: { task: Task; onClose: (
   }, [triggerRef])
 
   const items: { icon: React.ReactNode; label: string; shortcut?: string; destructive?: boolean; divider?: boolean }[] = [
-    { icon: <Calendar size={14} strokeWidth={1.5} />, label: 'Set due date', shortcut: '⇧ D' },
-    { icon: <Link size={14} strokeWidth={1.5} />, label: 'Add link...', shortcut: '⌃ L' },
-    { icon: <FileText size={14} strokeWidth={1.5} />, label: 'Add document...' },
-    { icon: <Copy size={14} strokeWidth={1.5} />, label: 'Make a copy...' },
+    { icon: <Calendar size={14} strokeWidth={1.5} />, label: t('taskDetail.setDueDate'), shortcut: '⇧ D' },
+    { icon: <Link size={14} strokeWidth={1.5} />, label: t('taskDetail.addLink'), shortcut: '⌃ L' },
+    { icon: <FileText size={14} strokeWidth={1.5} />, label: t('taskDetail.addDocument') },
+    { icon: <Copy size={14} strokeWidth={1.5} />, label: t('taskDetail.makeCopy') },
     { icon: <span />, label: '', divider: true },
-    { icon: <Star size={14} strokeWidth={1.5} />, label: 'Favorite', shortcut: '⌥ F' },
-    { icon: <Clipboard size={14} strokeWidth={1.5} />, label: 'Copy task link' },
-    { icon: <Clipboard size={14} strokeWidth={1.5} />, label: `Copy ID: ${task.id}`, shortcut: '⌘ .' },
-    ...(task.branch ? [{ icon: <GitBranch size={14} strokeWidth={1.5} />, label: `Copy branch: ${task.branch}` }] : []),
-    { icon: <Copy size={14} strokeWidth={1.5} />, label: 'Copy as prompt' },
+    { icon: <Star size={14} strokeWidth={1.5} />, label: t('taskDetail.favorite'), shortcut: '⌥ F' },
+    { icon: <Clipboard size={14} strokeWidth={1.5} />, label: t('taskDetail.copyTaskLink') },
+    { icon: <Clipboard size={14} strokeWidth={1.5} />, label: t('taskDetail.copyId', { taskId: task.id }), shortcut: '⌘ .' },
+    ...(task.branch ? [{ icon: <GitBranch size={14} strokeWidth={1.5} />, label: t('taskDetail.copyBranch', { branch: task.branch }) }] : []),
+    { icon: <Copy size={14} strokeWidth={1.5} />, label: t('taskDetail.copyAsPrompt') },
     { icon: <span />, label: '', divider: true },
-    { icon: <Clock size={14} strokeWidth={1.5} />, label: 'Remind me', shortcut: '⇧ H' },
-    { icon: <FileText size={14} strokeWidth={1.5} />, label: 'Show version history' },
+    { icon: <Clock size={14} strokeWidth={1.5} />, label: t('taskDetail.remindMe'), shortcut: '⇧ H' },
+    { icon: <FileText size={14} strokeWidth={1.5} />, label: t('taskDetail.showVersionHistory') },
     { icon: <span />, label: '', divider: true },
-    { icon: <Trash2 size={14} strokeWidth={1.5} />, label: 'Delete', shortcut: '⌘ ⌫', destructive: true },
+    { icon: <Trash2 size={14} strokeWidth={1.5} />, label: t('taskDetail.delete'), shortcut: '⌘ ⌫', destructive: true },
   ]
 
   return createPortal(
@@ -880,6 +885,7 @@ function WatcherDropdown({ watchers, teamMembers, getUserById, onToggle, onClose
   onToggle: (userId: string) => void
   onClose: () => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) onClose() }
@@ -893,7 +899,7 @@ function WatcherDropdown({ watchers, teamMembers, getUserById, onToggle, onClose
       borderRadius: 'var(--radius-md)', padding: 4, width: 220,
       boxShadow: 'var(--shadow-float)',
     }}>
-      <div style={{ padding: '4px 8px', fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)' }}>Add watchers</div>
+      <div style={{ padding: '4px 8px', fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)' }}>{t('taskDetail.addWatchers')}</div>
       {teamMembers.map(member => {
         const isWatching = watchers.includes(member.id)
         return (
@@ -930,22 +936,23 @@ function getActivity(
   currentUserName: string,
   currentUserAvatar: string,
   isTeamMode: boolean,
-  getUserById: (id: string) => import('../../mock-data').StoneforgeUser | undefined
+  getUserById: (id: string) => import('../../mock-data').StoneforgeUser | undefined,
+  t: (key: string, opts?: Record<string, unknown>) => string
 ): ActivityEntry[] {
   const a: ActivityEntry[] = []
   const launchedByName = task.claimedBy?.launchedByUserId ? getUserById(task.claimedBy.launchedByUserId)?.name : undefined
-  if (task.sessionStatus === 'running') a.push({ avatar: task.assignee?.avatar || '?', text: `${task.assignee?.name || 'Agent'} started working on this task`, time: task.updatedAt, isAgent: true, launchedByName })
-  if (task.mrStatus === 'needs_review') a.push({ avatar: task.assignee?.avatar || '?', text: `${task.assignee?.name || 'Agent'} opened a merge request for review`, time: '20 min ago', isAgent: true, launchedByName })
-  if (task.mrStatus === 'open') a.push({ avatar: task.assignee?.avatar || '?', text: `${task.assignee?.name || 'Agent'} pushed changes to ${task.branch}`, time: '45 min ago', isAgent: true, launchedByName })
-  if (task.ciStatus === 'fail') a.push({ avatar: 'CI', text: 'CI pipeline failed — 1 test failure', time: '40 min ago' })
-  if (task.ciStatus === 'pass') a.push({ avatar: 'CI', text: 'CI pipeline passed — all checks green', time: '25 min ago' })
+  if (task.sessionStatus === 'running') a.push({ avatar: task.assignee?.avatar || '?', text: t('taskDetail.agentStartedWorking', { agentName: task.assignee?.name || 'Agent' }), time: task.updatedAt, isAgent: true, launchedByName })
+  if (task.mrStatus === 'needs_review') a.push({ avatar: task.assignee?.avatar || '?', text: t('taskDetail.agentOpenedMR', { agentName: task.assignee?.name || 'Agent' }), time: '20 min ago', isAgent: true, launchedByName })
+  if (task.mrStatus === 'open') a.push({ avatar: task.assignee?.avatar || '?', text: t('taskDetail.agentPushedChanges', { agentName: task.assignee?.name || 'Agent', branch: task.branch || '' }), time: '45 min ago', isAgent: true, launchedByName })
+  if (task.ciStatus === 'fail') a.push({ avatar: 'CI', text: t('taskDetail.ciPipelineFailed'), time: '40 min ago' })
+  if (task.ciStatus === 'pass') a.push({ avatar: 'CI', text: t('taskDetail.ciPipelinePassed'), time: '25 min ago' })
   const mergeUser = task.creatorId ? getUserById(task.creatorId) : undefined
-  if (task.mrStatus === 'merged') a.push({ avatar: currentUserAvatar, text: `${currentUserName} merged the pull request`, time: task.updatedAt, user: mergeUser })
+  if (task.mrStatus === 'merged') a.push({ avatar: currentUserAvatar, text: t('taskDetail.mergedPullRequest', { userName: currentUserName }), time: task.updatedAt, user: mergeUser })
   const creator = task.creatorId ? getUserById(task.creatorId) : undefined
   if (creator) {
-    a.push({ avatar: creator.avatar, text: `${creator.name} created this task`, time: '3 days ago', user: creator })
+    a.push({ avatar: creator.avatar, text: t('taskDetail.createdThisTask', { userName: creator.name }), time: '3 days ago', user: creator })
   } else {
-    a.push({ avatar: task.assignee?.avatar || '?', text: 'Task created', time: '3 days ago' })
+    a.push({ avatar: task.assignee?.avatar || '?', text: t('taskDetail.taskCreated'), time: '3 days ago' })
   }
   return a
 }

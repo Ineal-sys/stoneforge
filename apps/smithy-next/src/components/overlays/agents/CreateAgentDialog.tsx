@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from '@/i18n'
 import { X } from 'lucide-react'
 import type { AgentExtended } from './agent-types'
 
@@ -19,6 +20,7 @@ function generateName(existing: AgentExtended[]): string {
 }
 
 export function CreateAgentDialog({ isOpen, onClose, existingAgents, onCreate }: CreateAgentDialogProps) {
+  const { t } = useTranslation('smithyNext')
   const [provider, setProvider] = useState('claude-code')
   const [model, setModel] = useState('sonnet-4.6')
   const [name, setName] = useState(() => generateName(existingAgents))
@@ -73,7 +75,7 @@ export function CreateAgentDialog({ isOpen, onClose, existingAgents, onCreate }:
       }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', borderBottom: '1px solid var(--color-border-subtle)', flexShrink: 0 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', flex: 1 }}>New Agent</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', flex: 1 }}>{t('agents.createDialog.newAgent')}</span>
           <button onClick={() => { handleReset(); onClose() }} style={{ width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer' }}>
             <X size={14} strokeWidth={1.5} />
           </button>
@@ -83,20 +85,20 @@ export function CreateAgentDialog({ isOpen, onClose, existingAgents, onCreate }:
         <div style={{ flex: 1, overflow: 'auto', padding: 16 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Name */}
-            <FormField label="Name">
+            <FormField label={t('agents.createDialog.nameLabel')}>
               <input value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
             </FormField>
 
             {/* Provider + Model */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <FormField label="Provider">
+              <FormField label={t('agents.createDialog.providerLabel')}>
                 <select value={provider} onChange={e => { setProvider(e.target.value); const defaults: Record<string, string> = { 'claude-code': 'sonnet-4.6', 'codex': 'gpt-5.4', 'opencode': 'gpt-5.4' }; setModel(defaults[e.target.value] || 'sonnet-4.6') }} style={selectStyle}>
                   <option value="claude-code">Claude Code</option>
                   <option value="codex">OpenAI Codex</option>
                   <option value="opencode">OpenCode</option>
                 </select>
               </FormField>
-              <FormField label="Model">
+              <FormField label={t('agents.createDialog.modelLabel')}>
                 <select value={model} onChange={e => setModel(e.target.value)} style={selectStyle}>
                   {provider === 'claude-code' ? (
                     <>
@@ -116,7 +118,7 @@ export function CreateAgentDialog({ isOpen, onClose, existingAgents, onCreate }:
             </div>
 
             {/* Max Concurrent Tasks */}
-            <FormField label="Max concurrent tasks">
+            <FormField label={t('agents.createDialog.maxConcurrentTasks')}>
               <input type="number" min={1} max={10} value={maxConcurrentTasks} onChange={e => setMaxConcurrentTasks(parseInt(e.target.value) || 1)} style={{ ...inputStyle, width: 80 }} />
             </FormField>
           </div>
@@ -129,14 +131,14 @@ export function CreateAgentDialog({ isOpen, onClose, existingAgents, onCreate }:
             background: 'var(--color-surface)', color: 'var(--color-text-secondary)',
             cursor: 'pointer', fontSize: 12, fontWeight: 500,
           }}>
-            Cancel
+            {t('agents.createDialog.cancel')}
           </button>
           <button onClick={handleCreate} style={{
             height: 28, padding: '0 14px', border: 'none', borderRadius: 'var(--radius-sm)',
             background: 'var(--color-primary)', color: 'white',
             cursor: 'pointer', fontSize: 12, fontWeight: 500,
           }}>
-            Create Agent
+            {t('agents.createDialog.createAgent')}
           </button>
         </div>
       </div>

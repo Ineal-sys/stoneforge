@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { useTranslation } from '@/i18n'
 import { KANBAN_COLUMNS, PRIORITIES, ASSIGNEES, COMPLEXITY_LEVELS, TEAM_MEMBERS, currentUser, getAssignees, type Task } from '../mock-data'
 import { mockAgentsExtended, mockRoleDefinitions } from './overlays/agents/agent-mock-data'
 import {
@@ -38,6 +39,7 @@ type GroupField = 'status' | 'priority' | 'assignee' | 'label'
 const PRIORITY_ORDER = { urgent: 0, high: 1, medium: 2, low: 3 }
 
 export function KanbanBoard({ tasks, onSelectTask, viewMode, onToggleView, onUpdateTask, selectedTaskIds, onToggleSelect, onClearSelection, peekTaskId, onPeekTask, onCreateTask, initialPlanFilter }: KanbanBoardProps) {
+  const { t } = useTranslation('smithyNext')
   const [filters, setFilters] = useState<ActiveFilter[]>(() => {
     if (initialPlanFilter) return [{ field: 'plan' as FilterField, value: initialPlanFilter.planId }]
     return []
@@ -181,12 +183,12 @@ export function KanbanBoard({ tasks, onSelectTask, viewMode, onToggleView, onUpd
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Toolbar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', flexShrink: 0, borderBottom: '1px solid var(--color-border-subtle)', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>Tasks</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{t('kanban.toolbar.title')}</span>
 
         {/* "My Tasks" toggle — team-mode only */}
         {isTeamMode && (
           <div style={{ display: 'flex', gap: 2, background: 'var(--color-surface)', borderRadius: 'var(--radius-sm)', padding: 2 }}>
-            {[{ key: true, label: 'My Tasks' }, { key: false, label: 'All Tasks' }].map(({ key, label }) => (
+            {[{ key: true, label: t('kanban.toolbar.myTasks') }, { key: false, label: t('kanban.toolbar.allTasks') }].map(({ key, label }) => (
               <button key={label} onClick={() => setShowMine(key)} style={{
                 height: 22, padding: '0 8px', border: 'none', borderRadius: 'var(--radius-sm)',
                 background: showMine === key ? 'var(--color-surface-active)' : 'transparent',
@@ -209,7 +211,7 @@ export function KanbanBoard({ tasks, onSelectTask, viewMode, onToggleView, onUpd
           </span>
         ))}
         {filters.length > 0 && (
-          <button onClick={() => setFilters([])} style={{ height: 22, padding: '0 6px', border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11 }}>Clear all</button>
+          <button onClick={() => setFilters([])} style={{ height: 22, padding: '0 6px', border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11 }}>{t('kanban.toolbar.clearAll')}</button>
         )}
 
         <div style={{ flex: 1 }} />
@@ -220,7 +222,7 @@ export function KanbanBoard({ tasks, onSelectTask, viewMode, onToggleView, onUpd
           <div className="task-search-desktop" style={{ display: 'flex' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: 200, height: 26, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '0 8px' }}>
               <Search size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
-              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search tasks..." style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
+              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t('kanban.toolbar.searchPlaceholder')} style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
               {searchQuery && <button onClick={() => setSearchQuery('')} style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', padding: 0, display: 'flex' }}><X size={11} strokeWidth={2} /></button>}
             </div>
           </div>
@@ -229,7 +231,7 @@ export function KanbanBoard({ tasks, onSelectTask, viewMode, onToggleView, onUpd
             {searchExpanded ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: 180, height: 26, background: 'var(--color-surface)', border: '1px solid var(--color-border-focus)', borderRadius: 'var(--radius-sm)', padding: '0 8px' }}>
                 <Search size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
-                <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search..." onBlur={() => { if (!searchQuery) setSearchExpanded(false) }} style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
+                <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t('kanban.toolbar.searchPlaceholderMobile')} onBlur={() => { if (!searchQuery) setSearchExpanded(false) }} style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
                 <button onClick={() => { setSearchQuery(''); setSearchExpanded(false) }} style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', padding: 0, display: 'flex' }}><X size={11} strokeWidth={2} /></button>
               </div>
             ) : (
@@ -258,7 +260,7 @@ export function KanbanBoard({ tasks, onSelectTask, viewMode, onToggleView, onUpd
         {/* Selection info */}
         {selectedTaskIds.size > 0 && (
           <span style={{ fontSize: 11, color: 'var(--color-text-accent)', fontWeight: 500 }}>
-            {selectedTaskIds.size} selected
+            {selectedTaskIds.size}{t('kanban.toolbar.selected')}
             <button onClick={onClearSelection} style={{ marginLeft: 6, border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11 }}>×</button>
           </span>
         )}
@@ -269,7 +271,7 @@ export function KanbanBoard({ tasks, onSelectTask, viewMode, onToggleView, onUpd
             onMouseEnter={e => { if (filters.length === 0) e.currentTarget.style.background = 'var(--color-surface-hover)' }}
             onMouseLeave={e => e.currentTarget.style.background = filters.length > 0 ? 'var(--color-primary-subtle)' : 'var(--color-surface)'}
           >
-            <Filter size={12} strokeWidth={1.5} /> Filter {filters.length > 0 && `(${filters.length})`}
+            <Filter size={12} strokeWidth={1.5} /> {t('kanban.toolbar.filter')} {filters.length > 0 && `(${filters.length})`}
           </button>
           {filterOpen && <FilterPanel tasks={tasks} filters={filters} onToggleFilter={toggleFilter} onClear={() => setFilters([])} onClose={() => setFilterOpen(false)} />}
         </div>
@@ -280,15 +282,15 @@ export function KanbanBoard({ tasks, onSelectTask, viewMode, onToggleView, onUpd
             onMouseEnter={e => { if (!displayOptionsOpen) e.currentTarget.style.background = 'var(--color-surface-hover)' }}
             onMouseLeave={e => e.currentTarget.style.background = displayOptionsOpen ? 'var(--color-surface-active)' : 'var(--color-surface)'}
           >
-            <SlidersHorizontal size={12} strokeWidth={1.5} /> Display
+            <SlidersHorizontal size={12} strokeWidth={1.5} /> {t('kanban.toolbar.display')}
           </button>
           {displayOptionsOpen && <DisplayOptionsPanel groupBy={groupBy} onGroupByChange={setGroupBy} sortField={sortField} onSortChange={setSortField} sortAsc={sortAsc} onSortDirChange={() => setSortAsc(!sortAsc)} hiddenColumns={hiddenColumns} onToggleColumn={col => setHiddenColumns(prev => { const n = new Set(prev); if (n.has(col)) n.delete(col); else n.add(col); return n })} onClose={() => setDisplayOptionsOpen(false)} />}
         </div>
 
         {/* View toggle */}
         <div style={{ display: 'flex', gap: 2, background: 'var(--color-surface)', borderRadius: 'var(--radius-sm)', padding: 2 }}>
-          {[{ mode: 'kanban' as const, icon: LayoutGrid, label: 'Board' }, { mode: 'list' as const, icon: List, label: 'List' }].map(({ mode, icon: Icon, label }) => (
-            <Tooltip key={mode} label={`${label} view`}>
+          {[{ mode: 'kanban' as const, icon: LayoutGrid, label: t('kanban.toolbar.boardView') }, { mode: 'list' as const, icon: List, label: t('kanban.toolbar.listView') }].map(({ mode, icon: Icon, label }) => (
+            <Tooltip key={mode} label={label}>
               <button onClick={mode !== viewMode ? onToggleView : undefined} style={{ width: 28, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', borderRadius: 'var(--radius-sm)', background: viewMode === mode ? 'var(--color-surface-active)' : 'transparent', color: viewMode === mode ? 'var(--color-text)' : 'var(--color-text-tertiary)', cursor: 'pointer', transition: `all var(--duration-fast)` }}
                 onMouseEnter={e => { if (viewMode !== mode) e.currentTarget.style.background = 'var(--color-surface-hover)' }}
                 onMouseLeave={e => e.currentTarget.style.background = viewMode === mode ? 'var(--color-surface-active)' : 'transparent'}
@@ -304,7 +306,7 @@ export function KanbanBoard({ tasks, onSelectTask, viewMode, onToggleView, onUpd
           background: 'var(--color-primary)', border: 'none', borderRadius: 'var(--radius-sm)',
           color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
         }}>
-          <Plus size={12} strokeWidth={2} /> New Task
+          <Plus size={12} strokeWidth={2} /> {t('kanban.toolbar.newTask')}
         </button>
       </div>
 
@@ -330,6 +332,7 @@ export function KanbanBoard({ tasks, onSelectTask, viewMode, onToggleView, onUpd
 
 // ── Kanban View ──
 function KanbanView({ tasks, allTasks, onSelectTask, onContextMenu, selectedTaskIds, onToggleSelect, draggedId, onDragStart, onDrop, peekTaskId, onPeekTask, onHoverTask, hiddenColumns, onHideColumn, onUnhideColumn, onCreateTask, onUpdateTask }: { tasks: Task[]; allTasks: Task[]; onSelectTask: (t: Task) => void; onContextMenu: (e: React.MouseEvent, id: string) => void; selectedTaskIds: Set<string>; onToggleSelect: (id: string) => void; draggedId: string | null; onDragStart: (id: string | null) => void; onDrop: (status: Task['status']) => void; peekTaskId: string | null; onPeekTask: (id: string | null) => void; onHoverTask: (id: string | null) => void; hiddenColumns: Set<string>; onHideColumn: (col: string) => void; onUnhideColumn: (col: string) => void; onCreateTask: () => void; onUpdateTask: (id: string, u: Partial<Task>) => void }) {
+  const { t } = useTranslation('smithyNext')
   const [columnMenuOpen, setColumnMenuOpen] = useState<string | null>(null)
   const visibleColumns = KANBAN_COLUMNS.filter(c => !hiddenColumns.has(c.id))
   const hiddenCols = KANBAN_COLUMNS.filter(c => hiddenColumns.has(c.id))
@@ -359,7 +362,7 @@ function KanbanView({ tasks, allTasks, onSelectTask, onContextMenu, selectedTask
                     <button onClick={() => { onHideColumn(col.id); setColumnMenuOpen(null) }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '7px 10px', border: 'none', borderRadius: 'var(--radius-sm)', background: 'transparent', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 12 }}
                       onMouseEnter={e => e.currentTarget.style.background = 'var(--color-surface-hover)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                      <EyeOff size={13} strokeWidth={1.5} /> Hide column
+                      <EyeOff size={13} strokeWidth={1.5} /> {t('kanban.column.hideColumn')}
                     </button>
                   </div>
                 )}
@@ -384,7 +387,7 @@ function KanbanView({ tasks, allTasks, onSelectTask, onContextMenu, selectedTask
         <div style={{ minWidth: 160, maxWidth: 160, background: 'var(--color-bg)', padding: 8, display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
           <button onClick={() => setShowHidden(!showHidden)} style={{ display: 'flex', alignItems: 'center', gap: 6, border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 12, fontWeight: 500, padding: 0 }}>
             {showHidden ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-            Hidden columns
+            {t('kanban.column.hiddenColumns')}
           </button>
           {showHidden && hiddenCols.map(col => {
             const count = tasks.filter(t => t.status === col.id).length
@@ -405,7 +408,8 @@ function KanbanView({ tasks, allTasks, onSelectTask, onContextMenu, selectedTask
 
 // ── List View ──
 function ListView({ tasks, allTasks, groupBy, onSelectTask, onContextMenu, selectedTaskIds, onToggleSelect, peekTaskId, onPeekTask, onHoverTask, onUpdateTask }: { tasks: Task[]; allTasks: Task[]; groupBy: GroupField; onSelectTask: (t: Task) => void; onContextMenu: (e: React.MouseEvent, id: string) => void; selectedTaskIds: Set<string>; onToggleSelect: (id: string) => void; peekTaskId: string | null; onPeekTask: (id: string | null) => void; onHoverTask: (id: string | null) => void; onUpdateTask: (id: string, u: Partial<Task>) => void }) {
-  const groups = groupTasks(tasks, groupBy)
+  const { t } = useTranslation('smithyNext')
+  const groups = groupTasks(tasks, groupBy, t)
 
   return (
     <div style={{ flex: 1, overflow: 'auto' }}>
@@ -424,7 +428,7 @@ function ListView({ tasks, allTasks, groupBy, onSelectTask, onContextMenu, selec
   )
 }
 
-function groupTasks(tasks: Task[], groupBy: GroupField): { label: string; tasks: Task[] }[] {
+function groupTasks(tasks: Task[], groupBy: GroupField, t: (key: string) => string): { label: string; tasks: Task[] }[] {
   if (groupBy === 'status') return KANBAN_COLUMNS.map(c => ({ label: c.label, tasks: tasks.filter(t => t.status === c.id) })).filter(g => g.tasks.length > 0)
   if (groupBy === 'priority') return PRIORITIES.map(p => ({ label: p.charAt(0).toUpperCase() + p.slice(1), tasks: tasks.filter(t => t.priority === p) })).filter(g => g.tasks.length > 0)
   if (groupBy === 'assignee') {
@@ -432,7 +436,7 @@ function groupTasks(tasks: Task[], groupBy: GroupField): { label: string; tasks:
     const unassigned: Task[] = []
     tasks.forEach(t => { if (t.assignee) { const k = t.assignee.name; assigned.set(k, [...(assigned.get(k) || []), t]) } else unassigned.push(t) })
     const groups = [...assigned.entries()].map(([label, tasks]) => ({ label, tasks }))
-    if (unassigned.length) groups.push({ label: 'Unassigned', tasks: unassigned })
+    if (unassigned.length) groups.push({ label: t('kanban.listGroupLabels.unassigned'), tasks: unassigned })
     return groups
   }
   if (groupBy === 'label') {
@@ -440,20 +444,21 @@ function groupTasks(tasks: Task[], groupBy: GroupField): { label: string; tasks:
     tasks.forEach(t => t.labels.forEach(l => map.set(l, [...(map.get(l) || []), t])))
     return [...map.entries()].map(([label, tasks]) => ({ label, tasks }))
   }
-  return [{ label: 'All', tasks }]
+  return [{ label: t('kanban.listGroupLabels.all'), tasks }]
 }
 
 /** Returns disabled-status map when acceptance criteria gate "Done" */
-function getACGate(task: Task): Record<string, string> | undefined {
+function getACGate(task: Task, t: (key: string, vars?: Record<string, unknown>) => string): Record<string, string> | undefined {
   const ac = task.acceptanceCriteria
   if (!ac || ac.length === 0) return undefined
   const unchecked = ac.filter(c => !c.checked).length
   if (unchecked === 0) return undefined
-  return { done: `${unchecked} acceptance criteria not yet passing` }
+  return { done: `${unchecked}${t('kanban.acceptanceCriteria.notYetPassing')}` }
 }
 
 // ── Task Card (Kanban) ──
 function TaskCard({ task, allTasks, onClick, onContextMenu, isSelected, onToggleSelect, draggable, onDragStart, isPeeked, onPeek, onHover, onUpdateTask }: { task: Task; allTasks: Task[]; onClick: () => void; onContextMenu: (e: React.MouseEvent) => void; isSelected: boolean; onToggleSelect: () => void; draggable?: boolean; onDragStart?: () => void; isPeeked: boolean; onPeek: () => void; onHover: (id: string | null) => void; onUpdateTask: (id: string, u: Partial<Task>) => void }) {
+  const { t } = useTranslation('smithyNext')
   const { isTeamMode, appMode } = useTeamContext()
   const [hovered, setHovered] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
@@ -492,7 +497,7 @@ function TaskCard({ task, allTasks, onClick, onContextMenu, isSelected, onToggle
             <button onClick={e => stopAndOpen(e, 'status')} style={{ width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: 'none', color: statusInfo.color, cursor: 'pointer', padding: 0 }}>
               {statusInfo.icon}
             </button>
-            {openDropdown === 'status' && <StatusDropdown current={task.status} onSelect={s => { onUpdateTask(task.id, { status: s }); setOpenDropdown(null) }} onClose={() => setOpenDropdown(null)} position={{ top: 22, left: 0 }} disabledStatuses={getACGate(task)} />}
+            {openDropdown === 'status' && <StatusDropdown current={task.status} onSelect={s => { onUpdateTask(task.id, { status: s }); setOpenDropdown(null) }} onClose={() => setOpenDropdown(null)} position={{ top: 22, left: 0 }} disabledStatuses={getACGate(task, t)} />}
           </div>
           <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', fontWeight: 500 }}>{task.id}</span>
         </div>
@@ -500,7 +505,7 @@ function TaskCard({ task, allTasks, onClick, onContextMenu, isSelected, onToggle
           {/* Concurrency claim indicator */}
           {task.claimedBy && <ClaimIndicator task={task} />}
           {hovered && (
-            <button onClick={e => { e.stopPropagation(); onPeek() }} title="Peek (Space)" style={{ width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', borderRadius: 'var(--radius-sm)', background: isPeeked ? 'var(--color-primary-subtle)' : 'var(--color-surface)', color: isPeeked ? 'var(--color-text-accent)' : 'var(--color-text-tertiary)', cursor: 'pointer', padding: 0 }}>
+            <button onClick={e => { e.stopPropagation(); onPeek() }} title={t('kanban.taskCard.peekTitle')} style={{ width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', borderRadius: 'var(--radius-sm)', background: isPeeked ? 'var(--color-primary-subtle)' : 'var(--color-surface)', color: isPeeked ? 'var(--color-text-accent)' : 'var(--color-text-tertiary)', cursor: 'pointer', padding: 0 }}>
               <ChevronRight size={12} strokeWidth={2} style={{ transform: isPeeked ? 'rotate(180deg)' : undefined }} />
             </button>
           )}
@@ -529,16 +534,16 @@ function TaskCard({ task, allTasks, onClick, onContextMenu, isSelected, onToggle
 
       {/* Bottom row: statuses + date + assignee */}
       <div className="card-bottom" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 2, rowGap: 6 }}>
-        {isBlocked && <StatusDot color="var(--color-danger)" icon={AlertCircle} label={hasUnmatchedTags ? 'No matching agents' : 'Blocked'} />}
+        {isBlocked && <StatusDot color="var(--color-danger)" icon={AlertCircle} label={hasUnmatchedTags ? t('kanban.taskCard.noMatchingAgents') : t('kanban.taskCard.blocked')} />}
         {task.sessionStatus && <StatusDot color={task.sessionStatus === 'running' ? 'var(--color-success)' : task.sessionStatus === 'error' ? 'var(--color-danger)' : 'var(--color-text-tertiary)'} icon={task.sessionStatus === 'running' ? Play : undefined} label={task.sessionStatus} />}
-        {task.ciStatus && task.ciStatus !== 'none' && <StatusDot color={task.ciStatus === 'pass' ? 'var(--color-success)' : task.ciStatus === 'fail' ? 'var(--color-danger)' : 'var(--color-warning)'} icon={CircleDot} label={`CI: ${task.ciStatus}`} />}
-        {task.mrStatus && task.mrStatus !== 'none' && <StatusDot color={task.mrStatus === 'merged' ? 'var(--color-primary)' : task.mrStatus === 'needs_review' ? 'var(--color-warning)' : 'var(--color-text-secondary)'} icon={GitMerge} label={task.mrStatus === 'needs_review' ? 'Review' : task.mrStatus} />}
+        {task.ciStatus && task.ciStatus !== 'none' && <StatusDot color={task.ciStatus === 'pass' ? 'var(--color-success)' : task.ciStatus === 'fail' ? 'var(--color-danger)' : 'var(--color-warning)'} icon={CircleDot} label={`${t('kanban.taskCard.ciLabel')}: ${task.ciStatus}`} />}
+        {task.mrStatus && task.mrStatus !== 'none' && <StatusDot color={task.mrStatus === 'merged' ? 'var(--color-primary)' : task.mrStatus === 'needs_review' ? 'var(--color-warning)' : 'var(--color-text-secondary)'} icon={GitMerge} label={task.mrStatus === 'needs_review' ? t('kanban.taskCard.review') : task.mrStatus} />}
         {task.acceptanceCriteria && task.acceptanceCriteria.length > 0 && <AcceptanceCriteriaBadge criteria={task.acceptanceCriteria} />}
         {task.requiredAgentTags && task.requiredAgentTags.length > 0 && (() => {
           const tags = task.requiredAgentTags!
           const matched = !hasUnmatchedTags
           const unmatchedTags = matched ? [] : tags.filter(t => !mockAgentsExtended.some(a => a.enabled && a.tags.includes(t)))
-          const label = matched ? `Agent tags: ${tags.join(', ')}` : `No agents match: ${unmatchedTags.join(', ')}`
+          const label = matched ? `${t('kanban.taskCard.agentTags')}: ${tags.join(', ')}` : `${t('kanban.taskCard.noAgentsMatch')}: ${unmatchedTags.join(', ')}`
           return (
             <Tooltip label={label}>
               <span className={matched ? undefined : 'agent-tag-pulse'} style={{ width: 18, height: 18, borderRadius: '50%', background: matched ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)', color: matched ? '#22c55e' : '#ef4444', fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -551,7 +556,7 @@ function TaskCard({ task, allTasks, onClick, onContextMenu, isSelected, onToggle
           const rdTags = task.requiredRoleDefinitionTags!
           const rdMatched = mockRoleDefinitions.some(rd => rdTags.every(t => rd.tags.includes(t)))
           const unmatchedRdTags = rdMatched ? [] : rdTags.filter(t => !mockRoleDefinitions.some(rd => rd.tags.includes(t)))
-          const label = rdMatched ? `Role tags: ${rdTags.join(', ')}` : `No roles match: ${unmatchedRdTags.join(', ')}`
+          const label = rdMatched ? `${t('kanban.taskCard.roleTags')}: ${rdTags.join(', ')}` : `${t('kanban.taskCard.noRolesMatch')}: ${unmatchedRdTags.join(', ')}`
           return (
             <Tooltip label={label}>
               <span className={rdMatched ? undefined : 'agent-tag-pulse'} style={{ width: 18, height: 18, borderRadius: 4, background: rdMatched ? 'rgba(124, 58, 237, 0.15)' : 'rgba(239, 68, 68, 0.15)', color: rdMatched ? '#7c3aed' : '#ef4444', fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -583,6 +588,7 @@ function TaskCard({ task, allTasks, onClick, onContextMenu, isSelected, onToggle
 
 // ── List Row ──
 function ListRow({ task, allTasks, onClick, onContextMenu, isSelected, onToggleSelect, isPeeked, onPeek, onHover, onUpdateTask }: { task: Task; allTasks: Task[]; onClick: () => void; onContextMenu: (e: React.MouseEvent) => void; isSelected: boolean; onToggleSelect: () => void; isPeeked: boolean; onPeek: () => void; onHover: (id: string | null) => void; onUpdateTask: (id: string, u: Partial<Task>) => void }) {
+  const { t } = useTranslation('smithyNext')
   const { appMode } = useTeamContext()
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const statusInfo = STATUS_ICONS[task.status] || STATUS_ICONS.todo
@@ -623,20 +629,20 @@ function ListRow({ task, allTasks, onClick, onContextMenu, isSelected, onToggleS
         <button onClick={e => stopAndOpen(e, 'status')} style={{ display: 'flex', alignItems: 'center', border: 'none', background: 'none', cursor: 'pointer', padding: 0, color: statusInfo.color }}>
           {statusInfo.icon}
         </button>
-        {openDropdown === 'status' && <StatusDropdown current={task.status} onSelect={s => { onUpdateTask(task.id, { status: s }); setOpenDropdown(null) }} onClose={() => setOpenDropdown(null)} position={{ top: 22, left: 0 }} disabledStatuses={getACGate(task)} />}
+        {openDropdown === 'status' && <StatusDropdown current={task.status} onSelect={s => { onUpdateTask(task.id, { status: s }); setOpenDropdown(null) }} onClose={() => setOpenDropdown(null)} position={{ top: 22, left: 0 }} disabledStatuses={getACGate(task, t)} />}
       </div>
       <span style={{ fontSize: 13, color: 'var(--color-text)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{task.title}</span>
       <div className="list-col-statuses" style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
         {subTasks.length > 0 && <SubTasksIndicator subTasks={subTasks} subDone={subDone} />}
         {task.claimedBy && <ClaimIndicator task={task} />}
-        {isBlockedLR && <StatusDot color="var(--color-danger)" icon={AlertCircle} label={hasUnmatchedTagsLR ? 'No matching agents' : 'Blocked'} />}
+        {isBlockedLR && <StatusDot color="var(--color-danger)" icon={AlertCircle} label={hasUnmatchedTagsLR ? t('kanban.taskCard.noMatchingAgents') : t('kanban.taskCard.blocked')} />}
         {task.sessionStatus && <StatusDot color={task.sessionStatus === 'running' ? 'var(--color-success)' : task.sessionStatus === 'error' ? 'var(--color-danger)' : 'var(--color-text-tertiary)'} icon={task.sessionStatus === 'running' ? Play : undefined} label={task.sessionStatus} />}
-        {task.ciStatus && task.ciStatus !== 'none' && <StatusDot color={task.ciStatus === 'pass' ? 'var(--color-success)' : task.ciStatus === 'fail' ? 'var(--color-danger)' : 'var(--color-warning)'} icon={CircleDot} label={`CI: ${task.ciStatus}`} />}
-        {task.mrStatus && task.mrStatus !== 'none' && <StatusDot color={task.mrStatus === 'merged' ? 'var(--color-primary)' : task.mrStatus === 'needs_review' ? 'var(--color-warning)' : 'var(--color-text-secondary)'} icon={GitMerge} label={task.mrStatus === 'needs_review' ? 'Review' : task.mrStatus} />}
+        {task.ciStatus && task.ciStatus !== 'none' && <StatusDot color={task.ciStatus === 'pass' ? 'var(--color-success)' : task.ciStatus === 'fail' ? 'var(--color-danger)' : 'var(--color-warning)'} icon={CircleDot} label={`${t('kanban.taskCard.ciLabel')}: ${task.ciStatus}`} />}
+        {task.mrStatus && task.mrStatus !== 'none' && <StatusDot color={task.mrStatus === 'merged' ? 'var(--color-primary)' : task.mrStatus === 'needs_review' ? 'var(--color-warning)' : 'var(--color-text-secondary)'} icon={GitMerge} label={task.mrStatus === 'needs_review' ? t('kanban.taskCard.review') : task.mrStatus} />}
         {task.acceptanceCriteria && task.acceptanceCriteria.length > 0 && <AcceptanceCriteriaBadge criteria={task.acceptanceCriteria} />}
         {task.requiredAgentTags && task.requiredAgentTags.length > 0 && (() => {
           const unmatchedLR = hasUnmatchedTagsLR ? task.requiredAgentTags.filter(t => !mockAgentsExtended.some(a => a.enabled && a.tags.includes(t))) : []
-          const labelLR = hasUnmatchedTagsLR ? `No agents match: ${unmatchedLR.join(', ')}` : `Agent tags: ${task.requiredAgentTags.join(', ')}`
+          const labelLR = hasUnmatchedTagsLR ? `${t('kanban.taskCard.noAgentsMatch')}: ${unmatchedLR.join(', ')}` : `${t('kanban.taskCard.agentTags')}: ${task.requiredAgentTags.join(', ')}`
           return (
             <Tooltip label={labelLR}>
               <span className={hasUnmatchedTagsLR ? 'agent-tag-pulse' : undefined} style={{ width: 18, height: 18, borderRadius: '50%', background: hasUnmatchedTagsLR ? 'rgba(239, 68, 68, 0.15)' : 'rgba(34, 197, 94, 0.15)', color: hasUnmatchedTagsLR ? '#ef4444' : '#22c55e', fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -649,7 +655,7 @@ function ListRow({ task, allTasks, onClick, onContextMenu, isSelected, onToggleS
           const rdTagsLR = task.requiredRoleDefinitionTags!
           const rdMatchedLR = mockRoleDefinitions.some(rd => rdTagsLR.every(t => rd.tags.includes(t)))
           const unmatchedRdLR = rdMatchedLR ? [] : rdTagsLR.filter(t => !mockRoleDefinitions.some(rd => rd.tags.includes(t)))
-          const rdLabelLR = rdMatchedLR ? `Role tags: ${rdTagsLR.join(', ')}` : `No roles match: ${unmatchedRdLR.join(', ')}`
+          const rdLabelLR = rdMatchedLR ? `${t('kanban.taskCard.roleTags')}: ${rdTagsLR.join(', ')}` : `${t('kanban.taskCard.noRolesMatch')}: ${unmatchedRdLR.join(', ')}`
           return (
             <Tooltip label={rdLabelLR}>
               <span className={rdMatchedLR ? undefined : 'agent-tag-pulse'} style={{ width: 18, height: 18, borderRadius: 4, background: rdMatchedLR ? 'rgba(124, 58, 237, 0.15)' : 'rgba(239, 68, 68, 0.15)', color: rdMatchedLR ? '#7c3aed' : '#ef4444', fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -684,6 +690,7 @@ function ListRow({ task, allTasks, onClick, onContextMenu, isSelected, onToggleS
 
 // ── Peek Panel ──
 function PeekPanel({ task, allTasks, onClose, onOpen }: { task: Task; allTasks: Task[]; onClose: () => void; onOpen: (t: Task) => void }) {
+  const { t } = useTranslation('smithyNext')
   const subTasks = task.subTaskIds ? allTasks.filter(t => task.subTaskIds!.includes(t.id)) : []
 
   return (
@@ -695,30 +702,30 @@ function PeekPanel({ task, allTasks, onClose, onOpen }: { task: Task; allTasks: 
             <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', lineHeight: 1.3, margin: 0 }}>{task.title}</h3>
           </div>
           <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => onOpen(task)} style={{ height: 24, padding: '0 8px', border: 'none', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 11 }}>Open</button>
+            <button onClick={() => onOpen(task)} style={{ height: 24, padding: '0 8px', border: 'none', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 11 }}>{t('kanban.peek.open')}</button>
             <button onClick={onClose} style={{ width: 24, height: 24, border: 'none', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
           </div>
         </div>
 
         {/* Meta */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 10, background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-md)', marginBottom: 12, fontSize: 12 }}>
-          <MetaRow label="Status" value={task.status.replace(/_/g, ' ')} />
-          <MetaRow label="Priority" value={task.priority} />
-          {task.assignee && <MetaRow label="Assignee" value={task.assignee.name} />}
+          <MetaRow label={t('kanban.peek.status')} value={task.status.replace(/_/g, ' ')} />
+          <MetaRow label={t('kanban.peek.priority')} value={task.priority} />
+          {task.assignee && <MetaRow label={t('kanban.peek.assignee')} value={task.assignee.name} />}
           {task.estimate && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ width: 60, fontSize: 11, color: 'var(--color-text-tertiary)', flexShrink: 0 }}>Complexity</span>
+              <span style={{ width: 60, fontSize: 11, color: 'var(--color-text-tertiary)', flexShrink: 0 }}>{t('kanban.peek.complexity')}</span>
               <ComplexityBadge value={task.estimate} />
             </div>
           )}
-          {task.dueDate && <MetaRow label="Due" value={task.dueDate} />}
-          {task.branch && <MetaRow label="Branch" value={task.branch} mono />}
+          {task.dueDate && <MetaRow label={t('kanban.peek.due')} value={task.dueDate} />}
+          {task.branch && <MetaRow label={t('kanban.peek.branch')} value={task.branch} mono />}
         </div>
 
         {/* Description */}
         {task.description && (
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 4 }}>Description</div>
+            <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 4 }}>{t('kanban.peek.description')}</div>
             <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{task.description}</div>
           </div>
         )}
@@ -726,7 +733,7 @@ function PeekPanel({ task, allTasks, onClose, onOpen }: { task: Task; allTasks: 
         {/* Sub-tasks */}
         {subTasks.length > 0 && (
           <div>
-            <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 6 }}>Sub-tasks ({subTasks.filter(s => s.status === 'done').length}/{subTasks.length})</div>
+            <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 6 }}>{t('kanban.peek.subTasks')} ({subTasks.filter(s => s.status === 'done').length}/{subTasks.length})</div>
             {subTasks.map(sub => (
               <div key={sub.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid var(--color-border-subtle)', fontSize: 12 }}>
                 <div style={{ width: 14, height: 14, borderRadius: 3, border: sub.status === 'done' ? 'none' : '1px solid var(--color-border)', background: sub.status === 'done' ? 'var(--color-success)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -752,8 +759,9 @@ function PeekPanel({ task, allTasks, onClose, onOpen }: { task: Task; allTasks: 
 
 // ── Context Menu ──
 function ContextMenu({ x, y, taskIds, onUpdateTask, onClose }: { x: number; y: number; taskIds: string[]; onUpdateTask: (id: string, u: Partial<Task>) => void; onClose: () => void }) {
+  const { t } = useTranslation('smithyNext')
   const count = taskIds.length
-  const label = count > 1 ? `${count} tasks` : 'task'
+  const label = count > 1 ? `${count} ${t('kanban.contextMenu.tasks')}` : t('kanban.contextMenu.task')
   const [openSections, setOpenSections] = useState<Set<string>>(new Set())
   const timers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
 
@@ -791,15 +799,15 @@ function ContextMenu({ x, y, taskIds, onUpdateTask, onClose }: { x: number; y: n
   return (
     <div style={{ position: 'fixed', left: x, top: y, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 4, minWidth: 200, boxShadow: 'var(--shadow-float)', zIndex: 1080, fontSize: 12 }} onClick={e => e.stopPropagation()}>
       <div style={{ padding: '4px 10px', fontSize: 11, color: 'var(--color-text-tertiary)' }}>{label}</div>
-      <ContextMenuSection title="Status" isOpen={openSections.has('status')} onHover={() => handleSectionHover('status')} onLeave={() => handleSectionLeave('status')} onClick={() => handleSectionClick('status')}>
+      <ContextMenuSection title={t('kanban.contextMenu.status')} isOpen={openSections.has('status')} onHover={() => handleSectionHover('status')} onLeave={() => handleSectionLeave('status')} onClick={() => handleSectionClick('status')}>
         {KANBAN_COLUMNS.map(c => <MenuItem key={c.id} label={c.label} onClick={() => setAll({ status: c.id as Task['status'] })} />)}
       </ContextMenuSection>
-      <ContextMenuSection title="Priority" isOpen={openSections.has('priority')} onHover={() => handleSectionHover('priority')} onLeave={() => handleSectionLeave('priority')} onClick={() => handleSectionClick('priority')}>
+      <ContextMenuSection title={t('kanban.contextMenu.priority')} isOpen={openSections.has('priority')} onHover={() => handleSectionHover('priority')} onLeave={() => handleSectionLeave('priority')} onClick={() => handleSectionClick('priority')}>
         {PRIORITIES.map(p => <MenuItem key={p} label={p.charAt(0).toUpperCase() + p.slice(1)} onClick={() => setAll({ priority: p })} />)}
       </ContextMenuSection>
       <div style={{ height: 1, background: 'var(--color-border-subtle)', margin: '4px 0' }} />
-      <MenuItem label="Copy ID" icon={Copy} onClick={onClose} />
-      <MenuItem label="Archive" icon={Archive} onClick={onClose} destructive />
+      <MenuItem label={t('kanban.contextMenu.copyId')} icon={Copy} onClick={onClose} />
+      <MenuItem label={t('kanban.contextMenu.archive')} icon={Archive} onClick={onClose} destructive />
     </div>
   )
 }
@@ -831,6 +839,7 @@ function MenuItem({ label, icon: Icon, onClick, destructive }: { label: string; 
 function FilterPanel({ tasks, filters, onToggleFilter, onClear, onClose }: {
   tasks: Task[]; filters: ActiveFilter[]; onToggleFilter: (field: FilterField, value: string) => void; onClear: () => void; onClose: () => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const { isTeamMode, teamMembers } = useTeamContext()
   const [activeTab, setActiveTab] = useState<FilterField>('status')
   const ref = useRef<HTMLDivElement>(null)
@@ -879,16 +888,16 @@ function FilterPanel({ tasks, filters, onToggleFilter, onClear, onClose }: {
 
   const items = getCounts()
   const tabs: { field: FilterField; label: string }[] = [
-    { field: 'status', label: 'Status' },
-    { field: 'priority', label: 'Priority' },
-    { field: 'assignee', label: 'Assignees' },
-    { field: 'label', label: 'Labels' },
+    { field: 'status', label: t('kanban.filterPanel.status') },
+    { field: 'priority', label: t('kanban.filterPanel.priority') },
+    { field: 'assignee', label: t('kanban.filterPanel.assignees') },
+    { field: 'label', label: t('kanban.filterPanel.labels') },
   ]
 
   const getDisplayName = (value: string) => {
     if (activeTab === 'status') return KANBAN_COLUMNS.find(c => c.id === value)?.label || value
     if (activeTab === 'priority') return value.charAt(0).toUpperCase() + value.slice(1)
-    if (value === '_unassigned') return 'Unassigned'
+    if (value === '_unassigned') return t('kanban.filterPanel.unassigned')
     return value
   }
 
@@ -896,7 +905,7 @@ function FilterPanel({ tasks, filters, onToggleFilter, onClear, onClose }: {
     <div ref={ref} style={{ position: 'absolute', top: 30, right: 0, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', minWidth: 280, maxWidth: 'calc(100vw - 32px)', boxShadow: 'var(--shadow-float)', zIndex: 1060 }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '8px 12px', gap: 8 }}>
-        {filters.length > 0 && <button onClick={onClear} style={{ border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11 }}>Clear</button>}
+        {filters.length > 0 && <button onClick={onClear} style={{ border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11 }}>{t('kanban.filterPanel.clear')}</button>}
       </div>
 
       {/* Tabs */}
@@ -935,7 +944,7 @@ function FilterPanel({ tasks, filters, onToggleFilter, onClear, onClose }: {
               {getDisplayName(item.value)}
               {item.presenceStatus && <PresenceDot status={item.presenceStatus} size={5} />}
             </span>
-            {item.isActive && <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Clear filter</span>}
+            {item.isActive && <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('kanban.filterPanel.clearFilter')}</span>}
             <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{item.count}</span>
           </button>
         ))}
@@ -950,20 +959,21 @@ function DisplayOptionsPanel({ groupBy, onGroupByChange, sortField, onSortChange
   sortField: SortField; onSortChange: (v: SortField) => void; sortAsc: boolean; onSortDirChange: () => void
   hiddenColumns: Set<string>; onToggleColumn: (col: string) => void; onClose: () => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) onClose() }
     document.addEventListener('mousedown', h); return () => document.removeEventListener('mousedown', h)
   }, [onClose])
 
-  const groupOptions: { value: GroupField; label: string }[] = [{ value: 'status', label: 'Status' }, { value: 'priority', label: 'Priority' }, { value: 'assignee', label: 'Assignee' }, { value: 'label', label: 'Label' }]
-  const sortOptions: { value: SortField; label: string }[] = [{ value: 'priority', label: 'Priority' }, { value: 'title', label: 'Title' }, { value: 'estimate', label: 'Estimate' }, { value: 'updatedAt', label: 'Updated' }]
+  const groupOptions: { value: GroupField; label: string }[] = [{ value: 'status', label: t('kanban.displayOptions.group.status') }, { value: 'priority', label: t('kanban.displayOptions.group.priority') }, { value: 'assignee', label: t('kanban.displayOptions.group.assignee') }, { value: 'label', label: t('kanban.displayOptions.group.label') }]
+  const sortOptions: { value: SortField; label: string }[] = [{ value: 'priority', label: t('kanban.displayOptions.sort.priority') }, { value: 'title', label: t('kanban.displayOptions.sort.title') }, { value: 'estimate', label: t('kanban.displayOptions.sort.estimate') }, { value: 'updatedAt', label: t('kanban.displayOptions.sort.updated') }]
 
   return (
     <div ref={ref} style={{ position: 'absolute', top: 30, right: 0, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 16, minWidth: 240, maxWidth: 'calc(100vw - 32px)', boxShadow: 'var(--shadow-float)', zIndex: 1060, fontSize: 12 }}>
       {/* Grouping */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <span style={{ color: 'var(--color-text-secondary)' }}>Grouping</span>
+        <span style={{ color: 'var(--color-text-secondary)' }}>{t('kanban.displayOptions.grouping')}</span>
         <select value={groupBy} onChange={e => onGroupByChange(e.target.value as GroupField)} style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', color: 'var(--color-text)', padding: '4px 8px', fontSize: 12 }}>
           {groupOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
@@ -971,7 +981,7 @@ function DisplayOptionsPanel({ groupBy, onGroupByChange, sortField, onSortChange
 
       {/* Ordering */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <span style={{ color: 'var(--color-text-secondary)' }}>Ordering</span>
+        <span style={{ color: 'var(--color-text-secondary)' }}>{t('kanban.displayOptions.ordering')}</span>
         <div style={{ display: 'flex', gap: 4 }}>
           <button onClick={onSortDirChange} style={{ width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 11 }}>
             {sortAsc ? '↑' : '↓'}
@@ -985,7 +995,7 @@ function DisplayOptionsPanel({ groupBy, onGroupByChange, sortField, onSortChange
       <div style={{ height: 1, background: 'var(--color-border-subtle)', margin: '12px 0' }} />
 
       {/* Visible columns */}
-      <div style={{ color: 'var(--color-text-tertiary)', fontSize: 11, marginBottom: 8 }}>Columns</div>
+      <div style={{ color: 'var(--color-text-tertiary)', fontSize: 11, marginBottom: 8 }}>{t('kanban.displayOptions.columns')}</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
         {KANBAN_COLUMNS.map(col => {
           const isHidden = hiddenColumns.has(col.id)
@@ -1009,12 +1019,13 @@ function DisplayOptionsPanel({ groupBy, onGroupByChange, sortField, onSortChange
 
 // ── Toolbar dropdowns ──
 function GroupByDropdown({ value, onChange }: { value: GroupField; onChange: (v: GroupField) => void }) {
+  const { t } = useTranslation('smithyNext')
   const [open, setOpen] = useState(false)
-  const options: { value: GroupField; label: string }[] = [{ value: 'status', label: 'Status' }, { value: 'priority', label: 'Priority' }, { value: 'assignee', label: 'Assignee' }, { value: 'label', label: 'Label' }]
+  const options: { value: GroupField; label: string }[] = [{ value: 'status', label: t('kanban.displayOptions.group.status') }, { value: 'priority', label: t('kanban.displayOptions.group.priority') }, { value: 'assignee', label: t('kanban.displayOptions.group.assignee') }, { value: 'label', label: t('kanban.displayOptions.group.label') }]
   return (
     <div style={{ position: 'relative' }}>
       <button onClick={() => setOpen(!open)} style={{ height: 26, padding: '0 8px', display: 'flex', alignItems: 'center', gap: 4, border: 'none', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11, fontWeight: 500 }}>
-        Group: {options.find(o => o.value === value)?.label} <ChevronDown size={11} />
+        {t('kanban.groupByDropdown.group')}: {options.find(o => o.value === value)?.label} <ChevronDown size={11} />
       </button>
       {open && (
         <div style={{ position: 'absolute', top: 30, right: 0, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 4, minWidth: 140, boxShadow: 'var(--shadow-float)', zIndex: 1060 }}>
@@ -1026,18 +1037,19 @@ function GroupByDropdown({ value, onChange }: { value: GroupField; onChange: (v:
 }
 
 function SortDropdown({ value, asc, onChange, onToggleDir }: { value: SortField; asc: boolean; onChange: (v: SortField) => void; onToggleDir: () => void }) {
+  const { t } = useTranslation('smithyNext')
   const [open, setOpen] = useState(false)
-  const options: { value: SortField; label: string }[] = [{ value: 'priority', label: 'Priority' }, { value: 'title', label: 'Title' }, { value: 'estimate', label: 'Estimate' }, { value: 'updatedAt', label: 'Updated' }]
+  const options: { value: SortField; label: string }[] = [{ value: 'priority', label: t('kanban.displayOptions.sort.priority') }, { value: 'title', label: t('kanban.displayOptions.sort.title') }, { value: 'estimate', label: t('kanban.displayOptions.sort.estimate') }, { value: 'updatedAt', label: t('kanban.displayOptions.sort.updated') }]
   return (
     <div style={{ position: 'relative' }}>
       <button onClick={() => setOpen(!open)} style={{ height: 26, padding: '0 8px', display: 'flex', alignItems: 'center', gap: 4, border: 'none', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11, fontWeight: 500 }}>
-        Sort: {options.find(o => o.value === value)?.label} {asc ? '↑' : '↓'} <ChevronDown size={11} />
+        {t('kanban.sortDropdown.sort')}: {options.find(o => o.value === value)?.label} {asc ? '↑' : '↓'} <ChevronDown size={11} />
       </button>
       {open && (
         <div style={{ position: 'absolute', top: 30, right: 0, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 4, minWidth: 140, boxShadow: 'var(--shadow-float)', zIndex: 1060 }}>
           {options.map(o => <MenuItem key={o.value} label={o.label} onClick={() => { onChange(o.value); setOpen(false) }} />)}
           <div style={{ height: 1, background: 'var(--color-border-subtle)', margin: '4px 0' }} />
-          <MenuItem label={asc ? 'Descending' : 'Ascending'} onClick={() => { onToggleDir(); setOpen(false) }} />
+          <MenuItem label={asc ? t('kanban.sortDropdown.descending') : t('kanban.sortDropdown.ascending')} onClick={() => { onToggleDir(); setOpen(false) }} />
         </div>
       )}
     </div>
@@ -1055,6 +1067,7 @@ function MetaRow({ label, value, mono }: { label: string; value: string; mono?: 
 }
 
 function SubTasksIndicator({ subTasks, subDone }: { subTasks: Task[]; subDone: number }) {
+  const { t } = useTranslation('smithyNext')
   const [hovered, setHovered] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const [dropdownPos, setDropdownPos] = useState<'below' | 'above'>('below')
@@ -1087,7 +1100,7 @@ function SubTasksIndicator({ subTasks, subDone }: { subTasks: Task[]; subDone: n
           onClick={e => e.stopPropagation()}
         >
           <div style={{ padding: '4px 8px', fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)' }}>
-            Sub-tasks · {subDone}/{subTasks.length}
+            {t('kanban.subTasks.subTasks')} · {subDone}/{subTasks.length}
           </div>
           {subTasks.map(sub => {
             const si = STATUS_ICONS[sub.status] || STATUS_ICONS.todo
@@ -1117,12 +1130,13 @@ function SubTasksIndicator({ subTasks, subDone }: { subTasks: Task[]; subDone: n
 }
 
 function AcceptanceCriteriaBadge({ criteria }: { criteria: { id: string; text: string; checked: boolean }[] }) {
+  const { t } = useTranslation('smithyNext')
   const checked = criteria.filter(c => c.checked).length
   const total = criteria.length
   const allPassing = checked === total
   const color = allPassing ? 'var(--color-success)' : 'var(--color-warning)'
   return (
-    <Tooltip label={allPassing ? `Acceptance criteria: all ${total} passing` : `Acceptance criteria: ${checked}/${total} passing`}>
+    <Tooltip label={allPassing ? t('kanban.acceptanceCriteria.allPassing', { total }) : t('kanban.acceptanceCriteria.partialPassing', { checked, total })}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 3, color }}>
         <ListChecks size={12} strokeWidth={2} />
         <span style={{ fontSize: 11, fontWeight: 500 }}>{checked}/{total}</span>
@@ -1164,13 +1178,14 @@ function PriorityIcon({ priority }: { priority: Task['priority'] }) {
 
 // ── Concurrency Claim Indicator (5.2) ──
 function ClaimIndicator({ task }: { task: Task }) {
+  const { t } = useTranslation('smithyNext')
   const { isTeamMode, getUserById } = useTeamContext()
   if (!task.claimedBy) return null
   const { agentName, launchedByUserId } = task.claimedBy
   const launcher = launchedByUserId ? getUserById(launchedByUserId) : undefined
   const tooltip = isTeamMode && launcher
-    ? `${agentName} (launched by ${launcher.name}) is working on this task`
-    : `${agentName} is already working on this task`
+    ? t('kanban.claimIndicator.launchedByWorking', { agentName, launcherName: launcher.name })
+    : t('kanban.claimIndicator.workingOnTask', { agentName })
   return (
     <Tooltip label={tooltip}>
       <span style={{ width: 18, height: 18, borderRadius: '50%', background: 'var(--color-presence-away-subtle)', color: 'var(--color-presence-away)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

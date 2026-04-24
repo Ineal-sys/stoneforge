@@ -3,6 +3,7 @@ import { ArrowLeft, Plus, Trash2, Check, X, Clock, Lock, Users } from 'lucide-re
 import type { Workflow, WFStep, WFAgentStep, WFScriptStep, WFTriggerType, WFVariable } from './wf-types'
 import { WorkflowStepCard } from './WorkflowStepCard'
 import { useTeamContext } from '../../../TeamContext'
+import { useTranslation } from '@/i18n'
 
 const inputStyle: React.CSSProperties = {
   width: '100%', height: 32, padding: '0 10px', border: '1px solid var(--color-border)',
@@ -56,23 +57,8 @@ const defaultScriptStep: WFScriptStep = {
   retryCount: 0, retryDelaySeconds: 0, timeoutSeconds: 60,
 }
 
-const cronPresets = [
-  { label: 'Every hour', value: '0 * * * *' },
-  { label: 'Daily at 9 AM', value: '0 9 * * *' },
-  { label: 'Weekdays at 9 AM', value: '0 9 * * 1-5' },
-  { label: 'Weekly (Sunday)', value: '0 0 * * 0' },
-  { label: 'Monthly (1st)', value: '0 0 1 * *' },
-]
-
-const eventTypes = [
-  { value: 'pr_created', label: 'PR created' },
-  { value: 'merge_to_main', label: 'Merge to main' },
-  { value: 'dependency_pr', label: 'Dependency PR' },
-  { value: 'issue_created', label: 'Issue created' },
-  { value: 'release_published', label: 'Release published' },
-]
-
 export function WorkflowCreateView({ workflow, onBack, allWorkflows, onSelectWorkflow }: WorkflowCreateViewProps) {
+  const { t } = useTranslation('smithyNext')
   const { isTeamMode } = useTeamContext()
   const isEdit = !!workflow
   const [name, setName] = useState(workflow?.name || '')
@@ -84,6 +70,22 @@ export function WorkflowCreateView({ workflow, onBack, allWorkflows, onSelectWor
   const [eventType, setEventType] = useState(workflow?.trigger.eventType || 'pr_created')
   const [variables, setVariables] = useState<WFVariable[]>(workflow?.variables || [])
   const [scope, setScope] = useState<'personal' | 'team'>(workflow?.scope || 'team')
+
+  const cronPresets = [
+    { label: t('automations.everyHour'), value: '0 * * * *' },
+    { label: t('automations.dailyAt9am'), value: '0 9 * * *' },
+    { label: t('automations.weekdaysAt9am'), value: '0 9 * * 1-5' },
+    { label: t('automations.weeklySunday'), value: '0 0 * * 0' },
+    { label: t('automations.monthly1st'), value: '0 0 1 * *' },
+  ]
+
+  const eventTypes = [
+    { value: 'pr_created', label: t('automations.prCreated') },
+    { value: 'merge_to_main', label: t('automations.mergeToMain') },
+    { value: 'dependency_pr', label: t('automations.dependencyPr') },
+    { value: 'issue_created', label: t('automations.issueCreated') },
+    { value: 'release_published', label: t('automations.releasePublished') },
+  ]
 
   let nextId = steps.length + 1
 
@@ -124,6 +126,13 @@ export function WorkflowCreateView({ workflow, onBack, allWorkflows, onSelectWor
 
   const showSidebar = isEdit && allWorkflows && allWorkflows.length > 1
 
+  const triggerTypeLabels: Record<WFTriggerType, string> = {
+    manual: t('automations.manual'),
+    cron: t('automations.cron'),
+    event: t('automations.event'),
+    webhook: t('automations.webhook'),
+  }
+
   return (
     <div style={{ height: '100%', display: 'flex', overflow: 'hidden' }}>
       {/* Workflow navigation sidebar (edit mode only) */}
@@ -134,7 +143,7 @@ export function WorkflowCreateView({ workflow, onBack, allWorkflows, onSelectWor
         }}>
           <div style={{ padding: '0 12px', marginBottom: 12 }}>
             <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Automations
+              {t('automations.automations')}
             </span>
           </div>
           <button
@@ -148,7 +157,7 @@ export function WorkflowCreateView({ workflow, onBack, allWorkflows, onSelectWor
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
             <ArrowLeft size={11} strokeWidth={1.5} />
-            All automations
+            {t('automations.allAutomations')}
           </button>
           <div style={{ height: 1, background: 'var(--color-border-subtle)', margin: '6px 12px' }} />
           {allWorkflows!.map(wf => {
@@ -192,7 +201,7 @@ export function WorkflowCreateView({ workflow, onBack, allWorkflows, onSelectWor
           <ArrowLeft size={14} strokeWidth={1.5} />
         </button>
         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', flex: 1 }}>
-          {isEdit ? `Edit: ${workflow.name}` : 'New automation'}
+          {isEdit ? t('automations.editLabel', { name: workflow.name }) : t('automations.newAutomation')}
         </span>
         <button style={{
           height: 26, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5,
@@ -200,14 +209,14 @@ export function WorkflowCreateView({ workflow, onBack, allWorkflows, onSelectWor
           borderRadius: 'var(--radius-sm)', color: 'var(--color-text-secondary)',
           cursor: 'pointer', fontSize: 12, fontWeight: 500,
         }}>
-          Save draft
+          {t('automations.saveDraft')}
         </button>
         <button style={{
           height: 26, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5,
           background: 'var(--color-primary)', border: 'none', borderRadius: 'var(--radius-sm)',
           color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
         }}>
-          {isEdit ? 'Save changes' : 'Save & activate'}
+          {isEdit ? t('automations.saveChanges') : t('automations.saveAndActivate')}
         </button>
       </div>
 
@@ -215,30 +224,30 @@ export function WorkflowCreateView({ workflow, onBack, allWorkflows, onSelectWor
       <div style={{ flex: 1, overflow: 'auto', padding: '20px 24px' }}>
         <div style={{ maxWidth: 720, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 28 }}>
 
-          {/* ── Name & Description ── */}
-          <FormSection title="Details">
-            <FieldGroup label="Name">
-              <input value={name} onChange={e => setName(e.target.value)} style={inputStyle} placeholder="Automation name" />
+          {/* Name & Description */}
+          <FormSection title={t('automations.details')}>
+            <FieldGroup label={t('automations.automationName')}>
+              <input value={name} onChange={e => setName(e.target.value)} style={inputStyle} placeholder={t('automations.automationName')} />
             </FieldGroup>
-            <FieldGroup label="Description">
+            <FieldGroup label={t('automations.description')}>
               <textarea value={description} onChange={e => setDescription(e.target.value)}
                 rows={2} style={{ ...textareaStyle }}
                 onInput={e => autoResize(e.currentTarget, 6)}
-                placeholder="What does this automation do?" />
+                placeholder={t('automations.descriptionPlaceholder')} />
             </FieldGroup>
-            <FieldGroup label="Tags">
+            <FieldGroup label={t('automations.tagsLabel')}>
               <input value={tagsInput} onChange={e => setTagsInput(e.target.value)} style={inputStyle}
-                placeholder="daily, slack, standup (comma-separated)" />
+                placeholder={t('automations.tagsInputPlaceholder')} />
             </FieldGroup>
           </FormSection>
 
-          {/* ── Visibility (team-mode only) ── */}
+          {/* Visibility (team-mode only) */}
           {isTeamMode && (
-            <FormSection title="Visibility">
+            <FormSection title={t('automations.visibility')}>
               <div style={{ display: 'flex', gap: 6 }}>
                 {([
-                  { key: 'personal' as const, label: 'Personal', icon: Lock, desc: 'Only you can edit' },
-                  { key: 'team' as const, label: 'Team', icon: Users, desc: 'Team members can edit' },
+                  { key: 'personal' as const, label: t('automations.personal'), icon: Lock, desc: t('automations.personalDesc') },
+                  { key: 'team' as const, label: t('automations.team'), icon: Users, desc: t('automations.teamDesc') },
                 ] as const).map(({ key, label, icon: ScopeIcon, desc }) => (
                   <button key={key} onClick={() => setScope(key)} style={{
                     flex: 1, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px',
@@ -257,14 +266,14 @@ export function WorkflowCreateView({ workflow, onBack, allWorkflows, onSelectWor
             </FormSection>
           )}
 
-          {/* ── Steps ── */}
-          <FormSection title="Steps" action={
+          {/* Steps */}
+          <FormSection title={t('automations.steps')} action={
             <div style={{ display: 'flex', gap: 4 }}>
               <button onClick={() => addStep('agent')} style={addBtnStyle}>
-                <Plus size={11} strokeWidth={2} /> Agent step
+                <Plus size={11} strokeWidth={2} /> {t('automations.addAgentStep')}
               </button>
               <button onClick={() => addStep('script')} style={addBtnStyle}>
-                <Plus size={11} strokeWidth={2} /> Script step
+                <Plus size={11} strokeWidth={2} /> {t('automations.addScriptStep')}
               </button>
             </div>
           }>
@@ -273,7 +282,7 @@ export function WorkflowCreateView({ workflow, onBack, allWorkflows, onSelectWor
                 padding: 32, textAlign: 'center', borderRadius: 'var(--radius-md)',
                 border: '1px dashed var(--color-border)', color: 'var(--color-text-tertiary)', fontSize: 13,
               }}>
-                Add your first step to get started
+                {t('automations.addFirstStep')}
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -291,24 +300,24 @@ export function WorkflowCreateView({ workflow, onBack, allWorkflows, onSelectWor
             )}
           </FormSection>
 
-          {/* ── Trigger ── */}
-          <FormSection title="Trigger">
+          {/* Trigger */}
+          <FormSection title={t('automations.triggerSection')}>
             <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
-              {(['manual', 'cron', 'event', 'webhook'] as WFTriggerType[]).map(t => (
-                <button key={t} onClick={() => setTriggerType(t)} style={{
+              {(['manual', 'cron', 'event', 'webhook'] as WFTriggerType[]).map(trigType => (
+                <button key={trigType} onClick={() => setTriggerType(trigType)} style={{
                   height: 28, padding: '0 12px', border: 'none', borderRadius: 'var(--radius-sm)',
-                  cursor: 'pointer', fontSize: 12, fontWeight: 500, textTransform: 'capitalize',
-                  background: triggerType === t ? 'var(--color-primary-subtle)' : 'var(--color-surface)',
-                  color: triggerType === t ? 'var(--color-text-accent)' : 'var(--color-text-tertiary)',
+                  cursor: 'pointer', fontSize: 12, fontWeight: 500,
+                  background: triggerType === trigType ? 'var(--color-primary-subtle)' : 'var(--color-surface)',
+                  color: triggerType === trigType ? 'var(--color-text-accent)' : 'var(--color-text-tertiary)',
                 }}>
-                  {t}
+                  {triggerTypeLabels[trigType]}
                 </button>
               ))}
             </div>
 
             {triggerType === 'cron' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <FieldGroup label="Cron expression">
+                <FieldGroup label={t('automations.cronExpression')}>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <input value={cronExpression} onChange={e => setCronExpression(e.target.value)}
                       style={{ ...inputStyle, width: 180, fontFamily: 'var(--font-mono)' }} placeholder="0 9 * * 1-5" />
@@ -331,11 +340,11 @@ export function WorkflowCreateView({ workflow, onBack, allWorkflows, onSelectWor
             )}
 
             {triggerType === 'event' && (
-              <FieldGroup label="Event type">
+              <FieldGroup label={t('automations.eventType')}>
                 <select value={eventType} onChange={e => setEventType(e.target.value)}
                   style={{ ...inputStyle, width: 220 }}>
-                  {eventTypes.map(e => (
-                    <option key={e.value} value={e.value}>{e.label}</option>
+                  {eventTypes.map(evt => (
+                    <option key={evt.value} value={evt.value}>{evt.label}</option>
                   ))}
                 </select>
               </FieldGroup>
@@ -343,12 +352,12 @@ export function WorkflowCreateView({ workflow, onBack, allWorkflows, onSelectWor
 
             {triggerType === 'manual' && (
               <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', padding: '8px 0' }}>
-                This automation can only be triggered manually via the "Run" button.
+                {t('automations.manualOnlyDescription')}
               </div>
             )}
 
             {triggerType === 'webhook' && (
-              <FieldGroup label="Webhook URL">
+              <FieldGroup label={t('automations.webhookUrl')}>
                 <div style={{
                   ...inputStyle, display: 'flex', alignItems: 'center', padding: '0 8px',
                   color: 'var(--color-text-tertiary)', background: 'var(--color-surface)',
@@ -359,15 +368,15 @@ export function WorkflowCreateView({ workflow, onBack, allWorkflows, onSelectWor
             )}
           </FormSection>
 
-          {/* ── Variables ── */}
-          <FormSection title="Variables" action={
+          {/* Variables */}
+          <FormSection title={t('automations.variables')} action={
             <button onClick={addVariable} style={addBtnStyle}>
-              <Plus size={11} strokeWidth={2} /> Add variable
+              <Plus size={11} strokeWidth={2} /> {t('automations.addVariable')}
             </button>
           }>
             {variables.length === 0 ? (
               <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', padding: '8px 0' }}>
-                No variables defined. Variables can be referenced in steps as {'{{vars.name}}'}.
+                {t('automations.noVariablesDefined')}
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -388,14 +397,14 @@ export function WorkflowCreateView({ workflow, onBack, allWorkflows, onSelectWor
                           <option value="enum">enum</option>
                         </select>
                         <input value={v.default || ''} onChange={e => updateVariable(i, { default: e.target.value })}
-                          style={{ ...inputStyle, flex: 1 }} placeholder="default value" />
+                          style={{ ...inputStyle, flex: 1 }} placeholder={t('automations.defaultValue')} />
                       </div>
                       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                         <input value={v.description || ''} onChange={e => updateVariable(i, { description: e.target.value })}
                           style={{ ...inputStyle, flex: 1 }} placeholder="description" />
                         <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--color-text-tertiary)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                           <input type="checkbox" checked={v.required} onChange={e => updateVariable(i, { required: e.target.checked })} />
-                          Required
+                          {t('automations.required')}
                         </label>
                       </div>
                     </div>
@@ -451,4 +460,3 @@ function FieldGroup({ label, children }: { label: string; children: React.ReactN
     </div>
   )
 }
-

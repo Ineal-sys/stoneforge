@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Bell, CheckCircle2, AlertCircle, GitPullRequest, CircleDot, MessageCircle, Settings, AtSign, UserPlus, Shield } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import { Tooltip } from './Tooltip'
 import { WorkspaceIconMark } from './WorkspaceIconMark'
 import { TEAM_MEMBERS } from '../mock-data'
@@ -30,17 +31,18 @@ const typeIcon: Record<NotificationItem['type'], { icon: typeof CheckCircle2; co
 
 type FilterTab = 'all' | 'mentions' | 'assigned' | 'reviews'
 
-const filterTabConfig: { id: FilterTab; label: string; types: NotificationItem['type'][] }[] = [
-  { id: 'all', label: 'All', types: [] },
-  { id: 'mentions', label: 'Mentions', types: ['mention'] },
-  { id: 'assigned', label: 'Assigned', types: ['assignment'] },
-  { id: 'reviews', label: 'Reviews', types: ['review-request', 'deployment-approval'] },
-]
-
 export function NotificationInbox({ notifications, workspaces, onMarkRead, onMarkAllRead, onSwitch, onOpenSettings, isTeamMode = false }: NotificationInboxProps) {
+  const { t } = useTranslation('smithyNext')
   const [open, setOpen] = useState(false)
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all')
   const ref = useRef<HTMLDivElement>(null)
+
+  const filterTabConfig: { id: FilterTab; label: string; types: NotificationItem['type'][] }[] = [
+    { id: 'all', label: t('notifications.all'), types: [] },
+    { id: 'mentions', label: t('notifications.mentions'), types: ['mention'] },
+    { id: 'assigned', label: t('notifications.assigned'), types: ['assignment'] },
+    { id: 'reviews', label: t('notifications.reviews'), types: ['review-request', 'deployment-approval'] },
+  ]
 
   // Team-only notification types — hidden in solo mode
   const teamOnlyTypes: NotificationItem['type'][] = ['mention', 'assignment', 'review-request', 'deployment-approval']
@@ -75,7 +77,7 @@ export function NotificationInbox({ notifications, workspaces, onMarkRead, onMar
 
   return (
     <div ref={ref} style={{ position: 'relative' }}>
-      <Tooltip label="Notifications" placement="bottom">
+      <Tooltip label={t('notifications.notifications')} placement="bottom">
         <button
           onClick={() => setOpen(o => !o)}
           style={{
@@ -123,7 +125,7 @@ export function NotificationInbox({ notifications, workspaces, onMarkRead, onMar
             borderBottom: '1px solid var(--color-border-subtle)',
           }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', flex: 1 }}>
-              Notifications
+              {t('notifications.notifications')}
             </span>
             {unreadCount > 0 && (
               <button
@@ -137,7 +139,7 @@ export function NotificationInbox({ notifications, workspaces, onMarkRead, onMar
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--color-primary-subtle)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'none'}
               >
-                Mark all read
+                {t('notifications.markAllRead')}
               </button>
             )}
           </div>
@@ -175,14 +177,14 @@ export function NotificationInbox({ notifications, workspaces, onMarkRead, onMar
             {filtered.length === 0 ? (
               <div style={{ padding: 32, textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 12 }}>
                 <Bell size={24} strokeWidth={1} style={{ opacity: 0.3, marginBottom: 8 }} />
-                <div>No notifications</div>
+                <div>{t('notifications.noNotifications')}</div>
               </div>
             ) : (
               <>
                 {today.length > 0 && (
                   <>
                     <div style={{ padding: '8px 12px 4px', fontSize: 10, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      Today
+                      {t('notifications.today')}
                     </div>
                     {today.map(n => (
                       <NotificationRow
@@ -202,7 +204,7 @@ export function NotificationInbox({ notifications, workspaces, onMarkRead, onMar
                 {earlier.length > 0 && (
                   <>
                     <div style={{ padding: '8px 12px 4px', fontSize: 10, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      Earlier
+                      {t('notifications.earlier')}
                     </div>
                     {earlier.map(n => (
                       <NotificationRow
@@ -237,7 +239,7 @@ export function NotificationInbox({ notifications, workspaces, onMarkRead, onMar
               onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-tertiary)'}
             >
               <Settings size={12} strokeWidth={1.5} />
-              Notification settings
+              {t('notifications.notificationSettings')}
             </button>
           </div>
         </div>

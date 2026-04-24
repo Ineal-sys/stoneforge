@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { useTranslation } from '@/i18n'
 import { mockPlans, type Task, type Plan } from '../mock-data'
 import { KanbanBoard } from './KanbanBoard'
 import { PlanListView } from './overlays/plans/PlanListView'
@@ -51,6 +52,7 @@ export function TasksPage({
   onPlanChange,
 }: TasksPageProps) {
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(initialPlanId || null)
+  const { t } = useTranslation('smithyNext')
   const selectedPlan = selectedPlanId ? mockPlans.find(p => p.id === selectedPlanId) || null : null
 
   const handleSelectPlan = useCallback((plan: Plan) => {
@@ -71,8 +73,8 @@ export function TasksPage({
       {showTabs && (
         <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--color-border-subtle)', flexShrink: 0, padding: '0 16px' }}>
           {([
-            { key: 'tasks' as const, label: `Tasks (${tasks.length})` },
-            { key: 'plans' as const, label: `Plans (${mockPlans.length})` },
+            { key: 'tasks' as const, label: t('tasksPage.tasksTab', { count: tasks.length }) },
+            { key: 'plans' as const, label: t('tasksPage.plansTab', { count: mockPlans.length }) },
           ]).map(tab => (
             <button
               key={tab.key}

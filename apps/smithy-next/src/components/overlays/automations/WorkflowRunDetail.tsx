@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Check, X, Loader, Clock, SkipForward, ChevronDown, ChevronRight, Bot, Terminal, RotateCcw, CircleDot, GitPullRequest, ExternalLink, Zap, Globe } from 'lucide-react'
 import type { WFRun, WFStepRun } from './wf-types'
 import { useTeamContext } from '../../../TeamContext'
+import { useTranslation } from '@/i18n'
 
 interface WorkflowRunDetailProps {
   run: WFRun
@@ -20,8 +21,8 @@ const statusColor: Record<string, string> = {
   pending: 'var(--color-text-tertiary)', skipped: 'var(--color-text-tertiary)',
 }
 
-const triggerLabels: Record<string, string> = {
-  schedule: 'Scheduled', manual: 'Manual', event: 'Event', webhook: 'Webhook',
+const triggerLabelKeys: Record<string, string> = {
+  schedule: 'automations.scheduled', manual: 'automations.manualTriggerLabel', event: 'automations.eventTrigger', webhook: 'automations.webhookTrigger',
 }
 
 const chipStyle: React.CSSProperties = {
@@ -31,6 +32,7 @@ const chipStyle: React.CSSProperties = {
 }
 
 export function WorkflowRunDetail({ run, defaultExpanded, onNavigateToCI, onNavigateToMR, onNavigateToTask, onOpenRun }: WorkflowRunDetailProps) {
+  const { t } = useTranslation('smithyNext')
   const { getUserById } = useTeamContext()
   const [expanded, setExpanded] = useState(defaultExpanded || false)
 
@@ -65,7 +67,7 @@ export function WorkflowRunDetail({ run, defaultExpanded, onNavigateToCI, onNavi
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text)', fontFamily: 'var(--font-mono)' }}>#{run.runNumber}</span>
             <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text-tertiary)', fontWeight: 500 }}>
-              {triggerLabels[run.triggeredBy] || run.triggeredBy}
+              {triggerLabelKeys[run.triggeredBy] ? t(triggerLabelKeys[run.triggeredBy]) : run.triggeredBy}
             </span>
             {/* Audit attribution: only manual runs show user */}
             {run.triggeredBy === 'manual' && triggerUser ? (
@@ -105,7 +107,7 @@ export function WorkflowRunDetail({ run, defaultExpanded, onNavigateToCI, onNavi
             {run.linkedCIRunIds && run.linkedCIRunIds.length > 0 && (
               <button onClick={e => { e.stopPropagation(); onNavigateToCI?.(run.linkedCIRunIds![0]) }} style={chipStyle}>
                 <CircleDot size={10} strokeWidth={1.5} />
-                <span>CI run</span>
+                <span>{t('automations.ciRun')}</span>
               </button>
             )}
           </div>
@@ -150,6 +152,7 @@ export function WorkflowRunDetail({ run, defaultExpanded, onNavigateToCI, onNavi
 }
 
 function StepRunRow({ step, onNavigateToCI }: { step: WFStepRun; onNavigateToCI?: (runId: string) => void }) {
+  const { t } = useTranslation('smithyNext')
   const [showOutput, setShowOutput] = useState(false)
   const Icon = statusIcon[step.status] || Clock
   const color = statusColor[step.status] || 'var(--color-text-tertiary)'
@@ -179,7 +182,7 @@ function StepRunRow({ step, onNavigateToCI }: { step: WFStepRun; onNavigateToCI?
         {step.duration && <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{step.duration}</span>}
         {step.linkedCIRunId && (
           <button onClick={e => { e.stopPropagation(); onNavigateToCI?.(step.linkedCIRunId!) }} style={{ ...chipStyle, fontSize: 9 }}>
-            <CircleDot size={9} strokeWidth={1.5} /> CI
+            <CircleDot size={9} strokeWidth={1.5} /> {t('automations.ci')}
           </button>
         )}
       </div>

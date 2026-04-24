@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import type { SessionEvent, SessionEventType } from './session-types'
 
+import { useTranslation } from '@/i18n'
 interface SessionTimelineProps {
   events: SessionEvent[]
   selectedEventId: string | null
@@ -17,11 +18,11 @@ const typeColors: Record<SessionEventType, string> = {
 }
 
 const typeLabels: Record<SessionEventType, string> = {
-  session_start: 'Start',
-  user_message: 'User',
-  agent_message: 'Agent',
-  tool_call: 'Tool',
-  system_message: 'System',
+  session_start: 'sessions.start',
+  user_message: 'sessions.user',
+  agent_message: 'sessions.agentFilter',
+  tool_call: 'sessions.tool',
+  system_message: 'sessions.system',
 }
 
 function formatDuration(ms: number): string {
@@ -32,6 +33,7 @@ function formatDuration(ms: number): string {
 }
 
 export function SessionTimeline({ events, selectedEventId, onSelectEvent, totalDuration }: SessionTimelineProps) {
+  const { t } = useTranslation('smithyNext')
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -118,7 +120,7 @@ export function SessionTimeline({ events, selectedEventId, onSelectEvent, totalD
             flexShrink: 0,
           }} />
           <span style={{ color: 'var(--color-text-secondary)', fontWeight: 500 }}>
-            {hoveredEvent.toolName ?? typeLabels[hoveredEvent.type]}
+            {hoveredEvent.toolName ?? t(typeLabels[hoveredEvent.type])}
           </span>
           <span style={{ color: 'var(--color-text-tertiary)' }}>
             {hoveredEvent.title}

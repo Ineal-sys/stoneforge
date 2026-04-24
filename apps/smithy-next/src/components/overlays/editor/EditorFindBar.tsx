@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useTranslation } from '@/i18n'
 import { X, ChevronUp, ChevronDown } from 'lucide-react'
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export function EditorFindBar({ visible, onClose, content, onHighlightMatches, onScrollToLine }: Props) {
+  const { t } = useTranslation('smithyNext')
   const [query, setQuery] = useState('')
   const [currentMatch, setCurrentMatch] = useState(0)
   const [matchLines, setMatchLines] = useState<number[]>([])
@@ -86,7 +88,7 @@ export function EditorFindBar({ visible, onClose, content, onHighlightMatches, o
       <input
         ref={inputRef}
         type="text"
-        placeholder="Find..."
+        placeholder={t('editor.findPlaceholder')}
         value={query}
         onChange={e => setQuery(e.target.value)}
         onKeyDown={handleKeyDown}
@@ -104,10 +106,10 @@ export function EditorFindBar({ visible, onClose, content, onHighlightMatches, o
       />
 
       <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap', minWidth: 40, textAlign: 'center' }}>
-        {matchLines.length > 0 ? `${currentMatch + 1}/${matchLines.length}` : 'No results'}
+        {matchLines.length > 0 ? `${currentMatch + 1}/${matchLines.length}` : t('editor.noResults')}
       </span>
 
-      <button onClick={goPrev} title="Previous (Shift+Enter)"
+      <button onClick={goPrev} title={t('editor.previousMatch')}
         style={{
           width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
           background: 'none', border: 'none', borderRadius: 'var(--radius-sm)',
@@ -116,7 +118,7 @@ export function EditorFindBar({ visible, onClose, content, onHighlightMatches, o
       >
         <ChevronUp size={14} strokeWidth={1.5} />
       </button>
-      <button onClick={goNext} title="Next (Enter)"
+      <button onClick={goNext} title={t('editor.nextMatch')}
         style={{
           width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
           background: 'none', border: 'none', borderRadius: 'var(--radius-sm)',
@@ -125,7 +127,7 @@ export function EditorFindBar({ visible, onClose, content, onHighlightMatches, o
       >
         <ChevronDown size={14} strokeWidth={1.5} />
       </button>
-      <button onClick={onClose} title="Close (Esc)"
+      <button onClick={onClose} title={t('editor.closeFind')}
         style={{
           width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
           background: 'none', border: 'none', borderRadius: 'var(--radius-sm)',

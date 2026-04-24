@@ -1,5 +1,6 @@
 import { X, Eye, Clock } from 'lucide-react'
 import type { DocumentVersion } from './doc-types'
+import { useTranslation } from '@/i18n'
 
 interface DocVersionHistoryProps {
   documentTitle: string
@@ -21,6 +22,7 @@ function timeAgo(dateStr: string): string {
 }
 
 export function DocVersionHistory({ versions, viewingVersion, onClose, onViewVersion }: DocVersionHistoryProps) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', height: '100%',
@@ -34,7 +36,7 @@ export function DocVersionHistory({ versions, viewingVersion, onClose, onViewVer
       }}>
         <Clock size={14} color="var(--color-text-secondary)" />
         <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>
-          Version History
+          {t('documents.versionHistory')}
         </span>
         <button
           onClick={onClose}
@@ -55,7 +57,7 @@ export function DocVersionHistory({ versions, viewingVersion, onClose, onViewVer
       <div style={{ flex: 1, overflow: 'auto', padding: 8 }}>
         {versions.length === 0 ? (
           <div style={{ padding: '20px 12px', textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 12 }}>
-            No version history available
+            {t('documents.noVersionHistory')}
           </div>
         ) : (
           versions.map((v, i) => {
@@ -96,7 +98,7 @@ export function DocVersionHistory({ versions, viewingVersion, onClose, onViewVer
                       borderRadius: 'var(--radius-full)', background: 'var(--color-primary-subtle)',
                       color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.05em',
                     }}>
-                      Current
+                      {t('documents.current')}
                     </span>
                   )}
                   {isViewing && (
@@ -105,7 +107,7 @@ export function DocVersionHistory({ versions, viewingVersion, onClose, onViewVer
                       borderRadius: 'var(--radius-full)', background: 'var(--color-warning-subtle)',
                       color: 'var(--color-warning)', textTransform: 'uppercase', letterSpacing: '0.05em',
                     }}>
-                      Viewing
+                      {t('documents.viewing')}
                     </span>
                   )}
                   <span style={{ flex: 1 }} />
@@ -126,7 +128,7 @@ export function DocVersionHistory({ versions, viewingVersion, onClose, onViewVer
                     marginTop: 6, fontSize: 11, color: 'var(--color-text-tertiary)',
                   }}>
                     <Eye size={10} />
-                    Click to view
+                    {t('documents.clickToView')}
                   </div>
                 )}
               </div>

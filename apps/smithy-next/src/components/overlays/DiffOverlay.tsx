@@ -1,4 +1,5 @@
 import { ArrowLeft, Plus, Minus, GitBranch, Copy } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import { mockDiffFiles, mockTasks, type DiffFile } from '../../mock-data'
 import { FilesChangedView } from '../shared/FilesChangedView'
 
@@ -9,6 +10,7 @@ interface DiffOverlayProps {
 }
 
 export function DiffOverlay({ context, onBack, onOpenInEditor }: DiffOverlayProps) {
+  const { t } = useTranslation('smithyNext')
   const task = context ? mockTasks.find(t => t.id === context.taskId) : null
   const branch = context?.branch || 'unknown'
   const files = mockDiffFiles
@@ -23,7 +25,7 @@ export function DiffOverlay({ context, onBack, onOpenInEditor }: DiffOverlayProp
           <button onClick={onBack} style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-surface)', border: 'none', borderRadius: 'var(--radius-sm)', color: 'var(--color-text-secondary)', cursor: 'pointer' }}>
             <ArrowLeft size={14} strokeWidth={1.5} />
           </button>
-          <h1 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text)' }}>Changes</h1>
+          <h1 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text)' }}>{t('diff.changes')}</h1>
           {task && (
             <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', background: 'var(--color-surface)', padding: '2px 8px', borderRadius: 'var(--radius-full)' }}>{task.id}</span>
           )}
@@ -42,7 +44,7 @@ export function DiffOverlay({ context, onBack, onOpenInEditor }: DiffOverlayProp
             <Minus size={11} strokeWidth={2} style={{ color: 'var(--color-danger)', marginLeft: 4 }} />
             <span style={{ color: 'var(--color-danger)' }}>{totalRemoved}</span>
           </span>
-          <span>{files.length} files</span>
+          <span>{files.length} {t('diff.files')}</span>
           {task?.title && (
             <span style={{ color: 'var(--color-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{task.title}</span>
           )}

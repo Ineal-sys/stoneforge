@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { ArrowLeft, CheckCircle, FileEdit, Circle, ExternalLink, Presentation, MoreHorizontal, ChevronDown, AlertCircle, Clock, GitBranch, Activity, Tag, User, Calendar, ChevronRight } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import { mockTasks, mockWhiteboards, currentUser, type Plan, type Task } from '../../../mock-data'
 import { PLAN_STATUS_CONFIG } from './plan-types'
 import type { PlanStatus } from './plan-types'
@@ -19,11 +20,11 @@ const PRIORITY_COLORS: Record<string, string> = {
   low: 'var(--color-text-tertiary)',
 }
 
-const STATUS_TRANSITIONS: Record<PlanStatus, { value: PlanStatus; label: string }[]> = {
-  draft: [{ value: 'active', label: 'Activate' }],
-  active: [{ value: 'completed', label: 'Complete' }, { value: 'cancelled', label: 'Cancel' }],
-  completed: [{ value: 'draft', label: 'Reopen as Draft' }],
-  cancelled: [{ value: 'draft', label: 'Reopen as Draft' }],
+const STATUS_TRANSITIONS: Record<PlanStatus, { value: PlanStatus; labelKey: string }[]> = {
+  draft: [{ value: 'active', labelKey: 'plans.activate' }],
+  active: [{ value: 'completed', labelKey: 'plans.complete' }, { value: 'cancelled', labelKey: 'plans.cancel' }],
+  completed: [{ value: 'draft', labelKey: 'plans.reopenAsDraft' }],
+  cancelled: [{ value: 'draft', labelKey: 'plans.reopenAsDraft' }],
 }
 
 // Mock activity data for the plan
@@ -38,6 +39,7 @@ function getMockActivity(plan: Plan) {
 }
 
 export function PlanDetailView({ plan, onBack, onNavigateToTask, onNavigateToWhiteboard, onNavigateToTasksBoard }: PlanDetailViewProps) {
+  const { t } = useTranslation('smithyNext')
   const [statusMenuOpen, setStatusMenuOpen] = useState(false)
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
   const statusRef = useRef<HTMLDivElement>(null)
@@ -92,7 +94,7 @@ export function PlanDetailView({ plan, onBack, onNavigateToTask, onNavigateToWhi
         >
           <ArrowLeft size={14} strokeWidth={1.5} />
         </button>
-        <span style={{ fontSize: 13, color: 'var(--color-text-tertiary)' }}>Plans</span>
+        <span style={{ fontSize: 13, color: 'var(--color-text-tertiary)' }}>{t('plans.plans')}</span>
         <span style={{ fontSize: 13, color: 'var(--color-text-tertiary)' }}>/</span>
         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{plan.name}</span>
 
@@ -115,8 +117,8 @@ export function PlanDetailView({ plan, onBack, onNavigateToTask, onNavigateToWhi
               background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-float)', zIndex: 1060, padding: 4,
             }}>
-              {transitions.map(t => (
-                <button key={t.value} onClick={() => setStatusMenuOpen(false)} style={{
+              {transitions.map(tr => (
+                <button key={tr.value} onClick={() => setStatusMenuOpen(false)} style={{
                   display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '7px 10px',
                   border: 'none', borderRadius: 'var(--radius-sm)', background: 'transparent',
                   color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 12,
@@ -124,8 +126,8 @@ export function PlanDetailView({ plan, onBack, onNavigateToTask, onNavigateToWhi
                   onMouseEnter={e => e.currentTarget.style.background = 'var(--color-surface-hover)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: PLAN_STATUS_CONFIG[t.value].color }} />
-                  {t.label}
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: PLAN_STATUS_CONFIG[tr.value].color }} />
+                  {t(tr.labelKey)}
                 </button>
               ))}
             </div>
@@ -158,7 +160,7 @@ export function PlanDetailView({ plan, onBack, onNavigateToTask, onNavigateToWhi
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--color-surface-hover)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
-                Edit plan
+                {t('plans.editPlan')}
               </button>
               <button onClick={() => setMoreMenuOpen(false)} style={{
                 display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '7px 10px',
@@ -168,7 +170,7 @@ export function PlanDetailView({ plan, onBack, onNavigateToTask, onNavigateToWhi
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--color-surface-hover)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
-                Delete plan
+                {t('plans.deletePlan')}
               </button>
             </div>
           )}
@@ -202,31 +204,31 @@ export function PlanDetailView({ plan, onBack, onNavigateToTask, onNavigateToWhi
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 12 }}>
               <span style={{ fontWeight: 500, color: 'var(--color-text-secondary)' }}>
-                {done} of {total} tasks completed ({pct}%)
+                {t('plans.ofTasksCompleted', { done, total, pct })}
               </span>
               <div style={{ flex: 1 }} />
               {done > 0 && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--color-success)' }}>
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-success)' }} />
-                  {done} done
+                  {done} {t('plans.done')}
                 </span>
               )}
               {inProgress > 0 && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--color-primary)' }}>
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-primary)' }} />
-                  {inProgress} in progress
+                  {inProgress} {t('plans.inProgress')}
                 </span>
               )}
               {blocked > 0 && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--color-danger)' }}>
                   <AlertCircle size={11} strokeWidth={2} />
-                  {blocked} blocked
+                  {blocked} {t('plans.blocked')}
                 </span>
               )}
               {remaining > 0 && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--color-text-tertiary)' }}>
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-text-tertiary)' }} />
-                  {remaining} remaining
+                  {remaining} {t('plans.remaining')}
                 </span>
               )}
             </div>
@@ -236,7 +238,7 @@ export function PlanDetailView({ plan, onBack, onNavigateToTask, onNavigateToWhi
           <div style={{ marginBottom: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
               <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Tasks ({total})
+                {t('plans.tasks', { count: total })}
               </div>
               <div style={{ flex: 1 }} />
               {onNavigateToTasksBoard && (
@@ -247,7 +249,7 @@ export function PlanDetailView({ plan, onBack, onNavigateToTask, onNavigateToWhi
                   onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
                   onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                 >
-                  Open in Tasks board <ExternalLink size={11} strokeWidth={2} />
+                  {t('plans.openInTasksBoard')} <ExternalLink size={11} strokeWidth={2} />
                 </button>
               )}
             </div>
@@ -300,24 +302,24 @@ export function PlanDetailView({ plan, onBack, onNavigateToTask, onNavigateToWhi
         }}>
           <div style={{ padding: 16, flex: 1 }}>
             {/* Properties */}
-            <SidebarSection title="Properties">
-              <PropertyRow icon={<Activity size={12} strokeWidth={1.5} />} label="Status">
+            <SidebarSection title={t('plans.properties')}>
+              <PropertyRow icon={<Activity size={12} strokeWidth={1.5} />} label={t('plans.status')}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusCfg.color }} />
                   <span style={{ fontSize: 12, color: 'var(--color-text)' }}>{statusCfg.label}</span>
                 </span>
               </PropertyRow>
-              <PropertyRow icon={<User size={12} strokeWidth={1.5} />} label="Creator">
+              <PropertyRow icon={<User size={12} strokeWidth={1.5} />} label={t('plans.creator')}>
                 <span style={{ fontSize: 12, color: 'var(--color-text)' }}>{plan.creator}</span>
               </PropertyRow>
-              <PropertyRow icon={<Calendar size={12} strokeWidth={1.5} />} label="Created">
+              <PropertyRow icon={<Calendar size={12} strokeWidth={1.5} />} label={t('plans.created')}>
                 <span style={{ fontSize: 12, color: 'var(--color-text)' }}>{plan.createdAt}</span>
               </PropertyRow>
-              <PropertyRow icon={<Clock size={12} strokeWidth={1.5} />} label="Updated">
+              <PropertyRow icon={<Clock size={12} strokeWidth={1.5} />} label={t('plans.updated')}>
                 <span style={{ fontSize: 12, color: 'var(--color-text)' }}>{plan.updatedAt}</span>
               </PropertyRow>
               {plan.tags.length > 0 && (
-                <PropertyRow icon={<Tag size={12} strokeWidth={1.5} />} label="Tags">
+                <PropertyRow icon={<Tag size={12} strokeWidth={1.5} />} label={t('plans.tags')}>
                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                     {plan.tags.map(tag => (
                       <span key={tag} style={{
@@ -333,12 +335,12 @@ export function PlanDetailView({ plan, onBack, onNavigateToTask, onNavigateToWhi
             </SidebarSection>
 
             {/* Progress summary */}
-            <SidebarSection title="Progress">
+            <SidebarSection title={t('plans.progress')}>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <MiniStat value={total} label="tasks" />
-                <MiniStat value={done} label="done" color="var(--color-success)" />
-                <MiniStat value={inProgress} label="active" color="var(--color-primary)" />
-                {blocked > 0 && <MiniStat value={blocked} label="blocked" color="var(--color-danger)" />}
+                <MiniStat value={total} label={t('plans.tasksLabel')} />
+                <MiniStat value={done} label={t('plans.doneLabel')} color="var(--color-success)" />
+                <MiniStat value={inProgress} label={t('plans.activeLabel')} color="var(--color-primary)" />
+                {blocked > 0 && <MiniStat value={blocked} label={t('plans.blockedLabel')} color="var(--color-danger)" />}
               </div>
               {/* Mini progress bar */}
               <div style={{ display: 'flex', height: 4, borderRadius: 2, overflow: 'hidden', background: 'var(--color-surface)', marginTop: 8 }}>
@@ -346,13 +348,13 @@ export function PlanDetailView({ plan, onBack, onNavigateToTask, onNavigateToWhi
                 {inProgress > 0 && <div style={{ width: `${(inProgress / total) * 100}%`, background: 'var(--color-primary)' }} />}
               </div>
               <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 4, textAlign: 'center' }}>
-                {pct}% complete
+                {t('plans.completePercent', { pct })}
               </div>
             </SidebarSection>
 
             {/* Agents working on this plan */}
             {assignees.length > 0 && (
-              <SidebarSection title="Agents">
+              <SidebarSection title={t('plans.agents')}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {assignees.map(a => (
                     <div key={a.name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -379,7 +381,7 @@ export function PlanDetailView({ plan, onBack, onNavigateToTask, onNavigateToWhi
 
             {/* Branches */}
             {branches.length > 0 && (
-              <SidebarSection title="Branches">
+              <SidebarSection title={t('plans.branches')}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {branches.map(branch => (
                     <div key={branch} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -394,7 +396,7 @@ export function PlanDetailView({ plan, onBack, onNavigateToTask, onNavigateToWhi
             )}
 
             {/* Linked resources */}
-            <SidebarSection title="Resources">
+            <SidebarSection title={t('plans.resources')}>
               {whiteboard && (
                 <button
                   onClick={() => {
@@ -429,17 +431,17 @@ export function PlanDetailView({ plan, onBack, onNavigateToTask, onNavigateToWhi
                   onMouseLeave={e => e.currentTarget.style.background = 'var(--color-bg-elevated)'}
                 >
                   <ExternalLink size={13} strokeWidth={1.5} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
-                  <span style={{ fontSize: 12, color: 'var(--color-text)', flex: 1 }}>Tasks board</span>
+                  <span style={{ fontSize: 12, color: 'var(--color-text)', flex: 1 }}>{t('plans.tasksBoard')}</span>
                   <ChevronRight size={11} strokeWidth={2} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
                 </button>
               )}
               {!whiteboard && !onNavigateToTasksBoard && (
-                <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>No linked resources</div>
+                <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>{t('plans.noLinkedResources')}</div>
               )}
             </SidebarSection>
 
             {/* Activity feed */}
-            <SidebarSection title="Activity">
+            <SidebarSection title={t('plans.activity')}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                 {activities.map((a, i) => (
                   <div key={a.id} style={{ display: 'flex', gap: 8, position: 'relative', paddingBottom: i < activities.length - 1 ? 12 : 0 }}>

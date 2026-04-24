@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@stoneforge/i18n": "workspace:^",
     "@types/prismjs": "^1.26.6",
     "lucide-react": "^0.563.0",
     "prismjs": "^1.30.0",

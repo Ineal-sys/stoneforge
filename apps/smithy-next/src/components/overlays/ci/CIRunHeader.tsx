@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ArrowLeft, Check, X, Clock, Loader, Ban, SkipForward, GitBranch, GitPullRequest, Bot, RotateCcw, ChevronDown, Square, MoreHorizontal, ExternalLink, FileCode, Trash2, Zap, User } from 'lucide-react'
 import type { CIRun } from './ci-types'
 import { useTeamContext } from '../../../TeamContext'
+import { useTranslation } from '@/i18n'
 
 interface CIRunHeaderProps {
   run: CIRun
@@ -11,21 +12,13 @@ interface CIRunHeaderProps {
   onNavigateToAutomation?: (workflowId: string) => void
 }
 
-const statusConfig: Record<string, { icon: typeof Check; color: string; label: string }> = {
-  success: { icon: Check, color: 'var(--color-success)', label: 'Success' },
-  failure: { icon: X, color: 'var(--color-danger)', label: 'Failed' },
-  running: { icon: Loader, color: 'var(--color-warning)', label: 'Running' },
-  queued: { icon: Clock, color: 'var(--color-text-tertiary)', label: 'Queued' },
-  cancelled: { icon: Ban, color: 'var(--color-text-tertiary)', label: 'Cancelled' },
-  skipped: { icon: SkipForward, color: 'var(--color-text-tertiary)', label: 'Skipped' },
-}
-
-const eventLabels: Record<string, string> = {
-  push: 'push',
-  pull_request: 'pull request',
-  schedule: 'schedule',
-  manual: 'manual',
-  merge_group: 'merge group',
+const statusConfig: Record<string, { icon: typeof Check; color: string; labelKey: string }> = {
+  success: { icon: Check, color: 'var(--color-success)', labelKey: 'ci.statusSuccess' },
+  failure: { icon: X, color: 'var(--color-danger)', labelKey: 'ci.statusFailure' },
+  running: { icon: Loader, color: 'var(--color-warning)', labelKey: 'ci.statusRunning' },
+  queued: { icon: Clock, color: 'var(--color-text-tertiary)', labelKey: 'ci.statusQueued' },
+  cancelled: { icon: Ban, color: 'var(--color-text-tertiary)', labelKey: 'ci.statusCancelled' },
+  skipped: { icon: SkipForward, color: 'var(--color-text-tertiary)', labelKey: 'ci.statusSkipped' },
 }
 
 export function CIRunHeader({ run, onBack, onNavigateToTask, onNavigateToMR, onNavigateToAutomation }: CIRunHeaderProps) {
@@ -33,6 +26,15 @@ export function CIRunHeader({ run, onBack, onNavigateToTask, onNavigateToMR, onN
   const [moreOpen, setMoreOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const { getUserById, isTeamMode } = useTeamContext()
+  const { t } = useTranslation('smithyNext')
+
+  const eventLabels: Record<string, string> = {
+    push: t('ci.eventPush'),
+    pull_request: t('ci.eventPullRequest'),
+    schedule: t('ci.eventSchedule'),
+    manual: t('ci.eventManual'),
+    merge_group: t('ci.eventMergeGroup'),
+  }
   const actorUser = run.actorUserId ? getUserById(run.actorUserId) : undefined
   const sc = statusConfig[run.status] || statusConfig.queued
   const StatusIcon = sc.icon
@@ -49,7 +51,7 @@ export function CIRunHeader({ run, onBack, onNavigateToTask, onNavigateToMR, onN
           {run.action.name} <span style={{ fontFamily: 'var(--font-mono)', fontSize: 14, color: 'var(--color-text-secondary)' }}>#{run.runNumber}</span>
         </h1>
         <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 'var(--radius-full)', fontWeight: 500, background: sc.color === 'var(--color-success)' ? 'var(--color-success-subtle)' : sc.color === 'var(--color-danger)' ? 'var(--color-danger-subtle)' : sc.color === 'var(--color-warning)' ? 'var(--color-warning-subtle)' : 'var(--color-surface)', color: sc.color }}>
-          {sc.label}
+          {t(sc.labelKey)}
         </span>
 
         <div style={{ flex: 1 }} />
@@ -101,7 +103,7 @@ export function CIRunHeader({ run, onBack, onNavigateToTask, onNavigateToMR, onN
             onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-surface)'; e.currentTarget.style.color = 'var(--color-text-secondary)' }}
           >
             <Zap size={12} strokeWidth={1.5} style={{ color: 'var(--color-warning)' }} />
-            {run.triggeredByWorkflowName || 'Workflow'}
+            {run.triggeredByWorkflowName || t('automations.automations')}
           </button>
         )}
       </div>
@@ -157,7 +159,7 @@ export function CIRunHeader({ run, onBack, onNavigateToTask, onNavigateToMR, onN
         <div style={{ position: 'relative' }}>
           <div style={{ display: 'flex' }}>
             <button style={{ ...actionBtnStyle, borderRadius: hasFailed ? 'var(--radius-sm) 0 0 var(--radius-sm)' : 'var(--radius-sm)' }}>
-              <RotateCcw size={12} strokeWidth={1.5} /> Re-run all
+              <RotateCcw size={12} strokeWidth={1.5} /> {t('ci.reRunAll')}
             </button>
             {hasFailed && (
               <button
@@ -171,7 +173,7 @@ export function CIRunHeader({ run, onBack, onNavigateToTask, onNavigateToMR, onN
           {rerunOpen && (
             <div style={{ position: 'absolute', top: 32, right: 0, zIndex: 1060, width: 180, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-float)', padding: 4 }}>
               <button onClick={() => setRerunOpen(false)} style={menuItemStyle}>
-                <RotateCcw size={12} strokeWidth={1.5} /> Re-run failed jobs
+                <RotateCcw size={12} strokeWidth={1.5} /> {t('ci.reRunFailedJobs')}
               </button>
             </div>
           )}
@@ -179,7 +181,7 @@ export function CIRunHeader({ run, onBack, onNavigateToTask, onNavigateToMR, onN
 
         {isActive && (
           <button style={actionBtnStyle}>
-            <Square size={12} strokeWidth={1.5} /> Cancel
+            <Square size={12} strokeWidth={1.5} /> {t('ci.cancel')}
           </button>
         )}
 
@@ -191,10 +193,10 @@ export function CIRunHeader({ run, onBack, onNavigateToTask, onNavigateToMR, onN
           {moreOpen && (
             <div style={{ position: 'absolute', top: 32, right: 0, zIndex: 1060, width: 200, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-float)', padding: 4 }}>
               <button onClick={() => setMoreOpen(false)} style={menuItemStyle}>
-                <FileCode size={12} strokeWidth={1.5} /> View action file
+                <FileCode size={12} strokeWidth={1.5} /> {t('ci.viewActionFile')}
               </button>
               <button onClick={() => { setMoreOpen(false); setDeleteConfirm(true) }} style={{ ...menuItemStyle, color: 'var(--color-danger)' }}>
-                <Trash2 size={12} strokeWidth={1.5} /> Delete run
+                <Trash2 size={12} strokeWidth={1.5} /> {t('ci.deleteRun')}
               </button>
             </div>
           )}
@@ -213,24 +215,24 @@ export function CIRunHeader({ run, onBack, onNavigateToTask, onNavigateToMR, onN
             zIndex: 1050, padding: '20px',
           }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', marginBottom: 8 }}>
-              Delete run?
+              {t('ci.deleteRunQuestion')}
             </div>
             <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>
-              Are you sure you want to delete <span style={{ fontWeight: 500, color: 'var(--color-text)' }}>{run.action.name} #{run.runNumber}</span>? This action cannot be undone.
+              {t('ci.deleteRunConfirm', { name: run.action.name, number: String(run.runNumber) })}
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
               <button onClick={() => setDeleteConfirm(false)} style={{
                 height: 32, padding: '0 14px', border: 'none', borderRadius: 'var(--radius-sm)',
                 background: 'var(--color-surface)', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
               }}>
-                Cancel
+                {t('ci.cancel')}
               </button>
               <button onClick={() => { console.log('Delete run', run.id); setDeleteConfirm(false) }} style={{
                 height: 32, padding: '0 14px', display: 'flex', alignItems: 'center', gap: 5,
                 border: 'none', borderRadius: 'var(--radius-sm)',
                 background: 'var(--color-danger)', color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
               }}>
-                <Trash2 size={12} strokeWidth={1.5} /> Delete
+                <Trash2 size={12} strokeWidth={1.5} /> {t('ci.delete')}
               </button>
             </div>
           </div>

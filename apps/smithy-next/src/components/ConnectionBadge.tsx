@@ -1,16 +1,17 @@
 import { Monitor, Cloud, Terminal } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 
 interface ConnectionBadgeProps {
   type: 'local' | 'remote' | 'ssh'
 }
 
-const config: Record<string, { label: string; color: string; Icon: typeof Monitor }> = {
-  local: { label: 'Local', color: 'var(--color-connection-local)', Icon: Monitor },
-  remote: { label: 'Remote', color: 'var(--color-connection-remote)', Icon: Cloud },
-  ssh: { label: 'SSH', color: 'var(--color-connection-ssh)', Icon: Terminal },
-}
-
 export function ConnectionBadge({ type }: ConnectionBadgeProps) {
+  const { t } = useTranslation('smithyNext')
+  const config: Record<string, { label: string; color: string; Icon: typeof Monitor }> = {
+    local: { label: t('connectionBadge.local'), color: 'var(--color-connection-local)', Icon: Monitor },
+    remote: { label: t('connectionBadge.remote'), color: 'var(--color-connection-remote)', Icon: Cloud },
+    ssh: { label: t('connectionBadge.ssh'), color: 'var(--color-connection-ssh)', Icon: Terminal },
+  }
   const { label, color, Icon } = config[type]
 
   return (

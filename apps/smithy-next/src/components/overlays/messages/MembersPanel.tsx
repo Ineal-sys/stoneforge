@@ -1,5 +1,6 @@
 import { X, Bot } from 'lucide-react'
 import type { MsgEntity } from './message-types'
+import { useTranslation } from '@/i18n'
 
 interface MembersPanelProps {
   members: MsgEntity[]
@@ -13,14 +14,15 @@ function getInitials(name: string): string {
 }
 
 export function MembersPanel({ members, onClose, fullWidth }: MembersPanelProps) {
+  const { t } = useTranslation('smithyNext')
   const humans = members.filter(m => m.entityType === 'human')
   const agents = members.filter(m => m.entityType === 'agent')
   const system = members.filter(m => m.entityType === 'system')
 
   const sections: { label: string; entities: MsgEntity[] }[] = []
-  if (humans.length > 0) sections.push({ label: 'People', entities: humans })
-  if (agents.length > 0) sections.push({ label: 'Agents', entities: agents })
-  if (system.length > 0) sections.push({ label: 'System', entities: system })
+  if (humans.length > 0) sections.push({ label: t('messages.people'), entities: humans })
+  if (agents.length > 0) sections.push({ label: t('messages.agents'), entities: agents })
+  if (system.length > 0) sections.push({ label: t('messages.system'), entities: system })
 
   return (
     <div style={{
@@ -38,7 +40,7 @@ export function MembersPanel({ members, onClose, fullWidth }: MembersPanelProps)
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>
-          Members ({members.length})
+          {t('messages.members', { count: members.length })}
         </span>
         <button
           onClick={onClose}

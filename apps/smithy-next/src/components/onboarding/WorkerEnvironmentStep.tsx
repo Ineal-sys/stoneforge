@@ -1,5 +1,6 @@
 import { useState, type Dispatch } from 'react'
 import { Laptop, Container, Cloud, FolderOpen } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import type { OnboardingState, OnboardingAction, RuntimeMode } from './onboarding-types'
 
 interface Props {
@@ -8,24 +9,25 @@ interface Props {
 }
 
 export function WorkerEnvironmentStep({ state, dispatch }: Props) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div>
       <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', marginBottom: 4 }}>
-        Default Runtime
+        {t('onboarding.workerEnvironment.title')}
       </h3>
       <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginBottom: 16 }}>
-        Set up your workspace's default runtime. You can add more runtimes later.
+        {t('onboarding.workerEnvironment.description')}
       </p>
 
       {/* Runtime name */}
       <div style={{ marginBottom: 16 }}>
         <label style={{ display: 'block', fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)', marginBottom: 5 }}>
-          Runtime name
+          {t('onboarding.workerEnvironment.runtimeName')}
         </label>
         <input
           value={state.runtimeName}
           onChange={e => dispatch({ type: 'SET_RUNTIME_NAME', name: e.target.value })}
-          placeholder="e.g. adam-macbook, team-docker"
+          placeholder={t('onboarding.workerEnvironment.runtimeNamePlaceholder')}
           style={{
             width: '100%', maxWidth: 320, height: 32, padding: '0 10px', fontSize: 12, fontFamily: 'inherit',
             background: 'var(--color-surface)', border: '1px solid var(--color-border)',
@@ -37,20 +39,20 @@ export function WorkerEnvironmentStep({ state, dispatch }: Props) {
       <div className="onboarding-cards" style={{ display: 'flex', gap: 12 }}>
         <EnvCard
           icon={<Laptop size={20} />}
-          name="Local Worktrees"
-          description="Agents run on your machine using local git worktrees. Best for fast iteration and offline development."
+          name={t('onboarding.workerEnvironment.localWorktrees')}
+          description={t('onboarding.workerEnvironment.localWorktreesDesc')}
           selected={state.runtimeMode === 'worktrees'}
           onClick={() => dispatch({ type: 'SET_RUNTIME_MODE', mode: 'worktrees' })}
         >
           {state.runtimeMode === 'worktrees' && (
             <div style={{ marginTop: 14 }}>
               <label style={{ display: 'block', fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)', marginBottom: 5 }}>
-                Worktree path
+                {t('onboarding.workerEnvironment.worktreePath')}
               </label>
               <PathInput
                 value={state.worktreePath}
                 onChange={v => dispatch({ type: 'SET_WORKTREE_PATH', path: v })}
-                placeholder=".stoneforge/worktrees"
+                placeholder={t('onboarding.workerEnvironment.worktreePathPlaceholder')}
                 icon={<FolderOpen size={13} />}
               />
             </div>
@@ -59,20 +61,20 @@ export function WorkerEnvironmentStep({ state, dispatch }: Props) {
 
         <EnvCard
           icon={<Container size={20} />}
-          name="Docker Container"
-          description="Agents run in isolated Docker containers. Best for reproducible environments and dependency isolation."
+          name={t('onboarding.workerEnvironment.dockerContainer')}
+          description={t('onboarding.workerEnvironment.dockerContainerDesc')}
           selected={state.runtimeMode === 'docker'}
           onClick={() => dispatch({ type: 'SET_RUNTIME_MODE', mode: 'docker' as RuntimeMode })}
         >
           {state.runtimeMode === 'docker' && (
             <div style={{ marginTop: 14 }}>
               <label style={{ display: 'block', fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)', marginBottom: 5 }}>
-                Docker image
+                {t('onboarding.workerEnvironment.dockerImage')}
               </label>
               <PathInput
                 value={state.dockerImage}
                 onChange={v => dispatch({ type: 'SET_DOCKER_IMAGE', image: v })}
-                placeholder="ghcr.io/stoneforge/worker:latest"
+                placeholder={t('onboarding.workerEnvironment.dockerImagePlaceholder')}
                 icon={<Container size={13} />}
               />
             </div>
@@ -81,15 +83,15 @@ export function WorkerEnvironmentStep({ state, dispatch }: Props) {
 
         <EnvCard
           icon={<Cloud size={20} />}
-          name="Cloud Sandbox"
-          description="Agents run in cloud-hosted sandboxed environments. Best for teams wanting managed infrastructure with zero local setup."
+          name={t('onboarding.workerEnvironment.cloudSandbox')}
+          description={t('onboarding.workerEnvironment.cloudSandboxDesc')}
           selected={state.runtimeMode === 'sandbox'}
           onClick={() => dispatch({ type: 'SET_RUNTIME_MODE', mode: 'sandbox' as RuntimeMode })}
         >
           {state.runtimeMode === 'sandbox' && (
             <div style={{ marginTop: 14 }}>
               <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', lineHeight: 1.5, margin: 0 }}>
-                Cloud sandboxes are automatically provisioned. No additional configuration needed.
+                {t('onboarding.workerEnvironment.cloudSandboxAuto')}
               </p>
             </div>
           )}
@@ -103,6 +105,7 @@ function EnvCard({ icon, name, description, selected, onClick, children }: {
   icon: React.ReactNode; name: string; description: string
   selected: boolean; onClick: () => void; children?: React.ReactNode
 }) {
+  const { t } = useTranslation('smithyNext')
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -126,7 +129,7 @@ function EnvCard({ icon, name, description, selected, onClick, children }: {
             fontSize: 11, fontWeight: 500, color: 'var(--color-success)',
             background: 'color-mix(in srgb, var(--color-success) 12%, transparent)',
             padding: '1px 8px', borderRadius: 'var(--radius-full)',
-          }}>selected</span>
+          }}>{t('onboarding.workspaceSetup.selected')}</span>
         )}
       </div>
       <p style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--color-text-secondary)', margin: 0 }}>

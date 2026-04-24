@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import type { CIFilterField, CIActiveFilter, CIRun } from './ci-types'
+import { useTranslation } from '@/i18n'
 
 interface CIFilterPanelProps {
   runs: CIRun[]
@@ -8,16 +9,17 @@ interface CIFilterPanelProps {
   onClose: () => void
 }
 
-const TABS: { field: CIFilterField; label: string }[] = [
-  { field: 'status', label: 'Status' },
-  { field: 'event', label: 'Event' },
-  { field: 'branch', label: 'Branch' },
-  { field: 'actor', label: 'Actor' },
-]
-
 export function CIFilterPanel({ runs, filters, onToggleFilter, onClose }: CIFilterPanelProps) {
+  const { t } = useTranslation('smithyNext')
   const [activeTab, setActiveTab] = useState<CIFilterField>('status')
   const panelRef = useRef<HTMLDivElement>(null)
+
+  const TABS: { field: CIFilterField; label: string }[] = [
+    { field: 'status', label: t('ci.filterStatus') },
+    { field: 'event', label: t('ci.filterEvent') },
+    { field: 'branch', label: t('ci.filterBranch') },
+    { field: 'actor', label: t('ci.filterActor') },
+  ]
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -82,7 +84,7 @@ export function CIFilterPanel({ runs, filters, onToggleFilter, onClose }: CIFilt
           )
         })}
         {values.length === 0 && (
-          <div style={{ padding: 12, fontSize: 12, color: 'var(--color-text-tertiary)', textAlign: 'center' }}>No values</div>
+          <div style={{ padding: 12, fontSize: 12, color: 'var(--color-text-tertiary)', textAlign: 'center' }}>{t('ci.noValues')}</div>
         )}
       </div>
     </div>

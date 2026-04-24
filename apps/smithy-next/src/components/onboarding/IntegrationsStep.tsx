@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, type Dispatch } from 'react'
 import { Circle, CircleDot, FolderOpen, ExternalLink, Check, Loader2, ChevronDown, Search } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import type { OnboardingState, OnboardingAction, IssueSyncOption, MRSyncOption, DocSyncOption, NotificationOption } from './onboarding-types'
 
 interface Props {
@@ -19,57 +20,58 @@ interface SyncOption {
 }
 
 const ISSUE_OPTIONS: SyncOption[] = [
-  { id: 'none', name: 'None', description: 'Use Stoneforge\'s built-in issue tracking' },
-  { id: 'linear', name: 'Linear', description: 'Two-way sync with Linear projects', installFlow: 'linear' },
-  { id: 'github', name: 'GitHub Issues', description: 'Two-way sync with GitHub Issues', installFlow: 'github' },
+  { id: 'none', name: 'none', description: 'noneIssueDesc' },
+  { id: 'linear', name: 'linear', description: 'linearDesc', installFlow: 'linear' },
+  { id: 'github', name: 'githubIssues', description: 'githubIssuesDesc', installFlow: 'github' },
 ]
 
 const MR_OPTIONS: SyncOption[] = [
-  { id: 'none', name: 'None', description: 'Use Stoneforge\'s built-in merge requests' },
-  { id: 'github', name: 'GitHub Pull Requests', description: 'Two-way sync with GitHub PRs', installFlow: 'github' },
+  { id: 'none', name: 'none', description: 'noneMrDesc' },
+  { id: 'github', name: 'githubPr', description: 'githubPrDesc', installFlow: 'github' },
 ]
 
 const DOC_OPTIONS: SyncOption[] = [
-  { id: 'repo-folder', name: 'Repo Folder', description: 'Sync docs from a folder in your repository', hasPathInput: true, pathPlaceholder: 'docs/' },
-  { id: 'notion', name: 'Notion', description: 'Two-way sync with Notion pages', installFlow: 'notion' },
-  { id: 'obsidian', name: 'Obsidian', description: 'Sync with a local Obsidian vault', hasPathInput: true, pathPlaceholder: 'Path to Obsidian vault' },
-  { id: 'none', name: 'None', description: 'Use Stoneforge\'s built-in documentation' },
+  { id: 'repo-folder', name: 'repoFolder', description: 'repoFolderDesc', hasPathInput: true, pathPlaceholder: 'docs/' },
+  { id: 'notion', name: 'notion', description: 'notionDesc', installFlow: 'notion' },
+  { id: 'obsidian', name: 'obsidian', description: 'obsidianDesc', hasPathInput: true, pathPlaceholder: 'docs/' },
+  { id: 'none', name: 'none', description: 'noneDocDesc' },
 ]
 
 const NOTIFICATION_OPTIONS: SyncOption[] = [
-  { id: 'none', name: 'None', description: 'In-app notifications only' },
-  { id: 'slack', name: 'Slack', description: 'Send notifications to a Slack channel', installFlow: 'slack' },
-  { id: 'discord', name: 'Discord', description: 'Send notifications to a Discord channel', installFlow: 'discord' },
-  { id: 'telegram', name: 'Telegram', description: 'Send notifications via Telegram bot', installFlow: 'telegram' },
+  { id: 'none', name: 'none', description: 'noneNotifDesc' },
+  { id: 'slack', name: 'slack', description: 'slackDesc', installFlow: 'slack' },
+  { id: 'discord', name: 'discord', description: 'discordDesc', installFlow: 'discord' },
+  { id: 'telegram', name: 'telegram', description: 'telegramDesc', installFlow: 'telegram' },
 ]
 
 export function IntegrationsStep({ state, dispatch }: Props) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div>
       <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', marginBottom: 4 }}>
-        External Integrations
+        {t('onboarding.integrations.title')}
       </h3>
       <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginBottom: 24 }}>
-        Stoneforge provides built-in issue tracking, merge requests, docs, and notifications. Optionally sync with external services.
+        {t('onboarding.integrations.description')}
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         <SyncSection
-          title="Issue Sync"
+          title={t('onboarding.integrations.issueSync')}
           options={ISSUE_OPTIONS}
           value={state.issueSync}
           onChange={v => dispatch({ type: 'SET_ISSUE_SYNC', value: v as IssueSyncOption })}
         />
 
         <SyncSection
-          title="Merge Request Sync"
+          title={t('onboarding.integrations.mergeRequestSync')}
           options={MR_OPTIONS}
           value={state.mrSync}
           onChange={v => dispatch({ type: 'SET_MR_SYNC', value: v as MRSyncOption })}
         />
 
         <SyncSection
-          title="Documentation Sync"
+          title={t('onboarding.integrations.documentationSync')}
           options={DOC_OPTIONS}
           value={state.docSync}
           onChange={v => dispatch({ type: 'SET_DOC_SYNC', value: v as DocSyncOption })}
@@ -78,7 +80,7 @@ export function IntegrationsStep({ state, dispatch }: Props) {
         />
 
         <SyncSection
-          title="Notification Endpoint"
+          title={t('onboarding.integrations.notificationEndpoint')}
           options={NOTIFICATION_OPTIONS}
           value={state.notificationEndpoint}
           onChange={v => dispatch({ type: 'SET_NOTIFICATION', value: v as NotificationOption })}
@@ -137,6 +139,7 @@ function SyncOptionRow({ option, selected, onClick, showBorder, isFirst, isLast,
   pathValue?: string
   onPathChange?: (path: string) => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const [hovered, setHovered] = useState(false)
   const hasExpandedContent = selected && (option.installFlow || (showPath && onPathChange))
   const topRadius = isFirst ? 'calc(var(--radius-md) - 1px)' : '0'
@@ -172,11 +175,11 @@ function SyncOptionRow({ option, selected, onClick, showBorder, isFirst, isLast,
             fontSize: 13, fontWeight: 500,
             color: selected ? 'var(--color-primary)' : 'var(--color-text)',
           }}>
-            {option.name}
+            {t(`onboarding.integrations.${option.name}`)}
           </div>
           {option.description && (
             <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginTop: 2 }}>
-              {option.description}
+              {t(`onboarding.integrations.${option.description}`)}
             </div>
           )}
         </div>
@@ -232,41 +235,41 @@ interface FlowConfig {
 
 const FLOW_CONFIGS: Record<InstallFlowType, FlowConfig> = {
   github: {
-    authLabel: 'Authenticate with GitHub',
-    authButton: 'Connect with GitHub',
-    appLabel: 'Install the Stoneforge GitHub App',
-    appButton: 'Install GitHub App',
-    appDetail: 'Grants access to issues, pull requests, and repository metadata.',
+    authLabel: 'authenticateWithGithub',
+    authButton: 'connectWithGithub',
+    appLabel: 'installGithubApp',
+    appButton: 'installGithubAppBtn',
+    appDetail: 'githubAppDetail',
     hasOrgRepo: true,
   },
   linear: {
-    authLabel: 'Authenticate with Linear',
-    authButton: 'Connect with Linear',
-    appLabel: 'Install the Stoneforge integration',
-    appButton: 'Install Integration',
-    appDetail: 'Grants read/write access to issues in your selected teams.',
+    authLabel: 'authenticateWithLinear',
+    authButton: 'connectWithLinear',
+    appLabel: 'installLinearIntegration',
+    appButton: 'installIntegrationBtn',
+    appDetail: 'linearDetail',
   },
   notion: {
-    authLabel: 'Authenticate with Notion',
-    authButton: 'Connect with Notion',
-    appLabel: 'Create a Notion integration for your workspace',
-    appButton: 'Create Integration',
-    appDetail: 'Create an internal integration, then share your target pages with it.',
+    authLabel: 'authenticateWithNotion',
+    authButton: 'connectWithNotion',
+    appLabel: 'createNotionIntegration',
+    appButton: 'createIntegrationBtn',
+    appDetail: 'notionDetail',
   },
   slack: {
-    authLabel: 'Add Stoneforge to your Slack workspace',
-    authButton: 'Add to Slack',
-    botDetail: 'Sends task updates, merge requests, and CI results to a channel you choose.',
+    authLabel: 'addToSlack',
+    authButton: 'addToSlackBtn',
+    botDetail: 'slackDetail',
   },
   discord: {
-    authLabel: 'Add the Stoneforge bot to your Discord server',
-    authButton: 'Add to Discord',
-    botDetail: 'Sends task updates, merge requests, and CI results to a channel you choose.',
+    authLabel: 'addToDiscord',
+    authButton: 'addToDiscordBtn',
+    botDetail: 'discordDetail',
   },
   telegram: {
-    authLabel: 'Set up the Stoneforge Telegram bot',
-    authButton: 'Open @StoneforgeBot',
-    botDetail: 'Start a chat with the bot, then use /connect to link your workspace.',
+    authLabel: 'setupTelegram',
+    authButton: 'openTelegramBot',
+    botDetail: 'telegramDetail',
   },
 }
 
@@ -283,6 +286,7 @@ const MOCK_REPOS: Record<string, string[]> = {
 }
 
 function InstallFlowBlock({ flowType }: { flowType: InstallFlowType }) {
+  const { t } = useTranslation('smithyNext')
   const config = FLOW_CONFIGS[flowType]
   const [step, setStep] = useState<'auth' | 'install-app' | 'select' | 'done'>('auth')
   const [loading, setLoading] = useState(false)
@@ -331,14 +335,14 @@ function InstallFlowBlock({ flowType }: { flowType: InstallFlowType }) {
     }}>
       {/* Step 1: Auth */}
       <FlowStep
-        label={config.authLabel}
-        detail={isSimpleFlow ? config.botDetail : undefined}
+        label={t(`onboarding.integrations.${config.authLabel}`)}
+        detail={isSimpleFlow && config.botDetail ? t(`onboarding.integrations.${config.botDetail}`) : undefined}
         completed={step !== 'auth'}
         active={step === 'auth'}
       >
         {step === 'auth' && (
           <ActionButton
-            label={loading ? 'Connecting...' : config.authButton}
+            label={loading ? t('onboarding.integrations.connecting') : t(`onboarding.integrations.${config.authButton}`)}
             loading={loading}
             onClick={handleAuth}
           />
@@ -348,14 +352,14 @@ function InstallFlowBlock({ flowType }: { flowType: InstallFlowType }) {
       {/* Step 2: App install (github, linear, notion) */}
       {hasAppInstall && step !== 'auth' && (
         <FlowStep
-          label={config.appLabel!}
-          detail={config.appDetail}
+          label={t(`onboarding.integrations.${config.appLabel!}`)}
+          detail={config.appDetail ? t(`onboarding.integrations.${config.appDetail}`) : undefined}
           completed={step === 'select' || step === 'done'}
           active={step === 'install-app'}
         >
           {step === 'install-app' && (
             <ActionButton
-              label={loading ? 'Installing...' : config.appButton!}
+              label={loading ? t('onboarding.integrations.installing') : t(`onboarding.integrations.${config.appButton!}`)}
               loading={loading}
               onClick={handleAppInstall}
             />
@@ -366,14 +370,14 @@ function InstallFlowBlock({ flowType }: { flowType: InstallFlowType }) {
       {/* Step 3: Org + Repo selection (github only) */}
       {config.hasOrgRepo && (step === 'select' || step === 'done') && (
         <FlowStep
-          label="Select organization and repository"
+          label={t('onboarding.integrations.selectOrgAndRepo')}
           completed={step === 'done'}
           active={step === 'select'}
         >
           {(step === 'select' || step === 'done') && (
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <MiniDropdown
-                placeholder="Organization"
+                placeholder={t('onboarding.integrations.organization')}
                 value={selectedOrg ? (MOCK_ORGS.find(o => o.id === selectedOrg)?.name ?? null) : null}
                 items={MOCK_ORGS.map(o => ({ id: o.id, label: o.name, detail: o.type }))}
                 onChange={handleOrgSelect}
@@ -381,7 +385,7 @@ function InstallFlowBlock({ flowType }: { flowType: InstallFlowType }) {
               />
               {selectedOrg && (
                 <MiniDropdown
-                  placeholder="Repository"
+                  placeholder={t('onboarding.integrations.repository')}
                   value={selectedRepo}
                   items={(MOCK_REPOS[selectedOrg] || []).map(r => ({ id: r, label: r }))}
                   onChange={handleRepoSelect}
@@ -401,8 +405,8 @@ function InstallFlowBlock({ flowType }: { flowType: InstallFlowType }) {
         }}>
           <Check size={14} />
           {config.hasOrgRepo && selectedOrg && selectedRepo
-            ? `Connected to ${selectedOrg}/${selectedRepo}`
-            : 'Connected'}
+            ? t('onboarding.integrations.connectedTo', { org: selectedOrg, repo: selectedRepo })
+            : t('onboarding.integrations.connected')}
         </div>
       )}
     </div>
@@ -483,6 +487,7 @@ function MiniDropdown({ placeholder, value, items, onChange, disabled }: {
   onChange: (id: string) => void
   disabled?: boolean
 }) {
+  const { t } = useTranslation('smithyNext')
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [hovered, setHovered] = useState(false)
@@ -543,7 +548,7 @@ function MiniDropdown({ placeholder, value, items, onChange, disabled }: {
                   ref={inputRef}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  placeholder="Search..."
+                  placeholder={t('onboarding.integrations.search')}
                   style={{ border: 'none', background: 'none', outline: 'none', width: '100%', color: 'var(--color-text)', fontSize: 11 }}
                 />
               </div>
@@ -555,7 +560,7 @@ function MiniDropdown({ placeholder, value, items, onChange, disabled }: {
               return <MiniDropdownItem key={item.id} label={item.label} detail={item.detail} selected={isSelected} onClick={() => { onChange(item.id); setOpen(false) }} />
             })}
             {filtered.length === 0 && (
-              <div style={{ padding: '10px 12px', fontSize: 11, color: 'var(--color-text-tertiary)' }}>No results</div>
+              <div style={{ padding: '10px 12px', fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('onboarding.integrations.noResults')}</div>
             )}
           </div>
         </div>

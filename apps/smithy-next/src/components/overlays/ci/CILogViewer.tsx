@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Search, ChevronUp, ChevronDown, Copy, X } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 
 interface CILogViewerProps {
   logs: string[]
@@ -8,6 +9,7 @@ interface CILogViewerProps {
 }
 
 export function CILogViewer({ logs, isRunning, maxHeight = 360 }: CILogViewerProps) {
+  const { t } = useTranslation('smithyNext')
   const [searchQuery, setSearchQuery] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const [currentMatch, setCurrentMatch] = useState(0)
@@ -68,7 +70,7 @@ export function CILogViewer({ logs, isRunning, maxHeight = 360 }: CILogViewerPro
             <input
               value={searchQuery}
               onChange={e => { setSearchQuery(e.target.value); setCurrentMatch(0) }}
-              placeholder="Search logs..."
+              placeholder={t('ci.searchLogs')}
               autoFocus
               style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: 11, color: 'var(--color-text)', fontFamily: 'var(--font-mono)', minWidth: 0 }}
               onKeyDown={e => { if (e.key === 'Enter') handleNext(); if (e.key === 'Escape') { setSearchOpen(false); setSearchQuery('') } }}
@@ -84,11 +86,11 @@ export function CILogViewer({ logs, isRunning, maxHeight = 360 }: CILogViewerPro
           </>
         ) : (
           <>
-            <button onClick={() => setSearchOpen(true)} style={toolBtnStyle} title="Search logs">
+            <button onClick={() => setSearchOpen(true)} style={toolBtnStyle} title={t('ci.searchLogsTitle')}>
               <Search size={11} strokeWidth={1.5} />
             </button>
             <div style={{ flex: 1 }} />
-            <button onClick={handleCopy} style={toolBtnStyle} title="Copy all">
+            <button onClick={handleCopy} style={toolBtnStyle} title={t('ci.copyAll')}>
               <Copy size={11} strokeWidth={1.5} />
             </button>
           </>
@@ -121,7 +123,7 @@ export function CILogViewer({ logs, isRunning, maxHeight = 360 }: CILogViewerPro
         })}
         {isRunning && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 12px 4px 52px', color: 'var(--color-text-accent)' }}>
-            <span style={{ animation: 'pulse 1.5s infinite' }}>●</span> Running...
+            <span style={{ animation: 'pulse 1.5s infinite' }}>●</span> {t('ci.runningDots')}
           </div>
         )}
       </div>

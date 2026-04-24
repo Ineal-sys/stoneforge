@@ -1,4 +1,5 @@
 import type { StoneforgeUser } from '../mock-data'
+import { useTranslation } from '@/i18n'
 import { UserAvatar } from './UserAvatar'
 
 interface AvatarStackProps {
@@ -10,6 +11,7 @@ interface AvatarStackProps {
 }
 
 export function AvatarStack({ users, max = 4, size = 22, showPresence = false, style }: AvatarStackProps) {
+  const { t } = useTranslation('smithyNext')
   const visible = users.slice(0, max)
   const overflow = users.length - max
 
@@ -55,7 +57,7 @@ export function AvatarStack({ users, max = 4, size = 22, showPresence = false, s
             zIndex: 0,
             lineHeight: 1,
           }}
-          title={`${overflow} more`}
+          title={t('avatarStack.more', { count: overflow })}
         >
           +{overflow}
         </div>

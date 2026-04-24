@@ -3,6 +3,7 @@ import {
   FileText, Clock, Timer, ArrowDownLeft, ArrowUpRight, ArrowLeft, GitBranch, ExternalLink,
   ChevronDown as ChevDropdown, Play, X, SquareKanban, GitMerge, Presentation,
 } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import { useState, useRef, useEffect } from 'react'
 import type { Session } from './session-types'
 import { mockWhiteboards, mockDirectors } from '../../../mock-data'
@@ -52,6 +53,7 @@ export function SessionDetailHeader({
   session, onBack, onPrev, onNext, hasPrev, hasNext,
   onOpenAgentPanel, onResumeSession, onNavigateToTask, onNavigateToMR, onNavigateToAgent, onNavigateToWhiteboard,
 }: SessionDetailHeaderProps) {
+  const { t } = useTranslation('smithyNext')
   const [actionsOpen, setActionsOpen] = useState(false)
   const [filesOpen, setFilesOpen] = useState(false)
   const actionsRef = useRef<HTMLDivElement>(null)
@@ -81,7 +83,7 @@ export function SessionDetailHeader({
       }}>
         <button
           onClick={onBack}
-          title="Back"
+          title={t('sessions.back')}
           style={{
             width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: 'var(--color-surface)', border: 'none', borderRadius: 'var(--radius-sm)',
@@ -91,7 +93,7 @@ export function SessionDetailHeader({
           <ArrowLeft size={14} strokeWidth={1.5} />
         </button>
         <span style={{ color: 'var(--color-text)', fontWeight: 500 }}>
-          Session {truncatedId}
+          {t('sessions.session')} {truncatedId}
         </span>
 
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 2 }}>
@@ -159,7 +161,7 @@ export function SessionDetailHeader({
                 height: 28,
               }}
             >
-              Actions <ChevDropdown size={14} />
+              {t('sessions.actions')} <ChevDropdown size={14} />
             </button>
             {actionsOpen && (
               <div style={{
@@ -168,7 +170,7 @@ export function SessionDetailHeader({
                 borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-float)',
                 zIndex: 'var(--z-dropdown)', minWidth: 160, padding: 4,
               }}>
-                {['View logs', 'Copy session ID', 'Export transcript'].map(action => (
+                {[t('sessions.viewLogs'), t('sessions.copySessionId'), t('sessions.exportTranscript')].map(action => (
                   <button
                     key={action}
                     onClick={() => setActionsOpen(false)}
@@ -204,7 +206,7 @@ export function SessionDetailHeader({
                 height: 28,
               }}
             >
-              <Play size={13} /> Resume Session
+              <Play size={13} /> {t('sessions.resumeSession')}
             </button>
           )}
         </div>
@@ -257,7 +259,7 @@ export function SessionDetailHeader({
             onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--color-border)')}
             onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--color-border-subtle)')}
           >
-            <FileText size={12} /> {fileCount} file{fileCount !== 1 ? 's' : ''}
+            <FileText size={12} /> {t('sessions.sessionFileCount', { count: fileCount })}
           </button>
         )}
 
@@ -273,7 +275,7 @@ export function SessionDetailHeader({
           <Timer size={11} /> {session.duration}
           {session.activeDuration && (
             <span style={{ color: 'var(--color-text-tertiary)' }}>
-              ({session.activeDuration} active)
+              ({session.activeDuration} {t('sessions.activeLabel')})
             </span>
           )}
         </span>
@@ -342,7 +344,7 @@ export function SessionDetailHeader({
               onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-surface)')}
             >
               <Presentation size={11} strokeWidth={1.5} />
-              Whiteboard
+              {t('sessions.whiteboard')}
               <ExternalLink size={10} strokeWidth={1.5} style={{ opacity: 0.5 }} />
             </button>
           )
@@ -380,7 +382,7 @@ export function SessionDetailHeader({
               borderBottom: '1px solid var(--color-border-subtle)',
             }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>
-                Session files ({fileCount})
+                {t('sessions.sessionFiles', { count: fileCount })}
               </span>
               <button
                 onClick={() => setFilesOpen(false)}

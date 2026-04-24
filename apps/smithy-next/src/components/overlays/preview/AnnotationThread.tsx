@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Pencil, Square, ArrowUpRight, MessageCircle, X, Send, MousePointer2, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import type { DesignAnnotation, DesignAnnotationTool } from '../../../mock-data'
 
 interface AnnotationThreadProps {
@@ -16,14 +17,15 @@ const toolIcon: Record<DesignAnnotationTool, typeof Pencil> = {
   arrow: ArrowUpRight, comment: MessageCircle,
 }
 
-const toolLabel: Record<DesignAnnotationTool, string> = {
-  select: 'Selection', draw: 'Drawing', rectangle: 'Rectangle',
-  arrow: 'Arrow', comment: 'Comment',
+const toolLabelKey: Record<DesignAnnotationTool, string> = {
+  select: 'designMode.select', draw: 'designMode.draw', rectangle: 'designMode.rectangle',
+  arrow: 'designMode.arrow', comment: 'designMode.comment',
 }
 
 export function AnnotationThread({
   annotations, activeAnnotationId, onSelectAnnotation, onDeleteAnnotation, onClearAll, onSendToAgent,
 }: AnnotationThreadProps) {
+  const { t } = useTranslation('smithyNext')
   const [minimized, setMinimized] = useState(false)
   const [confirmClear, setConfirmClear] = useState(false)
 
@@ -49,7 +51,7 @@ export function AnnotationThread({
           ? <ChevronUp size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />
           : <ChevronDown size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />}
         <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text)' }}>
-          Design Feedback
+          {t('designMode.designFeedback')}
         </span>
         <span style={{
           fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 10,
@@ -72,7 +74,7 @@ export function AnnotationThread({
             onMouseLeave={e => { e.currentTarget.style.color = 'var(--color-text-tertiary)'; e.currentTarget.style.borderColor = 'var(--color-border-subtle)' }}
           >
             <Trash2 size={11} strokeWidth={1.5} />
-            Clear
+            {t('designMode.clear')}
           </button>
           {confirmClear && (
             <div style={{
@@ -82,7 +84,7 @@ export function AnnotationThread({
               boxShadow: 'var(--shadow-lg)', zIndex: 30,
             }}>
               <div style={{ fontSize: 12, color: 'var(--color-text)', marginBottom: 8 }}>
-                Clear all {annotations.length} annotation{annotations.length !== 1 ? 's' : ''}?
+                {t('designMode.clearAllAnnotations', { count: annotations.length })}
               </div>
               <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                 <button
@@ -93,7 +95,7 @@ export function AnnotationThread({
                     color: 'var(--color-text)', fontSize: 11, cursor: 'pointer',
                   }}
                 >
-                  Cancel
+                  {t('designMode.cancel')}
                 </button>
                 <button
                   onClick={() => { onClearAll(); setConfirmClear(false) }}
@@ -103,7 +105,7 @@ export function AnnotationThread({
                     color: '#fff', fontSize: 11, fontWeight: 500, cursor: 'pointer',
                   }}
                 >
-                  Clear All
+                  {t('designMode.clearAll')}
                 </button>
               </div>
             </div>
@@ -120,7 +122,7 @@ export function AnnotationThread({
           }}
         >
           <Send size={11} strokeWidth={1.5} />
-          Send to Agent
+          {t('designMode.sendToAgent')}
         </button>
       </div>
 
@@ -156,7 +158,7 @@ export function AnnotationThread({
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 2 }}>
                     <Icon size={11} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />
                     <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>
-                      {toolLabel[ann.tool]}
+                      {t(toolLabelKey[ann.tool])}
                     </span>
                     <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)', marginLeft: 'auto' }}>
                       {ann.timestamp}
@@ -167,7 +169,7 @@ export function AnnotationThread({
                     overflow: 'hidden', textOverflow: 'ellipsis',
                     display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
                   }}>
-                    {ann.comment || <span style={{ color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>No comment</span>}
+                    {ann.comment || <span style={{ color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>{t('designMode.noComment')}</span>}
                   </div>
                 </div>
 

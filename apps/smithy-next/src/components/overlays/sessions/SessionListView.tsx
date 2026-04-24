@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { Search, Filter, SlidersHorizontal, Bot, Clock, GitBranch, SquareKanban, ArrowDownLeft, ArrowUpRight, ArrowUp, ArrowDown, Check, X, Plus } from 'lucide-react'
 import type { Session, SessionActiveFilter, SessionFilterField, SessionSortField } from './session-types'
+import { useTranslation } from '@/i18n'
 import { SessionFilterPanel } from './SessionFilterPanel'
 import { SessionStatusStrip } from './SessionStatusStrip'
 
@@ -61,6 +62,7 @@ function getPreviewLines(session: Session, count: number): string[] {
 
 export function SessionListView({ sessions, onSelectSession, selectedSessionId, compact, onCreateSession, afterTitleSlot }: SessionListViewProps) {
   const activeCount = sessions.filter(s => s.status === 'active').length
+  const { t } = useTranslation('smithyNext')
   const [searchQuery, setSearchQuery] = useState('')
   const [filters, setFilters] = useState<SessionActiveFilter[]>([])
   const [filterOpen, setFilterOpen] = useState(false)
@@ -121,7 +123,7 @@ export function SessionListView({ sessions, onSelectSession, selectedSessionId, 
 
   const groups = useMemo(() => {
     if (groupBy === 'none') {
-      return [{ label: 'All', dotColor: 'var(--color-text-tertiary)', sessions: filtered }]
+      return [{ label: t('sessions.noGrouping'), dotColor: 'var(--color-text-tertiary)', sessions: filtered }]
     }
     if (groupBy === 'agent') {
       const byAgent = new Map<string, Session[]>()
@@ -148,9 +150,9 @@ export function SessionListView({ sessions, onSelectSession, selectedSessionId, 
     const error = filtered.filter(s => s.status === 'error')
     const completed = filtered.filter(s => s.status === 'completed')
     const result: { label: string; dotColor: string; sessions: Session[] }[] = []
-    if (active.length > 0) result.push({ label: 'Active', dotColor: statusColors.active, sessions: active })
-    if (error.length > 0) result.push({ label: 'Error', dotColor: statusColors.error, sessions: error })
-    if (completed.length > 0) result.push({ label: 'Completed', dotColor: statusColors.completed, sessions: completed })
+    if (active.length > 0) result.push({ label: t('sessions.activeGroup'), dotColor: statusColors.active, sessions: active })
+    if (error.length > 0) result.push({ label: t('sessions.errorGroup'), dotColor: statusColors.error, sessions: error })
+    if (completed.length > 0) result.push({ label: t('sessions.completedGroup'), dotColor: statusColors.completed, sessions: completed })
     return result
   }, [filtered, groupBy])
 
@@ -166,13 +168,13 @@ export function SessionListView({ sessions, onSelectSession, selectedSessionId, 
         flexWrap: 'wrap',
       }}>
         <h1 style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', margin: 0 }}>
-          Sessions
+          {t('sessions.sessions')}
         </h1>
         <span
           className="hidden md:inline"
           style={{ fontSize: 12, color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-mono)' }}
         >
-          {activeCount} active
+          {activeCount} {t('sessions.active')}
         </span>
         {afterTitleSlot}
 
@@ -213,7 +215,7 @@ export function SessionListView({ sessions, onSelectSession, selectedSessionId, 
           <input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search sessions..."
+            placeholder={t('sessions.searchSessions')}
             style={{
               width: compact ? 140 : 200,
               padding: '5px 8px 5px 28px',
@@ -242,7 +244,7 @@ export function SessionListView({ sessions, onSelectSession, selectedSessionId, 
               cursor: 'pointer', fontSize: 11, fontWeight: 500,
             }}
           >
-            <Filter size={12} strokeWidth={1.5} /> {!compact && <>Filter {filters.length > 0 && `(${filters.length})`}</>}
+            <Filter size={12} strokeWidth={1.5} /> {!compact && <span>{t('sessions.filter')}{filters.length > 0 && ` (${filters.length})`}</span>}
           </button>
           {filterOpen && (
             <SessionFilterPanel
@@ -268,7 +270,7 @@ export function SessionListView({ sessions, onSelectSession, selectedSessionId, 
                 cursor: 'pointer', fontSize: 11, fontWeight: 500,
               }}
             >
-              <SlidersHorizontal size={12} strokeWidth={1.5} /> Display
+              <SlidersHorizontal size={12} strokeWidth={1.5} /> {t('sessions.display')}
             </button>
             {displayOpen && (
               <SessionDisplayPanel
@@ -288,7 +290,7 @@ export function SessionListView({ sessions, onSelectSession, selectedSessionId, 
             background: 'var(--color-primary)', border: 'none', borderRadius: 'var(--radius-sm)',
             color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
           }}>
-            <Plus size={12} strokeWidth={2} /> New Session
+            <Plus size={12} strokeWidth={2} /> {t('sessions.newSession')}
           </button>
         )}
       </div>
@@ -303,7 +305,7 @@ export function SessionListView({ sessions, onSelectSession, selectedSessionId, 
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             height: '100%', color: 'var(--color-text-tertiary)', fontSize: 13,
           }}>
-            {searchQuery || filters.length > 0 ? 'No sessions match your filters' : 'No sessions yet'}
+            {searchQuery || filters.length > 0 ? t('sessions.noSessionsMatchFilters') : t('sessions.noSessionsYet')}
           </div>
         ) : (
           groups.map(group => group.sessions.length > 0 && (
@@ -497,6 +499,7 @@ function SessionDisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange
   previewLines: number; onPreviewLinesChange: (v: number) => void
   onClose: () => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) onClose() }
@@ -504,16 +507,16 @@ function SessionDisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange
   }, [onClose])
 
   const groupOptions: { value: SessionGroupField; label: string }[] = [
-    { value: 'status', label: 'Status' },
-    { value: 'agent', label: 'Agent' },
-    { value: 'environment', label: 'Environment' },
-    { value: 'none', label: 'No grouping' },
+    { value: 'status', label: t('sessions.status') },
+    { value: 'agent', label: t('sessions.agentFilter') },
+    { value: 'environment', label: t('sessions.environment') },
+    { value: 'none', label: t('sessions.noGrouping') },
   ]
   const sortOptions: { value: SessionSortField; label: string }[] = [
-    { value: 'date', label: 'Date' },
-    { value: 'duration', label: 'Duration' },
-    { value: 'tokens', label: 'Tokens' },
-    { value: 'status', label: 'Status' },
+    { value: 'date', label: t('sessions.date') },
+    { value: 'duration', label: t('sessions.duration') },
+    { value: 'tokens', label: t('sessions.tokens') },
+    { value: 'status', label: t('sessions.status') },
   ]
 
   return (
@@ -526,7 +529,7 @@ function SessionDisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange
       {/* Group by */}
       <div style={{ padding: '4px 12px 8px' }}>
         <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
-          Group by
+          {t('sessions.groupBy')}
         </div>
         {groupOptions.map(opt => (
           <button key={opt.value} onClick={() => onGroupByChange(opt.value)} style={{
@@ -551,14 +554,14 @@ function SessionDisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange
       <div style={{ padding: '8px 12px 4px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Sort by
+            {t('sessions.sortBy')}
           </span>
           <button onClick={onSortDirChange} style={{
             background: 'none', border: 'none', cursor: 'pointer',
             color: 'var(--color-text-tertiary)', display: 'flex', alignItems: 'center', gap: 3, fontSize: 10,
           }}>
             {sortAsc ? <ArrowUp size={10} strokeWidth={2} /> : <ArrowDown size={10} strokeWidth={2} />}
-            {sortAsc ? 'Asc' : 'Desc'}
+            {sortAsc ? t('sessions.asc') : t('sessions.desc')}
           </button>
         </div>
         {sortOptions.map(opt => (
@@ -584,7 +587,7 @@ function SessionDisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange
       <div style={{ padding: '8px 12px 4px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Preview lines
+            {t('sessions.previewLines')}
           </span>
           <input
             type="number"
@@ -604,7 +607,7 @@ function SessionDisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange
           />
         </div>
         <div style={{ fontSize: 10, color: 'var(--color-text-quaternary)', marginTop: 4 }}>
-          Number of recent messages shown per session
+          {t('sessions.previewLinesDescription')}
         </div>
       </div>
     </div>

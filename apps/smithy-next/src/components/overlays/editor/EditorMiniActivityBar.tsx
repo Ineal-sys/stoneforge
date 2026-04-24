@@ -1,3 +1,4 @@
+import { useTranslation } from '@/i18n'
 import { Files, Search, Bot, Settings } from 'lucide-react'
 
 export type EditorSidebarPanel = 'explorer' | 'search' | 'agent-changes'
@@ -9,13 +10,14 @@ interface Props {
   onToggleSidebar: () => void
 }
 
-const topItems: { id: EditorSidebarPanel; icon: typeof Files; label: string }[] = [
-  { id: 'explorer', icon: Files, label: 'Explorer' },
-  { id: 'search', icon: Search, label: 'Search' },
-  { id: 'agent-changes', icon: Bot, label: 'Agent Changes' },
+const topItems: { id: EditorSidebarPanel; icon: typeof Files; labelKey: string }[] = [
+  { id: 'explorer', icon: Files, labelKey: 'editor.explorer' },
+  { id: 'search', icon: Search, labelKey: 'editor.search' },
+  { id: 'agent-changes', icon: Bot, labelKey: 'editor.agentChanges' },
 ]
 
 export function EditorMiniActivityBar({ activePanel, onPanelChange, sidebarVisible, onToggleSidebar }: Props) {
+  const { t } = useTranslation('smithyNext')
   const handleClick = (id: EditorSidebarPanel) => {
     if (id === activePanel && sidebarVisible) {
       onToggleSidebar()
@@ -41,7 +43,7 @@ export function EditorMiniActivityBar({ activePanel, onPanelChange, sidebarVisib
             <button
               key={item.id}
               onClick={() => handleClick(item.id)}
-              title={item.label}
+              title={t(item.labelKey)}
               style={{
                 width: 32, height: 32,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -72,7 +74,7 @@ export function EditorMiniActivityBar({ activePanel, onPanelChange, sidebarVisib
       </div>
       <div>
         <button
-          title="Settings"
+          title={t('editor.settings')}
           style={{
             width: 32, height: 32,
             display: 'flex', alignItems: 'center', justifyContent: 'center',

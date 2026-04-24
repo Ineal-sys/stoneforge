@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { useTranslation } from '@/i18n'
 import { GitBranch, Container, Box, ChevronDown, X, Check, Plus, ExternalLink } from 'lucide-react'
 import type { AgentExtended } from './agent-types'
 import { mockRuntimes } from '../runtimes/runtime-mock-data'
@@ -26,6 +27,7 @@ interface AgentSettingsTabProps {
 }
 
 export function AgentSettingsTab({ agent, onNavigateToRuntimes }: AgentSettingsTabProps) {
+  const { t } = useTranslation('smithyNext')
   const [name, setName] = useState(agent.name)
   const [tags, setTags] = useState<string[]>(agent.tags || [])
   const [tagInput, setTagInput] = useState('')
@@ -44,10 +46,10 @@ export function AgentSettingsTab({ agent, onNavigateToRuntimes }: AgentSettingsT
     <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
       {/* Row 1: Name + Tags */}
       <div className="settings-row-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-        <SettingsSection title="Name">
+        <SettingsSection title={t('agents.settings.nameLabel')}>
           <input value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
         </SettingsSection>
-        <SettingsSection title="Tags">
+        <SettingsSection title={t('agents.settings.tagsLabel')}>
           <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
             {tags.map(tag => (
               <span key={tag} style={{ fontSize: 11, padding: '3px 6px 3px 8px', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -70,7 +72,7 @@ export function AgentSettingsTab({ agent, onNavigateToRuntimes }: AgentSettingsT
                 if (e.key === 'Enter' && tagInput.trim()) { const t = tagInput.trim(); if (!tags.includes(t)) setTags(prev => [...prev, t]); setTagInput(''); e.preventDefault() }
                 if (e.key === 'Backspace' && !tagInput && tags.length > 0) setTags(prev => prev.slice(0, -1))
               }}
-              placeholder={tags.length === 0 ? 'Add tags (comma-separated)...' : 'Add tag...'}
+              placeholder={tags.length === 0 ? t('agents.settings.addTagsPlaceholder') : t('agents.settings.addTagPlaceholder')}
               style={{ flex: 1, minWidth: 100, height: 26, padding: '0 6px', fontSize: 11, background: 'transparent', border: 'none', outline: 'none', color: 'var(--color-text)', fontFamily: 'inherit' }}
             />
           </div>
@@ -80,16 +82,16 @@ export function AgentSettingsTab({ agent, onNavigateToRuntimes }: AgentSettingsT
 
       {/* Row 2: Provider/Model + Runtime */}
       <div className="settings-row-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-        <SettingsSection title="Provider & Model">
+        <SettingsSection title={t('agents.settings.providerAndModel')}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <SettingsField label="Provider">
+            <SettingsField label={t('agents.settings.provider')}>
               <select value={provider} onChange={e => { setProvider(e.target.value); const defaults: Record<string, string> = { 'claude-code': 'opus-4.6-1m', 'codex': 'gpt-5.4', 'opencode': 'gpt-5.4' }; setModel(defaults[e.target.value] || 'opus-4.6-1m') }} style={selectStyle}>
                 <option value="claude-code">Claude Code</option>
                 <option value="codex">OpenAI Codex</option>
                 <option value="opencode">OpenCode</option>
               </select>
             </SettingsField>
-            <SettingsField label="Model">
+            <SettingsField label={t('agents.settings.model')}>
               <select value={model} onChange={e => setModel(e.target.value)} style={selectStyle}>
                 {provider === 'claude-code' ? (
                   <>
@@ -108,9 +110,9 @@ export function AgentSettingsTab({ agent, onNavigateToRuntimes }: AgentSettingsT
             </SettingsField>
           </div>
         </SettingsSection>
-        <SettingsSection title="Runtime">
+        <SettingsSection title={t('agents.settings.runtime')}>
           <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 10px' }}>
-            Select the runtime environment this agent will use.
+            {t('agents.settings.runtimeDescription')}
           </p>
           <div style={{ position: 'relative' }}>
             <button
@@ -123,7 +125,7 @@ export function AgentSettingsTab({ agent, onNavigateToRuntimes }: AgentSettingsT
             >
               {(() => {
                 const rt = mockRuntimes.find(r => r.id === selectedRuntimeId)
-                if (!rt) return <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>Select a runtime...</span>
+                if (!rt) return <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>{t('agents.settings.selectRuntime')}</span>
                 const TypeIcon = runtimeModeIcon(rt.mode)
                 return (
                   <>
@@ -164,7 +166,7 @@ export function AgentSettingsTab({ agent, onNavigateToRuntimes }: AgentSettingsT
                         <TypeIcon size={13} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
                         <span style={{ fontSize: 12, color: isSelected ? 'var(--color-text)' : 'var(--color-text-secondary)', fontWeight: isSelected ? 500 : 400, flex: 1 }}>{rt.name}</span>
                         {rt.isDefault && (
-                          <span style={{ fontSize: 9, color: 'var(--color-text-accent)', background: 'var(--color-primary-subtle)', padding: '0 4px', borderRadius: 'var(--radius-full)' }}>default</span>
+                          <span style={{ fontSize: 9, color: 'var(--color-text-accent)', background: 'var(--color-primary-subtle)', padding: '0 4px', borderRadius: 'var(--radius-full)' }}>{t('agents.settings.default')}</span>
                         )}
                         <div style={{ width: 6, height: 6, borderRadius: '50%', background: runtimeStatusColors[rt.status], flexShrink: 0 }} />
                         {isSelected && <Check size={12} strokeWidth={2} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />}
@@ -185,7 +187,7 @@ export function AgentSettingsTab({ agent, onNavigateToRuntimes }: AgentSettingsT
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   >
                     <Plus size={13} strokeWidth={2} style={{ flexShrink: 0 }} />
-                    <span style={{ fontSize: 12, fontWeight: 500 }}>Create new runtime</span>
+                    <span style={{ fontSize: 12, fontWeight: 500 }}>{t('agents.settings.createNewRuntime')}</span>
                   </button>
 
                   {/* Manage runtimes link */}
@@ -200,7 +202,7 @@ export function AgentSettingsTab({ agent, onNavigateToRuntimes }: AgentSettingsT
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   >
                     <ExternalLink size={11} strokeWidth={1.5} style={{ flexShrink: 0 }} />
-                    <span style={{ fontSize: 11 }}>Manage runtimes</span>
+                    <span style={{ fontSize: 11 }}>{t('agents.settings.manageRuntimes')}</span>
                   </button>
                 </div>
               </>
@@ -211,23 +213,23 @@ export function AgentSettingsTab({ agent, onNavigateToRuntimes }: AgentSettingsT
 
       {/* Row 3: Concurrency + Priority (left) | Executable Path (right) */}
       <div className="settings-row-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-        <SettingsSection title="Max Concurrent Tasks / Spawn Priority">
+        <SettingsSection title={`${t('agents.settings.maxConcurrentTasks')} / ${t('agents.settings.spawnPriority')}`}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <SettingsField label="Max Concurrent Tasks">
+            <SettingsField label={t('agents.settings.maxConcurrentTasks')}>
               <input type="number" min={1} max={10} value={maxConcurrentTasks} onChange={e => setMaxConcurrentTasks(parseInt(e.target.value) || 1)} style={{ ...inputStyle, width: '100%' }} />
             </SettingsField>
-            <SettingsField label="Spawn Priority">
+            <SettingsField label={t('agents.settings.spawnPriority')}>
               <input type="number" min={0} max={100} value={spawnPriority} onChange={e => setSpawnPriority(parseInt(e.target.value) || 0)} style={{ ...inputStyle, width: '100%' }} />
             </SettingsField>
           </div>
-          <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '6px 0 0' }}>Max sessions this agent can run simultaneously. Priority controls dispatch preference (higher = preferred).</p>
+          <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '6px 0 0' }}>{t('agents.settings.concurrencyDescription')}</p>
         </SettingsSection>
-        <SettingsSection title="Executable Path">
+        <SettingsSection title={t('agents.settings.executablePath')}>
           <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 6px', lineHeight: 1.4 }}>
-            Override the default CLI path for non-standard installs or{' '}
-            <a href="https://docs.stoneforge.ai/guides/multi-provider/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-text-accent)', textDecoration: 'none' }}>multi-provider mode</a>.
+            {t('agents.settings.executablePathPrefix')}{' '}
+            <a href="https://docs.stoneforge.ai/guides/multi-provider/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-text-accent)', textDecoration: 'none' }}>{t('agents.settings.multiProviderMode')}</a>.
           </p>
-          <input value={executablePath} onChange={e => setExecutablePath(e.target.value)} placeholder="e.g., claude, /usr/local/bin/claude" style={{ ...inputStyle, fontFamily: 'var(--font-mono)' }} />
+          <input value={executablePath} onChange={e => setExecutablePath(e.target.value)} placeholder={t('agents.settings.executablePathPlaceholder')} style={{ ...inputStyle, fontFamily: 'var(--font-mono)' }} />
         </SettingsSection>
       </div>
 

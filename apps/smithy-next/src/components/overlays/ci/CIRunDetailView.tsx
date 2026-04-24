@@ -7,6 +7,7 @@ import { CIWorkflowGraph } from './CIWorkflowGraph'
 import { CILogViewer } from './CILogViewer'
 import { CIHandoffDialog } from './CIHandoffDialog'
 import { useTeamContext } from '../../../TeamContext'
+import { useTranslation } from '@/i18n'
 
 interface CIRunDetailViewProps {
   run: CIRun
@@ -30,6 +31,7 @@ export function CIRunDetailView({ run, onBack, onNavigateToTask, onNavigateToMR,
   const [selectedJobId, setSelectedJobIdRaw] = useState<string | null>(initialJobId || null)
   const [handoffCtx, setHandoffCtx] = useState<CIHandoffContext | null>(null)
   const { isTeamMode, getUserById, currentUser } = useTeamContext()
+  const { t } = useTranslation('smithyNext')
 
   const handleSelectJob = useCallback((jobId: string | null) => {
     setSelectedJobIdRaw(jobId)
@@ -101,12 +103,12 @@ export function CIRunDetailView({ run, onBack, onNavigateToTask, onNavigateToMR,
             onMouseEnter={e => { if (selectedJobId) e.currentTarget.style.background = 'var(--color-surface-hover)' }}
             onMouseLeave={e => { if (selectedJobId) e.currentTarget.style.background = 'transparent' }}
           >
-            <Home size={13} strokeWidth={1.5} /> Summary
+            <Home size={13} strokeWidth={1.5} /> {t('ci.summary')}
           </button>
 
           {/* Jobs section */}
           <div style={{ padding: '8px 16px 4px', fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Jobs
+            {t('ci.jobs')}
           </div>
 
           {run.jobs.map(job => {
@@ -138,17 +140,17 @@ export function CIRunDetailView({ run, onBack, onNavigateToTask, onNavigateToMR,
           {/* Run details section */}
           <div style={{ marginTop: 'auto', borderTop: '1px solid var(--color-border-subtle)', padding: '8px 0' }}>
             <div style={{ padding: '4px 16px', fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Run details
+              {t('ci.runDetails')}
             </div>
             {run.artifacts.length > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 16px', fontSize: 12, color: 'var(--color-text-tertiary)' }}>
                 <Download size={12} strokeWidth={1.5} />
-                <span>{run.artifacts.length} artifact{run.artifacts.length > 1 ? 's' : ''}</span>
+                <span>{t('ci.artifactsCount', { count: run.artifacts.length })}</span>
               </div>
             )}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 16px', fontSize: 12, color: 'var(--color-text-tertiary)' }}>
               <FileCode size={12} strokeWidth={1.5} />
-              <span>Action file</span>
+              <span>{t('ci.actionFile')}</span>
             </div>
           </div>
         </div>
@@ -186,6 +188,8 @@ function SummaryContent({ run, completedJobs, totalJobs, onClickJob, onHandoff }
   run: CIRun; completedJobs: number; totalJobs: number
   onClickJob: (jobId: string) => void; onHandoff: (job: CIJob) => void
 }) {
+  const { t } = useTranslation('smithyNext')
+
   return (
     <div style={{ padding: '20px 24px' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -199,7 +203,7 @@ function SummaryContent({ run, completedJobs, totalJobs, onClickJob, onHandoff }
             }} />
           </div>
           <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', flexShrink: 0 }}>
-            {completedJobs}/{totalJobs} jobs
+            {t('ci.jobsProgress', { completed: completedJobs, total: totalJobs })}
           </span>
         </div>
 
@@ -215,7 +219,7 @@ function SummaryContent({ run, completedJobs, totalJobs, onClickJob, onHandoff }
         {run.artifacts.length > 0 && (
           <div>
             <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 8 }}>
-              Artifacts
+              {t('ci.artifacts')}
               <span style={{ marginLeft: 6, fontSize: 10, color: 'var(--color-text-tertiary)', background: 'var(--color-surface)', borderRadius: 'var(--radius-full)', padding: '0 5px' }}>
                 {run.artifacts.length}
               </span>
@@ -241,6 +245,7 @@ function SummaryContent({ run, completedJobs, totalJobs, onClickJob, onHandoff }
 
 // ── Job detail view (specific job selected from sidebar) ──
 function JobDetailContent({ job, onHandoff }: { job: CIJob; onHandoff: (job: CIJob) => void }) {
+  const { t } = useTranslation('smithyNext')
   const Icon = statusIcon[job.status] || Clock
   const color = statusColor[job.status] || 'var(--color-text-tertiary)'
 
@@ -259,7 +264,7 @@ function JobDetailContent({ job, onHandoff }: { job: CIJob; onHandoff: (job: CIJ
         <div style={{ flex: 1 }} />
         {job.status === 'failure' && (
           <button onClick={() => onHandoff(job)} style={handoffBtnStyle}>
-            <Wrench size={11} strokeWidth={1.5} /> Handoff to Fix
+            <Wrench size={11} strokeWidth={1.5} /> {t('ci.handoffToFix')}
           </button>
         )}
       </div>
@@ -272,7 +277,7 @@ function JobDetailContent({ job, onHandoff }: { job: CIJob; onHandoff: (job: CIJ
           ))
         ) : (
           <div style={{ padding: 24, textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 13 }}>
-            {job.status === 'skipped' ? 'This job was skipped' : 'No steps to display'}
+            {job.status === 'skipped' ? t('ci.jobSkipped') : t('ci.noStepsToDisplay')}
           </div>
         )}
       </div>
@@ -325,6 +330,7 @@ function ApprovalGatesSection({ gates, getUserById, currentUserId }: {
   getUserById: (id: string) => import('../../../mock-data').StoneforgeUser | undefined
   currentUserId: string
 }) {
+  const { t } = useTranslation('smithyNext')
   const approved = gates.approvedBy.length
   const required = gates.requiredApprovals
   const isFulfilled = approved >= required
@@ -338,13 +344,13 @@ function ApprovalGatesSection({ gates, getUserById, currentUserId }: {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
         <Shield size={14} strokeWidth={1.5} style={{ color: isFulfilled ? 'var(--color-success)' : 'var(--color-warning)' }} />
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>Deployment Approval</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{t('ci.deploymentApproval')}</span>
         <span style={{
           fontSize: 11, fontWeight: 500, padding: '1px 8px', borderRadius: 'var(--radius-full)',
           background: isFulfilled ? 'var(--color-success-subtle)' : 'var(--color-surface)',
           color: isFulfilled ? 'var(--color-success)' : 'var(--color-text-secondary)',
         }}>
-          {approved}/{required} approvals
+          {t('ci.approvalsCount', { approved, required })}
         </span>
       </div>
 
@@ -375,7 +381,7 @@ function ApprovalGatesSection({ gates, getUserById, currentUserId }: {
                 <span style={{ fontSize: 12, color: 'var(--color-text)' }}>
                   {user?.name || userId}
                 </span>
-                <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>approved</span>
+                <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('ci.approved')}</span>
               </div>
             )
           })}
@@ -392,12 +398,12 @@ function ApprovalGatesSection({ gates, getUserById, currentUserId }: {
             color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
           }}
         >
-          <Check size={12} strokeWidth={2} /> Approve Deployment
+          <Check size={12} strokeWidth={2} /> {t('ci.approveDeployment')}
         </button>
       )}
       {hasCurrentUserApproved && (
         <span style={{ fontSize: 11, color: 'var(--color-success)', fontWeight: 500 }}>
-          You approved this deployment
+          {t('ci.youApproved')}
         </span>
       )}
     </div>

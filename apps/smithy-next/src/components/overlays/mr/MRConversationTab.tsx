@@ -5,6 +5,7 @@ import { MRTimelineEventComponent } from './MRTimelineEvent'
 import { RichTextEditor } from './RichTextEditor'
 import { useTeamContext } from '../../../TeamContext'
 import { useMentionAutocomplete, MentionDropdown } from '../../MentionAutocomplete'
+import { useTranslation } from '@/i18n'
 
 interface MRConversationTabProps {
   mr: MergeRequestExtended
@@ -16,6 +17,7 @@ interface MRConversationTabProps {
 }
 
 export function MRConversationTab({ mr, timeline, checks, onNavigateToSession, onNavigateToChecks, onNavigateToPreview }: MRConversationTabProps) {
+  const { t } = useTranslation('smithyNext')
   const [commentBody, setCommentBody] = useState('')
   const [reviewDropdownOpen, setReviewDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -58,7 +60,7 @@ export function MRConversationTab({ mr, timeline, checks, onNavigateToSession, o
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: mr.previewStatus === 'ready' ? 8 : 0 }}>
             <Rocket size={14} strokeWidth={1.5} style={{ color: mr.previewStatus === 'ready' ? 'var(--color-success)' : mr.previewStatus === 'building' ? 'var(--color-warning)' : 'var(--color-danger)' }} />
             <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text)' }}>
-              {mr.previewStatus === 'ready' ? 'Preview deployed' : mr.previewStatus === 'building' ? 'Preview deploying...' : 'Preview deployment failed'}
+              {mr.previewStatus === 'ready' ? t('mergeRequest.previewDeployed') : mr.previewStatus === 'building' ? t('mergeRequest.previewDeploying') : t('mergeRequest.previewDeploymentFailed')}
             </span>
           </div>
           {mr.previewStatus === 'ready' && (
@@ -97,7 +99,7 @@ export function MRConversationTab({ mr, timeline, checks, onNavigateToSession, o
           value={commentBody}
           onChange={v => mention.handleChange(v)}
           onKeyDown={mention.handleKeyDown}
-          placeholder={isTeamMode ? 'Leave a comment... (@ to mention)' : 'Leave a comment...'}
+          placeholder={isTeamMode ? t('mergeRequest.leaveACommentMention') : t('mergeRequest.leaveAComment')}
         />
         {mention.showDropdown && (
           <MentionDropdown
@@ -118,7 +120,7 @@ export function MRConversationTab({ mr, timeline, checks, onNavigateToSession, o
                 color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
               }}>
                 <Send size={12} strokeWidth={1.5} />
-                Comment
+                {t('mergeRequest.comment')}
               </button>
               <button
                 onClick={() => setReviewDropdownOpen(!reviewDropdownOpen)}
@@ -142,10 +144,10 @@ export function MRConversationTab({ mr, timeline, checks, onNavigateToSession, o
                   borderRadius: 'var(--radius-md)', overflow: 'hidden',
                   boxShadow: 'var(--shadow-float)',
                 }}>
-                  <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--color-border-subtle)', fontSize: 11, color: 'var(--color-text-tertiary)', fontWeight: 500 }}>Submit review</div>
-                  <ReviewOption icon={<Check size={13} strokeWidth={2} style={{ color: 'var(--color-success)' }} />} label="Approve" description="Approve these changes" onClick={() => setReviewDropdownOpen(false)} />
-                  <ReviewOption icon={<X size={13} strokeWidth={2} style={{ color: 'var(--color-danger)' }} />} label="Request changes" description="Require changes before merging" onClick={() => setReviewDropdownOpen(false)} />
-                  <ReviewOption icon={<MessageSquare size={13} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />} label="Comment" description="Submit general feedback" onClick={() => setReviewDropdownOpen(false)} />
+                  <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--color-border-subtle)', fontSize: 11, color: 'var(--color-text-tertiary)', fontWeight: 500 }}>{t('mergeRequest.submitReview')}</div>
+                  <ReviewOption icon={<Check size={13} strokeWidth={2} style={{ color: 'var(--color-success)' }} />} label={t('mergeRequest.approve')} description={t('mergeRequest.approveDescription')} onClick={() => setReviewDropdownOpen(false)} />
+                  <ReviewOption icon={<X size={13} strokeWidth={2} style={{ color: 'var(--color-danger)' }} />} label={t('mergeRequest.requestChanges')} description={t('mergeRequest.requestChangesDescription')} onClick={() => setReviewDropdownOpen(false)} />
+                  <ReviewOption icon={<MessageSquare size={13} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />} label={t('mergeRequest.comment')} description={t('mergeRequest.commentDescription')} onClick={() => setReviewDropdownOpen(false)} />
                 </div>
               </>
             )}
@@ -162,13 +164,14 @@ function ChecksSummarySection({ checks, allPassing, hasFailing, failedJobs, succ
   failedJobs: number; successJobs: number; skippedJobs: number; totalJobs: number
   hasConflicts: boolean; onNavigateToChecks?: () => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const [expanded, setExpanded] = useState(true)
 
   const summaryParts: string[] = []
-  if (failedJobs > 0) summaryParts.push(`${failedJobs} failing`)
-  if (skippedJobs > 0) summaryParts.push(`${skippedJobs} skipped`)
-  if (successJobs > 0) summaryParts.push(`${successJobs} successful`)
-  const summaryText = summaryParts.length > 0 ? summaryParts.join(', ') + ` check${totalJobs > 1 ? 's' : ''}` : ''
+  if (failedJobs > 0) summaryParts.push(`${failedJobs} ${t('mergeRequest.failing')}`)
+  if (skippedJobs > 0) summaryParts.push(`${skippedJobs} ${t('mergeRequest.skipped')}`)
+  if (successJobs > 0) summaryParts.push(`${successJobs} ${t('mergeRequest.successful')}`)
+  const summaryText = summaryParts.length > 0 ? summaryParts.join(', ') + ` ${totalJobs > 1 ? t('mergeRequest.check_other') : t('mergeRequest.check_one')}` : ''
 
   return (
     <div className="mr-pad-outer" style={{ margin: '0 24px 16px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
@@ -189,7 +192,7 @@ function ChecksSummarySection({ checks, allPassing, hasFailing, failedJobs, succ
         )}
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text)' }}>
-            {allPassing ? 'All checks have passed' : hasFailing ? 'Some checks were not successful' : 'Checks are running'}
+            {allPassing ? t('mergeRequest.allChecksPassed') : hasFailing ? t('mergeRequest.someChecksFailed') : t('mergeRequest.checksRunning')}
           </div>
           <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 2 }}>{summaryText}</div>
         </div>
@@ -217,10 +220,10 @@ function ChecksSummarySection({ checks, allPassing, hasFailing, failedJobs, succ
         )}
         <div>
           <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text)' }}>
-            {hasConflicts ? 'This branch has conflicts that must be resolved' : 'No conflicts with base branch'}
+            {hasConflicts ? t('mergeRequest.conflictsMustBeResolved') : t('mergeRequest.noConflictsWithBase')}
           </div>
           <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 1 }}>
-            {hasConflicts ? 'Conflicting files must be resolved' : 'Merging can be performed automatically'}
+            {hasConflicts ? t('mergeRequest.conflictingFilesMustBeResolved') : t('mergeRequest.mergingCanBeAutomatic')}
           </div>
         </div>
       </div>
@@ -229,6 +232,7 @@ function ChecksSummarySection({ checks, allPassing, hasFailing, failedJobs, succ
 }
 
 function ActionRow({ action, onNavigateToChecks }: { action: MRCheck; onNavigateToChecks?: () => void }) {
+  const { t } = useTranslation('smithyNext')
   const [expanded, setExpanded] = useState(action.status === 'failure')
   const StatusIcon = action.status === 'success' ? Check : action.status === 'failure' ? X : action.status === 'running' ? Loader : Clock
   const sColor = action.status === 'success' ? 'var(--color-success)' : action.status === 'failure' ? 'var(--color-danger)' : action.status === 'running' ? 'var(--color-warning)' : 'var(--color-text-tertiary)'
@@ -256,7 +260,7 @@ function ActionRow({ action, onNavigateToChecks }: { action: MRCheck; onNavigate
             {expanded ? <ChevronDown size={13} strokeWidth={1.5} /> : <ChevronRight size={13} strokeWidth={1.5} />}
           </button>
         )}
-        <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)', letterSpacing: '0.02em' }}>Details</span>
+        <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)', letterSpacing: '0.02em' }}>{t('mergeRequest.details')}</span>
       </div>
       {/* Expanded jobs — each job row also links to Checks tab */}
       {expanded && action.jobs.length > 1 && action.jobs.map(job => {

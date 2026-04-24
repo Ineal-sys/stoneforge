@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { useTranslation } from '@/i18n'
 import type { DesignAnnotation, DesignAnnotationTool } from '../../../mock-data'
 import { DesignToolbar } from './DesignToolbar'
 import { AnnotationThread } from './AnnotationThread'
@@ -20,6 +21,7 @@ function nextColor(annotations: DesignAnnotation[]): string {
 export function DesignModeOverlay({
   annotations, onAnnotationsChange, linkedTaskId, onDesignHandoff,
 }: DesignModeOverlayProps) {
+  const { t } = useTranslation('smithyNext')
   const [activeTool, setActiveTool] = useState<DesignAnnotationTool>('comment')
   const [activeAnnotationId, setActiveAnnotationId] = useState<string | null>(null)
   const [handoffOpen, setHandoffOpen] = useState(false)
@@ -247,7 +249,7 @@ export function DesignModeOverlay({
             ref={commentRef}
             value={commentText}
             onChange={e => setCommentText(e.target.value)}
-            placeholder="Add a comment..."
+            placeholder={t('designMode.addAComment')}
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveComment() }
               if (e.key === 'Escape') cancelComment()
@@ -263,11 +265,11 @@ export function DesignModeOverlay({
             <button onClick={cancelComment} style={{
               height: 22, padding: '0 8px', background: 'none', border: 'none',
               color: 'var(--color-text-tertiary)', fontSize: 11, cursor: 'pointer',
-            }}>Cancel</button>
+            }}>{t('designMode.cancel')}</button>
             <button onClick={saveComment} style={{
               height: 22, padding: '0 8px', background: 'var(--color-primary)', border: 'none',
               borderRadius: 'var(--radius-sm)', color: '#fff', fontSize: 11, fontWeight: 500, cursor: 'pointer',
-            }}>Save</button>
+            }}>{t('designMode.save')}</button>
           </div>
         </div>
       )}

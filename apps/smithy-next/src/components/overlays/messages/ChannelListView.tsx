@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect } from 'react'
 import { Search, Filter, SlidersHorizontal, Plus, Hash, Lock, Bot, X, Check, ArrowUp, ArrowDown } from 'lucide-react'
 import type { MsgChannel, MsgEntity, ChannelActiveFilter, ChannelFilterField, ChannelSortField, ChannelGroupField } from './message-types'
 import { CreateChannelDialog } from './CreateChannelDialog'
+import { useTranslation } from '@/i18n'
 
 interface ChannelListViewProps {
   channels: MsgChannel[]
@@ -17,6 +18,7 @@ function getChannelIcon(channel: MsgChannel) {
 }
 
 export function ChannelListView({ channels, entities, onSelectChannel, selectedChannelId, compact }: ChannelListViewProps) {
+  const { t } = useTranslation('smithyNext')
   const [searchQuery, setSearchQuery] = useState('')
   const [filters, setFilters] = useState<ChannelActiveFilter[]>([])
   const [filterOpen, setFilterOpen] = useState(false)
@@ -77,16 +79,16 @@ export function ChannelListView({ channels, entities, onSelectChannel, selectedC
 
   const groups = useMemo(() => {
     if (groupBy === 'none') {
-      return [{ label: 'All Channels', channels: filtered }]
+      return [{ label: t('messages.allChannels'), channels: filtered }]
     }
     // Group by visibility
     const pub = filtered.filter(ch => ch.visibility === 'public')
     const priv = filtered.filter(ch => ch.visibility === 'private')
     const result: { label: string; channels: MsgChannel[] }[] = []
-    if (pub.length > 0) result.push({ label: 'Public Channels', channels: pub })
-    if (priv.length > 0) result.push({ label: 'Private Channels', channels: priv })
+    if (pub.length > 0) result.push({ label: t('messages.publicChannels'), channels: pub })
+    if (priv.length > 0) result.push({ label: t('messages.privateChannels'), channels: priv })
     return result
-  }, [filtered, groupBy])
+  }, [filtered, groupBy, t])
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -98,11 +100,11 @@ export function ChannelListView({ channels, entities, onSelectChannel, selectedC
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <h1 style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', margin: 0 }}>
-            Channels
+            {t('messages.channels')}
           </h1>
           {!compact && (
             <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', fontWeight: 400 }}>
-              Multi-agent discussion spaces
+              {t('messages.multiAgentDiscussionSpaces')}
             </span>
           )}
         </div>
@@ -137,7 +139,7 @@ export function ChannelListView({ channels, entities, onSelectChannel, selectedC
           <input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder={compact ? 'Search...' : 'Search channels...'}
+            placeholder={compact ? t('messages.searchShort') : t('messages.searchChannels')}
             style={{
               width: compact ? 110 : 200, padding: '5px 8px 5px 28px', fontSize: 12,
               background: 'var(--color-surface)', border: '1px solid var(--color-border-subtle)',
@@ -161,7 +163,7 @@ export function ChannelListView({ channels, entities, onSelectChannel, selectedC
               cursor: 'pointer', fontSize: 11, fontWeight: 500,
             }}
           >
-            <Filter size={12} strokeWidth={1.5} /> {!compact && <>Filter {filters.length > 0 && `(${filters.length})`}</>}
+            <Filter size={12} strokeWidth={1.5} /> {!compact && <>{t('messages.filter')} {filters.length > 0 && `(${filters.length})`}</>}
           </button>
           {filterOpen && (
             <ChannelFilterPanel
@@ -187,7 +189,7 @@ export function ChannelListView({ channels, entities, onSelectChannel, selectedC
               cursor: 'pointer', fontSize: 11, fontWeight: 500,
             }}
           >
-            <SlidersHorizontal size={12} strokeWidth={1.5} /> Display
+            <SlidersHorizontal size={12} strokeWidth={1.5} /> {t('messages.display')}
           </button>
           {displayOpen && (
             <ChannelDisplayPanel
@@ -211,7 +213,7 @@ export function ChannelListView({ channels, entities, onSelectChannel, selectedC
             color: 'white', cursor: 'pointer', fontSize: 11, fontWeight: 500,
           }}
         >
-          <Plus size={12} strokeWidth={2} /> New
+          <Plus size={12} strokeWidth={2} /> {t('messages.new')}
         </button>
       </div>
 
@@ -222,14 +224,14 @@ export function ChannelListView({ channels, entities, onSelectChannel, selectedC
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             height: '100%', color: 'var(--color-text-tertiary)', fontSize: 13, gap: 12,
           }}>
-            {searchQuery || filters.length > 0 ? 'No channels match your filters' : 'No channels yet'}
+            {searchQuery || filters.length > 0 ? t('messages.noChannelsMatchFilters') : t('messages.noChannelsYet')}
             {!searchQuery && filters.length === 0 && (
               <button onClick={() => setCreateOpen(true)} style={{
                 padding: '6px 14px', fontSize: 12, fontWeight: 500,
                 background: 'var(--color-primary)', border: 'none',
                 borderRadius: 'var(--radius-sm)', color: 'white', cursor: 'pointer',
               }}>
-                Create a channel
+                {t('messages.createAChannel')}
               </button>
             )}
           </div>
@@ -301,7 +303,7 @@ export function ChannelListView({ channels, entities, onSelectChannel, selectedC
                             background: 'rgba(167, 139, 250, 0.12)',
                             color: '#a78bfa',
                           }}>
-                            {agentCount} {agentCount === 1 ? 'agent' : 'agents'}
+                            {agentCount} {agentCount === 1 ? t('messages.agent') : t('messages.agents')}
                           </span>
                         )}
                       </div>
@@ -338,8 +340,8 @@ export function ChannelListView({ channels, entities, onSelectChannel, selectedC
                             fontSize: 10, fontWeight: 600,
                           }}
                             title={channel.unreadHumanCount > 0
-                              ? `${channel.unreadHumanCount} human, ${channel.unreadCount - channel.unreadHumanCount} agent`
-                              : `${channel.unreadCount} unread`
+                              ? t('messages.humanAgentUnread', { human: channel.unreadHumanCount, agent: channel.unreadCount - channel.unreadHumanCount })
+                              : t('messages.unreadCount', { count: channel.unreadCount })
                             }
                           >
                             {channel.unreadCount}
@@ -374,6 +376,7 @@ function ChannelFilterPanel({ channels, filters, onToggleFilter, onClose }: {
   onToggleFilter: (field: ChannelFilterField, value: string) => void
   onClose: () => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const [activeTab, setActiveTab] = useState<ChannelFilterField>('visibility')
   const ref = useRef<HTMLDivElement>(null)
 
@@ -383,8 +386,8 @@ function ChannelFilterPanel({ channels, filters, onToggleFilter, onClose }: {
   }, [onClose])
 
   const tabs: { field: ChannelFilterField; label: string }[] = [
-    { field: 'visibility', label: 'Visibility' },
-    { field: 'hasUnread', label: 'Unread' },
+    { field: 'visibility', label: t('messages.visibility') },
+    { field: 'hasUnread', label: t('messages.unread') },
   ]
 
   let values: { value: string; label: string; count: number }[] = []
@@ -392,13 +395,13 @@ function ChannelFilterPanel({ channels, filters, onToggleFilter, onClose }: {
     const pub = channels.filter(ch => ch.visibility === 'public').length
     const priv = channels.filter(ch => ch.visibility === 'private').length
     values = [
-      { value: 'public', label: 'Public', count: pub },
-      { value: 'private', label: 'Private', count: priv },
+      { value: 'public', label: t('messages.public'), count: pub },
+      { value: 'private', label: t('messages.private'), count: priv },
     ]
   } else {
     const unread = channels.filter(ch => ch.unreadCount > 0).length
     values = [
-      { value: 'true', label: 'Has unread', count: unread },
+      { value: 'true', label: t('messages.hasUnread'), count: unread },
     ]
   }
 
@@ -457,6 +460,7 @@ function ChannelDisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange
   sortAsc: boolean; onSortDirChange: () => void
   onClose: () => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) onClose() }
@@ -464,13 +468,13 @@ function ChannelDisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange
   }, [onClose])
 
   const groupOptions: { value: ChannelGroupField; label: string }[] = [
-    { value: 'none', label: 'No grouping' },
-    { value: 'type', label: 'Visibility' },
+    { value: 'none', label: t('messages.noGrouping') },
+    { value: 'type', label: t('messages.visibility') },
   ]
   const sortOptions: { value: ChannelSortField; label: string }[] = [
-    { value: 'recent', label: 'Recent activity' },
-    { value: 'name', label: 'Name' },
-    { value: 'unread', label: 'Unread count' },
+    { value: 'recent', label: t('messages.recentActivity') },
+    { value: 'name', label: t('messages.name') },
+    { value: 'unread', label: t('messages.unreadCount') },
   ]
 
   return (
@@ -483,7 +487,7 @@ function ChannelDisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange
       {/* Group by */}
       <div style={{ padding: '4px 12px 8px' }}>
         <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
-          Group by
+          {t('messages.groupBy')}
         </div>
         {groupOptions.map(opt => (
           <button key={opt.value} onClick={() => onGroupByChange(opt.value)} style={{
@@ -508,14 +512,14 @@ function ChannelDisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange
       <div style={{ padding: '8px 12px 4px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Sort by
+            {t('messages.sortBy')}
           </span>
           <button onClick={onSortDirChange} style={{
             background: 'none', border: 'none', cursor: 'pointer',
             color: 'var(--color-text-tertiary)', display: 'flex', alignItems: 'center', gap: 3, fontSize: 10,
           }}>
             {sortAsc ? <ArrowUp size={10} strokeWidth={2} /> : <ArrowDown size={10} strokeWidth={2} />}
-            {sortAsc ? 'Asc' : 'Desc'}
+            {sortAsc ? t('messages.asc') : t('messages.desc')}
           </button>
         </div>
         {sortOptions.map(opt => (

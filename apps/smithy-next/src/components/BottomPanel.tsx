@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Terminal, Plus, X, ChevronDown } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import type { PreviewTab, PreviewConsoleEntry } from '../mock-data'
 
 type View = 'kanban' | 'whiteboard' | 'editor' | 'merge-requests' | 'ci' | 'preview' | 'sessions' | 'diff' | 'task-detail' | 'automations' | 'agents' | 'runtimes' | 'settings' | 'documents' | 'channels' | 'plans' | 'metrics' | 'workspaces'
@@ -12,15 +13,16 @@ interface BottomPanelProps {
   previewConsoleEntries?: PreviewConsoleEntry[]
 }
 
-const baseTabs = [
-  { id: 't1', label: 'dev server' },
-  { id: 't2', label: 'git' },
-  { id: 't3', label: 'docker' },
-]
-
 export function BottomPanel({ open, onToggle, activeView, activePreviewTab, previewConsoleEntries }: BottomPanelProps) {
+  const { t } = useTranslation('smithyNext')
   const [activeTab, setActiveTab] = useState('t1')
   const [height, setHeight] = useState(240)
+
+  const baseTabs = [
+    { id: 't1', label: t('bottomPanel.devServer') },
+    { id: 't2', label: t('bottomPanel.git') },
+    { id: 't3', label: t('bottomPanel.docker') },
+  ]
 
   // ── Drag resize ──
   const dragging = useRef(false)
@@ -133,7 +135,7 @@ export function BottomPanel({ open, onToggle, activeView, activePreviewTab, prev
           }}
         >
           <Terminal size={12} strokeWidth={1.5} />
-          Terminal
+          {t('bottomPanel.terminal')}
         </button>
 
         {/* Session tabs — only when open */}
@@ -187,7 +189,7 @@ export function BottomPanel({ open, onToggle, activeView, activePreviewTab, prev
               }}
               onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-surface-hover)'; e.currentTarget.style.color = 'var(--color-text-secondary)' }}
               onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--color-text-tertiary)' }}
-              title="Close panel"
+              title={t('bottomPanel.closePanel')}
             >
               <ChevronDown size={12} strokeWidth={1.5} />
             </button>

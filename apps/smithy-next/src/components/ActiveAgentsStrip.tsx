@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useRef } from 'react'
 import { Bot, ChevronUp, ChevronDown, GitBranch, AlertCircle, Check, Circle } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import type { Task, DirectorSession } from '../mock-data'
 import { mockDirectorMessages, mockTaskAgentMessages, KANBAN_COLUMNS } from '../mock-data'
 
@@ -20,6 +21,7 @@ interface DerivedAgent {
 }
 
 export function ActiveAgentsStrip({ tasks, directors, onSelectTask, onSelectDirector }: ActiveAgentsStripProps) {
+  const { t } = useTranslation('smithyNext')
   const [expanded, setExpanded] = useState(() => {
     try { return localStorage.getItem('sf-agents-strip-expanded') === 'true' } catch { return false }
   })
@@ -146,7 +148,7 @@ export function ActiveAgentsStrip({ tasks, directors, onSelectTask, onSelectDire
       >
         <Bot size={13} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
         <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
-          Agents
+          {t('activeAgentsStrip.agents')}
         </span>
         {activeCount > 0 && (
           <span style={{
@@ -159,7 +161,7 @@ export function ActiveAgentsStrip({ tasks, directors, onSelectTask, onSelectDire
             lineHeight: '16px',
             flexShrink: 0,
           }}>
-            {activeCount} active
+            {activeCount} {t('activeAgentsStrip.active')}
           </span>
         )}
 
@@ -195,21 +197,21 @@ export function ActiveAgentsStrip({ tasks, directors, onSelectTask, onSelectDire
                   color: statusColor(a.director.status),
                   lineHeight: '15px',
                 }}>
-                  {a.director.status === 'running' ? 'working' : a.director.status}
+                  {a.director.status === 'running' ? t('activeAgentsStrip.working') : a.director.status}
                 </span>
                 {a.inProgressCount > 0 && (
                   <span style={{ fontSize: 10, color: 'var(--color-success)', fontWeight: 500 }}>
-                    {a.inProgressCount} in progress
+                    {a.inProgressCount} {t('activeAgentsStrip.inProgress')}
                   </span>
                 )}
                 {a.inReviewCount > 0 && (
                   <span style={{ fontSize: 10, color: 'var(--color-warning)', fontWeight: 500 }}>
-                    {a.inReviewCount} in review
+                    {a.inReviewCount} {t('activeAgentsStrip.inReview')}
                   </span>
                 )}
                 {a.blockedCount > 0 && (
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 10, color: 'var(--color-danger)', fontWeight: 500 }}>
-                    <AlertCircle size={10} /> {a.blockedCount} blocked
+                    <AlertCircle size={10} /> {a.blockedCount} {t('activeAgentsStrip.blocked')}
                   </span>
                 )}
               </div>
@@ -268,24 +270,24 @@ export function ActiveAgentsStrip({ tasks, directors, onSelectTask, onSelectDire
                     : 'var(--color-surface)',
                   color: statusColor(a.director.status),
                 }}>
-                  {a.director.status === 'running' ? 'working' : a.director.status}
+                  {a.director.status === 'running' ? t('activeAgentsStrip.working') : a.director.status}
                 </span>
                 <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>
-                  {a.assignedTasks.length} task{a.assignedTasks.length !== 1 ? 's' : ''}
+                  {a.assignedTasks.length} {a.assignedTasks.length !== 1 ? t('activeAgentsStrip.task_plural') : t('activeAgentsStrip.task')}
                 </span>
                 {a.inProgressCount > 0 && (
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 10, color: 'var(--color-success)', fontWeight: 500 }}>
-                    {a.inProgressCount} in progress
+                    {a.inProgressCount} {t('activeAgentsStrip.inProgress')}
                   </span>
                 )}
                 {a.inReviewCount > 0 && (
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 10, color: 'var(--color-warning)', fontWeight: 500 }}>
-                    {a.inReviewCount} in review
+                    {a.inReviewCount} {t('activeAgentsStrip.inReview')}
                   </span>
                 )}
                 {a.blockedCount > 0 && (
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 10, color: 'var(--color-danger)', fontWeight: 500 }}>
-                    <AlertCircle size={10} /> {a.blockedCount} blocked
+                    <AlertCircle size={10} /> {a.blockedCount} {t('activeAgentsStrip.blocked')}
                   </span>
                 )}
                 <div style={{ flex: 1 }} />
@@ -356,7 +358,7 @@ export function ActiveAgentsStrip({ tasks, directors, onSelectTask, onSelectDire
                       )}
                       <div style={{ flex: 1 }} />
                       {task.blocked && (
-                        <span style={{ fontSize: 10, color: 'var(--color-danger)', fontWeight: 500, flexShrink: 0 }}>blocked</span>
+                        <span style={{ fontSize: 10, color: 'var(--color-danger)', fontWeight: 500, flexShrink: 0 }}>{t('activeAgentsStrip.blocked')}</span>
                       )}
                       {(task.status === 'in_progress' || task.status === 'in_review') && task.branch && (
                         <span style={{

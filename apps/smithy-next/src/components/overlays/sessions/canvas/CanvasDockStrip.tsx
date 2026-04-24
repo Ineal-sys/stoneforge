@@ -1,5 +1,6 @@
 import { X } from 'lucide-react'
 import type { Session } from '../session-types'
+import { useTranslation } from '@/i18n'
 
 interface CanvasDockStripProps {
   sessions: Session[]
@@ -32,6 +33,7 @@ export function CanvasDockStrip({
   onHoverSession,
   onClose,
 }: CanvasDockStripProps) {
+  const { t } = useTranslation('smithyNext')
   const sorted = [...sessions].sort((a, b) => urgency(a) - urgency(b))
   const needsInputCount = sessions.filter(s => s.needsInput).length
   const errorCount = sessions.filter(s => s.status === 'error').length
@@ -55,15 +57,15 @@ export function CanvasDockStrip({
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 11, color: 'var(--color-text-tertiary)', flexShrink: 0 }}>
         {needsInputCount > 0 && (
           <span style={{ color: 'var(--color-warning)', fontWeight: 500, fontFamily: 'var(--font-mono)' }}>
-            {needsInputCount} needs input
+            {needsInputCount} {t('sessions.needsInput')}
           </span>
         )}
         {errorCount > 0 && (
           <span style={{ color: 'var(--color-danger)', fontWeight: 500, fontFamily: 'var(--font-mono)' }}>
-            {errorCount} error{errorCount !== 1 ? 's' : ''}
+            {errorCount} {t('sessions.errors')}
           </span>
         )}
-        <span style={{ fontFamily: 'var(--font-mono)' }}>{activeCount} active</span>
+        <span style={{ fontFamily: 'var(--font-mono)' }}>{activeCount} {t('sessions.activeLabel')}</span>
       </div>
 
       {/* Divider */}
@@ -98,7 +100,7 @@ export function CanvasDockStrip({
           return (
             <button
               key={s.id}
-              title={`${s.title} — ${s.agent.name}${s.needsInput ? ' (awaiting input)' : ''}`}
+              title={`${s.title} — ${s.agent.name}${s.needsInput ? ` (${t('sessions.awaitingInput')})` : ''}`}
               onClick={() => onFocusSession(s.id)}
               onMouseEnter={() => onHoverSession(s.id)}
               onMouseLeave={() => onHoverSession(null)}
@@ -132,7 +134,7 @@ export function CanvasDockStrip({
       {/* Close button — fixed on the right */}
       <button
         onClick={onClose}
-        title="Hide session dock"
+        title={t('sessions.hideSessionDock')}
         style={{
           width: 22, height: 22,
           display: 'flex', alignItems: 'center', justifyContent: 'center',

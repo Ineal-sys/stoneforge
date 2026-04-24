@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { Search, ChevronRight, ChevronDown, File, CaseSensitive, WholeWord, Regex, X } from 'lucide-react'
 import { mockEditorFiles, flattenFileTree, mockEditorFileTree } from './editor-mock-data'
+import { useTranslation } from '@/i18n'
 
 interface Props {
   onOpenFileAtLine: (path: string, line: number) => void
@@ -15,6 +16,7 @@ interface SearchMatch {
 }
 
 export function EditorSearchPanel({ onOpenFileAtLine }: Props) {
+  const { t } = useTranslation('smithyNext')
   const [query, setQuery] = useState('')
   const [caseSensitive, setCaseSensitive] = useState(false)
   const [wholeWord, setWholeWord] = useState(false)
@@ -110,7 +112,7 @@ export function EditorSearchPanel({ onOpenFileAtLine }: Props) {
           }} />
           <input
             type="text"
-            placeholder="Search in workspace..."
+            placeholder={t('editor.searchPlaceholder')}
             value={query}
             onChange={e => setQuery(e.target.value)}
             style={{
@@ -145,9 +147,9 @@ export function EditorSearchPanel({ onOpenFileAtLine }: Props) {
         {/* Options toggles */}
         <div style={{ display: 'flex', gap: 2 }}>
           {[
-            { active: caseSensitive, toggle: () => setCaseSensitive(v => !v), icon: CaseSensitive, title: 'Case Sensitive' },
-            { active: wholeWord, toggle: () => setWholeWord(v => !v), icon: WholeWord, title: 'Whole Word' },
-            { active: useRegex, toggle: () => setUseRegex(v => !v), icon: Regex, title: 'Use Regex' },
+            { active: caseSensitive, toggle: () => setCaseSensitive(v => !v), icon: CaseSensitive, title: t('editor.caseSensitive') },
+            { active: wholeWord, toggle: () => setWholeWord(v => !v), icon: WholeWord, title: t('editor.wholeWord') },
+            { active: useRegex, toggle: () => setUseRegex(v => !v), icon: Regex, title: t('editor.useRegex') },
           ].map(opt => (
             <button
               key={opt.title}
@@ -188,7 +190,7 @@ export function EditorSearchPanel({ onOpenFileAtLine }: Props) {
           fontSize: 11, color: 'var(--color-text-tertiary)',
           borderBottom: '1px solid var(--color-border-subtle)',
         }}>
-          {results.length} result{results.length !== 1 ? 's' : ''} in {grouped.size} file{grouped.size !== 1 ? 's' : ''}
+          {t('editor.resultsCount', { results: String(results.length), files: String(grouped.size) })}
         </div>
       )}
 
@@ -201,8 +203,8 @@ export function EditorSearchPanel({ onOpenFileAtLine }: Props) {
             color: 'var(--color-text-tertiary)',
           }}>
             <Search size={28} strokeWidth={1} />
-            <span style={{ fontSize: 12 }}>Search in workspace</span>
-            <span style={{ fontSize: 11 }}>Type to search all files</span>
+            <span style={{ fontSize: 12 }}>{t('editor.searchInWorkspace')}</span>
+            <span style={{ fontSize: 11 }}>{t('editor.typeToSearchAllFiles')}</span>
           </div>
         )}
 
@@ -213,7 +215,7 @@ export function EditorSearchPanel({ onOpenFileAtLine }: Props) {
             color: 'var(--color-text-tertiary)',
           }}>
             <X size={28} strokeWidth={1} />
-            <span style={{ fontSize: 12 }}>No results</span>
+            <span style={{ fontSize: 12 }}>{t('editor.noResults')}</span>
           </div>
         )}
 
@@ -301,7 +303,7 @@ export function EditorSearchPanel({ onOpenFileAtLine }: Props) {
                       fontSize: 11, fontStyle: 'italic',
                       color: 'var(--color-text-tertiary)',
                     }}>
-                      +{matches.length - 10} more...
+                      {t('editor.moreResults', { count: matches.length - 10 })}
                     </div>
                   )}
                 </div>

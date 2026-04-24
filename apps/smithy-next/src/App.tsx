@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from '@/i18n'
 import { ActivityRail } from './components/ActivityRail'
 import { TopBar } from './components/TopBar'
 import { TasksPage } from './components/TasksPage'
@@ -369,6 +370,7 @@ function getInitialRoute() {
 }
 
 export default function App() {
+  const { t } = useTranslation('smithyNext')
   // ── Theme ──
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const saved = localStorage.getItem('sf-theme')
@@ -557,7 +559,7 @@ export default function App() {
         id: `team-change-${Date.now()}`,
         type: 'team-change' as const,
         workspaceId: activeWorkspaceId,
-        message: `Sarah Chen ${change.action}`,
+        message: t('app.toast.teamChangeAction', { action: change.action }),
         timestamp: 'just now',
         actorId: change.userId,
       }])
@@ -597,13 +599,13 @@ export default function App() {
     const timer1 = setTimeout(() => {
       setToasts(prev => [...prev, {
         id: 'toast-1', workspaceId: 'ws-2', type: 'agent-completed',
-        message: 'Agent Bravo completed "Hero section redesign"', timestamp: 'just now',
+        message: t('app.toast.agentCompleted'), timestamp: 'just now',
       }])
     }, 5000)
     const timer2 = setTimeout(() => {
       setToasts(prev => [...prev, {
         id: 'toast-2', workspaceId: 'ws-3', type: 'agent-error',
-        message: 'Agent Delta failed on "Push notification integration"', timestamp: 'just now',
+        message: t('app.toast.agentFailed'), timestamp: 'just now',
       }])
     }, 9000)
     return () => { clearTimeout(timer1); clearTimeout(timer2) }
@@ -821,7 +823,7 @@ export default function App() {
             const newId = `SF-${160 + tasks.length}`
             const newTask: Task = {
               id: newId,
-              title: partial.title || 'Untitled',
+              title: partial.title || t('app.task.untitled'),
               description: partial.description,
               status: partial.status || 'todo',
               priority: partial.priority || 'medium',
@@ -892,7 +894,7 @@ export default function App() {
         />
       case 'task-detail': {
         const detailTask = tasks.find(t => t.id === taskDetailId)
-        if (!detailTask) return <PlaceholderOverlay title="Task not found" onBack={goHome} />
+        if (!detailTask) return <PlaceholderOverlay title={t('app.placeholder.taskNotFound')} onBack={goHome} />
         const topLevelIds = tasks.filter(t => !t.parentId).map(t => t.id)
         const taskDetailBack = () => {
           if (previousView && previousView !== 'task-detail') {
@@ -935,7 +937,7 @@ export default function App() {
           onCreateMR={(partial) => {
             const newMR = {
               id: `MR-${44 + mergeRequests.length}`,
-              title: partial.title || 'Untitled',
+              title: partial.title || t('app.mergeRequest.untitled'),
               description: partial.description,
               branch: partial.branch || 'feat/new-branch',
               targetBranch: partial.targetBranch || 'main',
@@ -950,9 +952,9 @@ export default function App() {
               autoMergeEnabled: false,
               hasConflicts: false,
               mergeGates: [
-                { label: 'CI checks pass', passed: false, required: true },
-                { label: 'At least 1 approval', passed: false, required: true },
-                { label: 'No merge conflicts', passed: true, required: true },
+                { label: t('app.mergeRequest.mergeGates.ciChecksPass'), passed: false, required: true },
+                { label: t('app.mergeRequest.mergeGates.atLeast1Approval'), passed: false, required: true },
+                { label: t('app.mergeRequest.mergeGates.noMergeConflicts'), passed: true, required: true },
               ],
               labels: partial.labels || [],
             }
@@ -975,7 +977,7 @@ export default function App() {
       case 'whiteboard': {
         const wbDirId = activeWhiteboardDirectorId || mockDirectors[0]?.id
         const wbDir = mockDirectors.find(d => d.id === wbDirId)
-        if (!wbDir) return <PlaceholderOverlay title="Whiteboard" onBack={goHome} />
+        if (!wbDir) return <PlaceholderOverlay title={t('app.placeholder.whiteboard')} onBack={goHome} />
         return <WhiteboardOverlay
           directorId={wbDir.id}
           directorName={wbDir.name}
@@ -1143,8 +1145,9 @@ export default function App() {
 
 /* Old TaskDetail removed — replaced by TaskDetailOverlay */
 function _unused_TaskDetail({ task, allTasks, onClose, onNavigate, onViewDiff }: { task: Task; allTasks: Task[]; onClose: () => void; onNavigate: (view: View) => void; onViewDiff: (taskId: string, branch: string) => void }) {
-  const subTasks = task.subTaskIds ? allTasks.filter(t => task.subTaskIds!.includes(t.id)) : []
-  const parentTask = task.parentId ? allTasks.find(t => t.id === task.parentId) : null
+  const { t } = useTranslation('smithyNext')
+  const subTasks = task.subTaskIds ? allTasks.filter(at => at.subTaskIds!.includes(at.id)) : []
+  const parentTask = task.parentId ? allTasks.find(at => at.id === task.parentId) : null
   return (
     <>
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'var(--color-bg-overlay)', zIndex: 'var(--z-overlay)' as unknown as number }} />
@@ -1175,19 +1178,19 @@ function _unused_TaskDetail({ task, allTasks, onClose, onNavigate, onViewDiff }:
         <div style={{ flex: 1, overflow: 'auto', padding: '0 24px 24px' }}>
           {/* Metadata grid */}
           <div style={{ padding: 12, background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
-            <MetaRow label="Status" value={task.status.replace(/_/g, ' ')} />
-            <MetaRow label="Priority" value={task.priority} color={task.priority === 'urgent' ? 'var(--color-danger)' : task.priority === 'high' ? 'var(--color-warning)' : undefined} />
-            {task.assignee && <MetaRow label="Assignee" value={task.assignee.name} />}
-            {task.estimate && <MetaRow label="Estimate" value={`${task.estimate} points`} />}
-            {task.dueDate && <MetaRow label="Due date" value={task.dueDate} />}
-            {task.branch && <MetaRow label="Branch" value={task.branch} mono />}
-            {parentTask && <MetaRow label="Parent" value={`${parentTask.id}: ${parentTask.title}`} />}
+            <MetaRow label={t('app.task.meta.status')} value={task.status.replace(/_/g, ' ')} />
+            <MetaRow label={t('app.task.meta.priority')} value={task.priority} color={task.priority === 'urgent' ? 'var(--color-danger)' : task.priority === 'high' ? 'var(--color-warning)' : undefined} />
+            {task.assignee && <MetaRow label={t('app.task.meta.assignee')} value={task.assignee.name} />}
+            {task.estimate && <MetaRow label={t('app.task.meta.estimate')} value={t('app.task.meta.points', { count: task.estimate })} />}
+            {task.dueDate && <MetaRow label={t('app.task.meta.dueDate')} value={task.dueDate} />}
+            {task.branch && <MetaRow label={t('app.task.meta.branch')} value={task.branch} mono />}
+            {parentTask && <MetaRow label={t('app.task.meta.parent')} value={`${parentTask.id}: ${parentTask.title}`} />}
           </div>
 
           {/* Description */}
           {task.description && (
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>Description</div>
+              <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>{t('app.task.description')}</div>
               <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.6, whiteSpace: 'pre-wrap', padding: 12, background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-md)' }}>{task.description}</div>
             </div>
           )}
@@ -1195,7 +1198,7 @@ function _unused_TaskDetail({ task, allTasks, onClose, onNavigate, onViewDiff }:
           {/* Sub-tasks */}
           {subTasks.length > 0 && (
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>Sub-tasks ({subTasks.filter(s => s.status === 'done').length}/{subTasks.length})</div>
+              <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>{t('app.task.subtasks', { done: subTasks.filter(s => s.status === 'done').length, total: subTasks.length })}</div>
               <div style={{ background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
                 {subTasks.map((sub, i) => (
                   <div key={sub.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderBottom: i < subTasks.length - 1 ? '1px solid var(--color-border-subtle)' : 'none', fontSize: 12 }}>
@@ -1212,59 +1215,59 @@ function _unused_TaskDetail({ task, allTasks, onClose, onNavigate, onViewDiff }:
           )}
 
           {/* Linked resources */}
-          <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 8 }}>Linked Resources</div>
+          <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 8 }}>{t('app.task.linkedResources')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 20 }}>
             {/* Session */}
             {task.sessionStatus && (
               <LinkCard
-                label="Director Session"
+                label={t('app.task.linkCard.directorSession')}
                 status={task.sessionStatus}
                 statusColor={task.sessionStatus === 'running' ? 'var(--color-success)' : task.sessionStatus === 'error' ? 'var(--color-danger)' : 'var(--color-text-tertiary)'}
-                detail={task.assignee?.name || 'Unassigned'}
-                actionLabel={task.sessionStatus === 'running' ? 'Jump to session' : 'View session'}
+                detail={task.assignee?.name || t('app.task.unassigned')}
+                actionLabel={task.sessionStatus === 'running' ? t('app.task.linkCard.jumpToSession') : t('app.task.linkCard.viewSession')}
                 onClick={onClose}
               />
             )}
             {/* MR */}
             {task.mrStatus && task.mrStatus !== 'none' && (
               <LinkCard
-                label="Merge Request"
+                label={t('app.task.linkCard.mergeRequest')}
                 status={task.mrStatus.replace(/_/g, ' ')}
                 statusColor={task.mrStatus === 'needs_review' ? 'var(--color-warning)' : task.mrStatus === 'merged' ? 'var(--color-primary)' : 'var(--color-text-secondary)'}
                 detail={task.branch || ''}
-                actionLabel="Open MR"
+                actionLabel={t('app.task.linkCard.openMR')}
                 onClick={() => onNavigate('merge-requests')}
               />
             )}
             {/* CI */}
             {task.ciStatus && task.ciStatus !== 'none' && (
               <LinkCard
-                label="CI/CD"
+                label={t('app.task.linkCard.cicd')}
                 status={task.ciStatus}
                 statusColor={task.ciStatus === 'pass' ? 'var(--color-success)' : task.ciStatus === 'fail' ? 'var(--color-danger)' : 'var(--color-warning)'}
                 detail={task.branch || ''}
-                actionLabel="View pipeline"
+                actionLabel={t('app.task.linkCard.viewPipeline')}
                 onClick={() => onNavigate('ci')}
               />
             )}
             {/* Diff — always show if branch exists */}
             {task.branch && (
               <LinkCard
-                label="Changes"
-                status={task.ciStatus === 'pass' ? 'Ready' : 'In progress'}
+                label={t('app.task.linkCard.changes')}
+                status={task.ciStatus === 'pass' ? t('app.task.linkCard.ready') : t('app.task.linkCard.inProgress')}
                 statusColor="var(--color-text-tertiary)"
                 detail={task.branch}
-                actionLabel="View diff"
+                actionLabel={t('app.task.linkCard.viewDiff')}
                 onClick={() => onViewDiff(task.id, task.branch!)}
               />
             )}
           </div>
 
           {/* Activity log */}
-          <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 8 }}>Activity</div>
+          <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 8 }}>{t('app.task.activity')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            {getActivityForTask(task).map((entry, i) => (
-              <div key={i} style={{ display: 'flex', gap: 12, padding: '8px 0', borderBottom: i < getActivityForTask(task).length - 1 ? '1px solid var(--color-border-subtle)' : 'none' }}>
+            {getActivityForTask(task, t).map((entry, i) => (
+              <div key={i} style={{ display: 'flex', gap: 12, padding: '8px 0', borderBottom: i < getActivityForTask(task, t).length - 1 ? '1px solid var(--color-border-subtle)' : 'none' }}>
                 <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--color-surface)', color: 'var(--color-text-tertiary)', fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{entry.avatar}</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>{entry.text}</div>
@@ -1298,27 +1301,27 @@ function LinkCard({ label, status, statusColor, detail, actionLabel, onClick }: 
   )
 }
 
-function getActivityForTask(task: Task): { avatar: string; text: string; time: string }[] {
+function getActivityForTask(task: Task, t: (key: string, opts?: Record<string, unknown>) => string): { avatar: string; text: string; time: string }[] {
   const activity = []
   if (task.sessionStatus === 'running') {
-    activity.push({ avatar: 'DA', text: `${task.assignee?.name || 'Agent'} started working on this task`, time: task.updatedAt })
+    activity.push({ avatar: 'DA', text: t('app.task.activityLog.startedWorking', { name: task.assignee?.name || 'Agent' }), time: task.updatedAt })
   }
   if (task.mrStatus === 'needs_review') {
-    activity.push({ avatar: 'DB', text: `${task.assignee?.name || 'Agent'} opened a merge request for review`, time: '20 min ago' })
+    activity.push({ avatar: 'DB', text: t('app.task.activityLog.openedMRForReview', { name: task.assignee?.name || 'Agent' }), time: '20 min ago' })
   }
   if (task.mrStatus === 'open') {
-    activity.push({ avatar: 'DB', text: `${task.assignee?.name || 'Agent'} pushed changes to ${task.branch}`, time: '45 min ago' })
+    activity.push({ avatar: 'DB', text: t('app.task.activityLog.pushedChangesTo', { name: task.assignee?.name || 'Agent', branch: task.branch }), time: '45 min ago' })
   }
   if (task.ciStatus === 'fail') {
-    activity.push({ avatar: 'CI', text: 'CI pipeline failed — 1 test failure', time: '40 min ago' })
+    activity.push({ avatar: 'CI', text: t('app.task.activityLog.ciFailed'), time: '40 min ago' })
   }
   if (task.ciStatus === 'pass') {
-    activity.push({ avatar: 'CI', text: 'CI pipeline passed — all checks green', time: '25 min ago' })
+    activity.push({ avatar: 'CI', text: t('app.task.activityLog.ciPassed'), time: '25 min ago' })
   }
   if (task.mrStatus === 'merged') {
-    activity.push({ avatar: 'Y', text: 'You merged the pull request', time: task.updatedAt })
+    activity.push({ avatar: 'Y', text: t('app.task.activityLog.mergedPR'), time: task.updatedAt })
   }
-  activity.push({ avatar: 'Y', text: 'Task created', time: '3 days ago' })
+  activity.push({ avatar: 'Y', text: t('app.task.activityLog.taskCreated'), time: '3 days ago' })
   return activity
 }
 

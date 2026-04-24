@@ -5,6 +5,7 @@ import {
   AlertTriangle, ArrowUp, ArrowDown, Minus, BarChart3,
   User, Tag, Hash, X, Search,
 } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import { KANBAN_COLUMNS, ASSIGNEES, LABELS, PRIORITIES, COMPLEXITY_LEVELS, TEAM_MEMBERS, getAssignees, type Task, type AppMode } from '../../mock-data'
 import { PresenceDot } from '../PresenceDot'
 
@@ -153,12 +154,13 @@ export function StatusDropdown({ current, onSelect, onClose, position, disabledS
   current: Task['status']; onSelect: (s: Task['status']) => void; onClose: () => void; position?: React.CSSProperties
   disabledStatuses?: Record<string, string>
 }) {
+  const { t } = useTranslation('smithyNext')
   const [search, setSearch] = useState('')
   const filtered = KANBAN_COLUMNS.filter(c => c.label.toLowerCase().includes(search.toLowerCase()))
 
   return (
     <DropdownWrapper onClose={onClose} style={{ position: 'absolute', ...position }}>
-      <SearchInput value={search} onChange={setSearch} placeholder="Change status..." />
+      <SearchInput value={search} onChange={setSearch} placeholder={t('propertyDropdowns.changeStatus')} />
       {filtered.map((col, i) => {
         const si = STATUS_ICONS[col.id] || STATUS_ICONS.todo
         const disabledReason = disabledStatuses?.[col.id]
@@ -171,7 +173,7 @@ export function StatusDropdown({ current, onSelect, onClose, position, disabledS
             }}>
               <span style={{ color: si.color }}>{si.icon}</span>
               <span style={{ flex: 1, color: 'var(--color-text-tertiary)' }}>{col.label}</span>
-              <span style={{ fontSize: 10, color: 'var(--color-warning)', fontWeight: 500 }}>Gated</span>
+              <span style={{ fontSize: 10, color: 'var(--color-warning)', fontWeight: 500 }}>{t('propertyDropdowns.gated')}</span>
             </div>
           )
         }
@@ -217,12 +219,13 @@ export function PriorityDropdown({ current, onSelect, onClose, position }: {
 export function AssigneeDropdown({ current, taskCounts, onSelect, onClose, position, appMode }: {
   current: string | undefined; taskCounts?: Record<string, number>; onSelect: (name: string | undefined) => void; onClose: () => void; position?: React.CSSProperties; appMode?: AppMode
 }) {
+  const { t } = useTranslation('smithyNext')
   const assignees = appMode ? getAssignees(appMode) : ASSIGNEES
   const isTeam = appMode === 'team'
   return (
     <DropdownWrapper onClose={onClose} style={{ position: 'absolute', ...position }}>
       <DropdownItem
-        label="No assignee"
+        label={t('propertyDropdowns.noAssignee')}
         icon={<User size={16} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />}
         isActive={!current}
         count={taskCounts?.['_none']}
@@ -259,12 +262,13 @@ export function AssigneeDropdown({ current, taskCounts, onSelect, onClose, posit
 export function LabelDropdown({ current, onToggle, onClose, position }: {
   current: string[]; onToggle: (label: string) => void; onClose: () => void; position?: React.CSSProperties
 }) {
+  const { t } = useTranslation('smithyNext')
   const [search, setSearch] = useState('')
   const filtered = LABELS.filter(l => l.name.toLowerCase().includes(search.toLowerCase()))
 
   return (
     <DropdownWrapper onClose={onClose} style={{ position: 'absolute', ...position }}>
-      <SearchInput value={search} onChange={setSearch} placeholder="Change or add labels..." />
+      <SearchInput value={search} onChange={setSearch} placeholder={t('propertyDropdowns.changeOrAddLabels')} />
       {filtered.map(l => (
         <button key={l.name} onClick={() => onToggle(l.name)} style={{
           display: 'flex', alignItems: 'center', gap: 8, width: '100%',
@@ -298,9 +302,10 @@ export function LabelDropdown({ current, onToggle, onClose, position }: {
 export function EstimateDropdown({ current, onSelect, onClose, position }: {
   current: number | undefined; onSelect: (n: number | undefined) => void; onClose: () => void; position?: React.CSSProperties
 }) {
+  const { t } = useTranslation('smithyNext')
   return (
     <DropdownWrapper onClose={onClose} style={{ position: 'absolute', ...position }}>
-      <div style={{ padding: '6px 10px', fontSize: 11, color: 'var(--color-text-tertiary)', fontWeight: 500, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Complexity</div>
+      <div style={{ padding: '6px 10px', fontSize: 11, color: 'var(--color-text-tertiary)', fontWeight: 500, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{t('propertyDropdowns.complexity')}</div>
       {COMPLEXITY_LEVELS.map(c => (
         <DropdownItem
           key={c.value}

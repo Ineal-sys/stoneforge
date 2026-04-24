@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Bot, GitBranch, SquareKanban, Clock, FileText, TestTube2, ArrowRight, ChevronDown, ChevronRight } from 'lucide-react'
 import type { MsgSessionCard } from './message-types'
+import { useTranslation } from '@/i18n'
 
 interface SessionSummaryCardProps {
   card: MsgSessionCard
@@ -15,12 +16,13 @@ const statusColors: Record<string, string> = {
 }
 
 const statusLabels: Record<string, string> = {
-  completed: 'completed a session',
-  error: 'session failed',
-  running: 'working on a session',
+  completed: 'messages.completedASession',
+  error: 'messages.sessionFailed',
+  running: 'messages.workingOnASession',
 }
 
 export function SessionSummaryCard({ card, onNavigateToSession, onNavigateToTask }: SessionSummaryCardProps) {
+  const { t } = useTranslation('smithyNext')
   const isError = card.status === 'error'
   const isRunning = card.status === 'running'
   const borderColor = statusColors[card.status] || statusColors.completed
@@ -49,7 +51,7 @@ export function SessionSummaryCard({ card, onNavigateToSession, onNavigateToTask
           {card.agentEntity.name}
         </span>
         <span style={{ color: 'var(--color-text-tertiary)' }}>
-          {statusLabels[card.status]}
+          {t(statusLabels[card.status])}
         </span>
         <span style={{ marginLeft: 'auto', color: 'var(--color-text-tertiary)', fontSize: 11 }}>
           {timeStr}
@@ -112,7 +114,7 @@ export function SessionSummaryCard({ card, onNavigateToSession, onNavigateToTask
             display: 'inline-flex', alignItems: 'center', gap: 3,
             fontSize: 11, color: 'var(--color-text-tertiary)',
           }}>
-            <FileText size={10} /> {card.filesChanged} file{card.filesChanged !== 1 ? 's' : ''}
+            <FileText size={10} /> {t('messages.fileCount', { count: card.filesChanged })}
           </span>
         )}
 
@@ -122,7 +124,7 @@ export function SessionSummaryCard({ card, onNavigateToSession, onNavigateToTask
             display: 'inline-flex', alignItems: 'center', gap: 3,
             fontSize: 11, color: 'var(--color-success)',
           }}>
-            <TestTube2 size={10} /> +{card.testsAdded} test{card.testsAdded !== 1 ? 's' : ''}
+            <TestTube2 size={10} /> {t('messages.testCount', { count: card.testsAdded })}
           </span>
         )}
       </div>
@@ -140,7 +142,7 @@ export function SessionSummaryCard({ card, onNavigateToSession, onNavigateToTask
         onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'}
         onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}
       >
-        {isRunning ? 'View live' : 'View session'} <ArrowRight size={11} />
+        {isRunning ? t('messages.viewLive') : t('messages.viewSession')} <ArrowRight size={11} />
       </button>
     </div>
   )
@@ -154,6 +156,7 @@ interface CollapsedSessionGroupProps {
 }
 
 export function CollapsedSessionGroup({ cards, onNavigateToSession, onNavigateToTask }: CollapsedSessionGroupProps) {
+  const { t } = useTranslation('smithyNext')
   const [expanded, setExpanded] = useState(false)
   const agent = cards[0].agentEntity
   const completed = cards.filter(c => c.status === 'completed').length
@@ -161,9 +164,9 @@ export function CollapsedSessionGroup({ cards, onNavigateToSession, onNavigateTo
   const running = cards.filter(c => c.status === 'running').length
 
   const parts: string[] = []
-  if (completed) parts.push(`${completed} completed`)
-  if (errored) parts.push(`${errored} error`)
-  if (running) parts.push(`${running} running`)
+  if (completed) parts.push(t('messages.completedCount', { count: completed }))
+  if (errored) parts.push(t('messages.errorCount', { count: errored }))
+  if (running) parts.push(t('messages.runningCount', { count: running }))
 
   const first = new Date(cards[0].timestamp)
   const last = new Date(cards[cards.length - 1].timestamp)
@@ -185,7 +188,7 @@ export function CollapsedSessionGroup({ cards, onNavigateToSession, onNavigateTo
         >
           <ChevronDown size={12} />
           <Bot size={12} style={{ color: '#a78bfa' }} />
-          <span>{agent.name} — {cards.length} sessions ({parts.join(', ')})</span>
+          <span>{t('messages.sessionsSummary', { agent: agent.name, count: cards.length, parts: parts.join(', ') })}</span>
           <span style={{ marginLeft: 'auto' }}>{timeRange}</span>
         </button>
         {cards.map(card => (

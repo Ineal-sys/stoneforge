@@ -4,6 +4,7 @@ import type { Session } from '../session-types'
 import { SessionChatView } from '../SessionChatView'
 import { SessionMessageInput } from '../SessionMessageInput'
 import type { NodePosition } from './canvas-layout'
+import { useTranslation } from '@/i18n'
 
 export interface NodeSize {
   width: number
@@ -64,6 +65,7 @@ function SessionNodeImpl({
   onExpand,
   onFitToViewport,
 }: SessionNodeProps) {
+  const { t } = useTranslation('smithyNext')
   const dragStartRef = useRef<{ clientX: number; clientY: number; originX: number; originY: number } | null>(null)
   const resizeStartRef = useRef<{ clientX: number; clientY: number; startW: number; startH: number } | null>(null)
   const [hovering, setHovering] = useState(false)
@@ -218,7 +220,7 @@ function SessionNodeImpl({
         </div>
         {isNeedsInput && (
           <span
-            title="Awaiting input"
+            title={t('sessions.awaitingInput')}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -238,7 +240,7 @@ function SessionNodeImpl({
         <button
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => { e.stopPropagation(); onFitToViewport() }}
-          title="Fit window to canvas"
+          title={t('sessions.fitWindowToCanvas')}
           style={{
             width: 20, height: 20,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -255,7 +257,7 @@ function SessionNodeImpl({
         <button
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => { e.stopPropagation(); onExpand() }}
-          title="Open in drawer"
+          title={t('sessions.openInDrawer')}
           style={{
             width: 20, height: 20,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -310,7 +312,7 @@ function SessionNodeImpl({
       {/* Resize handle (SE corner) */}
       <div
         onMouseDown={handleResizeMouseDown}
-        title="Drag to resize"
+        title={t('sessions.dragToResize')}
         style={{
           position: 'absolute',
           right: 0,

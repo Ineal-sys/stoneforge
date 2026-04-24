@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from '@/i18n'
 import {
   ArrowLeft, Pencil, Trash2,
   GitBranch, Container, Cloud, Bot, X, Monitor,
@@ -25,10 +26,10 @@ const modeIcons: Record<RuntimeMode, typeof GitBranch> = {
   sandbox: Cloud,
 }
 
-const modeCardConfig: { mode: RuntimeMode; icon: typeof GitBranch; label: string; description: string }[] = [
-  { mode: 'worktrees', icon: GitBranch, label: 'Worktree', description: 'Git worktrees on the host filesystem' },
-  { mode: 'docker', icon: Container, label: 'Docker', description: 'Docker containers on the host' },
-  { mode: 'sandbox', icon: Cloud, label: 'Sandbox', description: 'Ephemeral cloud environments, provisioned on demand' },
+const modeCardConfig: { mode: RuntimeMode; icon: typeof GitBranch; label: string; descriptionKey: string }[] = [
+  { mode: 'worktrees', icon: GitBranch, label: 'Worktree', descriptionKey: 'agents.runtimeDetail.worktreeDescription' },
+  { mode: 'docker', icon: Container, label: 'Docker', descriptionKey: 'agents.runtimeDetail.dockerDescription' },
+  { mode: 'sandbox', icon: Cloud, label: 'Sandbox', descriptionKey: 'agents.runtimeDetail.sandboxDescription' },
 ]
 
 const inputStyle: React.CSSProperties = {
@@ -50,6 +51,7 @@ const codeBlockStyle: React.CSSProperties = {
 }
 
 export function RuntimeDetailView({ runtime, hosts, isNew, onBack, onSave, onDelete }: RuntimeDetailViewProps) {
+  const { t } = useTranslation('smithyNext')
   const [editing, setEditing] = useState(!!isNew)
   const [draft, setDraft] = useState<Runtime>({ ...runtime })
 
@@ -76,16 +78,16 @@ export function RuntimeDetailView({ runtime, hosts, isNew, onBack, onSave, onDel
   }
 
   if (editing) {
-    return <EditMode draft={draft} hosts={hosts} updateDraft={updateDraft} onCancel={handleCancel} onSave={handleSave} isNew={!!isNew} />
+    return <EditMode draft={draft} hosts={hosts} updateDraft={updateDraft} onCancel={handleCancel} onSave={handleSave} isNew={!!isNew} t={t} />
   }
 
-  return <ViewMode runtime={runtime} hosts={hosts} onBack={onBack} onEdit={handleStartEdit} onDelete={onDelete} />
+  return <ViewMode runtime={runtime} hosts={hosts} onBack={onBack} onEdit={handleStartEdit} onDelete={onDelete} t={t} />
 }
 
 // ── View Mode ──
 
-function ViewMode({ runtime: rt, hosts, onBack, onEdit, onDelete }: {
-  runtime: Runtime; hosts: Host[]; onBack: () => void; onEdit: () => void; onDelete?: (id: string) => void
+function ViewMode({ runtime: rt, hosts, onBack, onEdit, onDelete, t }: {
+  runtime: Runtime; hosts: Host[]; onBack: () => void; onEdit: () => void; onDelete?: (id: string) => void; t: (key: string, options?: Record<string, unknown>) => string
 }) {
   const dotColor = runtimeStatusColors[rt.status] || 'var(--color-text-tertiary)'
   const statusLabel = rt.status.charAt(0).toUpperCase() + rt.status.slice(1)
@@ -139,7 +141,7 @@ function ViewMode({ runtime: rt, hosts, onBack, onEdit, onDelete }: {
           background: 'transparent', color: 'var(--color-text-secondary)',
           cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5,
         }}>
-          <Pencil size={12} strokeWidth={1.5} /> Edit
+          <Pencil size={12} strokeWidth={1.5} /> {t('agents.runtimeDetail.edit')}
         </button>
 
         <button onClick={() => onDelete?.(rt.id)} style={{
@@ -148,7 +150,7 @@ function ViewMode({ runtime: rt, hosts, onBack, onEdit, onDelete }: {
           background: 'transparent', color: 'var(--color-danger)',
           cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5,
         }}>
-          <Trash2 size={12} strokeWidth={1.5} /> Delete
+          <Trash2 size={12} strokeWidth={1.5} /> {t('agents.runtimeDetail.delete')}
         </button>
       </div>
 
@@ -157,7 +159,7 @@ function ViewMode({ runtime: rt, hosts, onBack, onEdit, onDelete }: {
         {/* Host */}
         {host && (
           <div>
-            <div style={labelStyle}>Host</div>
+            <div style={labelStyle}>{t('agents.runtimeDetail.host')}</div>
             <div style={{
               display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
               background: 'var(--color-surface)', borderRadius: 'var(--radius-sm)',
@@ -174,7 +176,7 @@ function ViewMode({ runtime: rt, hosts, onBack, onEdit, onDelete }: {
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 2 }}>
                   {host.managed
-                    ? [host.region, host.activeSandboxCount !== undefined ? `${host.activeSandboxCount} active` : null].filter(Boolean).join(' · ')
+                    ? [host.region, host.activeSandboxCount !== undefined ? t('agents.runtimeDetail.activeSandboxes', { count: host.activeSandboxCount }) : null].filter(Boolean).join(' · ')
                     : [host.os, host.arch].filter(Boolean).join(' · ')
                   }
                 </div>
@@ -186,15 +188,15 @@ function ViewMode({ runtime: rt, hosts, onBack, onEdit, onDelete }: {
         {/* Mode-specific config */}
         <div>
           <div style={labelStyle}>
-            {rt.mode === 'worktrees' ? 'Worktree Path'
-              : rt.mode === 'docker' ? 'Docker Image'
-              : 'Sandbox Configuration'}
+            {rt.mode === 'worktrees' ? t('agents.runtimeDetail.worktreePath')
+              : rt.mode === 'docker' ? t('agents.runtimeDetail.dockerImage')
+              : t('agents.runtimeDetail.sandboxConfiguration')}
           </div>
           {rt.mode === 'sandbox' ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {rt.sandboxTier && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', width: 40 }}>Tier</span>
+                  <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', width: 40 }}>{t('agents.runtimeDetail.tier')}</span>
                   <span style={{
                     fontSize: 12, fontWeight: 500, padding: '3px 10px',
                     borderRadius: 'var(--radius-sm)',
@@ -206,12 +208,12 @@ function ViewMode({ runtime: rt, hosts, onBack, onEdit, onDelete }: {
               )}
               {rt.sandboxBaseImage && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', width: 40 }}>Image</span>
+                  <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', width: 40 }}>{t('agents.runtimeDetail.image')}</span>
                   <span style={codeBlockStyle}>{rt.sandboxBaseImage}</span>
                 </div>
               )}
               {!rt.sandboxTier && !rt.sandboxBaseImage && (
-                <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>Default configuration</div>
+                <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>{t('agents.runtimeDetail.defaultConfiguration')}</div>
               )}
             </div>
           ) : (
@@ -223,15 +225,15 @@ function ViewMode({ runtime: rt, hosts, onBack, onEdit, onDelete }: {
 
         {/* Status grid */}
         <div>
-          <div style={labelStyle}>Status</div>
+          <div style={labelStyle}>{t('agents.runtimeDetail.status')}</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <StatusItem label="Assigned Agents">
+            <StatusItem label={t('agents.runtimeDetail.assignedAgents')}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Bot size={14} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />
                 <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text)' }}>{rt.assignedAgentCount}</span>
               </div>
             </StatusItem>
-            <StatusItem label="Last Health Check">
+            <StatusItem label={t('agents.runtimeDetail.lastHealthCheck')}>
               <span style={{ fontSize: 13, color: 'var(--color-text)' }}>{rt.lastHealthCheck || '—'}</span>
             </StatusItem>
           </div>
@@ -272,10 +274,10 @@ const providerOptions: { id: string; name: string; description: string }[] = [
   { id: 'daytona', name: 'Daytona', description: 'Standardized dev environments' },
 ]
 
-function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew }: {
+function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew, t }: {
   draft: Runtime; hosts: Host[]
   updateDraft: (partial: Partial<Runtime>) => void
-  onCancel: () => void; onSave: () => void; isNew: boolean
+  onCancel: () => void; onSave: () => void; isNew: boolean; t: (key: string, options?: Record<string, unknown>) => string
 }) {
   const [showAddHost, setShowAddHost] = useState(false)
   const [copiedCommand, setCopiedCommand] = useState(false)
@@ -336,7 +338,7 @@ function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew }: {
           <ArrowLeft size={14} strokeWidth={1.5} />
         </button>
         <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text)', flex: 1 }}>
-          {isNew ? (draft.name || 'New Runtime') : (draft.name || 'Edit Runtime')}
+          {isNew ? (draft.name || t('agents.runtimeDetail.newRuntime')) : (draft.name || t('agents.runtimeDetail.editRuntime'))}
         </span>
         <button onClick={onCancel} style={{
           height: 26, fontSize: 12, padding: '0 10px',
@@ -344,7 +346,7 @@ function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew }: {
           background: 'transparent', color: 'var(--color-text-secondary)',
           cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5,
         }}>
-          <X size={12} strokeWidth={1.5} /> Cancel
+          <X size={12} strokeWidth={1.5} /> {t('agents.runtimeDetail.cancel')}
         </button>
         <button onClick={onSave} disabled={!draft.name.trim() || !hostValidForMode} style={{
           height: 26, fontSize: 12, fontWeight: 500, padding: '0 12px',
@@ -354,7 +356,7 @@ function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew }: {
           cursor: (draft.name.trim() && hostValidForMode) ? 'pointer' : 'not-allowed',
           opacity: (draft.name.trim() && hostValidForMode) ? 1 : 0.6,
         }}>
-          {isNew ? 'Create' : 'Save'}
+          {isNew ? t('agents.runtimeDetail.create') : t('agents.runtimeDetail.save')}
         </button>
       </div>
 
@@ -362,21 +364,21 @@ function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew }: {
       <div style={{ padding: 16, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* Name */}
         <div>
-          <div style={labelStyle}>Name</div>
+          <div style={labelStyle}>{t('agents.runtimeDetail.nameLabel')}</div>
           <input
             autoFocus
             value={draft.name}
             onChange={e => updateDraft({ name: e.target.value })}
-            placeholder="e.g. adam-macbook, cloud-sandbox"
+            placeholder={t('agents.runtimeDetail.namePlaceholder')}
             style={inputStyle}
           />
         </div>
 
         {/* Step 1: Mode selector */}
         <div>
-          <div style={labelStyle}>Execution Mode</div>
+          <div style={labelStyle}>{t('agents.runtimeDetail.executionMode')}</div>
           <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 8px' }}>
-            Choose how agents run in this runtime.
+            {t('agents.runtimeDetail.executionModeDescription')}
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
             {modeCardConfig.map(card => {
@@ -408,7 +410,7 @@ function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew }: {
                     {card.label}
                   </div>
                   <div style={{ fontSize: 10, color: 'var(--color-text-tertiary)', marginTop: 2 }}>
-                    {card.description}
+                    {t(card.descriptionKey)}
                   </div>
                 </button>
               )
@@ -418,14 +420,14 @@ function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew }: {
 
         {/* Step 2: Host selector (filtered by mode) */}
         <div>
-          <div style={labelStyle}>Host</div>
+          <div style={labelStyle}>{t('agents.runtimeDetail.host')}</div>
           <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 8px' }}>
             {draft.mode === 'sandbox'
-              ? 'Select the cloud provider for this sandbox.'
+              ? t('editor.selectCloudProvider')
               : draft.mode === 'docker'
-                ? 'Select the machine or cloud provider to run Docker containers.'
-                : 'Select the machine to run worktrees on.'}
-            {!isNew && <span style={{ fontStyle: 'italic' }}> Host cannot be changed after creation.</span>}
+                ? t('editor.selectDockerMachine')
+                : t('editor.selectWorktreeMachine')}
+            {!isNew && <span style={{ fontStyle: 'italic' }}> {t('agents.runtimeDetail.hostCannotBeChanged')}</span>}
           </p>
 
           {/* Host cards */}
@@ -462,7 +464,7 @@ function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew }: {
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 2 }}>
                       {host.managed
-                        ? [host.region, host.activeSandboxCount !== undefined ? `${host.activeSandboxCount} active sandboxes` : null].filter(Boolean).join(' · ')
+                        ? [host.region, host.activeSandboxCount !== undefined ? t('agents.runtimeDetail.activeSandboxes', { count: host.activeSandboxCount }) : null].filter(Boolean).join(' · ')
                         : [host.os, host.arch, ...(host.capabilities || [])].filter(Boolean).join(' · ')
                       }
                     </div>
@@ -492,9 +494,9 @@ function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew }: {
                   }}
                 >
                   <Plus size={14} strokeWidth={2} style={{ flexShrink: 0 }} />
-                  {draft.mode === 'worktrees' ? 'Register a host' :
-                    draft.mode === 'sandbox' ? 'Connect a provider' :
-                      'Register a host or connect a provider'}
+                  {draft.mode === 'worktrees' ? t('agents.runtimeDetail.registerHost') :
+                    draft.mode === 'sandbox' ? t('agents.runtimeDetail.connectProvider') :
+                      `${t('agents.runtimeDetail.registerHost')} / ${t('agents.runtimeDetail.connectProvider')}`}
                   <div style={{ flex: 1 }} />
                   <ChevronDown size={12} strokeWidth={1.5} style={{ transform: showAddHost ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
                 </button>
@@ -511,10 +513,10 @@ function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew }: {
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                           <Terminal size={13} strokeWidth={1.5} style={{ color: 'var(--color-text-secondary)' }} />
-                          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text)' }}>Register a host</span>
+                          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text)' }}>{t('agents.runtimeDetail.registerHost')}</span>
                         </div>
                         <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 8px', lineHeight: 1.4 }}>
-                          Run this command on the machine you want to connect. The host will appear here automatically.
+                          {t('editor.runCommandHint')}
                         </p>
                         <div style={{
                           display: 'flex', alignItems: 'center', gap: 8,
@@ -541,7 +543,7 @@ function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew }: {
                     {draft.mode === 'docker' && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <div style={{ flex: 1, height: 1, background: 'var(--color-border-subtle)' }} />
-                        <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>or</span>
+                        <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>{t('agents.runtimeDetail.or')}</span>
                         <div style={{ flex: 1, height: 1, background: 'var(--color-border-subtle)' }} />
                       </div>
                     )}
@@ -551,7 +553,7 @@ function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew }: {
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                           <Cloud size={13} strokeWidth={1.5} style={{ color: '#a855f7' }} />
-                          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text)' }}>Connect a provider</span>
+                          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text)' }}>{t('agents.runtimeDetail.connectProvider')}</span>
                         </div>
 
                         {/* Provider picker */}
@@ -588,7 +590,7 @@ function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew }: {
                         {addProviderSelected && (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                             <div>
-                              <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', marginBottom: 4 }}>Region</div>
+                              <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', marginBottom: 4 }}>{t('editor.region')}</div>
                               <input
                                 value={addProviderRegion}
                                 onChange={e => setAddProviderRegion(e.target.value)}
@@ -597,7 +599,7 @@ function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew }: {
                               />
                             </div>
                             <div>
-                              <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', marginBottom: 4 }}>API Key</div>
+                              <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', marginBottom: 4 }}>{t('editor.apiKey')}</div>
                               <input
                                 type="password"
                                 value={addProviderKey}
@@ -618,7 +620,7 @@ function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew }: {
                                 opacity: addProviderKey.trim() ? 1 : 0.6,
                               }}
                             >
-                              <Plus size={11} strokeWidth={2} /> Connect
+                              <Plus size={11} strokeWidth={2} /> {t('editor.connect')}
                             </button>
                           </div>
                         )}
@@ -635,7 +637,7 @@ function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew }: {
         <div>
           {draft.mode === 'worktrees' && (
             <>
-              <div style={labelStyle}>Worktree Path</div>
+              <div style={labelStyle}>{t('agents.runtimeDetail.worktreePathLabel')}</div>
               <input
                 value={draft.worktreePath || ''}
                 onChange={e => updateDraft({ worktreePath: e.target.value })}
@@ -646,7 +648,7 @@ function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew }: {
           )}
           {draft.mode === 'docker' && (
             <>
-              <div style={labelStyle}>Docker Image</div>
+              <div style={labelStyle}>{t('agents.runtimeDetail.dockerImageLabel')}</div>
               <input
                 value={draft.dockerImage || ''}
                 onChange={e => updateDraft({ dockerImage: e.target.value })}
@@ -657,9 +659,9 @@ function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew }: {
           )}
           {draft.mode === 'sandbox' && (
             <>
-              <div style={labelStyle}>Sandbox Tier</div>
+              <div style={labelStyle}>{t('agents.runtimeDetail.sandboxTier')}</div>
               <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 8px' }}>
-                Resource allocation for each sandbox instance.
+                {t('agents.runtimeDetail.sandboxTierDescription')}
               </p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
                 {(['small', 'medium', 'large', 'gpu'] as SandboxTier[]).map(tier => {
@@ -686,11 +688,11 @@ function EditMode({ draft, hosts, updateDraft, onCancel, onSave, isNew }: {
                 })}
               </div>
               <div style={{ marginTop: 12 }}>
-                <div style={labelStyle}>Base Image (optional)</div>
+                <div style={labelStyle}>{t('agents.runtimeDetail.baseImageOptional')}</div>
                 <input
                   value={draft.sandboxBaseImage || ''}
                   onChange={e => updateDraft({ sandboxBaseImage: e.target.value })}
-                  placeholder="Default sandbox image"
+                  placeholder={t('agents.runtimeDetail.baseImagePlaceholder')}
                   style={{ ...inputStyle, fontFamily: 'var(--font-mono)' }}
                 />
               </div>

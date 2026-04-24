@@ -1,4 +1,5 @@
 import { ChevronRight, Bot, GitBranch, AlignLeft, Eye } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import type { EditorFileContent, AgentFileChange } from './editor-mock-data'
 
 interface Props {
@@ -29,6 +30,7 @@ export function EditorToolbar({
   outlineActive, onToggleOutline,
   onNavigateToFolder,
 }: Props) {
+  const { t } = useTranslation('smithyNext')
   const segments = currentPath ? currentPath.split('/') : []
 
   return (
@@ -136,7 +138,7 @@ export function EditorToolbar({
         <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <button
             onClick={onToggleBlame}
-            title="Toggle blame view"
+            title={t('editor.toggleBlameView')}
             style={{
               height: 24, padding: '0 6px',
               display: 'flex', alignItems: 'center', gap: 3,
@@ -150,11 +152,11 @@ export function EditorToolbar({
             onMouseLeave={e => { if (!blameActive) e.currentTarget.style.background = 'none' }}
           >
             <Eye size={12} strokeWidth={1.5} />
-            Blame
+            {t('editor.blame')}
           </button>
           <button
             onClick={onToggleOutline}
-            title="Toggle symbol outline"
+            title={t('editor.toggleSymbolOutline')}
             style={{
               height: 24, padding: '0 6px',
               display: 'flex', alignItems: 'center', gap: 3,
@@ -168,7 +170,7 @@ export function EditorToolbar({
             onMouseLeave={e => { if (!outlineActive) e.currentTarget.style.background = 'none' }}
           >
             <AlignLeft size={12} strokeWidth={1.5} />
-            Outline
+            {t('editor.outlineToggle')}
           </button>
         </div>
       )}
@@ -188,7 +190,7 @@ export function EditorToolbar({
             }}>
               {fileInfo.language}
             </span>
-            <span>{fileInfo.lines} lines</span>
+            <span>{t('editor.linesCount', { count: fileInfo.lines })}</span>
             <span>{fileInfo.size}</span>
           </>
         )}

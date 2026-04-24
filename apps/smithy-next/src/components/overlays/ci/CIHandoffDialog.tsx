@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X, Wrench, Bot, Send } from 'lucide-react'
 import type { CIHandoffContext } from './ci-types'
+import { useTranslation } from '@/i18n'
 
 interface CIHandoffDialogProps {
   context: CIHandoffContext
@@ -15,7 +16,8 @@ const AGENTS = [
 ]
 
 export function CIHandoffDialog({ context, onClose, onSend }: CIHandoffDialogProps) {
-  const defaultMessage = buildDefaultMessage(context)
+  const { t } = useTranslation('smithyNext')
+  const defaultMessage = buildDefaultMessage(context, t)
   const [message, setMessage] = useState(defaultMessage)
   const [selectedAgent, setSelectedAgent] = useState(AGENTS[0].name)
 
@@ -36,7 +38,7 @@ export function CIHandoffDialog({ context, onClose, onSend }: CIHandoffDialogPro
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', borderBottom: '1px solid var(--color-border-subtle)' }}>
           <Wrench size={14} strokeWidth={1.5} style={{ color: 'var(--color-danger)' }} />
           <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>
-            Handoff to Fix
+            {t('ci.handoffToFixTitle')}
           </span>
           <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-mono)' }}>
             {context.jobName}
@@ -51,7 +53,7 @@ export function CIHandoffDialog({ context, onClose, onSend }: CIHandoffDialogPro
           {/* Agent selector */}
           <div style={{ marginBottom: 12 }}>
             <label style={{ display: 'block', fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 4 }}>
-              Assign to
+              {t('ci.assignTo')}
             </label>
             <div style={{ display: 'flex', gap: 6 }}>
               {AGENTS.map(agent => (
@@ -74,7 +76,7 @@ export function CIHandoffDialog({ context, onClose, onSend }: CIHandoffDialogPro
           {/* Message */}
           <div>
             <label style={{ display: 'block', fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 4 }}>
-              Handoff message
+              {t('ci.handoffMessage')}
             </label>
             <textarea
               value={message}
@@ -96,7 +98,7 @@ export function CIHandoffDialog({ context, onClose, onSend }: CIHandoffDialogPro
             height: 32, padding: '0 14px', border: 'none', borderRadius: 'var(--radius-sm)',
             background: 'var(--color-surface)', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
           }}>
-            Cancel
+            {t('ci.cancel')}
           </button>
           <button
             onClick={() => { onSend(message, selectedAgent); onClose() }}
@@ -109,7 +111,7 @@ export function CIHandoffDialog({ context, onClose, onSend }: CIHandoffDialogPro
               cursor: message.trim() ? 'pointer' : 'default', fontSize: 13, fontWeight: 500,
             }}
           >
-            <Send size={12} strokeWidth={1.5} /> Send Handoff
+            <Send size={12} strokeWidth={1.5} /> {t('ci.sendHandoff')}
           </button>
         </div>
       </div>
@@ -117,19 +119,19 @@ export function CIHandoffDialog({ context, onClose, onSend }: CIHandoffDialogPro
   )
 }
 
-function buildDefaultMessage(ctx: CIHandoffContext): string {
+function buildDefaultMessage(ctx: CIHandoffContext, t: (key: string, options?: Record<string, unknown>) => string): string {
   const lines = [
-    `CI job "${ctx.jobName}" failed.`,
+    t('ci.jobFailedMessage', { jobName: ctx.jobName }),
     '',
   ]
-  if (ctx.failedStep) lines.push(`Failed step: ${ctx.failedStep}`)
-  if (ctx.errorSummary) lines.push(`Error: ${ctx.errorSummary}`)
+  if (ctx.failedStep) lines.push(t('ci.failedStep', { stepName: ctx.failedStep }))
+  if (ctx.errorSummary) lines.push(t('ci.errorLabel', { error: ctx.errorSummary }))
   if (ctx.logExcerpt.length > 0) {
-    lines.push('', 'Log excerpt:', ...ctx.logExcerpt.map(l => `  ${l}`))
+    lines.push('', t('ci.logExcerpt'), ...ctx.logExcerpt.map(l => `  ${l}`))
   }
   if (ctx.relatedFiles.length > 0) {
-    lines.push('', 'Related files:', ...ctx.relatedFiles.map(f => `  ${f}`))
+    lines.push('', t('ci.relatedFiles'), ...ctx.relatedFiles.map(f => `  ${f}`))
   }
-  lines.push('', 'Please investigate and fix this failure.')
+  lines.push('', t('ci.pleaseInvestigateAndFix'))
   return lines.join('\n')
 }

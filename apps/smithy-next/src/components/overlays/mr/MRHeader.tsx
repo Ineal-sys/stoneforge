@@ -1,5 +1,6 @@
 import { ArrowLeft, GitMerge, Bot, ExternalLink, File, MessageSquare, GitCommit, ShieldCheck, Eye, Github } from 'lucide-react'
 import type { MergeRequestExtended, MRDetailTab, MRTimelineEvent, MRCommit, MRCheck } from './mr-types'
+import { useTranslation } from '@/i18n'
 
 interface MRHeaderProps {
   mr: MergeRequestExtended
@@ -17,19 +18,20 @@ interface MRHeaderProps {
 }
 
 export function MRHeader({ mr, activeTab, onTabChange, onBack, onNavigateToTask, onNavigateToSession, onNavigateToAgents, onNavigateToPreview, timeline, commits, checks, diffFileCount }: MRHeaderProps) {
+  const { t } = useTranslation('smithyNext')
   const statusColor = mr.status === 'open'
     ? (mr.isDraft ? 'var(--color-warning)' : 'var(--color-success)')
     : mr.status === 'merged' ? 'var(--color-primary)' : 'var(--color-danger)'
   const statusBg = mr.status === 'open'
     ? (mr.isDraft ? 'rgba(245,158,11,0.1)' : 'var(--color-success-subtle)')
     : mr.status === 'merged' ? 'var(--color-primary-subtle)' : 'rgba(239,68,68,0.1)'
-  const statusLabel = mr.isDraft ? 'Draft' : mr.status === 'open' ? 'Open' : mr.status === 'merged' ? 'Merged' : 'Closed'
+  const statusLabel = mr.isDraft ? t('mergeRequest.draft') : mr.status === 'open' ? t('mergeRequest.open') : mr.status === 'merged' ? t('mergeRequest.merged') : t('mergeRequest.closed')
 
   const tabs: { key: MRDetailTab; label: string; icon: typeof File; count: number }[] = [
-    { key: 'conversation', label: 'Conversation', icon: MessageSquare, count: timeline.length },
-    { key: 'commits', label: 'Commits', icon: GitCommit, count: commits.length },
-    { key: 'checks', label: 'Checks', icon: ShieldCheck, count: checks.length },
-    { key: 'files', label: 'Files Changed', icon: File, count: diffFileCount },
+    { key: 'conversation', label: t('mergeRequest.conversation'), icon: MessageSquare, count: timeline.length },
+    { key: 'commits', label: t('mergeRequest.commits'), icon: GitCommit, count: commits.length },
+    { key: 'checks', label: t('mergeRequest.checks'), icon: ShieldCheck, count: checks.length },
+    { key: 'files', label: t('mergeRequest.filesChanged'), icon: File, count: diffFileCount },
   ]
 
   return (
@@ -88,7 +90,7 @@ export function MRHeader({ mr, activeTab, onTabChange, onBack, onNavigateToTask,
             onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-surface)'; e.currentTarget.style.color = 'var(--color-text-secondary)' }}
           >
             <Eye size={12} strokeWidth={1.5} />
-            <span className="mr-header-links">Preview</span>
+            <span className="mr-header-links">{t('mergeRequest.preview')}</span>
           </button>
         )}
 
@@ -118,10 +120,7 @@ export function MRHeader({ mr, activeTab, onTabChange, onBack, onNavigateToTask,
       {/* Meta row */}
       <div className="mr-header-meta" style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 12, color: 'var(--color-text-tertiary)', flexWrap: 'wrap', marginBottom: 14 }}>
         <span>
-          {mr.author} wants to merge{' '}
-          <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-secondary)', fontSize: 11 }}>{mr.branch}</span>
-          {' '}into{' '}
-          <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-secondary)', fontSize: 11 }}>{mr.targetBranch}</span>
+          {t('mergeRequest.wantsToMergeInto', { author: mr.author, branch: mr.branch, target: mr.targetBranch })}
         </span>
         {mr.additions + mr.deletions > 0 && (
           <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -129,7 +128,7 @@ export function MRHeader({ mr, activeTab, onTabChange, onBack, onNavigateToTask,
             <span style={{ color: 'var(--color-danger)' }}>-{mr.deletions}</span>
           </span>
         )}
-        {mr.filesChanged > 0 && <span>{mr.filesChanged} files</span>}
+        {mr.filesChanged > 0 && <span>{t('mergeRequest.files', { count: mr.filesChanged })}</span>}
         <span>{mr.createdAt}</span>
       </div>
 

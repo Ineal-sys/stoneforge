@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { LayoutGrid, AlertCircle, Users, Check, ChevronDown } from 'lucide-react'
 import type { LayoutMode } from './canvas-layout'
+import { useTranslation } from '@/i18n'
 
-export const LAYOUT_OPTIONS: Array<{ value: LayoutMode; label: string; description: string; Icon: typeof Users }> = [
-  { value: 'cluster', label: 'Cluster by director', description: 'Group sessions by their director', Icon: Users },
-  { value: 'grid', label: 'Grid', description: 'Uniform 3-column grid', Icon: LayoutGrid },
-  { value: 'status-stack', label: 'Stack by status', description: 'Triage columns: input needed · error · active', Icon: AlertCircle },
+export const LAYOUT_OPTIONS: Array<{ value: LayoutMode; labelKey: string; descriptionKey: string; Icon: typeof Users }> = [
+  { value: 'cluster', labelKey: 'sessions.clusterByDirector', descriptionKey: 'sessions.clusterDescription', Icon: Users },
+  { value: 'grid', labelKey: 'sessions.grid', descriptionKey: 'sessions.gridDescription', Icon: LayoutGrid },
+  { value: 'status-stack', labelKey: 'sessions.stackByStatus', descriptionKey: 'sessions.stackDescription', Icon: AlertCircle },
 ]
 
 interface CanvasLayoutPickerProps {
@@ -17,6 +18,7 @@ interface CanvasLayoutPickerProps {
 }
 
 export function CanvasLayoutPicker({ mode, onChange, onReapply, compact }: CanvasLayoutPickerProps) {
+  const { t } = useTranslation('smithyNext')
   const [open, setOpen] = useState(false)
   const current = LAYOUT_OPTIONS.find(o => o.value === mode) ?? LAYOUT_OPTIONS[0]
   const CurrentIcon = current.Icon
@@ -25,7 +27,7 @@ export function CanvasLayoutPicker({ mode, onChange, onReapply, compact }: Canva
     <div style={{ position: 'relative' }}>
       <button
         onClick={() => setOpen(o => !o)}
-        title={`Layout: ${current.label}`}
+        title={`Layout: ${t(current.labelKey)}`}
         style={
           compact
             ? {
@@ -56,7 +58,7 @@ export function CanvasLayoutPicker({ mode, onChange, onReapply, compact }: Canva
         onMouseLeave={(e) => { if (!open && !compact) e.currentTarget.style.background = 'var(--color-surface)' }}
       >
         <CurrentIcon size={compact ? 12 : 13} strokeWidth={1.6} />
-        {!compact && <>{current.label}<ChevronDown size={11} strokeWidth={1.6} style={{ opacity: 0.7 }} /></>}
+        {!compact && <>{t(current.labelKey)}<ChevronDown size={11} strokeWidth={1.6} style={{ opacity: 0.7 }} /></>}
       </button>
       {open && (
         <>
@@ -77,7 +79,7 @@ export function CanvasLayoutPicker({ mode, onChange, onReapply, compact }: Canva
             }}
           >
             <div style={{ padding: '6px 10px 4px', fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>
-              Auto-layout
+              {t('sessions.autoLayout')}
             </div>
             {LAYOUT_OPTIONS.map(opt => {
               const OptIcon = opt.Icon
@@ -104,8 +106,8 @@ export function CanvasLayoutPicker({ mode, onChange, onReapply, compact }: Canva
                 >
                   <OptIcon size={13} strokeWidth={1.6} style={{ color: active ? 'var(--color-text-accent)' : 'var(--color-text-secondary)', marginTop: 1, flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12, fontWeight: 500 }}>{opt.label}</div>
-                    <div style={{ fontSize: 10.5, color: 'var(--color-text-tertiary)' }}>{opt.description}</div>
+                    <div style={{ fontSize: 12, fontWeight: 500 }}>{t(opt.labelKey)}</div>
+                    <div style={{ fontSize: 10.5, color: 'var(--color-text-tertiary)' }}>{t(opt.descriptionKey)}</div>
                   </div>
                   {active && <Check size={12} strokeWidth={2} style={{ color: 'var(--color-text-accent)', marginTop: 2, flexShrink: 0 }} />}
                 </button>
@@ -129,7 +131,7 @@ export function CanvasLayoutPicker({ mode, onChange, onReapply, compact }: Canva
               onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-surface-hover)')}
               onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
-              Re-apply current layout
+              {t('sessions.reapplyCurrentLayout')}
             </button>
           </div>
         </>

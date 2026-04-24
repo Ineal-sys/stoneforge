@@ -1,3 +1,4 @@
+import { useTranslation } from '@/i18n'
 import type { EditorFileContent } from './editor-mock-data'
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export function EditorStatusBar({ fileInfo, cursorLine, cursorCol, isFolder, folderFileCount, branch }: Props) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div style={{
       height: 24, minHeight: 24,
@@ -23,9 +25,9 @@ export function EditorStatusBar({ fileInfo, cursorLine, cursorCol, isFolder, fol
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         {isFolder ? (
-          <span>{folderFileCount ?? 0} items</span>
+          <span>{t('editor.items', { count: folderFileCount ?? 0 })}</span>
         ) : fileInfo ? (
-          <span>Ln {cursorLine}, Col {cursorCol}</span>
+          <span>{t('editor.ln', { line: cursorLine, col: cursorCol })}</span>
         ) : null}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

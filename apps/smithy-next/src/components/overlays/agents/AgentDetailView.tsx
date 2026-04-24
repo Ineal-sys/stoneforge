@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
+import { useTranslation } from '@/i18n'
 import { ArrowLeft, Bot, Play, Square, MoreHorizontal, Cpu, GitBranch, Container, Box } from 'lucide-react'
 import type { AgentExtended } from './agent-types'
 import { mockSessions } from '../../../mock-data'
@@ -37,6 +38,7 @@ const statusColor: Record<string, string> = {
 }
 
 export function AgentDetailView({ agent, onBack, initialTab, onTabChange, onNavigateToTask, onNavigateToSession, onDuplicateAgent, onCreateSession, onNavigateToRuntimes, onToggleEnabled }: AgentDetailViewProps) {
+  const { t } = useTranslation('smithyNext')
   const [activeTab, setActiveTab] = useState<AgentDetailTab>(initialTab || 'overview')
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -99,7 +101,7 @@ export function AgentDetailView({ agent, onBack, initialTab, onTabChange, onNavi
             {onToggleEnabled && (
               <button
                 onClick={onToggleEnabled}
-                title={agent.enabled ? 'Disable agent' : 'Enable agent'}
+                title={agent.enabled ? t('agents.detail.disableAgent') : t('agents.detail.enableAgent')}
                 style={{
                   width: 32, height: 18, borderRadius: 9, border: 'none', cursor: 'pointer', flexShrink: 0,
                   background: agent.enabled ? 'var(--color-success)' : 'var(--color-surface-active)',
@@ -120,7 +122,7 @@ export function AgentDetailView({ agent, onBack, initialTab, onTabChange, onNavi
                 background: 'var(--color-surface)', border: 'none', borderRadius: 'var(--radius-sm)',
                 color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
               }}>
-                <Play size={11} strokeWidth={2} /> New Session
+                <Play size={11} strokeWidth={2} /> {t('agents.detail.newSession')}
               </button>
             )}
             {agent.status === 'running' ? (
@@ -129,7 +131,7 @@ export function AgentDetailView({ agent, onBack, initialTab, onTabChange, onNavi
                 background: 'var(--color-surface)', border: 'none', borderRadius: 'var(--radius-sm)',
                 color: 'var(--color-danger)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
               }}>
-                <Square size={11} strokeWidth={1.5} /> Stop
+                <Square size={11} strokeWidth={1.5} /> {t('agents.detail.stop')}
               </button>
             ) : (
               <button style={{
@@ -137,7 +139,7 @@ export function AgentDetailView({ agent, onBack, initialTab, onTabChange, onNavi
                 background: 'var(--color-primary)', border: 'none', borderRadius: 'var(--radius-sm)',
                 color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
               }}>
-                <Play size={11} strokeWidth={2} /> Start
+                <Play size={11} strokeWidth={2} /> {t('agents.detail.start')}
               </button>
             )}
 
@@ -159,9 +161,9 @@ export function AgentDetailView({ agent, onBack, initialTab, onTabChange, onNavi
                   width: 160, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)',
                   borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-float)', padding: 4,
                 }}>
-                  <MenuItem label="Duplicate Agent" onClick={() => { setMenuOpen(false); onDuplicateAgent?.(agent) }} />
+                  <MenuItem label={t('agents.detail.duplicateAgent')} onClick={() => { setMenuOpen(false); onDuplicateAgent?.(agent) }} />
                   <div style={{ height: 1, background: 'var(--color-border-subtle)', margin: '4px 0' }} />
-                  <MenuItem label="Delete" danger onClick={() => setMenuOpen(false)} />
+                  <MenuItem label={t('agents.detail.delete')} danger onClick={() => setMenuOpen(false)} />
                 </div>
               )}
             </div>
@@ -186,10 +188,10 @@ export function AgentDetailView({ agent, onBack, initialTab, onTabChange, onNavi
         {/* Tabs */}
         <div style={{ display: 'flex', gap: 0 }}>
           {([
-            { key: 'overview' as const, label: 'Overview' },
-            { key: 'sessions' as const, label: `Sessions (${agentSessions.length})` },
-            { key: 'tasks' as const, label: `Tasks (${totalTasks})` },
-            { key: 'settings' as const, label: 'Settings' },
+            { key: 'overview' as const, label: t('agents.detail.overviewTab') },
+            { key: 'sessions' as const, label: `${t('agents.detail.sessionsTab')} (${agentSessions.length})` },
+            { key: 'tasks' as const, label: `${t('agents.detail.tasksTab')} (${totalTasks})` },
+            { key: 'settings' as const, label: t('agents.detail.settingsTab') },
           ]).map(tab => (
             <button
               key={tab.key}

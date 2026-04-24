@@ -1,4 +1,5 @@
 import { MousePointer2, Pencil, Square, ArrowUpRight, MessageCircle } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import { Tooltip } from '../../Tooltip'
 import type { DesignAnnotationTool } from '../../../mock-data'
 
@@ -7,15 +8,16 @@ interface DesignToolbarProps {
   onToolChange: (tool: DesignAnnotationTool) => void
 }
 
-const tools: { id: DesignAnnotationTool; icon: typeof Pencil; label: string }[] = [
-  { id: 'select', icon: MousePointer2, label: 'Select' },
-  { id: 'comment', icon: MessageCircle, label: 'Comment' },
-  { id: 'draw', icon: Pencil, label: 'Draw' },
-  { id: 'rectangle', icon: Square, label: 'Rectangle' },
-  { id: 'arrow', icon: ArrowUpRight, label: 'Arrow' },
+const tools: { id: DesignAnnotationTool; icon: typeof Pencil; labelKey: string }[] = [
+  { id: 'select', icon: MousePointer2, labelKey: 'designMode.select' },
+  { id: 'comment', icon: MessageCircle, labelKey: 'designMode.comment' },
+  { id: 'draw', icon: Pencil, labelKey: 'designMode.draw' },
+  { id: 'rectangle', icon: Square, labelKey: 'designMode.rectangle' },
+  { id: 'arrow', icon: ArrowUpRight, labelKey: 'designMode.arrow' },
 ]
 
 export function DesignToolbar({ activeTool, onToolChange }: DesignToolbarProps) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div style={{
       position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
@@ -27,7 +29,7 @@ export function DesignToolbar({ activeTool, onToolChange }: DesignToolbarProps) 
         const isActive = tool.id === activeTool
         const Icon = tool.icon
         return (
-          <Tooltip key={tool.id} label={tool.label} placement="bottom">
+          <Tooltip key={tool.id} label={t(tool.labelKey)} placement="bottom">
             <button
               onClick={() => onToolChange(tool.id)}
               style={{

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { X, Send, Bot } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import type { DesignAnnotation } from '../../../mock-data'
 
 interface DesignHandoffDialogProps {
@@ -15,9 +16,9 @@ const AGENTS = [
   { name: 'Director Gamma', id: 'dir-3' },
 ]
 
-function buildMessage(annotations: DesignAnnotation[], linkedTaskId?: string): string {
+function buildMessage(annotations: DesignAnnotation[], linkedTaskId: string | undefined, t: (key: string, opts?: Record<string, unknown>) => string): string {
   const lines = [
-    `Design feedback — ${annotations.length} annotation${annotations.length !== 1 ? 's' : ''}`,
+    t('designMode.designFeedbackAutoMessage', { count: annotations.length }),
     '',
   ]
   if (linkedTaskId) lines.push(`Related task: ${linkedTaskId}`, '')
@@ -25,12 +26,13 @@ function buildMessage(annotations: DesignAnnotation[], linkedTaskId?: string): s
     const prefix = `[${i + 1}] ${ann.tool}`
     lines.push(ann.comment ? `${prefix}: ${ann.comment}` : prefix)
   })
-  lines.push('', 'Please review and address these design issues.')
+  lines.push('', t('designMode.pleaseReview'))
   return lines.join('\n')
 }
 
 export function DesignHandoffDialog({ annotations, linkedTaskId, onClose, onSend }: DesignHandoffDialogProps) {
-  const [message, setMessage] = useState(() => buildMessage(annotations, linkedTaskId))
+  const { t } = useTranslation('smithyNext')
+  const [message, setMessage] = useState(() => buildMessage(annotations, linkedTaskId, t))
   const [selectedAgent, setSelectedAgent] = useState(AGENTS[0].name)
 
   return (
@@ -49,7 +51,7 @@ export function DesignHandoffDialog({ annotations, linkedTaskId, onClose, onSend
           borderBottom: '1px solid var(--color-border-subtle)',
         }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', flex: 1 }}>
-            Send Design Feedback
+            {t('designMode.sendDesignFeedback')}
           </span>
           <button
             onClick={onClose}
@@ -68,7 +70,7 @@ export function DesignHandoffDialog({ annotations, linkedTaskId, onClose, onSend
           {/* Agent selector */}
           <div>
             <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
-              Send to
+              {t('designMode.sendTo')}
             </div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {AGENTS.map(agent => (
@@ -112,7 +114,7 @@ export function DesignHandoffDialog({ annotations, linkedTaskId, onClose, onSend
             background: 'var(--color-surface)', borderRadius: 'var(--radius-sm)',
             fontSize: 11, color: 'var(--color-text-secondary)',
           }}>
-            <span style={{ fontWeight: 500 }}>{annotations.length} annotation{annotations.length !== 1 ? 's' : ''}</span>
+            <span style={{ fontWeight: 500 }}>{annotations.length} {t('designMode.annotation', { count: annotations.length })}</span>
             <span style={{ color: 'var(--color-border)' }}>|</span>
             <span>{[...new Set(annotations.map(a => a.tool))].join(', ')}</span>
           </div>
@@ -120,7 +122,7 @@ export function DesignHandoffDialog({ annotations, linkedTaskId, onClose, onSend
           {/* Message */}
           <div>
             <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
-              Message
+              {t('designMode.message')}
             </div>
             <textarea
               value={message}
@@ -149,7 +151,7 @@ export function DesignHandoffDialog({ annotations, linkedTaskId, onClose, onSend
               color: 'var(--color-text)', fontSize: 12, fontWeight: 500, cursor: 'pointer',
             }}
           >
-            Cancel
+            {t('designMode.cancel')}
           </button>
           <button
             onClick={() => { onSend(message, selectedAgent); onClose() }}
@@ -163,7 +165,7 @@ export function DesignHandoffDialog({ annotations, linkedTaskId, onClose, onSend
             }}
           >
             <Send size={12} strokeWidth={1.5} />
-            Send Feedback
+            {t('designMode.sendFeedback')}
           </button>
         </div>
       </div>

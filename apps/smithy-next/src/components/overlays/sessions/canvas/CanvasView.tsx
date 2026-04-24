@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
 import { AlertCircle } from 'lucide-react'
 import type { Session } from '../session-types'
+import { useTranslation } from '@/i18n'
 import { SessionDetailView } from '../SessionDetailView'
 import { InfiniteCanvas, type Viewport } from './InfiniteCanvas'
 import { SessionNode } from './SessionNode'
@@ -49,6 +50,7 @@ export function CanvasView({
   onAspectModeChange,
   reapplyNonce,
 }: CanvasViewProps) {
+  const { t } = useTranslation('smithyNext')
   // Completed sessions hidden by default; toggleable via the footnote label.
   const [showCompleted, setShowCompleted] = useState<boolean>(() => {
     try { return localStorage.getItem('sf-next.canvas.show-completed') === 'true' } catch { return false }
@@ -413,7 +415,7 @@ export function CanvasView({
       ) : (
         <button
           onClick={() => setDockVisible(true)}
-          title="Show session dock"
+          title={t('sessions.showSessionDock')}
           style={{
             position: 'absolute',
             top: 6, left: '50%',
@@ -434,7 +436,7 @@ export function CanvasView({
           onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-text-secondary)')}
           onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-text-tertiary)')}
         >
-          Show session dock
+          {t('sessions.showSessionDock')}
         </button>
       )}
 
@@ -542,7 +544,7 @@ export function CanvasView({
               }}
             >
               <AlertCircle size={11} strokeWidth={2} />
-              <span>{chip.session.agent.name.replace(/^Agent\s+/, '')} needs input</span>
+              <span>{t('sessions.needsInputAgent', { agent: chip.session.agent.name.replace(/^Agent\s+/, '') })}</span>
             </button>
           ))}
 
@@ -550,7 +552,7 @@ export function CanvasView({
           {completedCount > 0 && (
             <button
               onClick={() => setShowCompleted(v => !v)}
-              title={showCompleted ? 'Click to hide completed' : 'Click to show completed'}
+              title={showCompleted ? t('sessions.completedShown', { count: completedCount }) : t('sessions.completedHidden', { count: completedCount })}
               style={{
                 position: 'absolute',
                 left: 16,
@@ -568,7 +570,7 @@ export function CanvasView({
               onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-surface-hover)')}
               onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
-              {completedCount} completed · {showCompleted ? 'shown' : 'hidden'}
+              {showCompleted ? t('sessions.completedShown', { count: completedCount }) : t('sessions.completedHidden', { count: completedCount })}
             </button>
           )}
 
@@ -615,14 +617,14 @@ export function CanvasView({
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <CtxItem label="Open transcript" onClick={() => { onSelectedSessionChange(s.id); closeContextMenu() }} />
+                <CtxItem label={t('sessions.openTranscript')} onClick={() => { onSelectedSessionChange(s.id); closeContextMenu() }} />
                 <CtxItem
-                  label={followSessionId === s.id ? 'Stop following' : 'Follow'}
+                  label={followSessionId === s.id ? t('sessions.stopFollowing') : t('sessions.follow')}
                   onClick={() => { setFollowSessionId(followSessionId === s.id ? null : s.id); closeContextMenu() }}
                 />
-                <CtxItem label="Copy link" onClick={() => { navigator.clipboard?.writeText(`${location.origin}/sessions/${s.id}?view=canvas`); closeContextMenu() }} />
+                <CtxItem label={t('sessions.copyLink')} onClick={() => { navigator.clipboard?.writeText(`${location.origin}/sessions/${s.id}?view=canvas`); closeContextMenu() }} />
                 {s.linkedDirectorId && onNavigateToWhiteboard && (
-                  <CtxItem label="Open whiteboard" onClick={() => { onNavigateToWhiteboard(s.linkedDirectorId!); closeContextMenu() }} />
+                  <CtxItem label={t('sessions.openWhiteboard')} onClick={() => { onNavigateToWhiteboard(s.linkedDirectorId!); closeContextMenu() }} />
                 )}
                 {s.linkedTaskId && onNavigateToTask && (
                   <CtxItem label={`Open ${s.linkedTaskId}`} onClick={() => { onNavigateToTask(s.linkedTaskId!); closeContextMenu() }} />
@@ -633,19 +635,19 @@ export function CanvasView({
                 <CtxDivider />
                 {s.linkedDirectorId && (
                   <CtxSwatchItem
-                    label={`Director color`}
+                    label={t('sessions.directorColor')}
                     color={directorColor(s.linkedDirectorId)}
                     onClick={() => { openDirectorPicker(s.linkedDirectorId!); closeContextMenu() }}
                   />
                 )}
                 <CtxSwatchItem
-                  label={`Agent color`}
+                  label={t('sessions.agentColor')}
                   color={agentColor(s.agent.id)}
                   onClick={() => { openAgentPicker(s.agent.id); closeContextMenu() }}
                 />
                 {((s.linkedDirectorId && directorColorOverrides[s.linkedDirectorId]) || agentColorOverrides[s.agent.id]) && (
                   <CtxItem
-                    label="Reset colors"
+                    label={t('sessions.resetColors')}
                     onClick={() => {
                       if (s.linkedDirectorId) {
                         setDirectorColorOverrides(prev => { const next = { ...prev }; delete next[s.linkedDirectorId!]; return next })
@@ -722,7 +724,7 @@ export function CanvasView({
           boxShadow: 'var(--shadow-float)',
           fontSize: 11, zIndex: 30, pointerEvents: 'none',
         }}>
-          Sent to {sessionMap.get(steerLog[steerLog.length - 1].sessionId)?.agent.name ?? 'agent'}: "{steerLog[steerLog.length - 1].text.slice(0, 60)}"
+          {t('sessions.sentTo', { agent: sessionMap.get(steerLog[steerLog.length - 1].sessionId)?.agent.name ?? 'agent' })}: "{steerLog[steerLog.length - 1].text.slice(0, 60)}"
         </div>
       )}
     </div>
@@ -754,6 +756,7 @@ function CtxItem({ label, onClick }: { label: string; onClick: () => void }) {
 }
 
 function CtxSwatchItem({ label, color, onClick }: { label: string; color: string; onClick: () => void }) {
+  const { t } = useTranslation('smithyNext')
   return (
     <button
       onClick={onClick}
@@ -785,7 +788,7 @@ function CtxSwatchItem({ label, color, onClick }: { label: string; color: string
       />
       <span>{label}</span>
       <span style={{ flex: 1 }} />
-      <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>edit</span>
+      <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>{t('sessions.edit')}</span>
     </button>
   )
 }

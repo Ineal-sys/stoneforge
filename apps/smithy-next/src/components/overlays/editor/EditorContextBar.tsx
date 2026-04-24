@@ -1,4 +1,5 @@
 import { ArrowLeft, X, GitPullRequest, CircleAlert, CheckSquare } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import type { EditorNavigationContext } from './editor-mock-data'
 
 interface Props {
@@ -13,14 +14,14 @@ const sourceIcons: Record<string, typeof GitPullRequest> = {
   task: CheckSquare,
 }
 
-const sourceLabels: Record<string, string> = {
-  mr: 'MR',
-  ci: 'CI Run',
-  task: 'Task',
-}
-
 export function EditorContextBar({ context, onBack, onDismiss }: Props) {
+  const { t } = useTranslation('smithyNext')
   const Icon = sourceIcons[context.type] || CheckSquare
+  const sourceLabels: Record<string, string> = {
+    mr: t('editor.mrSource'),
+    ci: t('editor.ciRunSource'),
+    task: t('editor.taskSource'),
+  }
   const label = sourceLabels[context.type] || context.type
 
   return (
@@ -48,7 +49,7 @@ export function EditorContextBar({ context, onBack, onDismiss }: Props) {
         onMouseLeave={e => e.currentTarget.style.background = 'none'}
       >
         <ArrowLeft size={12} strokeWidth={1.5} />
-        <span>Back to {label}</span>
+        <span>{t('editor.backTo', { label })}</span>
       </button>
 
       <div style={{
@@ -83,7 +84,7 @@ export function EditorContextBar({ context, onBack, onDismiss }: Props) {
 
       <button
         onClick={onDismiss}
-        title="Dismiss context"
+        title={t('editor.dismissContext')}
         style={{
           width: 20, height: 20,
           display: 'flex', alignItems: 'center', justifyContent: 'center',

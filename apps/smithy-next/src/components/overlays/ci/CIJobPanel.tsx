@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Check, X, Clock, Loader, Ban, SkipForward, ChevronDown, ChevronRight, Wrench, Server } from 'lucide-react'
 import type { CIJob, CIStep, CIHandoffContext } from './ci-types'
 import { CILogViewer } from './CILogViewer'
+import { useTranslation } from '@/i18n'
 
 interface CIJobPanelProps {
   jobs: CIJob[]
@@ -18,10 +19,12 @@ const statusColor: Record<string, string> = {
 }
 
 export function CIJobPanel({ jobs, onHandoff, highlightJobId }: CIJobPanelProps) {
+  const { t } = useTranslation('smithyNext')
+
   return (
     <div>
       <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 8 }}>
-        Jobs
+        {t('ci.jobs')}
         <span style={{ marginLeft: 6, fontSize: 10, color: 'var(--color-text-tertiary)', background: 'var(--color-surface)', borderRadius: 'var(--radius-full)', padding: '0 5px' }}>
           {jobs.length}
         </span>
@@ -44,6 +47,7 @@ export function CIJobPanel({ jobs, onHandoff, highlightJobId }: CIJobPanelProps)
 function JobRow({ job, isLast, onHandoff, highlight }: {
   job: CIJob; isLast: boolean; onHandoff?: (ctx: CIHandoffContext) => void; highlight: boolean
 }) {
+  const { t } = useTranslation('smithyNext')
   const [expanded, setExpanded] = useState(false)
   const Icon = statusIcon[job.status] || Clock
   const color = statusColor[job.status] || 'var(--color-text-tertiary)'
@@ -100,11 +104,11 @@ function JobRow({ job, isLast, onHandoff, highlight }: {
         )}
         {job.duration && <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{job.duration}</span>}
         {hasSteps && (
-          <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{job.steps.length} step{job.steps.length > 1 ? 's' : ''}</span>
+          <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('ci.stepCount', { count: job.steps.length })}</span>
         )}
         {job.status === 'failure' && onHandoff && (
-          <button onClick={handleHandoff} style={handoffBtnStyle} title="Handoff to fix">
-            <Wrench size={11} strokeWidth={1.5} /> Fix
+          <button onClick={handleHandoff} style={handoffBtnStyle} title={t('ci.handoffToFix')}>
+            <Wrench size={11} strokeWidth={1.5} /> {t('ci.fix')}
           </button>
         )}
         {hasSteps && (

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { ChevronRight, ChevronDown, FolderOpen, Folder, FileText, FileCode, FileType, Clock, FolderClosed } from 'lucide-react'
 import type { Document, Library } from './doc-types'
+import { useTranslation } from '@/i18n'
 
 interface DocNavPanelProps {
   documents: Document[]
@@ -14,11 +15,11 @@ interface DocNavPanelProps {
 }
 
 // ── Category labels ──
-const categoryLabels: Record<string, string> = {
-  spec: 'Spec', prd: 'PRD', 'decision-log': 'ADR', changelog: 'Changelog',
-  tutorial: 'Tutorial', 'how-to': 'How-to', explanation: 'Explanation',
-  reference: 'Reference', runbook: 'Runbook', 'meeting-notes': 'Meeting Notes',
-  'post-mortem': 'Post-mortem', other: 'Other',
+const categoryKeyMap: Record<string, string> = {
+  spec: 'documents.spec', prd: 'documents.prd', 'decision-log': 'documents.decisionLog', changelog: 'documents.changelog',
+  tutorial: 'documents.tutorial', 'how-to': 'documents.howTo', explanation: 'documents.explanation',
+  reference: 'documents.reference', runbook: 'documents.runbook', 'meeting-notes': 'documents.meetingNotes',
+  'post-mortem': 'documents.postMortem', other: 'documents.other',
 }
 
 const categoryColors: Record<string, string> = {
@@ -111,6 +112,7 @@ function LibraryTreeItem({ library, libraries, documents, expandedIds, onToggle,
 
 // ── Compact Document Row (for recents) ──
 function DocRow({ doc, isSelected, onSelect }: { doc: Document; isSelected: boolean; onSelect: () => void }) {
+  const { t } = useTranslation('smithyNext')
   return (
     <button
       onClick={onSelect}
@@ -139,7 +141,7 @@ function DocRow({ doc, isSelected, onSelect }: { doc: Document; isSelected: bool
           color: categoryColors[doc.category] || 'var(--color-text-tertiary)',
           textTransform: 'uppercase',
         }}>
-          {categoryLabels[doc.category] || doc.category}
+          {t(categoryKeyMap[doc.category] || `documents.${doc.category}`)}
         </span>
         <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>
           {timeAgo(doc.updatedAt)}
@@ -151,6 +153,7 @@ function DocRow({ doc, isSelected, onSelect }: { doc: Document; isSelected: bool
 
 // ── Main Nav Panel (tree + recents only) ──
 export function DocNavPanel({ documents, libraries, selectedDocId, selectedLibraryId, onSelectDoc, onSelectLibrary, recentDocIds, style }: DocNavPanelProps) {
+  const { t } = useTranslation('smithyNext')
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set(libraries.filter(l => l.parentId === null).map(l => l.id)))
   const [treeCollapsed, setTreeCollapsed] = useState(false)
 
@@ -192,7 +195,7 @@ export function DocNavPanel({ documents, libraries, selectedDocId, selectedLibra
           }}
         >
           {treeCollapsed ? <ChevronRight size={10} /> : <ChevronDown size={10} />}
-          Libraries
+          {t('documents.libraries')}
         </button>
         {!treeCollapsed && (
           <div style={{ padding: '0 4px 6px' }}>
@@ -210,7 +213,7 @@ export function DocNavPanel({ documents, libraries, selectedDocId, selectedLibra
               onMouseLeave={e => { if (selectedLibraryId !== null) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
             >
               <FileText size={14} style={{ color: 'var(--color-text-tertiary)' }} />
-              All Documents
+              {t('documents.allDocuments')}
               <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--color-text-tertiary)' }}>{documents.length}</span>
             </button>
             {topLevelLibraries.map(lib => (
@@ -240,7 +243,7 @@ export function DocNavPanel({ documents, libraries, selectedDocId, selectedLibra
               fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase',
             }}>
               <Clock size={10} />
-              Recent
+              {t('documents.recent')}
             </div>
             <div style={{ padding: '0 4px 4px' }}>
               {recentDocs.map(doc => (
@@ -273,7 +276,7 @@ export function DocNavPanel({ documents, libraries, selectedDocId, selectedLibra
                 fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase',
               }}>
                 {isAll ? <FileText size={10} /> : <FolderClosed size={10} />}
-                {isAll ? 'All Documents' : activeLib!.name}
+                {isAll ? t('documents.allDocuments') : activeLib!.name}
               </div>
               <div style={{ padding: '0 4px 4px' }}>
                 {scopedDocs.map(doc => (

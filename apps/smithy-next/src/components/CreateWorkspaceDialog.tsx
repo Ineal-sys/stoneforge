@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { X, GitBranch, FolderGit2 } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 
 interface CreateWorkspaceDialogProps {
   onClose: () => void
 }
 
 export function CreateWorkspaceDialog({ onClose }: CreateWorkspaceDialogProps) {
+  const { t } = useTranslation('smithyNext')
   const [name, setName] = useState('')
   const [repo, setRepo] = useState('')
 
@@ -24,7 +26,7 @@ export function CreateWorkspaceDialog({ onClose }: CreateWorkspaceDialogProps) {
       }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid var(--color-border-subtle)' }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>New Workspace</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{t('createWorkspace.newWorkspace')}</span>
           <button onClick={onClose} style={{ width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', borderRadius: 'var(--radius-sm)' }}
             onMouseEnter={e => e.currentTarget.style.background = 'var(--color-surface-hover)'}
             onMouseLeave={e => e.currentTarget.style.background = 'none'}
@@ -37,11 +39,11 @@ export function CreateWorkspaceDialog({ onClose }: CreateWorkspaceDialogProps) {
         <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Name field */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)' }}>Workspace name</label>
+            <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)' }}>{t('createWorkspace.workspaceName')}</label>
             <input
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="My Project"
+              placeholder={t('createWorkspace.workspaceNamePlaceholder')}
               autoFocus
               style={{
                 width: '100%', height: 34, padding: '0 10px',
@@ -57,13 +59,13 @@ export function CreateWorkspaceDialog({ onClose }: CreateWorkspaceDialogProps) {
 
           {/* Repository field */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)' }}>Repository</label>
+            <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)' }}>{t('createWorkspace.repository')}</label>
             <div style={{ position: 'relative' }}>
               <FolderGit2 size={14} strokeWidth={1.5} style={{ position: 'absolute', left: 10, top: 10, color: 'var(--color-text-tertiary)' }} />
               <input
                 value={repo}
                 onChange={e => setRepo(e.target.value)}
-                placeholder="org/repository"
+                placeholder={t('createWorkspace.repositoryPlaceholder')}
                 style={{
                   width: '100%', height: 34, padding: '0 10px 0 30px',
                   background: 'var(--color-surface)', border: '1px solid var(--color-border)',
@@ -79,7 +81,7 @@ export function CreateWorkspaceDialog({ onClose }: CreateWorkspaceDialogProps) {
 
           {/* Default branch */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)' }}>Default branch</label>
+            <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)' }}>{t('createWorkspace.defaultBranch')}</label>
             <div style={{ position: 'relative' }}>
               <GitBranch size={14} strokeWidth={1.5} style={{ position: 'absolute', left: 10, top: 10, color: 'var(--color-text-tertiary)' }} />
               <input
@@ -114,7 +116,7 @@ export function CreateWorkspaceDialog({ onClose }: CreateWorkspaceDialogProps) {
             onMouseEnter={e => e.currentTarget.style.background = 'var(--color-surface-hover)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
-            Cancel
+            {t('createWorkspace.cancel')}
           </button>
           <button
             onClick={onClose}
@@ -131,7 +133,7 @@ export function CreateWorkspaceDialog({ onClose }: CreateWorkspaceDialogProps) {
             onMouseEnter={e => { if (name.trim()) e.currentTarget.style.opacity = '0.9' }}
             onMouseLeave={e => { if (name.trim()) e.currentTarget.style.opacity = '1' }}
           >
-            Create Workspace
+            {t('createWorkspace.createWorkspace')}
           </button>
         </div>
       </div>

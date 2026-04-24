@@ -5,6 +5,7 @@ import { WorkflowPipelineViz } from './WorkflowPipelineViz'
 import { WorkflowRunDetail } from './WorkflowRunDetail'
 import { WorkflowStepCard } from './WorkflowStepCard'
 import { useTeamContext } from '../../../TeamContext'
+import { useTranslation } from '@/i18n'
 
 interface WorkflowDetailViewProps {
   workflow: Workflow
@@ -40,13 +41,10 @@ const statusBadgeStyles: Record<string, { bg: string; color: string }> = {
   draft: { bg: 'var(--color-warning-subtle)', color: 'var(--color-warning)' },
 }
 
-const triggerLabels: Record<string, string> = {
-  cron: 'Cron', event: 'Event', manual: 'Manual', webhook: 'Webhook',
-}
-
 type Tab = 'overview' | 'runs' | 'editor'
 
 export function WorkflowDetailView({ workflow, runs, allWorkflows, onSelectWorkflow, activeTab, onTabChange, onBack, onEdit, onNavigateToCI, onNavigateToMR, onNavigateToTask, onOpenRun }: WorkflowDetailViewProps) {
+  const { t } = useTranslation('smithyNext')
   const { isTeamMode, getUserById } = useTeamContext()
   const [menuOpen, setMenuOpen] = useState(false)
   const [approvalConfirmOpen, setApprovalConfirmOpen] = useState(false)
@@ -54,6 +52,17 @@ export function WorkflowDetailView({ workflow, runs, allWorkflows, onSelectWorkf
   const currentTab = (activeTab as Tab) || 'overview'
   const badge = statusBadgeStyles[workflow.status]
   const needsApproval = isTeamMode && workflow.approvalRequired
+
+  const statusLabels: Record<string, string> = {
+    active: t('automations.active'), disabled: t('automations.disabled'),
+    error: t('automations.error'), draft: t('automations.draft'),
+  }
+
+  const tabLabels: Record<Tab, string> = {
+    overview: t('automations.overview'),
+    runs: t('automations.runs'),
+    editor: t('automations.editor'),
+  }
 
   return (
     <div style={{ height: '100%', display: 'flex', overflow: 'hidden' }}>
@@ -65,7 +74,7 @@ export function WorkflowDetailView({ workflow, runs, allWorkflows, onSelectWorkf
         }}>
           <div style={{ padding: '0 12px', marginBottom: 12 }}>
             <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Automations
+              {t('automations.automations')}
             </span>
           </div>
           <button
@@ -79,7 +88,7 @@ export function WorkflowDetailView({ workflow, runs, allWorkflows, onSelectWorkf
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
             <ArrowLeft size={11} strokeWidth={1.5} />
-            All automations
+            {t('automations.allAutomations')}
           </button>
           <div style={{ height: 1, background: 'var(--color-border-subtle)', margin: '6px 12px' }} />
           {allWorkflows.map(wf => {
@@ -132,7 +141,7 @@ export function WorkflowDetailView({ workflow, runs, allWorkflows, onSelectWorkf
             fontSize: 11, padding: '2px 8px', borderRadius: 'var(--radius-full)',
             background: badge.bg, color: badge.color, fontWeight: 500,
           }}>
-            {workflow.status}
+            {statusLabels[workflow.status] || workflow.status}
           </span>
           {isTeamMode && workflow.scope && (
             <span style={{
@@ -141,7 +150,7 @@ export function WorkflowDetailView({ workflow, runs, allWorkflows, onSelectWorkf
               fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4,
             }}>
               {workflow.scope === 'personal' ? <Lock size={10} strokeWidth={1.5} /> : <Users size={10} strokeWidth={1.5} />}
-              {workflow.scope === 'personal' ? 'Personal' : 'Team'}
+              {workflow.scope === 'personal' ? t('automations.personal') : t('automations.team')}
             </span>
           )}
           {isTeamMode && workflow.approvalRequired && (
@@ -150,7 +159,7 @@ export function WorkflowDetailView({ workflow, runs, allWorkflows, onSelectWorkf
               background: 'var(--color-warning-subtle)', color: 'var(--color-warning)',
               fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4,
             }}>
-              <ShieldCheck size={10} strokeWidth={1.5} /> Requires approval
+              <ShieldCheck size={10} strokeWidth={1.5} /> {t('automations.approvalRequired')}
             </span>
           )}
 
@@ -161,7 +170,7 @@ export function WorkflowDetailView({ workflow, runs, allWorkflows, onSelectWorkf
               background: 'var(--color-primary)', border: 'none', borderRadius: 'var(--radius-sm)',
               color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
             }}>
-              <Play size={12} strokeWidth={2} /> Run
+              <Play size={12} strokeWidth={2} /> {t('automations.run')}
             </button>
             {/* Approval confirmation dialog */}
             {approvalConfirmOpen && needsApproval && (
@@ -174,14 +183,14 @@ export function WorkflowDetailView({ workflow, runs, allWorkflows, onSelectWorkf
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                     <ShieldCheck size={14} strokeWidth={1.5} style={{ color: 'var(--color-warning)' }} />
-                    <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text)' }}>Approval required</span>
+                    <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text)' }}>{t('automations.approvalRequired')}</span>
                   </div>
                   <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: '0 0 8px', lineHeight: 1.5 }}>
-                    This workflow requires approval before running. A request will be sent to the designated approvers.
+                    {t('automations.approvalRequiredDescription')}
                   </p>
                   {workflow.approvalUsers && workflow.approvalUsers.length > 0 && (
                     <div style={{ marginBottom: 10 }}>
-                      <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Approvers:</span>
+                      <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('automations.approvers')}</span>
                       <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 4 }}>
                         {workflow.approvalUsers.map(uid => {
                           const user = getUserById(uid)
@@ -212,14 +221,14 @@ export function WorkflowDetailView({ workflow, runs, allWorkflows, onSelectWorkf
                       borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)',
                       color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 12,
                     }}>
-                      Cancel
+                      {t('automations.cancel')}
                     </button>
                     <button onClick={() => setApprovalConfirmOpen(false)} style={{
                       height: 26, padding: '0 10px', border: 'none',
                       borderRadius: 'var(--radius-sm)', background: 'var(--color-primary)',
                       color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
                     }}>
-                      Request approval
+                      {t('automations.requestApproval')}
                     </button>
                   </div>
                 </div>
@@ -243,10 +252,10 @@ export function WorkflowDetailView({ workflow, runs, allWorkflows, onSelectWorkf
                   background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)',
                   borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-float)', padding: 4,
                 }}>
-                  <MenuBtn icon={Pencil} label="Edit automation" onClick={() => { setMenuOpen(false); onEdit() }} />
-                  <MenuBtn icon={Copy} label="Duplicate" onClick={() => setMenuOpen(false)} />
-                  <MenuBtn icon={workflow.status === 'active' ? PowerOff : Power} label={workflow.status === 'active' ? 'Disable' : 'Enable'} onClick={() => setMenuOpen(false)} />
-                  <MenuBtn icon={Trash2} label="Delete" color="var(--color-danger)" onClick={() => setMenuOpen(false)} />
+                  <MenuBtn icon={Pencil} label={t('automations.editAutomation')} onClick={() => { setMenuOpen(false); onEdit() }} />
+                  <MenuBtn icon={Copy} label={t('automations.duplicate')} onClick={() => setMenuOpen(false)} />
+                  <MenuBtn icon={workflow.status === 'active' ? PowerOff : Power} label={workflow.status === 'active' ? t('automations.disable') : t('automations.enable')} onClick={() => setMenuOpen(false)} />
+                  <MenuBtn icon={Trash2} label={t('automations.delete')} color="var(--color-danger)" onClick={() => setMenuOpen(false)} />
                 </div>
               </>
             )}
@@ -261,9 +270,8 @@ export function WorkflowDetailView({ workflow, runs, allWorkflows, onSelectWorkf
               fontSize: 12, fontWeight: 500,
               background: currentTab === tab ? 'var(--color-surface-active)' : 'transparent',
               color: currentTab === tab ? 'var(--color-text)' : 'var(--color-text-tertiary)',
-              textTransform: 'capitalize',
             }}>
-              {tab}
+              {tabLabels[tab]}
             </button>
           ))}
         </div>
@@ -280,7 +288,7 @@ export function WorkflowDetailView({ workflow, runs, allWorkflows, onSelectWorkf
   )
 }
 
-// ── Overview Tab ──
+// Overview Tab
 
 function OverviewTab({ workflow, runs, onTabChange, onNavigateToCI, onNavigateToMR, onNavigateToTask, onOpenRun, onFocusStep }: {
   workflow: Workflow
@@ -292,6 +300,7 @@ function OverviewTab({ workflow, runs, onTabChange, onNavigateToCI, onNavigateTo
   onNavigateToTask?: (taskId: string) => void
   onOpenRun?: (run: WFRun) => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const { isTeamMode, getUserById } = useTeamContext()
   const recentRuns = runs.slice(0, 5)
 
@@ -306,7 +315,7 @@ function OverviewTab({ workflow, runs, onTabChange, onNavigateToCI, onNavigateTo
         )}
 
         {/* Pipeline */}
-        <Section title="Pipeline">
+        <Section title={t('automations.pipeline')}>
           <WorkflowPipelineViz steps={workflow.steps} onStepClick={(stepId) => {
             onFocusStep(stepId)
           }} />
@@ -314,14 +323,14 @@ function OverviewTab({ workflow, runs, onTabChange, onNavigateToCI, onNavigateTo
 
         {/* Info grid */}
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-          <InfoItem label="Trigger" value={getTriggerDisplayFull(workflow)} />
-          {workflow.nextRunAt && <InfoItem label="Next run" value={workflow.nextRunAt} />}
-          <InfoItem label="Total runs" value={String(workflow.totalRuns)} />
-          <InfoItem label="Created" value={workflow.createdAt} />
+          <InfoItem label={t('automations.triggerLabel')} value={getTriggerDisplayFull(workflow, t)} />
+          {workflow.nextRunAt && <InfoItem label={t('automations.nextRun')} value={workflow.nextRunAt} />}
+          <InfoItem label={t('automations.totalRunsLabel')} value={String(workflow.totalRuns)} />
+          <InfoItem label={t('automations.createdLabel')} value={workflow.createdAt} />
           {workflow.linkedCIActionId && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                <CircleDot size={11} strokeWidth={1.5} /> Linked CI
+                <CircleDot size={11} strokeWidth={1.5} /> {t('automations.linkedCi')}
               </span>
               <button onClick={() => onNavigateToCI?.(workflow.linkedCIActionId!)} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 500,
@@ -336,7 +345,7 @@ function OverviewTab({ workflow, runs, onTabChange, onNavigateToCI, onNavigateTo
 
         {/* Approval workflow (team-mode only) */}
         {isTeamMode && workflow.approvalRequired && (
-          <Section title="Approval required">
+          <Section title={t('automations.approvalRequired')}>
             <div style={{
               padding: 12, background: 'var(--color-warning-subtle)', borderRadius: 'var(--radius-md)',
               borderLeft: '3px solid var(--color-warning)',
@@ -344,12 +353,12 @@ function OverviewTab({ workflow, runs, onTabChange, onNavigateToCI, onNavigateTo
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                 <ShieldCheck size={14} strokeWidth={1.5} style={{ color: 'var(--color-warning)' }} />
                 <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text)' }}>
-                  Manual triggers require approval
+                  {t('automations.requiresApproval')}
                 </span>
               </div>
               {workflow.approvalUsers && workflow.approvalUsers.length > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Approvers:</span>
+                  <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('automations.approvers')}</span>
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     {workflow.approvalUsers.map(uid => {
                       const user = getUserById(uid)
@@ -380,7 +389,7 @@ function OverviewTab({ workflow, runs, onTabChange, onNavigateToCI, onNavigateTo
 
         {/* Variables */}
         {workflow.variables.length > 0 && (
-          <Section title="Variables">
+          <Section title={t('automations.variables')}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {workflow.variables.map(v => (
                 <div key={v.name} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
@@ -396,14 +405,14 @@ function OverviewTab({ workflow, runs, onTabChange, onNavigateToCI, onNavigateTo
 
         {/* Tags */}
         {workflow.tags.length > 0 && (
-          <Section title="Tags">
+          <Section title={t('automations.tags')}>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-              {workflow.tags.map(t => (
-                <span key={t} style={{
+              {workflow.tags.map(tag => (
+                <span key={tag} style={{
                   fontSize: 11, padding: '2px 8px', borderRadius: 'var(--radius-full)',
                   background: 'var(--color-surface)', color: 'var(--color-text-secondary)',
                 }}>
-                  {t}
+                  {tag}
                 </span>
               ))}
             </div>
@@ -411,10 +420,10 @@ function OverviewTab({ workflow, runs, onTabChange, onNavigateToCI, onNavigateTo
         )}
 
         {/* Recent runs */}
-        <Section title="Recent runs" action={runs.length > 5 ? { label: 'View all →', onClick: () => onTabChange('runs') } : undefined}>
+        <Section title={t('automations.recentRuns')} action={runs.length > 5 ? { label: t('automations.viewAll'), onClick: () => onTabChange('runs') } : undefined}>
           {recentRuns.length === 0 ? (
             <div style={{ padding: 24, textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 13 }}>
-              No runs yet
+              {t('automations.noRunsYet')}
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -429,9 +438,10 @@ function OverviewTab({ workflow, runs, onTabChange, onNavigateToCI, onNavigateTo
   )
 }
 
-// ── Runs Tab ──
+// Runs Tab
 
 function RunsTab({ runs, onNavigateToCI, onNavigateToMR, onNavigateToTask, onOpenRun }: { runs: WFRun[]; onNavigateToCI?: (runId: string) => void; onNavigateToMR?: (mrId: string) => void; onNavigateToTask?: (taskId: string) => void; onOpenRun?: (run: WFRun) => void }) {
+  const { t } = useTranslation('smithyNext')
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
 
   const filtered = statusFilter
@@ -440,23 +450,29 @@ function RunsTab({ runs, onNavigateToCI, onNavigateToMR, onNavigateToTask, onOpe
 
   const statuses = ['success', 'failure', 'running', 'queued', 'cancelled'] as const
 
+  const statusLabels: Record<string, string> = {
+    success: t('automations.success'), failure: t('automations.failed'),
+    running: t('automations.running'), queued: t('automations.queued'),
+    cancelled: t('automations.cancelled'),
+  }
+
   return (
     <div style={{ padding: '16px 24px' }}>
       <div className="wf-tab-content">
         {/* Status filters */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
-          <FilterPill label="All" active={!statusFilter} onClick={() => setStatusFilter(null)} count={runs.length} />
+          <FilterPill label={t('automations.all')} active={!statusFilter} onClick={() => setStatusFilter(null)} count={runs.length} />
           {statuses.map(s => {
             const count = runs.filter(r => r.status === s).length
             if (count === 0) return null
-            return <FilterPill key={s} label={s} active={statusFilter === s} onClick={() => setStatusFilter(s)} count={count} />
+            return <FilterPill key={s} label={statusLabels[s] || s} active={statusFilter === s} onClick={() => setStatusFilter(s)} count={count} />
           })}
         </div>
 
         {/* Run list */}
         {filtered.length === 0 ? (
           <div style={{ padding: 48, textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 13 }}>
-            No runs {statusFilter ? `with status "${statusFilter}"` : 'yet'}
+            {statusFilter ? t('automations.noRunsWithStatus', { status: statusFilter }) : t('automations.noRunsYet')}
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -470,9 +486,10 @@ function RunsTab({ runs, onNavigateToCI, onNavigateToMR, onNavigateToTask, onOpe
   )
 }
 
-// ── Editor Tab (read-only) ──
+// Editor Tab (read-only)
 
 function EditorTab({ workflow, onEdit, focusStepId, onClearFocus }: { workflow: Workflow; onEdit: () => void; focusStepId?: string | null; onClearFocus?: () => void }) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div style={{ padding: '16px 24px' }}>
       <div className="wf-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -484,12 +501,12 @@ function EditorTab({ workflow, onEdit, focusStepId, onClearFocus }: { workflow: 
             borderRadius: 'var(--radius-sm)', color: 'var(--color-text-secondary)',
             cursor: 'pointer', fontSize: 12, fontWeight: 500,
           }}>
-            <Pencil size={12} strokeWidth={1.5} /> Edit automation
+            <Pencil size={12} strokeWidth={1.5} /> {t('automations.editAutomation')}
           </button>
         </div>
 
         {/* Steps */}
-        <Section title={`Steps (${workflow.steps.length})`}>
+        <Section title={t('automations.stepCountWithTotal', { count: workflow.steps.length })}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {workflow.steps.map((step, i) => (
               <WorkflowStepCard key={step.id} step={step} index={i} mode="view" focused={focusStepId === step.id} />
@@ -498,7 +515,7 @@ function EditorTab({ workflow, onEdit, focusStepId, onClearFocus }: { workflow: 
         </Section>
 
         {/* Trigger */}
-        <Section title="Trigger">
+        <Section title={t('automations.triggerSection')}>
           <div style={{ padding: 12, background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-md)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
               <span style={{ fontWeight: 500, color: 'var(--color-text-secondary)', textTransform: 'capitalize' }}>{workflow.trigger.type}</span>
@@ -519,14 +536,14 @@ function EditorTab({ workflow, onEdit, focusStepId, onClearFocus }: { workflow: 
 
         {/* Variables */}
         {workflow.variables.length > 0 && (
-          <Section title={`Variables (${workflow.variables.length})`}>
+          <Section title={t('automations.variablesCount', { count: workflow.variables.length })}>
             <div style={{ padding: 12, background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-md)' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {workflow.variables.map(v => (
                   <div key={v.name} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
                     <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-accent)', fontWeight: 500, minWidth: 80 }}>{v.name}</span>
                     <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text-tertiary)' }}>{v.type}</span>
-                    {v.required && <span style={{ fontSize: 10, color: 'var(--color-danger)' }}>required</span>}
+                    {v.required && <span style={{ fontSize: 10, color: 'var(--color-danger)' }}>{t('automations.required')}</span>}
                     {v.default && <span style={{ color: 'var(--color-text-tertiary)' }}>= {v.default}</span>}
                   </div>
                 ))}
@@ -539,7 +556,7 @@ function EditorTab({ workflow, onEdit, focusStepId, onClearFocus }: { workflow: 
   )
 }
 
-// ── Shared components ──
+// Shared components
 
 function Section({ title, action, children }: { title: string; action?: { label: string; onClick: () => void }; children: React.ReactNode }) {
   return (
@@ -568,7 +585,6 @@ function FilterPill({ label, active, count, onClick }: { label: string; active: 
       borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontSize: 11, fontWeight: 500,
       background: active ? 'var(--color-primary-subtle)' : 'var(--color-surface)',
       color: active ? 'var(--color-text-accent)' : 'var(--color-text-tertiary)',
-      textTransform: 'capitalize',
     }}>
       {label}
       <span style={{ fontSize: 10, opacity: 0.7 }}>{count}</span>
@@ -600,9 +616,13 @@ function MenuBtn({ icon: Icon, label, color, onClick }: { icon: typeof Pencil; l
   )
 }
 
-function getTriggerDisplayFull(wf: Workflow): string {
-  const t = wf.trigger
-  if (t.cronHumanReadable) return `${triggerLabels[t.type]}: ${t.cronHumanReadable}`
-  if (t.eventType) return `${triggerLabels[t.type]}: ${t.eventType.replace(/_/g, ' ')}`
-  return triggerLabels[t.type] || t.type
+function getTriggerDisplayFull(wf: Workflow, t: (key: string) => string): string {
+  const triggerLabelKeys: Record<string, string> = {
+    cron: 'automations.cron', event: 'automations.event', manual: 'automations.manual', webhook: 'automations.webhook',
+  }
+  const tr = wf.trigger
+  const label = triggerLabelKeys[tr.type] ? t(triggerLabelKeys[tr.type]) : tr.type
+  if (tr.cronHumanReadable) return `${label}: ${tr.cronHumanReadable}`
+  if (tr.eventType) return `${label}: ${tr.eventType.replace(/_/g, ' ')}`
+  return label
 }

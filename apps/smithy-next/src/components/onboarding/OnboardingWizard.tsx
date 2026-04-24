@@ -1,5 +1,6 @@
 import { useReducer, useCallback } from 'react'
 import { Check } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import { onboardingReducer, INITIAL_STATE, STEP_LABELS, type OnboardingState } from './onboarding-types'
 import { WorkspaceSetupStep } from './WorkspaceSetupStep'
 import { AgentConfigStep } from './AgentConfigStep'
@@ -14,6 +15,7 @@ interface OnboardingWizardProps {
 const TOTAL_STEPS = 5
 
 export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
+  const { t } = useTranslation('smithyNext')
   const [state, dispatch] = useReducer(onboardingReducer, INITIAL_STATE)
 
   const goNext = useCallback(() => {
@@ -64,11 +66,11 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
             overflow: 'hidden',
           }}><img src="/logo.svg" alt="Stoneforge" style={{ width: 24, height: 24, objectFit: 'contain' }} /></div>
           <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-text)' }}>
-            Stoneforge
+            {t('onboarding.stoneforge')}
           </span>
         </div>
         <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', marginBottom: 32 }}>
-          Set up your workspace
+          {t('onboarding.setUpYourWorkspace')}
         </p>
 
         {/* Step indicator */}
@@ -144,7 +146,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
               onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text)')}
               onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-secondary)')}
             >
-              Previous
+              {t('onboarding.previous')}
             </button>
           )}
         </div>
@@ -160,7 +162,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text-secondary)')}
           onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-tertiary)')}
         >
-          Skip onboarding
+          {t('onboarding.skipOnboarding')}
         </button>
 
         <button
@@ -174,7 +176,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           onMouseEnter={e => (e.currentTarget.style.opacity = '0.9')}
           onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
         >
-          {state.step === TOTAL_STEPS - 1 ? 'Launch Workspace' : 'Next'}
+          {state.step === TOTAL_STEPS - 1 ? t('onboarding.launchWorkspace') : t('onboarding.next')}
         </button>
       </div>
     </div>

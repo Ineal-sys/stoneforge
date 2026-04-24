@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import type { ActivityDay } from './metrics-types'
+import { useTranslation } from '@/i18n'
 
 // ── Sparkline ──
 
@@ -195,6 +196,7 @@ export function ActivityHeatmap({ data }: {
   data: ActivityDay[]
 }) {
   const [tooltip, setTooltip] = useState<{ x: number; y: number; day: ActivityDay } | null>(null)
+  const { t } = useTranslation('smithyNext')
 
   const maxTasks = Math.max(...data.map(d => d.tasks), 1)
   const maxMrs = Math.max(...data.map(d => d.mrs), 1)
@@ -245,9 +247,9 @@ export function ActivityHeatmap({ data }: {
 
   // Day label vertical positions as % of grid height
   const dayLabelRows = [
-    { label: 'Mon', pct: (0.5 * step / gridH) * 100 },
-    { label: 'Wed', pct: (2.5 * step / gridH) * 100 },
-    { label: 'Fri', pct: (4.5 * step / gridH) * 100 },
+    { label: t('metrics.charts.mon'), pct: (0.5 * step / gridH) * 100 },
+    { label: t('metrics.charts.wed'), pct: (2.5 * step / gridH) * 100 },
+    { label: t('metrics.charts.fri'), pct: (4.5 * step / gridH) * 100 },
   ]
 
   return (
@@ -337,8 +339,8 @@ export function ActivityHeatmap({ data }: {
               whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
             }}>
               <div style={{ fontWeight: 600, marginBottom: 3 }}>{tooltip.day.date}</div>
-              <div style={{ color: 'var(--color-primary)' }}>{tooltip.day.tasks} tasks completed</div>
-              <div style={{ color: 'var(--color-success)' }}>{tooltip.day.mrs} MRs merged</div>
+              <div style={{ color: 'var(--color-primary)' }}>{tooltip.day.tasks} {t('metrics.charts.tasksCompleted')}</div>
+              <div style={{ color: 'var(--color-success)' }}>{tooltip.day.mrs} {t('metrics.charts.mrsMerged')}</div>
             </div>
           )}
         </div>
@@ -349,19 +351,19 @@ export function ActivityHeatmap({ data }: {
         <div style={{ display: 'flex', gap: 12, fontSize: 11, color: 'var(--color-text-tertiary)' }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
             <span style={{ width: 8, height: 8, borderRadius: 1, background: 'var(--color-primary)', opacity: 0.7 }} />
-            Tasks completed
+            {t('metrics.charts.tasksCompleted')}
           </span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
             <span style={{ width: 8, height: 8, borderRadius: 1, background: 'var(--color-success)', opacity: 0.7 }} />
-            MRs merged
+            {t('metrics.charts.mrsMerged')}
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--color-text-tertiary)' }}>
-          Less
+          {t('metrics.charts.less')}
           {[0.05, 0.25, 0.5, 0.75, 1].map((a, i) => (
             <span key={i} style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 2, background: 'var(--color-primary)', opacity: a }} />
           ))}
-          More
+          {t('metrics.charts.more')}
         </div>
       </div>
     </div>

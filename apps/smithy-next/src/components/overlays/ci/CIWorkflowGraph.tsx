@@ -1,5 +1,6 @@
 import { Check, X, Clock, Loader, Ban, SkipForward } from 'lucide-react'
 import type { CIJob } from './ci-types'
+import { useTranslation } from '@/i18n'
 
 interface CIWorkflowGraphProps {
   jobs: CIJob[]
@@ -21,6 +22,7 @@ interface LayoutNode {
 }
 
 export function CIWorkflowGraph({ jobs, onClickJob }: CIWorkflowGraphProps) {
+  const { t } = useTranslation('smithyNext')
   if (jobs.length === 0) return null
 
   // Topological sort: assign columns by dependency depth
@@ -97,7 +99,7 @@ export function CIWorkflowGraph({ jobs, onClickJob }: CIWorkflowGraphProps) {
 
   return (
     <div style={{ marginBottom: 4 }}>
-      <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 8 }}>Pipeline</div>
+      <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 8 }}>{t('ci.pipeline')}</div>
       <div style={{ overflowX: 'auto', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-subtle)', background: 'var(--color-bg-secondary)', padding: 4 }}>
         <svg width={svgW} height={svgH} style={{ display: 'block' }}>
           {/* Edges */}

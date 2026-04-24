@@ -1,18 +1,20 @@
 import { useState } from 'react'
 import { Check, Circle, AlertTriangle, GitMerge, ChevronDown } from 'lucide-react'
 import type { MergeRequestExtended, MergeStrategy } from './mr-types'
+import { useTranslation } from '@/i18n'
 
 interface MRMergeFlowProps {
   mr: MergeRequestExtended
 }
 
 const strategyLabels: Record<MergeStrategy, string> = {
-  merge: 'Merge commit',
-  squash: 'Squash and merge',
-  rebase: 'Rebase and merge',
-}
+  merge: 'mergeRequest.mergeCommit',
+  squash: 'mergeRequest.squashAndMerge',
+  rebase: 'mergeRequest.rebaseAndMerge',
+} as const
 
 export function MRMergeFlow({ mr }: MRMergeFlowProps) {
+  const { t } = useTranslation('smithyNext')
   const [strategy, setStrategy] = useState<MergeStrategy>(mr.mergeStrategy)
   const [autoMerge, setAutoMerge] = useState(mr.autoMergeEnabled)
   const [strategyOpen, setStrategyOpen] = useState(false)
@@ -25,7 +27,7 @@ export function MRMergeFlow({ mr }: MRMergeFlowProps) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0' }}>
         <GitMerge size={16} strokeWidth={2} style={{ color: 'var(--color-primary)' }} />
-        <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-primary)' }}>Merged</span>
+        <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-primary)' }}>{t('mergeRequest.merged')}</span>
       </div>
     )
   }
@@ -34,7 +36,7 @@ export function MRMergeFlow({ mr }: MRMergeFlowProps) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0' }}>
         <GitMerge size={16} strokeWidth={2} style={{ color: 'var(--color-danger)' }} />
-        <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-danger)' }}>Closed</span>
+        <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-danger)' }}>{t('mergeRequest.closed')}</span>
       </div>
     )
   }
@@ -54,7 +56,7 @@ export function MRMergeFlow({ mr }: MRMergeFlowProps) {
               {gate.label}
             </span>
             {gate.required && (
-              <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>(required)</span>
+              <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>{t('mergeRequest.required')}</span>
             )}
           </div>
         ))}
@@ -69,8 +71,8 @@ export function MRMergeFlow({ mr }: MRMergeFlowProps) {
         }}>
           <AlertTriangle size={13} strokeWidth={2} style={{ color: 'var(--color-warning)', flexShrink: 0 }} />
           <div>
-            <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-warning)' }}>Merge conflicts</div>
-            <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>This branch has conflicts with {mr.targetBranch}</div>
+            <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-warning)' }}>{t('mergeRequest.mergeConflicts')}</div>
+            <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('mergeRequest.branchHasConflictsWith', { target: mr.targetBranch })}</div>
           </div>
         </div>
       )}
@@ -83,7 +85,7 @@ export function MRMergeFlow({ mr }: MRMergeFlowProps) {
           borderRadius: 'var(--radius-sm)', color: 'var(--color-text)', cursor: 'pointer',
           fontSize: 12, fontWeight: 500,
         }}>
-          Mark ready for review
+          {t('mergeRequest.markReadyForReview')}
         </button>
       ) : (
         <>
@@ -97,7 +99,7 @@ export function MRMergeFlow({ mr }: MRMergeFlowProps) {
                 borderRadius: 'var(--radius-sm)', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 12,
               }}
             >
-              {strategyLabels[strategy]}
+              {t(strategyLabels[strategy])}
               <ChevronDown size={12} strokeWidth={1.5} />
             </button>
             {strategyOpen && (
@@ -122,7 +124,7 @@ export function MRMergeFlow({ mr }: MRMergeFlowProps) {
                       onMouseLeave={e => { if (strategy !== s) e.currentTarget.style.background = 'transparent' }}
                     >
                       {strategy === s && <Check size={12} strokeWidth={2} style={{ color: 'var(--color-primary)' }} />}
-                      <span style={{ marginLeft: strategy === s ? 0 : 20 }}>{strategyLabels[s]}</span>
+                      <span style={{ marginLeft: strategy === s ? 0 : 20 }}>{t(strategyLabels[s])}</span>
                     </button>
                   ))}
                 </div>
@@ -139,9 +141,9 @@ export function MRMergeFlow({ mr }: MRMergeFlowProps) {
               style={{ marginTop: 2, accentColor: 'var(--color-primary)' }}
             />
             <div>
-              <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>Enable auto-merge</div>
+              <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>{t('mergeRequest.enableAutoMerge')}</div>
               {autoMerge && (
-                <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 2 }}>Will merge when all checks pass</div>
+                <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 2 }}>{t('mergeRequest.willMergeWhenChecksPass')}</div>
               )}
             </div>
           </label>
@@ -158,10 +160,10 @@ export function MRMergeFlow({ mr }: MRMergeFlowProps) {
               opacity: allRequiredPassed ? 1 : 0.6,
               fontSize: 12, fontWeight: 500,
             }}
-            title={allRequiredPassed ? undefined : 'Required checks must pass before merging'}
+            title={allRequiredPassed ? undefined : t('mergeRequest.requiredChecksMustPass')}
           >
             <GitMerge size={13} strokeWidth={2} />
-            {strategyLabels[strategy]}
+            {t(strategyLabels[strategy])}
           </button>
         </>
       )}

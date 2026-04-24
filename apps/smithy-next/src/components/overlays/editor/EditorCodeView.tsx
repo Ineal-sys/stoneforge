@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Bot, X } from 'lucide-react'
 import { highlightLine, detectLanguage } from '../mr/syntax-highlight'
 import type { AgentFileChange } from './editor-mock-data'
+import { useTranslation } from '@/i18n'
 
 interface Props {
   content: string
@@ -22,6 +23,7 @@ export function EditorCodeView({
   agentChange, scrollToLine, showAgentDiff, onDismissAgentDiff,
   onContentChange,
 }: Props) {
+  const { t } = useTranslation('smithyNext')
   const containerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [hoveredLine, setHoveredLine] = useState<number | null>(null)
@@ -135,23 +137,23 @@ export function EditorCodeView({
         }}>
           <Bot size={14} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
           <span style={{ color: 'var(--color-text-secondary)' }}>
-            Showing changes by <strong style={{ color: 'var(--color-text)', fontWeight: 600 }}>{agentChange.agentName}</strong>
+            {t('editor.showingChangesBy')} <strong style={{ color: 'var(--color-text)', fontWeight: 600 }}>{agentChange.agentName}</strong>
           </span>
           <span style={{ color: 'var(--color-text-tertiary)' }}>&middot;</span>
           <span style={{ color: 'var(--color-text-tertiary)' }}>{agentChange.commitMessage}</span>
           <div style={{ display: 'flex', gap: 6, marginLeft: 4 }}>
             {agentAddedCount > 0 && (
-              <span style={{ color: 'var(--color-success)', fontSize: 11 }}>+{agentAddedCount} added</span>
+              <span style={{ color: 'var(--color-success)', fontSize: 11 }}>{`+${agentAddedCount} ${t('editor.added')}`}</span>
             )}
             {agentModifiedCount > 0 && (
-              <span style={{ color: 'var(--color-warning)', fontSize: 11 }}>~{agentModifiedCount} modified</span>
+              <span style={{ color: 'var(--color-warning)', fontSize: 11 }}>{`~${agentModifiedCount} ${t('editor.modified')}`}</span>
             )}
           </div>
           <div style={{ flex: 1 }} />
           {onDismissAgentDiff && (
             <button
               onClick={onDismissAgentDiff}
-              title="Dismiss diff highlighting"
+              title={t('editor.dismissDiffHighlighting')}
               style={{
                 width: 20, height: 20,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -336,7 +338,7 @@ export function EditorCodeView({
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 10, color: 'var(--color-primary)',
             }}>
-              AI
+              {t('editor.aiBadge')}
             </span>
             <span style={{ fontWeight: 600, color: 'var(--color-text)' }}>{agentChange.agentName}</span>
             <span style={{ color: 'var(--color-text-tertiary)' }}>&middot; {agentChange.changedAt}</span>
@@ -352,8 +354,8 @@ export function EditorCodeView({
             borderTop: '1px solid var(--color-border-subtle)',
             fontSize: 11, color: 'var(--color-text-tertiary)',
           }}>
-            <span>Task: {agentChange.taskId}</span>
-            {agentChange.mrId && <span>MR: {agentChange.mrId}</span>}
+            <span>{t('editor.taskLabel')} {agentChange.taskId}</span>
+            {agentChange.mrId && <span>{t('editor.mrLabel')} {agentChange.mrId}</span>}
           </div>
         </div>
       )}

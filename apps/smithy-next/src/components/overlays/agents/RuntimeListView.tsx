@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from '@/i18n'
 import { Plus, ChevronRight, Server, Monitor, Cloud } from 'lucide-react'
 import type { Runtime, Host } from './agent-types'
 import { mockHosts } from './agent-mock-data'
@@ -36,6 +37,7 @@ function formatLastSeen(ts?: string): string {
 }
 
 export function RuntimeListView({ runtimes, onSelectRuntime, onCreateRuntime }: RuntimeListViewProps) {
+  const { t } = useTranslation('smithyNext')
   const [daemonRunning, setDaemonRunning] = useState(() => {
     const dr = runtimes.find(r => r.isDefault)
     return !!dr && dr.status === 'online'
@@ -57,7 +59,7 @@ export function RuntimeListView({ runtimes, onSelectRuntime, onCreateRuntime }: 
         alignItems: 'center',
         gap: 8,
       }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', flex: 1 }}>Runtimes</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', flex: 1 }}>{t('agents.runtimeList.runtimes')}</span>
         <button
           onClick={onCreateRuntime}
           style={{
@@ -75,7 +77,7 @@ export function RuntimeListView({ runtimes, onSelectRuntime, onCreateRuntime }: 
             gap: 5,
           }}
         >
-          <Plus size={12} strokeWidth={2} /> New Runtime
+          <Plus size={12} strokeWidth={2} /> {t('agents.runtimeList.newRuntime')}
         </button>
       </div>
 
@@ -95,7 +97,7 @@ export function RuntimeListView({ runtimes, onSelectRuntime, onCreateRuntime }: 
             <span style={{
               fontSize: 12, fontWeight: 600, color: '#7c3aed',
             }}>
-              Dispatch Daemon
+              {t('agents.runtimeList.dispatchDaemon')}
             </span>
             <span style={{
               fontSize: 11, fontWeight: 500, padding: '1px 6px',
@@ -103,12 +105,12 @@ export function RuntimeListView({ runtimes, onSelectRuntime, onCreateRuntime }: 
               background: daemonRunning ? 'rgba(124,58,237,0.1)' : 'var(--color-danger-subtle)',
               color: daemonRunning ? '#7c3aed' : 'var(--color-danger)',
             }}>
-              {daemonRunning ? 'Running' : 'Stopped'}
+              {daemonRunning ? t('agents.runtimeList.running') : t('agents.runtimeList.stopped')}
             </span>
             <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', display: 'flex', alignItems: 'center', gap: 4 }}>
-              on{' '}
+              {t('agents.runtimeList.on')}{' '}
               {daemonRunning ? (
-                <Tooltip label="Stop the daemon to change the runtime" placement="bottom">
+                <Tooltip label={t('agents.runtimeList.stopDaemonTooltip')} placement="bottom">
                   <span
                     style={{
                       fontSize: 11, fontWeight: 500, padding: '1px 8px',
@@ -156,7 +158,7 @@ export function RuntimeListView({ runtimes, onSelectRuntime, onCreateRuntime }: 
                 color: daemonRunning ? 'var(--color-danger)' : 'var(--color-success)',
               }}
             >
-              {daemonRunning ? 'Stop' : 'Start'}
+              {daemonRunning ? t('agents.runtimeList.stop') : t('agents.runtimeList.start')}
             </button>
           </div>
         )
@@ -167,14 +169,14 @@ export function RuntimeListView({ runtimes, onSelectRuntime, onCreateRuntime }: 
         {runtimes.length === 0 && (
           <div style={{ padding: 48, textAlign: 'center' }}>
             <Server size={32} strokeWidth={1} style={{ color: 'var(--color-text-tertiary)', marginBottom: 12 }} />
-            <div style={{ color: 'var(--color-text-secondary)', fontSize: 13, marginBottom: 4 }}>No runtimes configured</div>
-            <div style={{ color: 'var(--color-text-tertiary)', fontSize: 12, marginBottom: 16 }}>Create a runtime to define where your agents run.</div>
+            <div style={{ color: 'var(--color-text-secondary)', fontSize: 13, marginBottom: 4 }}>{t('agents.runtimeList.noRuntimesConfigured')}</div>
+            <div style={{ color: 'var(--color-text-tertiary)', fontSize: 12, marginBottom: 16 }}>{t('agents.runtimeList.createRuntimeDescription')}</div>
             <button onClick={onCreateRuntime} style={{
               height: 30, padding: '0 14px', display: 'inline-flex', alignItems: 'center', gap: 6,
               background: 'var(--color-primary)', border: 'none', borderRadius: 'var(--radius-sm)',
               color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
             }}>
-              <Plus size={13} strokeWidth={2} /> Create runtime
+              <Plus size={13} strokeWidth={2} /> {t('agents.runtimeList.createRuntime')}
             </button>
           </div>
         )}
@@ -187,6 +189,7 @@ export function RuntimeListView({ runtimes, onSelectRuntime, onCreateRuntime }: 
 }
 
 function RuntimeRow({ runtime: rt, onClick }: { runtime: Runtime; onClick: () => void }) {
+  const { t } = useTranslation('smithyNext')
   const [hovered, setHovered] = useState(false)
   const dotColor = statusDotColor[rt.status] || 'var(--color-text-tertiary)'
 
@@ -255,7 +258,7 @@ function RuntimeRow({ runtime: rt, onClick }: { runtime: Runtime; onClick: () =>
         fontSize: 11, color: 'var(--color-text-tertiary)',
         fontFamily: 'var(--font-mono)', flexShrink: 0,
       }}>
-        {rt.assignedAgentCount} active
+        {rt.assignedAgentCount} {t('agents.runtimeList.active')}
       </span>
 
       {/* Last health check */}

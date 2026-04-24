@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from '@/i18n'
 import type { AgentExtended, RoleDefinition, Runtime } from './agents/agent-types'
 import type { AgentDetailTab } from './agents/AgentDetailView'
 import { AgentListView } from './agents/AgentListView'
@@ -43,6 +44,7 @@ interface AgentsOverlayProps {
 }
 
 export function AgentsOverlay({ onBack: _onBack, onNavigateToWhiteboard, onNavigateToTask, onNavigateToSession, onNavigateToRuntimes, onNavigateToMR, initialAgentId, initialTab, initialCreate, initialSessionId, initialSessionEventId, initialSessionsView, onAgentChange, onCreateChange, onSessionChange, onSessionsViewChange, onCreateSession, tasks }: AgentsOverlayProps) {
+  const { t } = useTranslation('smithyNext')
   const [agents, setAgents] = useState<AgentExtended[]>(mockAgentsExtended)
   const [roleDefinitions, setRoleDefinitions] = useState<RoleDefinition[]>(mockRoleDefinitions)
   const [runtimes, setRuntimes] = useState<Runtime[]>(mockRuntimes)
@@ -216,7 +218,7 @@ export function AgentsOverlay({ onBack: _onBack, onNavigateToWhiteboard, onNavig
             {showSidebar && (
               <div style={{ width: 200, borderRight: '1px solid var(--color-border)', overflow: 'auto', flexShrink: 0 }}>
                 <div style={{ padding: '10px 12px', fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', borderBottom: '1px solid var(--color-border-subtle)', textTransform: 'uppercase' as const, letterSpacing: '0.05em' }}>
-                  Role Definitions
+                  {t('agents.overlay.roleDefinitionsSidebar')}
                 </div>
                 {roleDefinitions.map(rd => {
                   const badge = categoryBadgeColors[rd.category || ''] || { bg: 'var(--color-surface)', text: 'var(--color-text-secondary)' }
@@ -280,7 +282,7 @@ export function AgentsOverlay({ onBack: _onBack, onNavigateToWhiteboard, onNavig
             {showSidebar && (
               <div style={{ width: 200, borderRight: '1px solid var(--color-border)', overflow: 'auto', flexShrink: 0 }}>
                 <div style={{ padding: '10px 12px', fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', borderBottom: '1px solid var(--color-border-subtle)', textTransform: 'uppercase' as const, letterSpacing: '0.05em' }}>
-                  Runtimes
+                  {t('agents.overlay.runtimesSidebar')}
                 </div>
                 {runtimes.map(rt => (
                   <button
@@ -295,7 +297,7 @@ export function AgentsOverlay({ onBack: _onBack, onNavigateToWhiteboard, onNavig
                     }}
                   >
                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusDotColors[rt.status] || 'var(--color-text-tertiary)', flexShrink: 0 }} />
-                    <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{rt.name || '(new runtime)'}</span>
+                    <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{rt.name || t('agents.overlay.newRuntimeSidebar')}</span>
                   </button>
                 ))}
               </div>
@@ -444,10 +446,10 @@ export function AgentsOverlay({ onBack: _onBack, onNavigateToWhiteboard, onNavig
         {showTopTabs && (
           <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--color-border-subtle)', flexShrink: 0, padding: '0 16px' }}>
             {([
-              { key: 'agents' as const, label: `Agents (${agents.length})` },
-              { key: 'sessions' as const, label: `Sessions (${mockSessions.length})` },
-              { key: 'roles' as const, label: `Role Definitions (${roleDefinitions.length})` },
-              { key: 'runtimes' as const, label: `Runtimes (${runtimes.length})` },
+              { key: 'agents' as const, label: `${t('agents.overlay.agentsTab')} (${agents.length})` },
+              { key: 'sessions' as const, label: `${t('agents.overlay.sessionsTab')} (${mockSessions.length})` },
+              { key: 'roles' as const, label: `${t('agents.overlay.roleDefinitionsTab')} (${roleDefinitions.length})` },
+              { key: 'runtimes' as const, label: `${t('agents.overlay.runtimesTab')} (${runtimes.length})` },
             ]).map(tab => (
               <button
                 key={tab.key}

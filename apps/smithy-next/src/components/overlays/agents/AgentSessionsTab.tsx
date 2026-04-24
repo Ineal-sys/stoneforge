@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from '@/i18n'
 import { Clock, GitBranch, ExternalLink, FileText, Cpu } from 'lucide-react'
 import type { AgentExtended } from './agent-types'
 import type { Session } from '../sessions/session-types'
@@ -19,6 +20,7 @@ const statusColor: Record<string, string> = {
 }
 
 export function AgentSessionsTab({ agent, onNavigateToTask, onNavigateToSession }: AgentSessionsTabProps) {
+  const { t } = useTranslation('smithyNext')
   const [filter, setFilter] = useState<SessionFilter>('all')
   const { isTeamMode } = useTeamContext()
 
@@ -60,7 +62,7 @@ export function AgentSessionsTab({ agent, onNavigateToTask, onNavigateToSession 
               color: filter === f ? 'var(--color-text)' : 'var(--color-text-tertiary)',
             }}
           >
-            {f.charAt(0).toUpperCase() + f.slice(1)} {counts[f] > 0 && `(${counts[f]})`}
+            {t(`agents.sessionsTab.${f}`)} {counts[f] > 0 && `(${counts[f]})`}
           </button>
         ))}
       </div>
@@ -68,7 +70,7 @@ export function AgentSessionsTab({ agent, onNavigateToTask, onNavigateToSession 
       {/* Sessions list */}
       {sessions.length === 0 ? (
         <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 13 }}>
-          {filter === 'all' ? 'No sessions yet' : `No ${filter} sessions`}
+          {filter === 'all' ? t('agents.sessionsTab.noSessionsYet') : t('agents.sessionsTab.noFilterSessions', { filter })}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -80,6 +82,7 @@ export function AgentSessionsTab({ agent, onNavigateToTask, onNavigateToSession 
               isTeamMode={isTeamMode}
               onNavigateToSession={onNavigateToSession}
               onNavigateToTask={onNavigateToTask}
+              t={t}
             />
           ))}
         </div>
@@ -88,12 +91,13 @@ export function AgentSessionsTab({ agent, onNavigateToTask, onNavigateToSession 
   )
 }
 
-function SessionRow({ session, launchedByUserId, isTeamMode, onNavigateToSession, onNavigateToTask }: {
+function SessionRow({ session, launchedByUserId, isTeamMode, onNavigateToSession, onNavigateToTask, t }: {
   session: Session
   launchedByUserId?: string
   isTeamMode?: boolean
   onNavigateToSession?: (sessionId: string) => void
   onNavigateToTask?: (taskId: string) => void
+  t: (key: string, options?: Record<string, unknown>) => string
 }) {
   const [hovered, setHovered] = useState(false)
   const { getUserById } = useTeamContext()
@@ -128,7 +132,7 @@ function SessionRow({ session, launchedByUserId, isTeamMode, onNavigateToSession
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 3, fontSize: 11, color: 'var(--color-text-tertiary)' }}>
           {/* Team mode: "Started by [name]" */}
           {isTeamMode && launcherUser && (
-            <span>Started by {launcherUser.name}</span>
+            <span>{t('agents.sessionsTab.startedBy', { name: launcherUser.name })}</span>
           )}
           <span>{session.startedAt}</span>
           {session.linkedBranch && (
@@ -162,7 +166,7 @@ function SessionRow({ session, launchedByUserId, isTeamMode, onNavigateToSession
       {/* Files count */}
       {session.files && session.files.length > 0 && (
         <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)', flexShrink: 0 }}>
-          {session.files.length} files
+          {t('agents.sessionsTab.files', { count: session.files.length })}
         </span>
       )}
 

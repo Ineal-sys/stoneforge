@@ -7,6 +7,7 @@ import {
 import type { Workflow, WFRun, WFFilterField, WFActiveFilter, WFSortField, WFGroupField } from './wf-types'
 import { WorkflowFilterPanel } from './WorkflowFilterPanel'
 import { useTeamContext } from '../../../TeamContext'
+import { useTranslation } from '@/i18n'
 
 interface WorkflowListViewProps {
   workflows: Workflow[]
@@ -19,8 +20,8 @@ const statusDotColor: Record<string, string> = {
   active: 'var(--color-success)', disabled: 'var(--color-text-tertiary)', error: 'var(--color-danger)', draft: 'var(--color-warning)',
 }
 
-const triggerLabels: Record<string, string> = {
-  cron: 'Cron', event: 'Event', manual: 'Manual', webhook: 'Webhook',
+const triggerLabelKeys: Record<string, string> = {
+  cron: 'automations.cron', event: 'automations.event', manual: 'automations.manual', webhook: 'automations.webhook',
 }
 
 const lastRunStatusIcon: Record<string, typeof Check> = {
@@ -38,13 +39,8 @@ function getStepTypeIcon(wf: Workflow) {
   return Terminal
 }
 
-function getTriggerDisplay(wf: Workflow): string {
-  if (wf.trigger.cronHumanReadable) return wf.trigger.cronHumanReadable
-  if (wf.trigger.eventType) return wf.trigger.eventType.replace(/_/g, ' ')
-  return triggerLabels[wf.trigger.type] || wf.trigger.type
-}
-
 export function WorkflowListView({ workflows, workflowRuns, onSelectWorkflow, onCreate }: WorkflowListViewProps) {
+  const { t } = useTranslation('smithyNext')
   const { isTeamMode } = useTeamContext()
   const [searchQuery, setSearchQuery] = useState('')
   const [searchExpanded, setSearchExpanded] = useState(false)
@@ -78,7 +74,7 @@ export function WorkflowListView({ workflows, workflowRuns, onSelectWorkflow, on
       result = result.filter(wf =>
         wf.name.toLowerCase().includes(q) ||
         (wf.description || '').toLowerCase().includes(q) ||
-        wf.tags.some(t => t.toLowerCase().includes(q))
+        wf.tags.some(tag => tag.toLowerCase().includes(q))
       )
     }
 
@@ -104,12 +100,25 @@ export function WorkflowListView({ workflows, workflowRuns, onSelectWorkflow, on
     return result
   }, [workflows, searchQuery, filters, sortField, sortAsc, isTeamMode, scopeFilter])
 
+  const triggerDisplay = (wf: Workflow): string => {
+    if (wf.trigger.cronHumanReadable) return wf.trigger.cronHumanReadable
+    if (wf.trigger.eventType) return wf.trigger.eventType.replace(/_/g, ' ')
+    return triggerLabelKeys[wf.trigger.type] ? t(triggerLabelKeys[wf.trigger.type]) : wf.trigger.type
+  }
+
+  const statusGroupLabels: Record<string, string> = {
+    active: t('automations.active'),
+    error: t('automations.error'),
+    disabled: t('automations.disabled'),
+    draft: t('automations.draft'),
+  }
+
   const grouped = useMemo(() => {
-    if (groupBy === 'none') return [{ key: 'all', label: 'All automations', items: filtered }]
+    if (groupBy === 'none') return [{ key: 'all', label: t('automations.allAutomations'), items: filtered }]
     if (groupBy === 'trigger') {
       const groups = new Map<string, Workflow[]>()
       filtered.forEach(wf => {
-        const key = triggerLabels[wf.trigger.type] || wf.trigger.type
+        const key = triggerLabelKeys[wf.trigger.type] ? t(triggerLabelKeys[wf.trigger.type]) : wf.trigger.type
         if (!groups.has(key)) groups.set(key, [])
         groups.get(key)!.push(wf)
       })
@@ -118,29 +127,29 @@ export function WorkflowListView({ workflows, workflowRuns, onSelectWorkflow, on
     // Default: group by status
     const active = filtered.filter(wf => wf.status === 'active')
     const errored = filtered.filter(wf => wf.status === 'error')
-    const disabled = filtered.filter(wf => wf.status === 'disabled')
-    const draft = filtered.filter(wf => wf.status === 'draft')
+    const disabledGrp = filtered.filter(wf => wf.status === 'disabled')
+    const draftGrp = filtered.filter(wf => wf.status === 'draft')
     const groups: { key: string; label: string; items: Workflow[] }[] = []
-    if (active.length) groups.push({ key: 'active', label: 'Active', items: active })
-    if (errored.length) groups.push({ key: 'error', label: 'Error', items: errored })
-    if (disabled.length) groups.push({ key: 'disabled', label: 'Disabled', items: disabled })
-    if (draft.length) groups.push({ key: 'draft', label: 'Draft', items: draft })
+    if (active.length) groups.push({ key: 'active', label: statusGroupLabels['active'], items: active })
+    if (errored.length) groups.push({ key: 'error', label: statusGroupLabels['error'], items: errored })
+    if (disabledGrp.length) groups.push({ key: 'disabled', label: statusGroupLabels['disabled'], items: disabledGrp })
+    if (draftGrp.length) groups.push({ key: 'draft', label: statusGroupLabels['draft'], items: draftGrp })
     return groups
-  }, [filtered, groupBy])
+  }, [filtered, groupBy, statusGroupLabels])
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Toolbar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', flexShrink: 0, borderBottom: '1px solid var(--color-border-subtle)', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>Automations</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{t('automations.automations')}</span>
 
         {/* Scope filter tabs (team-mode only) */}
         {isTeamMode && (
           <div style={{ display: 'flex', gap: 1, background: 'var(--color-surface)', borderRadius: 'var(--radius-sm)', padding: 1 }}>
             {([
-              { key: 'personal' as const, label: 'Personal', icon: Lock },
-              { key: 'team' as const, label: 'Team', icon: Users },
-              { key: 'all' as const, label: 'All', icon: null },
+              { key: 'personal' as const, label: t('automations.personal'), icon: Lock },
+              { key: 'team' as const, label: t('automations.team'), icon: Users },
+              { key: 'all' as const, label: t('automations.all'), icon: null },
             ]).map(({ key, label, icon: ScopeIcon }) => (
               <button key={key} onClick={() => setScopeFilter(key)} style={{
                 height: 22, padding: '0 8px', display: 'flex', alignItems: 'center', gap: 4,
@@ -168,7 +177,7 @@ export function WorkflowListView({ workflows, workflowRuns, onSelectWorkflow, on
           </span>
         ))}
         {filters.length > 0 && (
-          <button onClick={() => setFilters([])} style={{ height: 22, padding: '0 6px', border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11 }}>Clear all</button>
+          <button onClick={() => setFilters([])} style={{ height: 22, padding: '0 6px', border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11 }}>{t('automations.clearAll')}</button>
         )}
 
         <div style={{ flex: 1 }} />
@@ -183,7 +192,7 @@ export function WorkflowListView({ workflows, workflowRuns, onSelectWorkflow, on
             }}>
               <Search size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
               <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search automations..."
+                placeholder={t('automations.searchAutomations')}
                 style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
               {searchQuery && (
                 <button onClick={() => setSearchQuery('')} style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', padding: 0, display: 'flex' }}>
@@ -202,7 +211,7 @@ export function WorkflowListView({ workflows, workflowRuns, onSelectWorkflow, on
               }}>
                 <Search size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
                 <input ref={searchInputRef} autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Search..."
+                  placeholder={t('automations.searchAutomations')}
                   onBlur={() => { if (!searchQuery) setSearchExpanded(false) }}
                   style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 12, fontFamily: 'inherit' }} />
                 <button onClick={() => { setSearchQuery(''); setSearchExpanded(false) }} style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', padding: 0, display: 'flex' }}>
@@ -226,7 +235,7 @@ export function WorkflowListView({ workflows, workflowRuns, onSelectWorkflow, on
             color: filters.length > 0 ? 'var(--color-text-accent)' : 'var(--color-text-tertiary)',
             cursor: 'pointer', fontSize: 11, fontWeight: 500,
           }}>
-            <Filter size={12} strokeWidth={1.5} /> Filter {filters.length > 0 && `(${filters.length})`}
+            <Filter size={12} strokeWidth={1.5} /> {t('automations.filter')} {filters.length > 0 && `(${filters.length})`}
           </button>
           {filterOpen && (
             <WorkflowFilterPanel workflows={workflows} filters={filters} onToggleFilter={toggleFilter} onClose={() => setFilterOpen(false)} />
@@ -242,7 +251,7 @@ export function WorkflowListView({ workflows, workflowRuns, onSelectWorkflow, on
             color: displayOpen ? 'var(--color-text)' : 'var(--color-text-tertiary)',
             cursor: 'pointer', fontSize: 11, fontWeight: 500,
           }}>
-            <SlidersHorizontal size={12} strokeWidth={1.5} /> Display
+            <SlidersHorizontal size={12} strokeWidth={1.5} /> {t('automations.display')}
           </button>
           {displayOpen && (
             <DisplayPanel groupBy={groupBy} onGroupBy={setGroupBy} sortField={sortField} onSortField={setSortField}
@@ -256,7 +265,7 @@ export function WorkflowListView({ workflows, workflowRuns, onSelectWorkflow, on
           background: 'var(--color-primary)', border: 'none', borderRadius: 'var(--radius-sm)',
           color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
         }}>
-          <Zap size={12} strokeWidth={2} /> New automation
+          <Zap size={12} strokeWidth={2} /> {t('automations.newAutomation')}
         </button>
       </div>
 
@@ -272,7 +281,7 @@ export function WorkflowListView({ workflows, workflowRuns, onSelectWorkflow, on
             )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {group.items.map(wf => (
-                <WorkflowRow key={wf.id} workflow={wf} onClick={() => onSelectWorkflow(wf)} />
+                <WorkflowRow key={wf.id} workflow={wf} onClick={() => onSelectWorkflow(wf)} triggerDisplay={triggerDisplay} />
               ))}
             </div>
           </div>
@@ -280,7 +289,7 @@ export function WorkflowListView({ workflows, workflowRuns, onSelectWorkflow, on
 
         {filtered.length === 0 && (
           <div style={{ padding: 48, textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 13 }}>
-            {searchQuery || filters.length > 0 ? 'No automations match your filters' : 'No automations yet'}
+            {searchQuery || filters.length > 0 ? t('automations.noAutomationsMatchFilters') : t('automations.noAutomationsYet')}
           </div>
         )}
       </div>
@@ -300,7 +309,8 @@ export function WorkflowListView({ workflows, workflowRuns, onSelectWorkflow, on
   )
 }
 
-function WorkflowRow({ workflow: wf, onClick }: { workflow: Workflow; onClick: () => void }) {
+function WorkflowRow({ workflow: wf, onClick, triggerDisplay }: { workflow: Workflow; onClick: () => void; triggerDisplay: (wf: Workflow) => string }) {
+  const { t } = useTranslation('smithyNext')
   const { isTeamMode } = useTeamContext()
   const [menuOpen, setMenuOpen] = useState(false)
   const TypeIcon = getStepTypeIcon(wf)
@@ -338,27 +348,27 @@ function WorkflowRow({ workflow: wf, onClick }: { workflow: Workflow; onClick: (
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--color-text-tertiary)' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            <Clock size={10} strokeWidth={1.5} /> {getTriggerDisplay(wf)}
+            <Clock size={10} strokeWidth={1.5} /> {triggerDisplay(wf)}
           </span>
-          <span>{wf.steps.length} step{wf.steps.length !== 1 ? 's' : ''}</span>
+          <span>{wf.steps.length} {wf.steps.length !== 1 ? t('automations.steps') : t('automations.steps')}</span>
           {wf.linkedCIActionId && (
             <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: 'var(--color-text-accent)' }}>
-              <CircleDot size={10} strokeWidth={1.5} /> CI
+              <CircleDot size={10} strokeWidth={1.5} /> {t('automations.ci')}
             </span>
           )}
           {isTeamMode && wf.approvalRequired && (
             <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: 'var(--color-warning)' }}>
-              <ShieldCheck size={10} strokeWidth={1.5} /> Approval
+              <ShieldCheck size={10} strokeWidth={1.5} /> {t('automations.approval')}
             </span>
           )}
           {isTeamMode && wf.scope && (
             <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
               {wf.scope === 'personal' ? <Lock size={9} strokeWidth={1.5} /> : <Users size={9} strokeWidth={1.5} />}
-              {wf.scope === 'personal' ? 'Personal' : 'Team'}
+              {wf.scope === 'personal' ? t('automations.personal') : t('automations.team')}
             </span>
           )}
-          {wf.lastRunAt && <span>Last: {wf.lastRunAt}</span>}
-          <span>{wf.totalRuns} run{wf.totalRuns !== 1 ? 's' : ''}</span>
+          {wf.lastRunAt && <span>{t('automations.lastLabel', { date: wf.lastRunAt })}</span>}
+          <span>{t('automations.runCount', { count: wf.totalRuns })}</span>
         </div>
       </div>
 
@@ -385,10 +395,10 @@ function WorkflowRow({ workflow: wf, onClick }: { workflow: Workflow; onClick: (
               background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-float)', padding: 4,
             }}>
-              <MenuItem icon={Pencil} label="Edit" onClick={() => setMenuOpen(false)} />
-              <MenuItem icon={Copy} label="Duplicate" onClick={() => setMenuOpen(false)} />
-              <MenuItem icon={wf.status === 'active' ? PowerOff : Power} label={wf.status === 'active' ? 'Disable' : 'Enable'} onClick={() => setMenuOpen(false)} />
-              <MenuItem icon={Trash2} label="Delete" color="var(--color-danger)" onClick={() => setMenuOpen(false)} />
+              <MenuItem icon={Pencil} label={t('automations.edit')} onClick={() => setMenuOpen(false)} />
+              <MenuItem icon={Copy} label={t('automations.duplicate')} onClick={() => setMenuOpen(false)} />
+              <MenuItem icon={wf.status === 'active' ? PowerOff : Power} label={wf.status === 'active' ? t('automations.disable') : t('automations.enable')} onClick={() => setMenuOpen(false)} />
+              <MenuItem icon={Trash2} label={t('automations.delete')} color="var(--color-danger)" onClick={() => setMenuOpen(false)} />
             </div>
           </>
         )}
@@ -418,6 +428,21 @@ function DisplayPanel({ groupBy, onGroupBy, sortField, onSortField, sortAsc, onS
   sortAsc: boolean; onSortAsc: (v: boolean) => void
   onClose: () => void
 }) {
+  const { t } = useTranslation('smithyNext')
+
+  const groupLabels: Record<string, string> = {
+    status: t('automations.status'),
+    trigger: t('automations.trigger'),
+    none: t('automations.none'),
+  }
+
+  const sortLabels: Record<string, string> = {
+    lastRun: t('automations.lastRun'),
+    name: t('automations.name'),
+    totalRuns: t('automations.totalRuns'),
+    created: t('automations.createdLabel'),
+  }
+
   return (
     <>
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1050 }} />
@@ -428,7 +453,7 @@ function DisplayPanel({ groupBy, onGroupBy, sortField, onSortField, sortAsc, onS
       }}>
         {/* Group by */}
         <div style={{ marginBottom: 8 }}>
-          <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', padding: '4px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Group by</div>
+          <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', padding: '4px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('automations.groupBy')}</div>
           {(['status', 'trigger', 'none'] as WFGroupField[]).map(g => (
             <button key={g} onClick={() => { onGroupBy(g); onClose() }} style={{
               width: '100%', display: 'flex', alignItems: 'center', gap: 6, padding: '5px 6px',
@@ -436,15 +461,15 @@ function DisplayPanel({ groupBy, onGroupBy, sortField, onSortField, sortAsc, onS
               border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
               color: groupBy === g ? 'var(--color-text)' : 'var(--color-text-secondary)', fontSize: 12, textAlign: 'left',
             }}>
-              {g === 'none' ? 'None' : g.charAt(0).toUpperCase() + g.slice(1)}
+              {groupLabels[g]}
             </button>
           ))}
         </div>
 
         {/* Sort by */}
         <div style={{ borderTop: '1px solid var(--color-border-subtle)', paddingTop: 8 }}>
-          <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', padding: '4px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sort by</div>
-          {([['lastRun', 'Last run'], ['name', 'Name'], ['totalRuns', 'Total runs'], ['created', 'Created']] as [WFSortField, string][]).map(([field, label]) => (
+          <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', padding: '4px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('automations.sortBy')}</div>
+          {(['lastRun', 'name', 'totalRuns', 'created'] as WFSortField[]).map(field => (
             <button key={field} onClick={() => {
               if (sortField === field) onSortAsc(!sortAsc)
               else { onSortField(field); onSortAsc(false) }
@@ -458,7 +483,7 @@ function DisplayPanel({ groupBy, onGroupBy, sortField, onSortField, sortAsc, onS
                 ? (sortAsc ? <ArrowUp size={11} strokeWidth={1.5} /> : <ArrowDown size={11} strokeWidth={1.5} />)
                 : <ArrowUpDown size={11} strokeWidth={1.5} style={{ opacity: 0.3 }} />
               }
-              {label}
+              {sortLabels[field]}
             </button>
           ))}
         </div>

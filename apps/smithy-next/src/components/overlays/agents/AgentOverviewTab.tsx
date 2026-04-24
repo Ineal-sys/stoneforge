@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from '@/i18n'
 import { Activity, Clock, CheckCircle, AlertTriangle, GitBranch, Zap, ExternalLink, FileText } from 'lucide-react'
 import type { AgentExtended } from './agent-types'
 import { mockSessions } from '../../../mock-data'
@@ -20,6 +21,7 @@ const eventTypeColor: Record<string, string> = {
 }
 
 export function AgentOverviewTab({ agent, onNavigateToTask, onNavigateToSession }: AgentOverviewTabProps) {
+  const { t } = useTranslation('smithyNext')
   const activeSession = agent.sessions.find(s => s.status === 'active')
 
   const recentSessions = useMemo(() => {
@@ -42,24 +44,24 @@ export function AgentOverviewTab({ agent, onNavigateToTask, onNavigateToSession 
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       {/* Metrics row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 12 }}>
-        <MetricCard label="Sessions" value={String(agent.sessions.length)} />
-        <MetricCard label="Tasks completed" value={String(agent.totalTasksCompleted)} />
-        <MetricCard label="Total uptime" value={agent.totalUptime} />
-        <MetricCard label="Error rate" value={`${agent.errorRate}%`} color={agent.errorRate > 5 ? 'var(--color-danger)' : undefined} />
+        <MetricCard label={t('agents.overview.sessions')} value={String(agent.sessions.length)} />
+        <MetricCard label={t('agents.overview.tasksCompleted')} value={String(agent.totalTasksCompleted)} />
+        <MetricCard label={t('agents.overview.totalUptime')} value={agent.totalUptime} />
+        <MetricCard label={t('agents.overview.errorRate')} value={`${agent.errorRate}%`} color={agent.errorRate > 5 ? 'var(--color-danger)' : undefined} />
       </div>
 
       {/* Capacity */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <SectionTitle>Capacity</SectionTitle>
+          <SectionTitle>{t('agents.overview.capacity')}</SectionTitle>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Max concurrent:</span>
+              <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('agents.overview.maxConcurrent')}</span>
               <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--color-text)' }}>{agent.maxConcurrentTasks ?? 1}</span>
             </div>
             {agent.spawnPriority != null && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Priority:</span>
+                <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('agents.overview.priority')}</span>
                 <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--color-text)' }}>{agent.spawnPriority}</span>
               </div>
             )}
@@ -81,15 +83,15 @@ export function AgentOverviewTab({ agent, onNavigateToTask, onNavigateToSession 
       {/* Active session */}
       {activeSession && (
         <div>
-          <SectionTitle>Active Session</SectionTitle>
+          <SectionTitle>{t('agents.overview.activeSession')}</SectionTitle>
           <div style={{
             padding: 12, borderRadius: 'var(--radius-md)', background: 'var(--color-bg-elevated)',
             border: '1px solid var(--color-border-subtle)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-success)', animation: 'pulse 2s infinite' }} />
-              <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text)' }}>Running for {activeSession.duration}</span>
-              <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>· {activeSession.tasksCompleted} tasks completed</span>
+              <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text)' }}>{t('agents.overview.runningFor', { duration: activeSession.duration })}</span>
+              <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>· {t('agents.overview.tasksCompletedCount', { count: activeSession.tasksCompleted })}</span>
             </div>
             {activeSession.tasks.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 }}>
@@ -122,9 +124,9 @@ export function AgentOverviewTab({ agent, onNavigateToTask, onNavigateToSession 
 
       {/* Recent Sessions */}
       <div>
-        <SectionTitle>Recent Sessions</SectionTitle>
+        <SectionTitle>{t('agents.overview.recentSessions')}</SectionTitle>
         {recentSessions.length === 0 ? (
-          <div style={{ padding: 16, textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 12 }}>No sessions yet</div>
+          <div style={{ padding: 16, textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 12 }}>{t('agents.overview.noSessionsYet')}</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {recentSessions.map(session => (
@@ -158,9 +160,9 @@ export function AgentOverviewTab({ agent, onNavigateToTask, onNavigateToSession 
 
       {/* Recent Tasks */}
       <div>
-        <SectionTitle>Recent Tasks</SectionTitle>
+        <SectionTitle>{t('agents.overview.recentTasks')}</SectionTitle>
         {recentTasks.length === 0 ? (
-          <div style={{ padding: 16, textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 12 }}>No tasks yet</div>
+          <div style={{ padding: 16, textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 12 }}>{t('agents.overview.noTasksYet')}</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {recentTasks.map(task => (
@@ -181,7 +183,7 @@ export function AgentOverviewTab({ agent, onNavigateToTask, onNavigateToSession 
                 }} />
                 <span style={{ fontSize: 12, color: 'var(--color-text)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{task.title}</span>
                 <span style={{ fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 'var(--radius-full)', background: 'var(--color-surface)', color: task.status === 'in-progress' ? 'var(--color-warning)' : task.status === 'done' ? 'var(--color-success)' : 'var(--color-text-tertiary)', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                  {task.status === 'in-progress' ? 'In Progress' : task.status === 'done' ? 'Done' : task.status === 'error' ? 'Error' : 'Open'}
+                  {task.status === 'in-progress' ? t('agents.overview.inProgress') : task.status === 'done' ? t('agents.overview.done') : task.status === 'error' ? t('agents.overview.taskError') : t('agents.overview.open')}
                 </span>
                 <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', flexShrink: 0, fontFamily: 'var(--font-mono)' }}>{task.timeSpent}</span>
                 {task.branch && <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: 'var(--color-text-tertiary)', flexShrink: 0 }}><GitBranch size={9} strokeWidth={1.5} /> {task.branch}</span>}
@@ -193,9 +195,9 @@ export function AgentOverviewTab({ agent, onNavigateToTask, onNavigateToSession 
 
       {/* Recent activity */}
       <div>
-        <SectionTitle>Recent Activity</SectionTitle>
+        <SectionTitle>{t('agents.overview.recentActivity')}</SectionTitle>
         {agent.recentActivity.length === 0 ? (
-          <div style={{ padding: 16, textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 12 }}>No recent activity</div>
+          <div style={{ padding: 16, textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 12 }}>{t('agents.overview.noRecentActivity')}</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {agent.recentActivity.map(event => {

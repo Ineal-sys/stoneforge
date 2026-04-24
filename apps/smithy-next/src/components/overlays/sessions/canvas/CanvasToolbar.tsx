@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Maximize2, Minus, Plus, Map, Ruler, Check, RectangleHorizontal } from 'lucide-react'
 import { SIZE_PRESETS, ASPECT_MULTIPLIERS, type SizePreset, type AspectMode } from './canvas-layout'
+import { useTranslation } from '@/i18n'
 
 interface CanvasToolbarProps {
   zoom: number
@@ -32,6 +33,7 @@ export function CanvasToolbar({
   aspectMode,
   onAspectModeChange,
 }: CanvasToolbarProps) {
+  const { t } = useTranslation('smithyNext')
   const [sizeOpen, setSizeOpen] = useState(false)
   const [aspectOpen, setAspectOpen] = useState(false)
   const current = SIZE_PRESETS[sizePreset]
@@ -53,10 +55,10 @@ export function CanvasToolbar({
         zIndex: 5,
       }}
     >
-      <ToolbarBtn title="Zoom out" onClick={onZoomOut}><Minus size={13} strokeWidth={1.8} /></ToolbarBtn>
+      <ToolbarBtn title={t('sessions.zoomOut')} onClick={onZoomOut}><Minus size={13} strokeWidth={1.8} /></ToolbarBtn>
       <button
         onClick={onReset}
-        title="Reset zoom (0)"
+        title={t('sessions.resetZoom')}
         style={{
           padding: '0 8px', height: 24, minWidth: 46,
           background: 'transparent', border: 'none',
@@ -69,11 +71,11 @@ export function CanvasToolbar({
       >
         {Math.round(zoom * 100)}%
       </button>
-      <ToolbarBtn title="Zoom in" onClick={onZoomIn}><Plus size={13} strokeWidth={1.8} /></ToolbarBtn>
+      <ToolbarBtn title={t('sessions.zoomIn')} onClick={onZoomIn}><Plus size={13} strokeWidth={1.8} /></ToolbarBtn>
       <Divider />
-      <ToolbarBtn title="Fit to view (F)" onClick={onFit}><Maximize2 size={12} strokeWidth={1.8} /></ToolbarBtn>
+      <ToolbarBtn title={t('sessions.fitToView')} onClick={onFit}><Maximize2 size={12} strokeWidth={1.8} /></ToolbarBtn>
       <div style={{ position: 'relative' }}>
-        <ToolbarBtn title={`Window size: ${current.label}`} active={sizeOpen} onClick={() => setSizeOpen(o => !o)}>
+        <ToolbarBtn title={`${t('sessions.defaultWindowSize')}: ${current.label}`} active={sizeOpen} onClick={() => setSizeOpen(o => !o)}>
           <Ruler size={12} strokeWidth={1.8} />
         </ToolbarBtn>
         {sizeOpen && (
@@ -93,7 +95,7 @@ export function CanvasToolbar({
               }}
             >
               <div style={{ padding: '6px 10px 4px', fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>
-                Default window size
+                {t('sessions.defaultWindowSize')}
               </div>
               {SIZE_ORDER.map(key => {
                 const opt = SIZE_PRESETS[key]
@@ -133,7 +135,7 @@ export function CanvasToolbar({
         )}
       </div>
       <div style={{ position: 'relative' }}>
-        <ToolbarBtn title={`Aspect: ${currentAspect.label}`} active={aspectOpen} onClick={() => setAspectOpen(o => !o)}>
+        <ToolbarBtn title={`${t('sessions.aspect')}: ${currentAspect.label}`} active={aspectOpen} onClick={() => setAspectOpen(o => !o)}>
           <RectangleHorizontal size={12} strokeWidth={1.8} style={{ transform: aspectMode === 'thin' ? 'rotate(90deg)' : undefined }} />
         </ToolbarBtn>
         {aspectOpen && (
@@ -153,7 +155,7 @@ export function CanvasToolbar({
               }}
             >
               <div style={{ padding: '6px 10px 4px', fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>
-                Aspect
+                {t('sessions.aspect')}
               </div>
               {ASPECT_ORDER.map(key => {
                 const opt = ASPECT_MULTIPLIERS[key]
@@ -190,7 +192,7 @@ export function CanvasToolbar({
         )}
       </div>
       <Divider />
-      <ToolbarBtn title="Toggle minimap" active={minimapOn} onClick={onToggleMinimap}><Map size={12} strokeWidth={1.8} /></ToolbarBtn>
+      <ToolbarBtn title={t('sessions.toggleMinimap')} active={minimapOn} onClick={onToggleMinimap}><Map size={12} strokeWidth={1.8} /></ToolbarBtn>
     </div>
   )
 }

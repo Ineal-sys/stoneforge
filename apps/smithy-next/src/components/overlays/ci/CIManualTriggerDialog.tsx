@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X, Play, GitBranch } from 'lucide-react'
 import type { CIAction } from './ci-types'
+import { useTranslation } from '@/i18n'
 
 interface CIManualTriggerDialogProps {
   actions: CIAction[]
@@ -9,6 +10,7 @@ interface CIManualTriggerDialogProps {
 }
 
 export function CIManualTriggerDialog({ actions, onClose, onTrigger }: CIManualTriggerDialogProps) {
+  const { t } = useTranslation('smithyNext')
   // Only show actions with dispatch inputs (or all if none have them)
   const dispatchable = actions.filter(w => w.dispatchInputs && w.dispatchInputs.length > 0)
   const available = dispatchable.length > 0 ? dispatchable : actions
@@ -56,7 +58,7 @@ export function CIManualTriggerDialog({ actions, onClose, onTrigger }: CIManualT
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', borderBottom: '1px solid var(--color-border-subtle)' }}>
           <Play size={14} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
-          <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>Run action</span>
+          <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{t('ci.runAction')}</span>
           <button onClick={onClose} style={closeBtnStyle}><X size={14} strokeWidth={1.5} /></button>
         </div>
 
@@ -64,7 +66,7 @@ export function CIManualTriggerDialog({ actions, onClose, onTrigger }: CIManualT
         <div style={{ flex: 1, padding: '16px', overflow: 'auto' }}>
           {/* Action selector */}
           <div style={{ marginBottom: 16 }}>
-            <label style={labelStyle}>Action</label>
+            <label style={labelStyle}>{t('ci.actionLabel')}</label>
             <select
               value={selectedAction.id}
               onChange={e => handleActionChange(e.target.value)}
@@ -79,7 +81,7 @@ export function CIManualTriggerDialog({ actions, onClose, onTrigger }: CIManualT
           {/* Branch */}
           <div style={{ marginBottom: 16 }}>
             <label style={labelStyle}>
-              <GitBranch size={11} strokeWidth={1.5} style={{ verticalAlign: -1 }} /> Branch
+              <GitBranch size={11} strokeWidth={1.5} style={{ verticalAlign: -1 }} /> {t('ci.branch')}
             </label>
             <input
               value={branch}
@@ -93,7 +95,7 @@ export function CIManualTriggerDialog({ actions, onClose, onTrigger }: CIManualT
           {selectedAction.dispatchInputs && selectedAction.dispatchInputs.length > 0 && (
             <div>
               <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Inputs
+                {t('ci.inputs')}
               </div>
               {selectedAction.dispatchInputs.map(inp => (
                 <div key={inp.name} style={{ marginBottom: 12 }}>
@@ -154,7 +156,7 @@ export function CIManualTriggerDialog({ actions, onClose, onTrigger }: CIManualT
             height: 32, padding: '0 14px', border: 'none', borderRadius: 'var(--radius-sm)',
             background: 'var(--color-surface)', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
           }}>
-            Cancel
+            {t('ci.cancel')}
           </button>
           <button onClick={handleSubmit} style={{
             height: 32, padding: '0 16px', display: 'flex', alignItems: 'center', gap: 6,
@@ -162,7 +164,7 @@ export function CIManualTriggerDialog({ actions, onClose, onTrigger }: CIManualT
             background: 'var(--color-primary)', color: 'white',
             cursor: 'pointer', fontSize: 13, fontWeight: 500,
           }}>
-            <Play size={12} strokeWidth={2} /> Run action
+            <Play size={12} strokeWidth={2} /> {t('ci.runAction')}
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { Workflow, WFFilterField } from './wf-types'
+import { useTranslation } from '@/i18n'
 
 interface WorkflowFilterPanelProps {
   workflows: Workflow[]
@@ -11,7 +12,14 @@ interface WorkflowFilterPanelProps {
 type Tab = 'status' | 'trigger' | 'tag'
 
 export function WorkflowFilterPanel({ workflows, filters, onToggleFilter, onClose }: WorkflowFilterPanelProps) {
+  const { t } = useTranslation('smithyNext')
   const [tab, setTab] = useState<Tab>('status')
+
+  const tabLabels: Record<Tab, string> = {
+    status: t('automations.status'),
+    trigger: t('automations.trigger'),
+    tag: t('automations.tags'),
+  }
 
   const isActive = (field: WFFilterField, value: string) =>
     filters.some(f => f.field === field && f.value === value)
@@ -44,7 +52,7 @@ export function WorkflowFilterPanel({ workflows, filters, onToggleFilter, onClos
               color: tab === t ? 'var(--color-text)' : 'var(--color-text-tertiary)',
               textTransform: 'capitalize',
             }}>
-              {t}
+              {tabLabels[t]}
             </button>
           ))}
         </div>

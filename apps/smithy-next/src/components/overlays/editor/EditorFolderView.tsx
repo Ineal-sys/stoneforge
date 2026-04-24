@@ -1,4 +1,5 @@
 import { Folder, File, FileText, FileJson, FileCode, ChevronUp, Bot } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import type { EditorFileEntry } from './editor-mock-data'
 
 interface Props {
@@ -22,6 +23,7 @@ function getFileIcon(name: string) {
 }
 
 export function EditorFolderView({ entries, currentPath, onOpenFile, onNavigateToFolder }: Props) {
+  const { t } = useTranslation('smithyNext')
   // Sort: folders first, then files alphabetically
   const sorted = [...entries].sort((a, b) => {
     if (a.type !== b.type) return a.type === 'folder' ? -1 : 1
@@ -55,7 +57,7 @@ export function EditorFolderView({ entries, currentPath, onOpenFile, onNavigateT
           }}>
             <Bot size={14} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
             <span style={{ color: 'var(--color-text-secondary)' }}>
-              {agentAuthors.join(', ')} modified {agentFiles.length} file{agentFiles.length > 1 ? 's' : ''}
+              {t('editor.modifiedFiles', { authors: agentAuthors.join(', '), count: agentFiles.length })}
             </span>
           </div>
         )}
@@ -157,7 +159,7 @@ export function EditorFolderView({ entries, currentPath, onOpenFile, onNavigateT
               padding: '24px 16px', textAlign: 'center',
               color: 'var(--color-text-tertiary)', fontSize: 13,
             }}>
-              Empty directory
+              {t('editor.emptyDirectory')}
             </div>
           )}
         </div>
@@ -190,9 +192,9 @@ export function EditorFolderView({ entries, currentPath, onOpenFile, onNavigateT
                 <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text)', marginBottom: 8 }}>
                   Stoneforge
                 </div>
-                <p style={{ margin: '8px 0' }}>Agentic software development platform.</p>
+                <p style={{ margin: '8px 0' }}>{t('editor.agenticSoftwareDevPlatform')}</p>
                 <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text)', marginTop: 16, marginBottom: 8 }}>
-                  Quick Start
+                  {t('editor.quickStart')}
                 </div>
                 <pre style={{
                   background: 'var(--color-surface)',

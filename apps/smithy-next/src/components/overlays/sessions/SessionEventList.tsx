@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react'
 import { User, Bot, Wrench, Info, Play, Clock, ArrowDownLeft, ArrowUpRight } from 'lucide-react'
 import type { SessionEvent, SessionEventType } from './session-types'
+import { useTranslation } from '@/i18n'
 
 interface SessionEventListProps {
   events: SessionEvent[]
@@ -10,12 +11,12 @@ interface SessionEventListProps {
   scrollToEventId: string | null
 }
 
-const typeConfig: Record<SessionEventType, { icon: typeof User; label: string; color: string; bg: string }> = {
-  session_start: { icon: Play, label: 'Running', color: '#a855f7', bg: '#a855f71a' },
-  user_message: { icon: User, label: 'User', color: '#ec4899', bg: '#ec48991a' },
-  agent_message: { icon: Bot, label: 'Agent', color: 'var(--color-primary)', bg: 'var(--color-primary-subtle)' },
-  tool_call: { icon: Wrench, label: 'Tool', color: '#6b7280', bg: '#6b72801a' },
-  system_message: { icon: Info, label: 'System', color: '#9ca3af', bg: '#9ca3af1a' },
+const typeConfig: Record<SessionEventType, { icon: typeof User; labelKey: string; color: string; bg: string }> = {
+  session_start: { icon: Play, labelKey: 'sessions.running', color: '#a855f7', bg: '#a855f71a' },
+  user_message: { icon: User, labelKey: 'sessions.user', color: '#ec4899', bg: '#ec48991a' },
+  agent_message: { icon: Bot, labelKey: 'sessions.agentFilter', color: 'var(--color-primary)', bg: 'var(--color-primary-subtle)' },
+  tool_call: { icon: Wrench, labelKey: 'sessions.tool', color: '#6b7280', bg: '#6b72801a' },
+  system_message: { icon: Info, labelKey: 'sessions.system', color: '#9ca3af', bg: '#9ca3af1a' },
 }
 
 function formatTimestamp(ms: number): string {
@@ -39,6 +40,7 @@ function formatTokens(n: number): string {
 
 export function SessionEventList({ events, selectedEventId, onSelectEvent, scrollToEventId }: SessionEventListProps) {
   const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const { t } = useTranslation('smithyNext')
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Scroll to event when triggered by timeline click
@@ -96,7 +98,7 @@ export function SessionEventList({ events, selectedEventId, onSelectEvent, scrol
                 flexShrink: 0,
               }}>
                 <Icon size={12} />
-                {event.toolName ?? config.label}
+                {event.toolName ?? t(config.labelKey)}
               </span>
 
               {/* Title */}

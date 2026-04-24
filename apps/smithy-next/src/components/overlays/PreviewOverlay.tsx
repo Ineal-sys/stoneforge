@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { RefreshCw, ExternalLink, Monitor, Tablet, Smartphone, Maximize, Settings, Plus, X, ChevronDown, PenTool, Terminal } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import { Tooltip } from '../Tooltip'
 import { PreviewConfigDialog } from './PreviewConfigDialog'
 import { DesignModeOverlay } from './preview/DesignModeOverlay'
@@ -35,13 +36,14 @@ const deviceIcon = (name: string, size: number) => {
 const statusColor = (status: PreviewTab['previewStatus']) =>
   status === 'ready' ? 'var(--color-success)' : status === 'building' ? 'var(--color-warning)' : 'var(--color-danger)'
 
-const statusLabel = (status: PreviewTab['previewStatus']) =>
-  status === 'ready' ? 'Ready' : status === 'building' ? 'Building...' : 'Failed'
+const statusLabel = (status: PreviewTab['previewStatus'], t: (key: string) => string) =>
+  status === 'ready' ? t('preview.ready') : status === 'building' ? t('preview.building') : t('preview.failed')
 
 export function PreviewOverlay({
   environments, tabs, activeTabId, onTabChange, onTabClose, onTabAdd,
   onEnvironmentsChange, onTabsChange, onNavigateToTask, onNavigateToMR, onDesignHandoff, onToggleTerminal, terminalOpen,
 }: PreviewOverlayProps) {
+  const { t } = useTranslation('smithyNext')
   const [configOpen, setConfigOpen] = useState(false)
   const [designMode, setDesignMode] = useState(false)
   const [annotations, setAnnotations] = useState<DesignAnnotation[]>([])
@@ -113,7 +115,7 @@ export function PreviewOverlay({
         borderBottom: '1px solid var(--color-border-subtle)',
         position: 'relative', zIndex: 10,
       }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>Preview</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{t('preview.preview')}</span>
 
         {/* URL bar (readonly) */}
         <div style={{
@@ -124,7 +126,7 @@ export function PreviewOverlay({
           <input
             value={activeTab?.url || ''}
             readOnly
-            placeholder="No preview open"
+            placeholder={t('preview.noPreviewOpen')}
             style={{
               flex: 1, background: 'none', border: 'none',
               color: activeTab ? 'var(--color-text-secondary)' : 'var(--color-text-tertiary)',
@@ -134,10 +136,10 @@ export function PreviewOverlay({
         </div>
 
         {/* Refresh */}
-        <IconBtn title="Refresh"><RefreshCw size={14} strokeWidth={1.5} /></IconBtn>
+        <IconBtn title={t('preview.refresh')}><RefreshCw size={14} strokeWidth={1.5} /></IconBtn>
 
         {/* Open in browser */}
-        <IconBtn title="Open in browser" onClick={() => activeTab && window.open(activeTab.url, '_blank')}>
+        <IconBtn title={t('preview.openInBrowser')} onClick={() => activeTab && window.open(activeTab.url, '_blank')}>
           <ExternalLink size={14} strokeWidth={1.5} />
         </IconBtn>
 
@@ -199,7 +201,7 @@ export function PreviewOverlay({
         {/* Design Mode toggle */}
         <button
           onClick={() => setDesignMode(p => !p)}
-          title="Design mode"
+          title={t('preview.design')}
           style={{
             height: 26, padding: '0 8px', display: 'flex', alignItems: 'center', gap: 4,
             background: designMode ? 'var(--color-primary-subtle)' : 'none',
@@ -212,7 +214,7 @@ export function PreviewOverlay({
           onMouseLeave={e => { if (!designMode) e.currentTarget.style.background = 'none' }}
         >
           <PenTool size={13} strokeWidth={1.5} />
-          <span className="hidden md:inline">Design</span>
+          <span className="hidden md:inline">{t('preview.design')}</span>
           {annotations.length > 0 && (
             <span style={{
               fontSize: 9, fontWeight: 600, padding: '0 4px', borderRadius: 8,
@@ -224,7 +226,7 @@ export function PreviewOverlay({
         </button>
 
         {/* Settings */}
-        <IconBtn title="Preview settings" onClick={() => setConfigOpen(true)}>
+        <IconBtn title={t('preview.previewSettings')} onClick={() => setConfigOpen(true)}>
           <Settings size={14} strokeWidth={1.5} />
         </IconBtn>
       </div>
@@ -296,7 +298,7 @@ export function PreviewOverlay({
 
           {/* Add tab button — sits right after last tab, or pinned at right edge when tabs overflow */}
           <div ref={addRef} style={{ position: 'relative', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-            <Tooltip label="Open preview" placement="bottom">
+            <Tooltip label={t('preview.openPreview')} placement="bottom">
               <button
                 onClick={() => setAddDropdownOpen(p => !p)}
                 style={{
@@ -320,7 +322,7 @@ export function PreviewOverlay({
               }}>
                 {environments.length === 0 ? (
                   <div style={{ padding: '8px 12px', fontSize: 12, color: 'var(--color-text-tertiary)' }}>
-                    No environments configured
+                    {t('preview.noEnvironmentsConfigured')}
                   </div>
                 ) : environments.map(env => (
                   <button
@@ -355,7 +357,7 @@ export function PreviewOverlay({
                   onMouseLeave={e => (e.currentTarget.style.background = 'none')}
                 >
                   <Settings size={12} strokeWidth={1.5} />
-                  <span>Configure environments...</span>
+                  <span>{t('preview.configureEnvironmentsEllipsis')}</span>
                 </button>
               </div>
             )}
@@ -396,13 +398,13 @@ export function PreviewOverlay({
               )}
               <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: statusColor(activeTab.previewStatus), fontSize: 11 }}>
                 <span style={{ width: 5, height: 5, borderRadius: '50%', background: statusColor(activeTab.previewStatus) }} />
-                {statusLabel(activeTab.previewStatus)}
+                {statusLabel(activeTab.previewStatus, t)}
               </span>
             </div>
           )}
 
           {/* Toggle terminal */}
-          <Tooltip label={terminalOpen ? 'Close terminal' : 'Open in terminal'} placement="bottom">
+          <Tooltip label={terminalOpen ? t('preview.closeTerminal') : t('preview.openInTerminal')} placement="bottom">
             <button
               onClick={onToggleTerminal}
               style={{
@@ -436,11 +438,11 @@ export function PreviewOverlay({
             color: 'var(--color-text-tertiary)',
           }}>
             <Monitor size={40} strokeWidth={1} style={{ opacity: 0.5 }} />
-            <div style={{ fontSize: 14, fontWeight: 500 }}>No preview environments open</div>
+            <div style={{ fontSize: 14, fontWeight: 500 }}>{t('preview.noPreviewEnvironmentsOpen')}</div>
             <div style={{ fontSize: 12 }}>
               {environments.length > 0
-                ? 'Click + to open a preview tab'
-                : 'Configure a preview environment to get started'}
+                ? t('preview.clickToOpenPreview')
+                : t('preview.configureToGetStarted')}
             </div>
             <button
               onClick={() => setConfigOpen(true)}
@@ -451,7 +453,7 @@ export function PreviewOverlay({
                 cursor: 'pointer',
               }}
             >
-              {environments.length > 0 ? 'Open a preview' : 'Configure environments'}
+              {environments.length > 0 ? t('preview.openAPreview') : t('preview.configureEnvironments')}
             </button>
           </div>
         ) : isResponsive ? (
@@ -464,7 +466,7 @@ export function PreviewOverlay({
             <div style={{ textAlign: 'center', color: 'var(--color-text-tertiary)' }}>
               <Monitor size={32} strokeWidth={1} style={{ opacity: 0.4, display: 'block', margin: '0 auto 8px' }} />
               <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-secondary)' }}>{activeTab.url}</div>
-              <div style={{ fontSize: 11, marginTop: 4 }}>Preview iframe</div>
+              <div style={{ fontSize: 11, marginTop: 4 }}>{t('preview.previewIframe')}</div>
             </div>
           </div>
         ) : (

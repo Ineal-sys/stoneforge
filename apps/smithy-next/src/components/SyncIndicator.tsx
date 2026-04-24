@@ -1,18 +1,19 @@
 import { Loader2 } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import type { SyncStatus } from '../mock-data'
 
 interface SyncIndicatorProps {
   status: SyncStatus
 }
 
-const config: Record<SyncStatus, { label: string; color: string; spinning?: boolean }> = {
-  synced: { label: 'Synced', color: 'var(--color-sync-active)' },
-  syncing: { label: 'Syncing...', color: 'var(--color-sync-syncing)', spinning: true },
-  offline: { label: 'Offline', color: 'var(--color-sync-offline)' },
-  error: { label: 'Sync error', color: 'var(--color-sync-error)' },
-}
-
 export function SyncIndicator({ status }: SyncIndicatorProps) {
+  const { t } = useTranslation('smithyNext')
+  const config: Record<SyncStatus, { label: string; color: string; spinning?: boolean }> = {
+    synced: { label: t('syncIndicator.synced'), color: 'var(--color-sync-active)' },
+    syncing: { label: t('syncIndicator.syncing'), color: 'var(--color-sync-syncing)', spinning: true },
+    offline: { label: t('syncIndicator.offline'), color: 'var(--color-sync-offline)' },
+    error: { label: t('syncIndicator.syncError'), color: 'var(--color-sync-error)' },
+  }
   const { label, color, spinning } = config[status]
 
   return (

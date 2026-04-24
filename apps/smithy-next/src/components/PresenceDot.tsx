@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n'
+
 interface PresenceDotProps {
   status: 'online' | 'away' | 'offline'
   size?: number
@@ -11,6 +13,7 @@ const statusColors: Record<string, string> = {
 }
 
 export function PresenceDot({ status, size = 6, style }: PresenceDotProps) {
+  const { t } = useTranslation('smithyNext')
   return (
     <span
       style={{
@@ -23,7 +26,7 @@ export function PresenceDot({ status, size = 6, style }: PresenceDotProps) {
         flexShrink: 0,
         ...style,
       }}
-      title={status.charAt(0).toUpperCase() + status.slice(1)}
+      title={t(`presence.${status}`)}
     />
   )
 }

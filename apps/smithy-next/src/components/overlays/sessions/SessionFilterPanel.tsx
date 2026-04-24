@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import type { Session, SessionFilterField, SessionActiveFilter } from './session-types'
 
+import { useTranslation } from '@/i18n'
 interface SessionFilterPanelProps {
   sessions: Session[]
   filters: SessionActiveFilter[]
@@ -8,10 +9,10 @@ interface SessionFilterPanelProps {
   onClose: () => void
 }
 
-const tabs: { field: SessionFilterField; label: string }[] = [
-  { field: 'status', label: 'Status' },
-  { field: 'agent', label: 'Agent' },
-  { field: 'environment', label: 'Environment' },
+const tabs: { field: SessionFilterField; labelKey: string }[] = [
+  { field: 'status', labelKey: 'sessions.status' },
+  { field: 'agent', labelKey: 'sessions.agentFilter' },
+  { field: 'environment', labelKey: 'sessions.environment' },
 ]
 
 const statusColors: Record<string, string> = {
@@ -21,6 +22,7 @@ const statusColors: Record<string, string> = {
 }
 
 export function SessionFilterPanel({ sessions, filters, onToggleFilter, onClose }: SessionFilterPanelProps) {
+  const { t } = useTranslation('smithyNext')
   const [activeTab, setActiveTab] = useState<SessionFilterField>('status')
   const panelRef = useRef<HTMLDivElement>(null)
 
@@ -84,7 +86,7 @@ export function SessionFilterPanel({ sessions, filters, onToggleFilter, onClose 
                 cursor: 'pointer',
               }}
             >
-              {tab.label}
+              {t(tab.labelKey)}
             </button>
           )
         })}

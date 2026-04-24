@@ -10,6 +10,7 @@ import type {
 } from './runtime-types'
 import { runtimeModeLabels, runtimeStatusColors, hostStatusColors } from './runtime-types'
 import type { WorkspaceDaemonState } from '../../../mock-data'
+import { useTranslation } from '@/i18n'
 
 interface RuntimeListViewProps {
   runtimes: Runtime[]
@@ -28,6 +29,7 @@ const modeIcons: Record<RuntimeMode, typeof GitBranch> = {
 }
 
 export function RuntimeListView({ runtimes, hosts, onSelectRuntime, onCreate, onEdit, daemonState, onChangeDaemonHost }: RuntimeListViewProps) {
+  const { t } = useTranslation('smithyNext')
   const [searchQuery, setSearchQuery] = useState('')
   const [searchExpanded, setSearchExpanded] = useState(false)
   const [filters, setFilters] = useState<RuntimeActiveFilter[]>([])
@@ -86,8 +88,15 @@ export function RuntimeListView({ runtimes, hosts, onSelectRuntime, onCreate, on
     return result
   }, [runtimes, searchQuery, filters, sortField, sortAsc])
 
+  const statusGroupLabels: Record<string, string> = {
+    online: t('runtimes.online'),
+    provisioning: t('runtimes.provisioning'),
+    offline: t('runtimes.offline'),
+    error: t('runtimes.error'),
+  }
+
   const grouped = useMemo(() => {
-    if (groupBy === 'none') return [{ key: 'all', label: 'All runtimes', items: filtered }]
+    if (groupBy === 'none') return [{ key: 'all', label: t('runtimes.allRuntimes'), items: filtered }]
     if (groupBy === 'mode') {
       const groups = new Map<string, Runtime[]>()
       filtered.forEach(rt => {
@@ -108,26 +117,32 @@ export function RuntimeListView({ runtimes, hosts, onSelectRuntime, onCreate, on
     }
     // group by status
     const online = filtered.filter(rt => rt.status === 'online')
-    const provisioning = filtered.filter(rt => rt.status === 'provisioning')
+    const provisioningGrp = filtered.filter(rt => rt.status === 'provisioning')
     const offline = filtered.filter(rt => rt.status === 'offline')
     const errored = filtered.filter(rt => rt.status === 'error')
     const groups: { key: string; label: string; items: Runtime[] }[] = []
-    if (online.length) groups.push({ key: 'online', label: 'Online', items: online })
-    if (provisioning.length) groups.push({ key: 'provisioning', label: 'Provisioning', items: provisioning })
-    if (offline.length) groups.push({ key: 'offline', label: 'Offline', items: offline })
-    if (errored.length) groups.push({ key: 'error', label: 'Error', items: errored })
+    if (online.length) groups.push({ key: 'online', label: statusGroupLabels['online'], items: online })
+    if (provisioningGrp.length) groups.push({ key: 'provisioning', label: statusGroupLabels['provisioning'], items: provisioningGrp })
+    if (offline.length) groups.push({ key: 'offline', label: statusGroupLabels['offline'], items: offline })
+    if (errored.length) groups.push({ key: 'error', label: statusGroupLabels['error'], items: errored })
     return groups
-  }, [filtered, groupBy])
+  }, [filtered, groupBy, statusGroupLabels])
 
   const daemonHost = daemonState ? getHost(daemonState.hostId) : null
   const daemonDotColor = daemonState?.status === 'running' ? 'var(--color-success)' : daemonState?.status === 'error' ? 'var(--color-danger)' : 'var(--color-text-tertiary)'
   const confirmTargetHost = daemonConfirmTarget ? getHost(daemonConfirmTarget) : null
 
+  const daemonStatusLabels: Record<string, string> = {
+    running: t('runtimes.running'),
+    error: t('runtimes.error'),
+    stopped: t('runtimes.stopped'),
+  }
+
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Toolbar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', flexShrink: 0, borderBottom: '1px solid var(--color-border-subtle)', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>Runtimes</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{t('runtimes.runtimes')}</span>
 
         {/* Active filter pills */}
         {filters.map(f => {
@@ -143,7 +158,7 @@ export function RuntimeListView({ runtimes, hosts, onSelectRuntime, onCreate, on
           )
         })}
         {filters.length > 0 && (
-          <button onClick={() => setFilters([])} style={{ height: 22, padding: '0 6px', border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11 }}>Clear all</button>
+          <button onClick={() => setFilters([])} style={{ height: 22, padding: '0 6px', border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11 }}>{t('runtimes.clearAll')}</button>
         )}
 
         <div style={{ flex: 1 }} />
@@ -158,7 +173,7 @@ export function RuntimeListView({ runtimes, hosts, onSelectRuntime, onCreate, on
             }}>
               <Search size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
               <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search runtimes..."
+                placeholder={t('runtimes.searchRuntimes')}
                 style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
               {searchQuery && (
                 <button onClick={() => setSearchQuery('')} style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', padding: 0, display: 'flex' }}>
@@ -176,7 +191,7 @@ export function RuntimeListView({ runtimes, hosts, onSelectRuntime, onCreate, on
               }}>
                 <Search size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
                 <input ref={searchInputRef} autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Search..."
+                  placeholder={t('runtimes.searchRuntimes')}
                   onBlur={() => { if (!searchQuery) setSearchExpanded(false) }}
                   style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 12, fontFamily: 'inherit' }} />
                 <button onClick={() => { setSearchQuery(''); setSearchExpanded(false) }} style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', padding: 0, display: 'flex' }}>
@@ -200,7 +215,7 @@ export function RuntimeListView({ runtimes, hosts, onSelectRuntime, onCreate, on
             color: filters.length > 0 ? 'var(--color-text-accent)' : 'var(--color-text-tertiary)',
             cursor: 'pointer', fontSize: 11, fontWeight: 500,
           }}>
-            <Filter size={12} strokeWidth={1.5} /> Filter {filters.length > 0 && `(${filters.length})`}
+            <Filter size={12} strokeWidth={1.5} /> {t('runtimes.filter')} {filters.length > 0 && `(${filters.length})`}
           </button>
           {filterOpen && (
             <RuntimeFilterPanel runtimes={runtimes} hosts={hosts} filters={filters} onToggleFilter={toggleFilter} onClose={() => setFilterOpen(false)} />
@@ -216,7 +231,7 @@ export function RuntimeListView({ runtimes, hosts, onSelectRuntime, onCreate, on
             color: displayOpen ? 'var(--color-text)' : 'var(--color-text-tertiary)',
             cursor: 'pointer', fontSize: 11, fontWeight: 500,
           }}>
-            <SlidersHorizontal size={12} strokeWidth={1.5} /> Display
+            <SlidersHorizontal size={12} strokeWidth={1.5} /> {t('runtimes.display')}
           </button>
           {displayOpen && (
             <DisplayPanel groupBy={groupBy} onGroupBy={setGroupBy} sortField={sortField} onSortField={setSortField}
@@ -230,7 +245,7 @@ export function RuntimeListView({ runtimes, hosts, onSelectRuntime, onCreate, on
           background: 'var(--color-primary)', border: 'none', borderRadius: 'var(--radius-sm)',
           color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
         }}>
-          <Plus size={12} strokeWidth={2} /> New runtime
+          <Plus size={12} strokeWidth={2} /> {t('runtimes.newRuntime')}
         </button>
       </div>
 
@@ -241,25 +256,25 @@ export function RuntimeListView({ runtimes, hosts, onSelectRuntime, onCreate, on
           <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 'var(--radius-md)', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <Cpu size={14} strokeWidth={1.5} style={{ color: 'var(--color-text-secondary)' }} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text)' }}>Dispatch Daemon</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text)' }}>{t('runtimes.dispatchDaemon')}</span>
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 500,
                 padding: '1px 7px', borderRadius: 'var(--radius-full)',
                 background: `color-mix(in srgb, ${daemonDotColor} 15%, transparent)`, color: daemonDotColor,
               }}>
                 <div style={{ width: 5, height: 5, borderRadius: '50%', background: daemonDotColor }} />
-                {daemonState.status === 'running' ? 'Running' : daemonState.status === 'error' ? 'Error' : 'Stopped'}
+                {daemonStatusLabels[daemonState.status] || daemonState.status}
               </span>
               {daemonState.startedAt && daemonState.status === 'running' && (
-                <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Up {daemonState.startedAt}</span>
+                <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('runtimes.upDuration', { duration: daemonState.startedAt })}</span>
               )}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Host:</span>
+              <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('runtimes.hostLabel')}</span>
               {daemonHost ? (
                 <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)' }}>{daemonHost.name}</span>
               ) : (
-                <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>Not configured</span>
+                <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>{t('runtimes.notConfigured')}</span>
               )}
               <div style={{ position: 'relative' }}>
                 <button onClick={() => setDaemonHostDropdownOpen(!daemonHostDropdownOpen)} style={{
@@ -267,7 +282,7 @@ export function RuntimeListView({ runtimes, hosts, onSelectRuntime, onCreate, on
                   background: 'var(--color-surface)', color: 'var(--color-text-tertiary)',
                   cursor: 'pointer', fontSize: 11, fontWeight: 500,
                 }}>
-                  Change host
+                  {t('runtimes.changeHost')}
                 </button>
                 {daemonHostDropdownOpen && (
                   <>
@@ -301,7 +316,7 @@ export function RuntimeListView({ runtimes, hosts, onSelectRuntime, onCreate, on
               </div>
             </div>
             <div style={{ fontSize: 10, color: 'var(--color-text-tertiary)', marginTop: 6, lineHeight: 1.4 }}>
-              The daemon orchestrates agent lifecycles. It runs on a host machine and is not tied to any specific runtime.
+              {t('runtimes.daemonDescription')}
             </div>
           </div>
         )}
@@ -325,18 +340,18 @@ export function RuntimeListView({ runtimes, hosts, onSelectRuntime, onCreate, on
         {filtered.length === 0 && (
           <div style={{ padding: 48, textAlign: 'center' }}>
             {searchQuery || filters.length > 0 ? (
-              <div style={{ color: 'var(--color-text-tertiary)', fontSize: 13 }}>No runtimes match your filters</div>
+              <div style={{ color: 'var(--color-text-tertiary)', fontSize: 13 }}>{t('runtimes.noRuntimesMatchFilters')}</div>
             ) : (
               <div>
                 <ServerIcon size={32} strokeWidth={1} style={{ color: 'var(--color-text-tertiary)', marginBottom: 12 }} />
-                <div style={{ color: 'var(--color-text-secondary)', fontSize: 13, marginBottom: 4 }}>No runtimes configured</div>
-                <div style={{ color: 'var(--color-text-tertiary)', fontSize: 12, marginBottom: 16 }}>Create a runtime to define where your agents run.</div>
+                <div style={{ color: 'var(--color-text-secondary)', fontSize: 13, marginBottom: 4 }}>{t('runtimes.noRuntimesConfigured')}</div>
+                <div style={{ color: 'var(--color-text-tertiary)', fontSize: 12, marginBottom: 16 }}>{t('runtimes.createRuntimeCta')}</div>
                 <button onClick={onCreate} style={{
                   height: 30, padding: '0 14px', display: 'inline-flex', alignItems: 'center', gap: 6,
                   background: 'var(--color-primary)', border: 'none', borderRadius: 'var(--radius-sm)',
                   color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
                 }}>
-                  <Plus size={13} strokeWidth={2} /> Create runtime
+                  <Plus size={13} strokeWidth={2} /> {t('runtimes.createRuntime')}
                 </button>
               </div>
             )}
@@ -355,25 +370,25 @@ export function RuntimeListView({ runtimes, hosts, onSelectRuntime, onCreate, on
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
               <AlertTriangle size={16} strokeWidth={2} style={{ color: 'var(--color-warning)' }} />
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>Change daemon host?</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>{t('runtimes.changeDaemonHost')}</span>
             </div>
             <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', lineHeight: 1.5, margin: '0 0 6px' }}>
-              Moving the dispatch daemon from <strong>{daemonHost?.name}</strong> to <strong>{confirmTargetHost.name}</strong> will restart it and temporarily interrupt all running autonomous workflows.
+              {t('runtimes.changeDaemonHostConfirm', { from: daemonHost?.name || '', to: confirmTargetHost.name })}
             </p>
             <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', lineHeight: 1.4, margin: '0 0 16px' }}>
-              Active directors and workers will pause until the daemon is back online on the new host.
+              {t('runtimes.changeDaemonHostImpact')}
             </p>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
               <button onClick={() => setDaemonConfirmTarget(null)} style={{
                 height: 30, padding: '0 14px', border: '1px solid var(--color-border)',
                 background: 'var(--color-surface)', borderRadius: 'var(--radius-sm)',
                 color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
-              }}>Cancel</button>
+              }}>{t('runtimes.cancel')}</button>
               <button onClick={() => { onChangeDaemonHost?.(daemonConfirmTarget); setDaemonConfirmTarget(null) }} style={{
                 height: 30, padding: '0 14px', border: 'none',
                 background: 'var(--color-warning)', borderRadius: 'var(--radius-sm)',
                 color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
-              }}>Move daemon</button>
+              }}>{t('runtimes.moveDaemon')}</button>
             </div>
           </div>
         </>
@@ -397,6 +412,7 @@ export function RuntimeListView({ runtimes, hosts, onSelectRuntime, onCreate, on
 function RuntimeRow({ runtime: rt, host, onClick, onEdit, isDaemonHost }: {
   runtime: Runtime; host?: Host; onClick: () => void; onEdit: () => void; isDaemonHost?: boolean
 }) {
+  const { t } = useTranslation('smithyNext')
   const [menuOpen, setMenuOpen] = useState(false)
   const ModeIcon = modeIcons[rt.mode] || ServerIcon
   const dotColor = runtimeStatusColors[rt.status]
@@ -430,7 +446,7 @@ function RuntimeRow({ runtime: rt, host, onClick, onEdit, isDaemonHost }: {
               fontSize: 10, fontWeight: 500, color: 'var(--color-text-accent)',
               background: 'var(--color-primary-subtle)', padding: '1px 6px',
               borderRadius: 'var(--radius-full)',
-            }}>default</span>
+            }}>{t('runtimes.defaultLabel')}</span>
           )}
           {isDaemonHost && (
             <span style={{
@@ -439,7 +455,7 @@ function RuntimeRow({ runtime: rt, host, onClick, onEdit, isDaemonHost }: {
               padding: '1px 6px', borderRadius: 'var(--radius-full)',
               display: 'inline-flex', alignItems: 'center', gap: 3,
             }}>
-              <Cpu size={9} strokeWidth={2} /> Daemon
+              <Cpu size={9} strokeWidth={2} /> {t('runtimes.daemon')}
             </span>
           )}
           {rt.status === 'error' && <AlertTriangle size={12} strokeWidth={2} style={{ color: 'var(--color-danger)' }} />}
@@ -450,11 +466,11 @@ function RuntimeRow({ runtime: rt, host, onClick, onEdit, isDaemonHost }: {
             background: 'var(--color-surface)', fontSize: 10, fontWeight: 500,
           }}>{runtimeModeLabels[rt.mode]}</span>
           {host && <span>{host.name}</span>}
-          <span>{rt.assignedAgentCount} agent{rt.assignedAgentCount !== 1 ? 's' : ''}</span>
+          <span>{t('runtimes.agentCount', { count: rt.assignedAgentCount })}</span>
           {rt.statusMessage ? (
             <span style={{ color: rt.status === 'error' ? 'var(--color-danger)' : undefined }}>{rt.statusMessage}</span>
           ) : rt.lastHealthCheck ? (
-            <span>Checked {rt.lastHealthCheck}</span>
+            <span>{t('runtimes.checked', { date: rt.lastHealthCheck })}</span>
           ) : null}
         </div>
       </div>
@@ -482,10 +498,10 @@ function RuntimeRow({ runtime: rt, host, onClick, onEdit, isDaemonHost }: {
               background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-float)', padding: 4,
             }}>
-              <MenuItem icon={Pencil} label="Edit" onClick={() => { setMenuOpen(false); onEdit() }} />
-              <MenuItem icon={Copy} label="Duplicate" onClick={() => setMenuOpen(false)} />
-              {!rt.isDefault && <MenuItem icon={Star} label="Set as default" onClick={() => setMenuOpen(false)} />}
-              <MenuItem icon={Trash2} label="Delete" color="var(--color-danger)" onClick={() => setMenuOpen(false)} />
+              <MenuItem icon={Pencil} label={t('runtimes.edit')} onClick={() => { setMenuOpen(false); onEdit() }} />
+              <MenuItem icon={Copy} label={t('runtimes.duplicate')} onClick={() => setMenuOpen(false)} />
+              {!rt.isDefault && <MenuItem icon={Star} label={t('runtimes.setAsDefault')} onClick={() => setMenuOpen(false)} />}
+              <MenuItem icon={Trash2} label={t('runtimes.delete')} color="var(--color-danger)" onClick={() => setMenuOpen(false)} />
             </div>
           </>
         )}
@@ -516,9 +532,14 @@ function RuntimeFilterPanel({ runtimes, hosts, filters, onToggleFilter, onClose 
   onToggleFilter: (field: RuntimeFilterField, value: string) => void
   onClose: () => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const modes = [...new Set(runtimes.map(rt => rt.mode))]
   const statuses = [...new Set(runtimes.map(rt => rt.status))]
   const hostIds = [...new Set(runtimes.map(rt => rt.hostId))]
+
+  const statusLabelKeys: Record<string, string> = {
+    online: 'runtimes.online', offline: 'runtimes.offline', error: 'runtimes.error', provisioning: 'runtimes.provisioning',
+  }
 
   return (
     <>
@@ -529,7 +550,7 @@ function RuntimeFilterPanel({ runtimes, hosts, filters, onToggleFilter, onClose 
         borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-float)', padding: 8,
       }}>
         <div style={{ marginBottom: 8 }}>
-          <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', padding: '4px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Mode</div>
+          <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', padding: '4px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('runtimes.mode')}</div>
           {modes.map(m => {
             const active = filters.some(f => f.field === 'mode' && f.value === m)
             return (
@@ -545,7 +566,7 @@ function RuntimeFilterPanel({ runtimes, hosts, filters, onToggleFilter, onClose 
           })}
         </div>
         <div style={{ borderTop: '1px solid var(--color-border-subtle)', paddingTop: 8, marginBottom: 8 }}>
-          <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', padding: '4px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Host</div>
+          <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', padding: '4px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('runtimes.host')}</div>
           {hostIds.map(hId => {
             const host = hosts.find(h => h.id === hId)
             const active = filters.some(f => f.field === 'host' && f.value === hId)
@@ -563,7 +584,7 @@ function RuntimeFilterPanel({ runtimes, hosts, filters, onToggleFilter, onClose 
           })}
         </div>
         <div style={{ borderTop: '1px solid var(--color-border-subtle)', paddingTop: 8 }}>
-          <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', padding: '4px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status</div>
+          <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', padding: '4px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('runtimes.status')}</div>
           {statuses.map(s => {
             const active = filters.some(f => f.field === 'status' && f.value === s)
             return (
@@ -574,7 +595,7 @@ function RuntimeFilterPanel({ runtimes, hosts, filters, onToggleFilter, onClose 
                 color: active ? 'var(--color-text-accent)' : 'var(--color-text-secondary)', fontSize: 12, textAlign: 'left',
               }}>
                 <div style={{ width: 6, height: 6, borderRadius: '50%', background: runtimeStatusColors[s] }} />
-                {s.charAt(0).toUpperCase() + s.slice(1)}
+                {statusLabelKeys[s] ? t(statusLabelKeys[s]) : s}
               </button>
             )
           })}
@@ -590,6 +611,22 @@ function DisplayPanel({ groupBy, onGroupBy, sortField, onSortField, sortAsc, onS
   sortAsc: boolean; onSortAsc: (v: boolean) => void
   onClose: () => void
 }) {
+  const { t } = useTranslation('smithyNext')
+
+  const groupLabels: Record<string, string> = {
+    mode: t('runtimes.mode'),
+    host: t('runtimes.host'),
+    status: t('runtimes.status'),
+    none: t('runtimes.none'),
+  }
+
+  const sortLabels: Record<string, string> = {
+    name: t('runtimes.name'),
+    status: t('runtimes.status'),
+    agents: t('runtimes.agents'),
+    created: t('runtimes.created'),
+  }
+
   return (
     <>
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1050 }} />
@@ -599,7 +636,7 @@ function DisplayPanel({ groupBy, onGroupBy, sortField, onSortField, sortAsc, onS
         borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-float)', padding: 8,
       }}>
         <div style={{ marginBottom: 8 }}>
-          <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', padding: '4px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Group by</div>
+          <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', padding: '4px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('runtimes.groupBy')}</div>
           {(['mode', 'host', 'status', 'none'] as RuntimeGroupField[]).map(g => (
             <button key={g} onClick={() => { onGroupBy(g); onClose() }} style={{
               width: '100%', display: 'flex', alignItems: 'center', gap: 6, padding: '5px 6px',
@@ -607,13 +644,13 @@ function DisplayPanel({ groupBy, onGroupBy, sortField, onSortField, sortAsc, onS
               border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
               color: groupBy === g ? 'var(--color-text)' : 'var(--color-text-secondary)', fontSize: 12, textAlign: 'left',
             }}>
-              {g === 'none' ? 'None' : g.charAt(0).toUpperCase() + g.slice(1)}
+              {groupLabels[g]}
             </button>
           ))}
         </div>
         <div style={{ borderTop: '1px solid var(--color-border-subtle)', paddingTop: 8 }}>
-          <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', padding: '4px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sort by</div>
-          {([['name', 'Name'], ['status', 'Status'], ['agents', 'Agents'], ['created', 'Created']] as [RuntimeSortField, string][]).map(([field, label]) => (
+          <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', padding: '4px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('runtimes.sortBy')}</div>
+          {(['name', 'status', 'agents', 'created'] as RuntimeSortField[]).map(field => (
             <button key={field} onClick={() => {
               if (sortField === field) onSortAsc(!sortAsc)
               else { onSortField(field); onSortAsc(true) }
@@ -627,7 +664,7 @@ function DisplayPanel({ groupBy, onGroupBy, sortField, onSortField, sortAsc, onS
                 ? (sortAsc ? <ArrowUp size={11} strokeWidth={1.5} /> : <ArrowDown size={11} strokeWidth={1.5} />)
                 : <ArrowUpDown size={11} strokeWidth={1.5} style={{ opacity: 0.3 }} />
               }
-              {label}
+              {sortLabels[field]}
             </button>
           ))}
         </div>

@@ -2,6 +2,7 @@ import { X } from 'lucide-react'
 import type { MsgMessage } from './message-types'
 import { MessageBubble } from './MessageBubble'
 import { ChannelComposer } from './ChannelComposer'
+import { useTranslation } from '@/i18n'
 
 interface ThreadPanelProps {
   parentMessage: MsgMessage
@@ -13,6 +14,7 @@ interface ThreadPanelProps {
 }
 
 export function ThreadPanel({ parentMessage, replies, onClose, onSendReply, fullWidth }: ThreadPanelProps) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div style={{
       width: fullWidth ? '100%' : 'clamp(260px, 33%, 340px)',
@@ -29,7 +31,7 @@ export function ThreadPanel({ parentMessage, replies, onClose, onSendReply, full
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>
-          Thread
+          {t('messages.thread')}
         </span>
         <button
           onClick={onClose}
@@ -60,7 +62,7 @@ export function ThreadPanel({ parentMessage, replies, onClose, onSendReply, full
           fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)',
           borderBottom: '1px solid var(--color-border-subtle)',
         }}>
-          {replies.length} {replies.length === 1 ? 'reply' : 'replies'}
+          {t('messages.replyCount', { count: replies.length })}
         </div>
 
         {/* Replies */}
@@ -73,13 +75,13 @@ export function ThreadPanel({ parentMessage, replies, onClose, onSendReply, full
             padding: '32px 16px', textAlign: 'center',
             color: 'var(--color-text-tertiary)', fontSize: 13,
           }}>
-            No replies yet. Start the conversation.
+            {t('messages.noRepliesYet')}
           </div>
         )}
       </div>
 
       {/* Composer */}
-      <ChannelComposer onSend={onSendReply} placeholder="Reply in thread..." />
+      <ChannelComposer onSend={onSendReply} placeholder={t('messages.replyInThreadPlaceholder')} />
     </div>
   )
 }

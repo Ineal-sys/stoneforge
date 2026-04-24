@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import { Search, Filter, SlidersHorizontal, LayoutGrid, List, X, ArrowUp, ArrowDown, Check } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import { mockTasks, type Plan } from '../../../mock-data'
 import { PlanFilterPanel } from './PlanFilterPanel'
 import { PLAN_STATUS_CONFIG, PLAN_KANBAN_COLUMNS } from './plan-types'
@@ -25,6 +26,7 @@ function getPlanProgress(plan: Plan) {
 // ── Main Component ──
 
 export function PlanListView({ plans, onSelectPlan }: PlanListViewProps) {
+  const { t } = useTranslation('smithyNext')
   const [viewMode, setViewMode] = useState<PlanViewMode>('list')
   const [searchQuery, setSearchQuery] = useState('')
   const [searchExpanded, setSearchExpanded] = useState(false)
@@ -114,7 +116,7 @@ export function PlanListView({ plans, onSelectPlan }: PlanListViewProps) {
         borderBottom: '1px solid var(--color-border-subtle)',
         flexWrap: 'wrap',
       }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>Plans</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{t('plans.plans')}</span>
 
         {/* Active filter pills */}
         {filters.map((f, i) => (
@@ -141,7 +143,7 @@ export function PlanListView({ plans, onSelectPlan }: PlanListViewProps) {
         {/* Search (desktop) */}
         <div className="search-desktop" style={{ display: 'flex', alignItems: 'center', gap: 6, width: 200, height: 26, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '0 8px' }}>
           <Search size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
-          <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search plans..." style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
+          <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t('plans.searchPlans')} style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
           {searchQuery && <button onClick={() => setSearchQuery('')} style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', padding: 0, display: 'flex' }}><X size={11} strokeWidth={2} /></button>}
         </div>
 
@@ -169,7 +171,7 @@ export function PlanListView({ plans, onSelectPlan }: PlanListViewProps) {
             color: filters.length > 0 ? 'var(--color-text-accent)' : 'var(--color-text-tertiary)',
             cursor: 'pointer', fontSize: 11, fontWeight: 500,
           }}>
-            <Filter size={12} strokeWidth={1.5} /> Filter {filters.length > 0 && `(${filters.length})`}
+            <Filter size={12} strokeWidth={1.5} /> {t('plans.filter')} {filters.length > 0 && `(${filters.length})`}
           </button>
           {filterOpen && (
             <PlanFilterPanel
@@ -190,7 +192,7 @@ export function PlanListView({ plans, onSelectPlan }: PlanListViewProps) {
             color: 'var(--color-text-tertiary)',
             cursor: 'pointer', fontSize: 11, fontWeight: 500,
           }}>
-            <SlidersHorizontal size={12} strokeWidth={1.5} /> Display
+            <SlidersHorizontal size={12} strokeWidth={1.5} /> {t('plans.display')}
           </button>
           {displayOpen && (
             <DisplayPanel
@@ -206,10 +208,10 @@ export function PlanListView({ plans, onSelectPlan }: PlanListViewProps) {
         {/* View toggle */}
         <div style={{ display: 'flex', gap: 2, background: 'var(--color-surface)', borderRadius: 'var(--radius-sm)', padding: 2 }}>
           {([
-            { mode: 'list' as const, icon: List, label: 'List' },
-            { mode: 'kanban' as const, icon: LayoutGrid, label: 'Board' },
-          ] as const).map(({ mode, icon: Icon, label }) => (
-            <button key={mode} onClick={() => setViewMode(mode)} title={`${label} view`} style={{
+            { mode: 'list' as const, icon: List, labelKey: 'plans.list' },
+            { mode: 'kanban' as const, icon: LayoutGrid, labelKey: 'plans.board' },
+          ] as const).map(({ mode, icon: Icon, labelKey }) => (
+            <button key={mode} onClick={() => setViewMode(mode)} title={t(labelKey)} style={{
               width: 28, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
               border: 'none', borderRadius: 'var(--radius-sm)',
               background: viewMode === mode ? 'var(--color-surface-active)' : 'transparent',
@@ -240,6 +242,7 @@ export function PlanListView({ plans, onSelectPlan }: PlanListViewProps) {
 // ── List Content ──
 
 function PlanListContent({ groups, onSelectPlan }: { groups: { label: string; plans: Plan[] }[]; onSelectPlan: (p: Plan) => void }) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div style={{ height: '100%', overflow: 'auto' }}>
       {groups.map(g => (
@@ -261,7 +264,7 @@ function PlanListContent({ groups, onSelectPlan }: { groups: { label: string; pl
       ))}
       {groups.every(g => g.plans.length === 0) && (
         <div style={{ padding: 48, textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 13 }}>
-          No plans match your filters
+          {t('plans.noPlansMatch')}
         </div>
       )}
     </div>
@@ -423,21 +426,22 @@ function DisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange, sortA
   sortAsc: boolean; onSortDirChange: () => void
   isKanban: boolean; onClose: () => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect_clickOutside(ref, onClose)
 
-  const groupOptions: { value: PlanGroupField; label: string }[] = [
-    { value: 'status', label: 'Status' },
-    { value: 'creator', label: 'Creator' },
-    { value: 'none', label: 'No grouping' },
+  const groupOptions: { value: PlanGroupField; labelKey: string }[] = [
+    { value: 'status', labelKey: 'plans.status' },
+    { value: 'creator', labelKey: 'plans.creator' },
+    { value: 'none', labelKey: 'plans.noGrouping' },
   ]
 
-  const sortOptions: { value: PlanSortField; label: string }[] = [
-    { value: 'name', label: 'Name' },
-    { value: 'updated', label: 'Updated' },
-    { value: 'progress', label: 'Progress' },
-    { value: 'taskCount', label: 'Task count' },
+  const sortOptions: { value: PlanSortField; labelKey: string }[] = [
+    { value: 'name', labelKey: 'plans.name' },
+    { value: 'updated', labelKey: 'plans.updated' },
+    { value: 'progress', labelKey: 'plans.progress' },
+    { value: 'taskCount', labelKey: 'plans.taskCount' },
   ]
 
   return (
@@ -449,7 +453,7 @@ function DisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange, sortA
       {/* Group by */}
       <div style={{ padding: '4px 12px 8px' }}>
         <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
-          Group by {isKanban && <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(board uses status)</span>}
+          Group by {isKanban && <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>({t('plans.boardUsesStatus').replace('(', '').replace(')', '')})</span>}
         </div>
         {groupOptions.map(opt => (
           <button key={opt.value} onClick={() => onGroupByChange(opt.value)} disabled={isKanban} style={{
@@ -463,7 +467,7 @@ function DisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange, sortA
             onMouseLeave={e => { e.currentTarget.style.background = groupBy === opt.value ? 'var(--color-surface-active)' : 'transparent' }}
           >
             {groupBy === opt.value && <Check size={12} strokeWidth={2} style={{ color: 'var(--color-primary)' }} />}
-            <span style={{ marginLeft: groupBy === opt.value ? 0 : 20 }}>{opt.label}</span>
+            <span style={{ marginLeft: groupBy === opt.value ? 0 : 20 }}>{t(opt.labelKey)}</span>
           </button>
         ))}
       </div>
@@ -474,14 +478,14 @@ function DisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange, sortA
       <div style={{ padding: '8px 12px 4px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Sort by
+            {t('plans.sortBy')}
           </span>
           <button onClick={onSortDirChange} style={{
             background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-tertiary)',
             display: 'flex', alignItems: 'center', gap: 3, fontSize: 10,
           }}>
             {sortAsc ? <ArrowUp size={10} strokeWidth={2} /> : <ArrowDown size={10} strokeWidth={2} />}
-            {sortAsc ? 'Asc' : 'Desc'}
+            {sortAsc ? t('plans.asc') : t('plans.desc')}
           </button>
         </div>
         {sortOptions.map(opt => (
@@ -496,7 +500,7 @@ function DisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange, sortA
             onMouseLeave={e => { e.currentTarget.style.background = sortField === opt.value ? 'var(--color-surface-active)' : 'transparent' }}
           >
             {sortField === opt.value && <Check size={12} strokeWidth={2} style={{ color: 'var(--color-primary)' }} />}
-            <span style={{ marginLeft: sortField === opt.value ? 0 : 20 }}>{opt.label}</span>
+            <span style={{ marginLeft: sortField === opt.value ? 0 : 20 }}>{t(opt.labelKey)}</span>
           </button>
         ))}
       </div>

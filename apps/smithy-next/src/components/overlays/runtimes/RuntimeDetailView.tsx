@@ -6,6 +6,7 @@ import {
 import type { Runtime, Host, RuntimeMode } from './runtime-types'
 import { runtimeModeLabels, runtimeStatusColors, hostStatusColors, sandboxTierLabels } from './runtime-types'
 import type { WorkspaceDaemonState } from '../../../mock-data'
+import { useTranslation } from '@/i18n'
 
 interface RuntimeDetailViewProps {
   runtime: Runtime
@@ -28,6 +29,7 @@ const modeIcons: Record<RuntimeMode, typeof GitBranch> = {
 }
 
 export function RuntimeDetailView({ runtime: rt, allRuntimes, hosts, onSelectRuntime, onBack, onEdit, onNavigateToAgent, agentNames = {}, daemonState, editing, editContent }: RuntimeDetailViewProps) {
+  const { t } = useTranslation('smithyNext')
   const [menuOpen, setMenuOpen] = useState(false)
   const ModeIcon = modeIcons[rt.mode] || GitBranch
   const dotColor = runtimeStatusColors[rt.status]
@@ -35,13 +37,21 @@ export function RuntimeDetailView({ runtime: rt, allRuntimes, hosts, onSelectRun
   const host = hosts.find(h => h.id === rt.hostId)
   const isDaemonHost = daemonState?.hostId === rt.hostId
 
-  const statusLabel = rt.status.charAt(0).toUpperCase() + rt.status.slice(1)
+  const statusLabelKeys: Record<string, string> = {
+    online: 'runtimes.online', offline: 'runtimes.offline', error: 'runtimes.error', provisioning: 'runtimes.provisioning',
+  }
 
   const agentStatusDot: Record<string, string> = {
     running: 'var(--color-success)',
     idle: 'var(--color-text-tertiary)',
     error: 'var(--color-danger)',
     starting: 'var(--color-warning)',
+  }
+
+  const daemonStatusLabels: Record<string, string> = {
+    running: t('runtimes.running'),
+    error: t('runtimes.error'),
+    stopped: t('runtimes.stopped'),
   }
 
   return (
@@ -53,7 +63,7 @@ export function RuntimeDetailView({ runtime: rt, allRuntimes, hosts, onSelectRun
           display: 'flex', flexDirection: 'column', flexShrink: 0, overflow: 'hidden',
         }}>
           <div style={{ padding: '10px 12px' }}>
-            <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Runtimes</div>
+            <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>{t('runtimes.runtimes')}</div>
             <button onClick={onBack} style={{
               width: '100%', display: 'flex', alignItems: 'center', gap: 6, padding: '5px 6px',
               background: 'transparent', border: 'none', borderRadius: 'var(--radius-sm)',
@@ -62,7 +72,7 @@ export function RuntimeDetailView({ runtime: rt, allRuntimes, hosts, onSelectRun
               onMouseEnter={e => e.currentTarget.style.background = 'var(--color-surface-hover)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <ArrowLeft size={12} strokeWidth={1.5} /> All runtimes
+              <ArrowLeft size={12} strokeWidth={1.5} /> {t('runtimes.allRuntimes')}
             </button>
           </div>
           <div style={{ borderTop: '1px solid var(--color-border-subtle)', flex: 1, overflow: 'auto', padding: '6px 8px' }}>
@@ -128,7 +138,7 @@ export function RuntimeDetailView({ runtime: rt, allRuntimes, hosts, onSelectRun
               background: `color-mix(in srgb, ${dotColor} 15%, transparent)`, color: dotColor,
             }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: dotColor }} />
-              {statusLabel}
+              {statusLabelKeys[rt.status] ? t(statusLabelKeys[rt.status]) : rt.status}
             </span>
 
             {rt.isDefault && (
@@ -136,7 +146,7 @@ export function RuntimeDetailView({ runtime: rt, allRuntimes, hosts, onSelectRun
                 fontSize: 10, fontWeight: 500, color: 'var(--color-text-accent)',
                 background: 'var(--color-primary-subtle)', padding: '2px 8px',
                 borderRadius: 'var(--radius-full)',
-              }}>Default</span>
+              }}>{t('runtimes.defaultLabel')}</span>
             )}
 
             {isDaemonHost && (
@@ -146,7 +156,7 @@ export function RuntimeDetailView({ runtime: rt, allRuntimes, hosts, onSelectRun
                 padding: '2px 8px', borderRadius: 'var(--radius-full)',
                 display: 'inline-flex', alignItems: 'center', gap: 3,
               }}>
-                <Cpu size={9} strokeWidth={2} /> Daemon Host
+                <Cpu size={9} strokeWidth={2} /> {t('runtimes.daemonHost')}
               </span>
             )}
 
@@ -158,7 +168,7 @@ export function RuntimeDetailView({ runtime: rt, allRuntimes, hosts, onSelectRun
               borderRadius: 'var(--radius-sm)', color: 'var(--color-text-secondary)',
               cursor: 'pointer', fontSize: 12, fontWeight: 500,
             }}>
-              <Pencil size={12} strokeWidth={1.5} /> Edit
+              <Pencil size={12} strokeWidth={1.5} /> {t('runtimes.edit')}
             </button>
 
             <div style={{ position: 'relative' }}>
@@ -177,9 +187,9 @@ export function RuntimeDetailView({ runtime: rt, allRuntimes, hosts, onSelectRun
                     background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)',
                     borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-float)', padding: 4,
                   }}>
-                    <MenuBtn icon={Copy} label="Duplicate" onClick={() => setMenuOpen(false)} />
-                    {!rt.isDefault && <MenuBtn icon={Star} label="Set as default" onClick={() => setMenuOpen(false)} />}
-                    <MenuBtn icon={Trash2} label="Delete" color="var(--color-danger)" onClick={() => setMenuOpen(false)} />
+                    <MenuBtn icon={Copy} label={t('runtimes.duplicate')} onClick={() => setMenuOpen(false)} />
+                    {!rt.isDefault && <MenuBtn icon={Star} label={t('runtimes.setAsDefault')} onClick={() => setMenuOpen(false)} />}
+                    <MenuBtn icon={Trash2} label={t('runtimes.delete')} color="var(--color-danger)" onClick={() => setMenuOpen(false)} />
                   </div>
                 </>
               )}
@@ -190,7 +200,7 @@ export function RuntimeDetailView({ runtime: rt, allRuntimes, hosts, onSelectRun
           <div style={{ flex: 1, overflow: 'auto', padding: '20px 24px' }}>
             {/* Dispatch Daemon section */}
             {isDaemonHost && daemonState && (
-              <Section title="Dispatch Daemon">
+              <Section title={t('runtimes.dispatchDaemon')}>
                 <div style={{
                   padding: '10px 12px', borderRadius: 'var(--radius-md)',
                   background: 'color-mix(in srgb, var(--color-success) 6%, transparent)',
@@ -199,25 +209,25 @@ export function RuntimeDetailView({ runtime: rt, allRuntimes, hosts, onSelectRun
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                     <Cpu size={13} strokeWidth={1.5} style={{ color: 'var(--color-success)' }} />
                     <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text)' }}>
-                      {daemonState.status === 'running' ? 'Running' : daemonState.status === 'error' ? 'Error' : 'Stopped'}
+                      {daemonStatusLabels[daemonState.status] || daemonState.status}
                     </span>
-                    {daemonState.startedAt && <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Up {daemonState.startedAt}</span>}
+                    {daemonState.startedAt && <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('runtimes.upDuration', { duration: daemonState.startedAt })}</span>}
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', lineHeight: 1.4 }}>
-                    The daemon runs on host <strong style={{ color: 'var(--color-text-secondary)' }}>{host?.name}</strong> and orchestrates agent lifecycles across all runtimes on this host.
+                    {t('runtimes.daemonDetailDescription', { hostName: host?.name || '' })}
                   </div>
                 </div>
               </Section>
             )}
 
             {/* Configuration section */}
-            <Section title="Configuration">
+            <Section title={t('runtimes.configuration')}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-                  <InfoItem label="Mode" value={runtimeModeLabels[rt.mode]} />
+                  <InfoItem label={t('runtimes.modeLabel')} value={runtimeModeLabels[rt.mode]} />
                   {host && (
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 3 }}>Host</div>
+                      <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 3 }}>{t('runtimes.hostName')}</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <div style={{ width: 6, height: 6, borderRadius: '50%', background: hostStatusColors[host.status], flexShrink: 0 }} />
                         <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-secondary)' }}>{host.name}</span>
@@ -225,23 +235,23 @@ export function RuntimeDetailView({ runtime: rt, allRuntimes, hosts, onSelectRun
                       </div>
                     </div>
                   )}
-                  <InfoItem label="Created" value={rt.createdAt} />
-                  {rt.lastHealthCheck && <InfoItem label="Last Health Check" value={rt.lastHealthCheck} />}
+                  <InfoItem label={t('runtimes.createdLabel')} value={rt.createdAt} />
+                  {rt.lastHealthCheck && <InfoItem label={t('runtimes.lastHealthCheck')} value={rt.lastHealthCheck} />}
                 </div>
-                {rt.worktreePath && <InfoItem label="Worktree Path" value={rt.worktreePath} mono />}
-                {rt.dockerImage && <InfoItem label="Docker Image" value={rt.dockerImage} mono />}
-                {rt.sandboxTier && <InfoItem label="Sandbox Tier" value={sandboxTierLabels[rt.sandboxTier]} />}
-                {rt.sandboxBaseImage && <InfoItem label="Sandbox Image" value={rt.sandboxBaseImage} mono />}
+                {rt.worktreePath && <InfoItem label={t('runtimes.worktreePathLabel')} value={rt.worktreePath} mono />}
+                {rt.dockerImage && <InfoItem label={t('runtimes.dockerImageLabel')} value={rt.dockerImage} mono />}
+                {rt.sandboxTier && <InfoItem label={t('runtimes.sandboxTierLabel')} value={sandboxTierLabels[rt.sandboxTier]} />}
+                {rt.sandboxBaseImage && <InfoItem label={t('runtimes.sandboxImageLabel')} value={rt.sandboxBaseImage} mono />}
               </div>
             </Section>
 
             {/* Health section */}
             {(rt.cpu !== undefined || rt.memory || rt.disk) && (
-              <Section title="Health">
+              <Section title={t('runtimes.health')}>
                 <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
                   {rt.cpu !== undefined && (
                     <div>
-                      <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 6 }}>CPU</div>
+                      <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 6 }}>{t('runtimes.cpu')}</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div style={{ width: 100, height: 6, borderRadius: 3, background: 'var(--color-surface)', overflow: 'hidden' }}>
                           <div style={{
@@ -255,13 +265,13 @@ export function RuntimeDetailView({ runtime: rt, allRuntimes, hosts, onSelectRun
                   )}
                   {rt.memory && (
                     <div>
-                      <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 6 }}>Memory</div>
+                      <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 6 }}>{t('runtimes.memory')}</div>
                       <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-secondary)' }}>{rt.memory}</span>
                     </div>
                   )}
                   {rt.disk && (
                     <div>
-                      <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 6 }}>Disk</div>
+                      <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 6 }}>{t('runtimes.disk')}</div>
                       <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-secondary)' }}>{rt.disk}</span>
                     </div>
                   )}
@@ -271,7 +281,7 @@ export function RuntimeDetailView({ runtime: rt, allRuntimes, hosts, onSelectRun
 
             {/* Error message */}
             {rt.status === 'error' && rt.statusMessage && (
-              <Section title="Error">
+              <Section title={t('runtimes.errorSection')}>
                 <div style={{
                   padding: '10px 12px', borderRadius: 'var(--radius-md)',
                   background: 'color-mix(in srgb, var(--color-danger) 8%, transparent)',
@@ -284,10 +294,10 @@ export function RuntimeDetailView({ runtime: rt, allRuntimes, hosts, onSelectRun
             )}
 
             {/* Assigned agents section */}
-            <Section title={`Assigned Agents (${rt.assignedAgentCount})`}>
+            <Section title={t('runtimes.assignedAgents', { count: rt.assignedAgentCount })}>
               {rt.assignedAgentIds.length === 0 ? (
                 <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', padding: '8px 0' }}>
-                  No agents assigned to this runtime.
+                  {t('runtimes.noAgentsAssigned')}
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { X, Maximize2, Minimize2, Paperclip } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import { type Task, ASSIGNEES } from '../mock-data'
 import {
   StatusDropdown, PriorityDropdown, AssigneeDropdown, LabelDropdown,
@@ -13,6 +14,7 @@ interface CreateTaskDialogProps {
 }
 
 export function CreateTaskDialog({ onClose, onCreate }: CreateTaskDialogProps) {
+  const { t } = useTranslation('smithyNext')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [status, setStatus] = useState<Task['status']>('todo')
@@ -57,7 +59,7 @@ export function CreateTaskDialog({ onClose, onCreate }: CreateTaskDialogProps) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)', fontWeight: 500, background: 'var(--color-surface)', padding: '2px 8px', borderRadius: 'var(--radius-sm)' }}>SF</span>
             <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>›</span>
-            <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>New task</span>
+            <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>{t('createTask.newTask')}</span>
           </div>
           <div style={{ display: 'flex', gap: 4 }}>
             <button onClick={() => setFullScreen(!fullScreen)} style={{ width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', borderRadius: 'var(--radius-sm)' }}
@@ -77,7 +79,7 @@ export function CreateTaskDialog({ onClose, onCreate }: CreateTaskDialogProps) {
           <input
             value={title}
             onChange={e => setTitle(e.target.value)}
-            placeholder="Task title"
+            placeholder={t('createTask.taskTitle')}
             autoFocus
             style={{ width: '100%', background: 'none', border: 'none', fontSize: 18, fontWeight: 500, color: 'var(--color-text)', outline: 'none', marginBottom: 8 }}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleCreate() } }}
@@ -85,7 +87,7 @@ export function CreateTaskDialog({ onClose, onCreate }: CreateTaskDialogProps) {
           <textarea
             value={description}
             onChange={e => setDescription(e.target.value)}
-            placeholder="Add description..."
+            placeholder={t('createTask.addDescription')}
             style={{ width: '100%', minHeight: 120, background: 'none', border: 'none', fontSize: 14, color: 'var(--color-text-secondary)', outline: 'none', resize: 'vertical', lineHeight: 1.6, fontFamily: 'inherit' }}
           />
         </div>
@@ -106,7 +108,7 @@ export function CreateTaskDialog({ onClose, onCreate }: CreateTaskDialogProps) {
 
           {/* Assignee */}
           <div style={{ position: 'relative' }}>
-            <PropertyPill label={assignee?.name || 'Assignee'} onClick={() => setOpenDropdown(openDropdown === 'assignee' ? null : 'assignee')} />
+            <PropertyPill label={assignee?.name || t('createTask.assignee')} onClick={() => setOpenDropdown(openDropdown === 'assignee' ? null : 'assignee')} />
             {openDropdown === 'assignee' && <AssigneeDropdown current={assignee?.name} onSelect={name => { const a = ASSIGNEES.find(x => x.name === name); setAssignee(a ? { name: a.name, avatar: a.avatar } : undefined) }} onClose={() => setOpenDropdown(null)} position={{ bottom: 32, left: 0 }} />}
           </div>
 
@@ -134,7 +136,7 @@ export function CreateTaskDialog({ onClose, onCreate }: CreateTaskDialogProps) {
               <div onClick={() => setCreateMore(!createMore)} style={{ width: 32, height: 18, borderRadius: 9, background: createMore ? 'var(--color-primary)' : 'var(--color-surface-active)', display: 'flex', alignItems: 'center', padding: 2, cursor: 'pointer', transition: 'background 0.15s' }}>
                 <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'white', transform: createMore ? 'translateX(14px)' : 'translateX(0)', transition: 'transform 0.15s' }} />
               </div>
-              Create more
+              {t('createTask.createMore')}
             </label>
             <button onClick={handleCreate} disabled={!title.trim()} style={{
               height: 32, padding: '0 16px', border: 'none', borderRadius: 'var(--radius-sm)',
@@ -142,7 +144,7 @@ export function CreateTaskDialog({ onClose, onCreate }: CreateTaskDialogProps) {
               color: title.trim() ? 'white' : 'var(--color-text-tertiary)',
               cursor: title.trim() ? 'pointer' : 'default', fontSize: 13, fontWeight: 500,
             }}>
-              Create task
+              {t('createTask.createTask')}
             </button>
           </div>
         </div>

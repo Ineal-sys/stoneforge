@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Send, Play } from 'lucide-react'
 import type { SessionStatus } from './session-types'
+import { useTranslation } from '@/i18n'
 
 interface SessionMessageInputProps {
   sessionStatus: SessionStatus
@@ -10,6 +11,7 @@ interface SessionMessageInputProps {
 
 export function SessionMessageInput({ sessionStatus, onSendMessage, onResumeSession }: SessionMessageInputProps) {
   const [value, setValue] = useState('')
+  const { t } = useTranslation('smithyNext')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // Auto-expand textarea
@@ -45,7 +47,7 @@ export function SessionMessageInput({ sessionStatus, onSendMessage, onResumeSess
         flexShrink: 0,
       }}>
         <span style={{ flex: 1, fontSize: 12, color: 'var(--color-text-tertiary)' }}>
-          Session ended
+          {t('sessions.sessionEnded')}
         </span>
         {onResumeSession && (
           <button
@@ -62,7 +64,7 @@ export function SessionMessageInput({ sessionStatus, onSendMessage, onResumeSess
             onMouseEnter={e => e.currentTarget.style.background = 'var(--color-surface-hover)'}
             onMouseLeave={e => e.currentTarget.style.background = 'var(--color-surface)'}
           >
-            <Play size={11} strokeWidth={2} /> Resume
+            <Play size={11} strokeWidth={2} /> {t('sessions.resume')}
           </button>
         )}
       </div>
@@ -71,8 +73,8 @@ export function SessionMessageInput({ sessionStatus, onSendMessage, onResumeSess
 
   // Active / error sessions: show message input
   const placeholder = sessionStatus === 'error'
-    ? 'Send to resume...'
-    : 'Send a message...'
+    ? t('sessions.sendToResume')
+    : t('sessions.sendAMessage')
 
   return (
     <div style={{
@@ -120,7 +122,7 @@ export function SessionMessageInput({ sessionStatus, onSendMessage, onResumeSess
           flexShrink: 0,
           transition: 'all var(--duration-fast)',
         }}
-        title="Send (⌘+Enter)"
+        title={t('sessions.sendCmdEnter')}
       >
         <Send size={14} strokeWidth={2} />
       </button>

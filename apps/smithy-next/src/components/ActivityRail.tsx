@@ -23,6 +23,7 @@ import {
   Building2,
 } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
+import { useTranslation } from '@/i18n'
 import { Tooltip } from './Tooltip'
 import { PresenceDot } from './PresenceDot'
 import { WorkspaceIconMark, isIconImage } from './WorkspaceIconMark'
@@ -43,22 +44,6 @@ interface ActivityRailProps {
 }
 
 type View = 'kanban' | 'whiteboard' | 'editor' | 'merge-requests' | 'ci' | 'preview' | 'sessions' | 'diff' | 'task-detail' | 'automations' | 'agents' | 'settings' | 'documents' | 'channels' | 'plans' | 'metrics' | 'workspaces'
-
-const primaryItems: { id: View; icon: typeof SquareKanban; label: string; shortcut?: string }[] = [
-  { id: 'kanban', icon: SquareKanban, label: 'Tasks', shortcut: '1' },
-  { id: 'merge-requests', icon: GitMerge, label: 'Merge Requests', shortcut: '2' },
-  { id: 'ci', icon: CircleDot, label: 'CI/CD', shortcut: '3' },
-  { id: 'preview', icon: Eye, label: 'Preview', shortcut: '4' },
-  { id: 'agents', icon: Bot, label: 'Agents', shortcut: '5' },
-  { id: 'automations', icon: Zap, label: 'Automations', shortcut: '6' },
-]
-
-const secondaryItems: { id: View; icon: typeof FileText; label: string }[] = [
-  { id: 'editor', icon: Code, label: 'Editor' },
-  { id: 'documents', icon: FileText, label: 'Documents' },
-  { id: 'channels', icon: MessageSquare, label: 'Channels' },
-  { id: 'metrics', icon: BarChart3, label: 'Metrics' },
-]
 
 // Status dot: muted but readable — communicates workspace health
 const statusDotColors = {
@@ -84,6 +69,23 @@ export function ActivityRail({ activeView, onNavigate, theme, onToggleTheme, wor
   const wsOverflowRef = useRef<HTMLDivElement>(null)
   const userMenuRef = useRef<HTMLDivElement>(null)
   const isTeamMode = appMode === 'team'
+  const { t } = useTranslation('smithyNext')
+
+  const primaryItems: { id: View; icon: typeof SquareKanban; label: string; shortcut?: string }[] = [
+    { id: 'kanban', icon: SquareKanban, label: t('activityRail.tasks'), shortcut: '1' },
+    { id: 'merge-requests', icon: GitMerge, label: t('activityRail.mergeRequests'), shortcut: '2' },
+    { id: 'ci', icon: CircleDot, label: t('activityRail.ciCd'), shortcut: '3' },
+    { id: 'preview', icon: Eye, label: t('activityRail.preview'), shortcut: '4' },
+    { id: 'agents', icon: Bot, label: t('activityRail.agents'), shortcut: '5' },
+    { id: 'automations', icon: Zap, label: t('activityRail.automations'), shortcut: '6' },
+  ]
+
+  const secondaryItems: { id: View; icon: typeof FileText; label: string }[] = [
+    { id: 'editor', icon: Code, label: t('activityRail.editor') },
+    { id: 'documents', icon: FileText, label: t('activityRail.documents') },
+    { id: 'channels', icon: MessageSquare, label: t('activityRail.channels') },
+    { id: 'metrics', icon: BarChart3, label: t('activityRail.metrics') },
+  ]
 
   // Sort workspaces by most recently opened, limit to 5 visible
   const sortedWorkspaces = [...workspaces].sort((a, b) => b.lastOpened - a.lastOpened)
@@ -179,7 +181,7 @@ export function ActivityRail({ activeView, onNavigate, theme, onToggleTheme, wor
             return (
               <Tooltip
                 key={ws.id}
-                label={`${ws.name}${totalTasks > 0 || ws.completedSinceLastVisit > 0 ? ` — ${[ws.tasksRunning && `${ws.tasksRunning} running`, ws.tasksInReview && `${ws.tasksInReview} review`, ws.tasksBlocked && `${ws.tasksBlocked} blocked`, ws.completedSinceLastVisit && `${ws.completedSinceLastVisit} completed`].filter(Boolean).join(', ')}` : ''}${ws.status === 'needs-attention' ? ' · needs attention' : ws.status === 'error' ? ' · error' : ''}`}
+                label={`${ws.name}${totalTasks > 0 || ws.completedSinceLastVisit > 0 ? ` — ${[ws.tasksRunning && `${ws.tasksRunning} ${t('activityRail.running')}`, ws.tasksInReview && `${ws.tasksInReview} ${t('activityRail.review')}`, ws.tasksBlocked && `${ws.tasksBlocked} ${t('activityRail.blocked')}`, ws.completedSinceLastVisit && `${ws.completedSinceLastVisit} ${t('activityRail.completed')}`].filter(Boolean).join(', ')}` : ''}${ws.status === 'needs-attention' ? ` · ${t('activityRail.needsAttention')}` : ws.status === 'error' ? ` · ${t('activityRail.error')}` : ''}`}
                 placement="right"
               >
                 <button
@@ -252,7 +254,7 @@ export function ActivityRail({ activeView, onNavigate, theme, onToggleTheme, wor
             )
           })}
           {/* Workspace overflow — uses ChevronsUpDown to distinguish from nav "more" */}
-          <Tooltip label="More workspaces" placement="right" disabled={wsOverflowOpen}>
+          <Tooltip label={t('activityRail.moreWorkspaces')} placement="right" disabled={wsOverflowOpen}>
             <button
               onClick={() => setWsOverflowOpen(!wsOverflowOpen)}
               style={{
@@ -281,7 +283,7 @@ export function ActivityRail({ activeView, onNavigate, theme, onToggleTheme, wor
             }}>
               {overflowWorkspaces.length > 0 && (
                 <>
-                  <div style={{ padding: '6px 10px', fontSize: 11, color: 'var(--color-text-tertiary)', fontWeight: 500 }}>More workspaces</div>
+                  <div style={{ padding: '6px 10px', fontSize: 11, color: 'var(--color-text-tertiary)', fontWeight: 500 }}>{t('activityRail.moreWorkspacesHeader')}</div>
                   {overflowWorkspaces.map(ws => {
                     const dotColor = statusDotColors[ws.status]
                     return (
@@ -325,7 +327,7 @@ export function ActivityRail({ activeView, onNavigate, theme, onToggleTheme, wor
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
                 <Network size={14} strokeWidth={1.5} style={{ flexShrink: 0 }} />
-                All Workspaces
+                {t('activityRail.allWorkspaces')}
               </button>
               <div style={{ height: 1, background: 'var(--color-border-subtle)', margin: '4px 0' }} />
               <button
@@ -342,7 +344,7 @@ export function ActivityRail({ activeView, onNavigate, theme, onToggleTheme, wor
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
                 <Plus size={14} strokeWidth={1.5} style={{ flexShrink: 0 }} />
-                New Workspace
+                {t('activityRail.newWorkspace')}
               </button>
             </div>
           )}
@@ -440,7 +442,7 @@ export function ActivityRail({ activeView, onNavigate, theme, onToggleTheme, wor
       {/* Mode toggle + Theme toggle + Settings + User avatar */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
         {onToggleTheme && (
-          <Tooltip label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'} placement="right">
+          <Tooltip label={theme === 'dark' ? t('activityRail.switchToLightMode') : t('activityRail.switchToDarkMode')} placement="right">
             <button
               onClick={onToggleTheme}
               style={{
@@ -460,7 +462,7 @@ export function ActivityRail({ activeView, onNavigate, theme, onToggleTheme, wor
 
         <RailButton
           icon={Settings}
-          label="Settings"
+          label={t('activityRail.settings')}
           isActive={activeView === 'settings'}
           onClick={() => onNavigate('settings')}
         />
@@ -516,7 +518,7 @@ export function ActivityRail({ activeView, onNavigate, theme, onToggleTheme, wor
                 {/* Team mode: status selector */}
                 {isTeamMode && (
                   <>
-                    <div style={{ padding: '4px 10px', fontSize: 11, color: 'var(--color-text-tertiary)', fontWeight: 500 }}>Status</div>
+                    <div style={{ padding: '4px 10px', fontSize: 11, color: 'var(--color-text-tertiary)', fontWeight: 500 }}>{t('activityRail.status')}</div>
                     {(['online', 'away', 'offline'] as const).map(status => (
                       <button
                         key={status}
@@ -533,7 +535,7 @@ export function ActivityRail({ activeView, onNavigate, theme, onToggleTheme, wor
                         onMouseLeave={e => e.currentTarget.style.background = currentUser.presence === status ? 'var(--color-surface-hover)' : 'transparent'}
                       >
                         <PresenceDot status={status} size={6} style={{ position: 'relative' }} />
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                        {t(`activityRail.${status}`)}
                       </button>
                     ))}
                     <div style={{ height: 1, background: 'var(--color-border-subtle)', margin: '4px 0' }} />
@@ -555,7 +557,7 @@ export function ActivityRail({ activeView, onNavigate, theme, onToggleTheme, wor
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
                   <Settings size={14} strokeWidth={1.5} />
-                  Settings
+                  {t('activityRail.settings')}
                 </button>
                 <button
                   onClick={() => setUserMenuOpen(false)}
@@ -571,7 +573,7 @@ export function ActivityRail({ activeView, onNavigate, theme, onToggleTheme, wor
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
                   <Keyboard size={14} strokeWidth={1.5} />
-                  Keyboard Shortcuts
+                  {t('activityRail.keyboardShortcuts')}
                 </button>
 
                 {/* Team mode: org settings + sign out */}
@@ -592,7 +594,7 @@ export function ActivityRail({ activeView, onNavigate, theme, onToggleTheme, wor
                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                       >
                         <Building2 size={14} strokeWidth={1.5} />
-                        Org Settings
+                        {t('activityRail.orgSettings')}
                       </button>
                     )}
                     <div style={{ height: 1, background: 'var(--color-border-subtle)', margin: '4px 0' }} />
@@ -610,7 +612,7 @@ export function ActivityRail({ activeView, onNavigate, theme, onToggleTheme, wor
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                     >
                       <LogOut size={14} strokeWidth={1.5} />
-                      Sign Out
+                      {t('activityRail.signOut')}
                     </button>
                   </>
                 )}

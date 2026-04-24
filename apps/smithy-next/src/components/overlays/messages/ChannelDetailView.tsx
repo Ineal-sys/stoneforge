@@ -6,6 +6,7 @@ import { SessionSummaryCard, CollapsedSessionGroup } from './SessionSummaryCard'
 import { ChannelComposer } from './ChannelComposer'
 import { ThreadPanel } from './ThreadPanel'
 import { MembersPanel } from './MembersPanel'
+import { useTranslation } from '@/i18n'
 
 interface ChannelDetailViewProps {
   channel: MsgChannel
@@ -25,6 +26,7 @@ function buildTimeline(
   messages: MsgMessage[],
   sessionCards: MsgSessionCard[],
   filterMode: TimelineFilterMode,
+  t: (key: string) => string,
 ): TimelineItem[] {
   // Only root messages (no thread replies)
   const rootMessages = messages.filter(m => !m.threadId)
@@ -57,8 +59,8 @@ function buildTimeline(
     yesterday.setDate(today.getDate() - 1)
 
     let label: string
-    if (date.toDateString() === today.toDateString()) label = 'Today'
-    else if (date.toDateString() === yesterday.toDateString()) label = 'Yesterday'
+    if (date.toDateString() === today.toDateString()) label = t('messages.today')
+    else if (date.toDateString() === yesterday.toDateString()) label = t('messages.yesterday')
     else label = dateStr
 
     if (label !== lastDate) {
@@ -122,6 +124,7 @@ export function ChannelDetailView({
   channel, messages, sessionCards, onBack,
   onNavigateToSession, onNavigateToTask, compact, isMobile,
 }: ChannelDetailViewProps) {
+  const { t } = useTranslation('smithyNext')
   const [filterMode, setFilterMode] = useState<TimelineFilterMode>('all')
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -132,8 +135,8 @@ export function ChannelDetailView({
 
   // Build timeline
   const timeline = useMemo(
-    () => buildTimeline(messages, sessionCards, filterMode),
-    [messages, sessionCards, filterMode],
+    () => buildTimeline(messages, sessionCards, filterMode, t),
+    [messages, sessionCards, filterMode, t],
   )
 
   // Group consecutive session cards
@@ -183,9 +186,9 @@ export function ChannelDetailView({
   const hasAgents = channel.members.some(m => m.entityType === 'agent')
 
   const filterOptions: { value: TimelineFilterMode; label: string }[] = [
-    { value: 'all', label: 'All' },
-    { value: 'messages', label: 'Messages' },
-    { value: 'sessions', label: 'Sessions' },
+    { value: 'all', label: t('messages.all') },
+    { value: 'messages', label: t('messages.messages') },
+    { value: 'sessions', label: t('messages.sessions') },
   ]
 
   return (
@@ -245,7 +248,7 @@ export function ChannelDetailView({
             }}
             onMouseEnter={e => { if (!membersOpen) e.currentTarget.style.background = 'var(--color-surface-hover)' }}
             onMouseLeave={e => { e.currentTarget.style.background = membersOpen ? 'var(--color-surface-active)' : 'transparent' }}
-            title="View members"
+            title={t('messages.viewMembers')}
           >
             {channel.members.slice(0, 3).map((m, idx) => (
               <div key={m.id} style={{
@@ -286,7 +289,7 @@ export function ChannelDetailView({
           {compact && (
             <button
               onClick={onBack}
-              title="Close channel"
+              title={t('messages.closeChannel')}
               style={{
                 width: 26, height: 26,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -338,7 +341,7 @@ export function ChannelDetailView({
                   ref={searchInputRef}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Search messages..."
+                  placeholder={t('messages.searchMessages')}
                   style={{
                     width: '100%', padding: '4px 8px 4px 28px', fontSize: 12,
                     background: 'var(--color-surface)', border: '1px solid var(--color-border-subtle)',
@@ -409,7 +412,7 @@ export function ChannelDetailView({
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               height: '100%', color: 'var(--color-text-tertiary)', fontSize: 13,
             }}>
-              {searchQuery ? 'No messages match your search' : 'No messages yet. Start the discussion.'}
+              {searchQuery ? t('messages.noMessagesMatchSearch') : t('messages.noMessagesYetStartDiscussion')}
             </div>
           )}
 

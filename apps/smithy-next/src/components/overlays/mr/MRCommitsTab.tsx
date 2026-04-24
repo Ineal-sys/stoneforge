@@ -3,6 +3,7 @@ import { GitCommit, ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react'
 import type { MRCommit } from './mr-types'
 import type { DiffFile } from '../../../mock-data'
 import { MRDiffViewer } from './MRDiffViewer'
+import { useTranslation } from '@/i18n'
 
 interface MRCommitsTabProps {
   commits: MRCommit[]
@@ -11,12 +12,13 @@ interface MRCommitsTabProps {
 }
 
 export function MRCommitsTab({ commits, diffFiles, onOpenInEditor }: MRCommitsTabProps) {
+  const { t } = useTranslation('smithyNext')
   const [expandedSha, setExpandedSha] = useState<string | null>(null)
 
   if (commits.length === 0) {
     return (
       <div style={{ padding: 24, textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 13 }}>
-        No commits yet
+        {t('mergeRequest.noCommitsYet')}
       </div>
     )
   }
@@ -56,7 +58,7 @@ export function MRCommitsTab({ commits, diffFiles, onOpenInEditor }: MRCommitsTa
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, flexShrink: 0 }}>
                 <span style={{ color: 'var(--color-success)' }}>+{commit.additions}</span>
                 <span style={{ color: 'var(--color-danger)' }}>-{commit.deletions}</span>
-                <span style={{ color: 'var(--color-text-tertiary)' }}>{commit.filesChanged} files</span>
+                <span style={{ color: 'var(--color-text-tertiary)' }}>{t('mergeRequest.files', { count: commit.filesChanged })}</span>
               </div>
             </div>
 

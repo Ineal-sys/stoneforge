@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from '@/i18n'
 import { EditorMiniActivityBar, type EditorSidebarPanel } from './EditorMiniActivityBar'
 import { EditorContextBar } from './EditorContextBar'
 import { EditorTabBar } from './EditorTabBar'
@@ -37,6 +38,7 @@ export function EditorOverlayNew({
   onBack, filePath, branch,
   editorLine, editorFrom, editorFromId, editorFromLabel,
 }: EditorOverlayProps) {
+  const { t } = useTranslation('smithyNext')
   // ── Sidebar state ──
   const [sidebarPanel, setSidebarPanel] = useState<EditorSidebarPanel>('explorer')
   const [sidebarVisible, setSidebarVisible] = useState(true)
@@ -433,9 +435,9 @@ export function EditorOverlayNew({
                 gap: 12, color: 'var(--color-text-tertiary)',
               }}>
                 <div style={{ fontSize: 32, opacity: 0.3 }}>{ }</div>
-                <span style={{ fontSize: 13 }}>Open a file to start editing</span>
+                <span style={{ fontSize: 13 }}>{t('editor.openFileToEdit')}</span>
                 <span style={{ fontSize: 12 }}>
-                  Use the file explorer or press{' '}
+                  {t('editor.useFileExplorerOrPress')}{' '}
                   <kbd style={{
                     padding: '2px 6px',
                     background: 'var(--color-surface)',
@@ -443,7 +445,7 @@ export function EditorOverlayNew({
                     border: '1px solid var(--color-border)',
                     fontSize: 11,
                   }}>⌘P</kbd>
-                  {' '}to find files
+                  {' '}{t('editor.toFindFiles')}
                 </span>
               </div>
             )}

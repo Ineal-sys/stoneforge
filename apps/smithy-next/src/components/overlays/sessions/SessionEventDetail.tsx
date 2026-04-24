@@ -1,17 +1,18 @@
 import { X, User, Bot, Wrench, Info, Play, Clock, ArrowDownLeft, ArrowUpRight } from 'lucide-react'
 import type { SessionEvent, SessionEventType } from './session-types'
 
+import { useTranslation } from '@/i18n'
 interface SessionEventDetailProps {
   event: SessionEvent
   onClose: () => void
 }
 
-const typeConfig: Record<SessionEventType, { icon: typeof User; label: string; color: string }> = {
-  session_start: { icon: Play, label: 'Start', color: '#a855f7' },
-  user_message: { icon: User, label: 'User', color: '#ec4899' },
-  agent_message: { icon: Bot, label: 'Agent', color: 'var(--color-primary)' },
-  tool_call: { icon: Wrench, label: 'Tool', color: '#6b7280' },
-  system_message: { icon: Info, label: 'System', color: '#9ca3af' },
+const typeConfig: Record<SessionEventType, { icon: typeof User; labelKey: string; color: string }> = {
+  session_start: { icon: Play, labelKey: 'sessions.start', color: '#a855f7' },
+  user_message: { icon: User, labelKey: 'sessions.user', color: '#ec4899' },
+  agent_message: { icon: Bot, labelKey: 'sessions.agentFilter', color: 'var(--color-primary)' },
+  tool_call: { icon: Wrench, labelKey: 'sessions.tool', color: '#6b7280' },
+  system_message: { icon: Info, labelKey: 'sessions.system', color: '#9ca3af' },
 }
 
 function formatTimestamp(ms: number): string {
@@ -34,6 +35,7 @@ function formatTokens(n: number): string {
 }
 
 export function SessionEventDetail({ event, onClose }: SessionEventDetailProps) {
+  const { t } = useTranslation('smithyNext')
   const config = typeConfig[event.type]
   const Icon = config.icon
 
@@ -67,7 +69,7 @@ export function SessionEventDetail({ event, onClose }: SessionEventDetailProps) 
               fontWeight: 600,
             }}>
               <Icon size={12} />
-              {event.toolName ?? config.label}
+              {event.toolName ?? t(config.labelKey)}
             </span>
           </div>
           <button
@@ -123,7 +125,7 @@ export function SessionEventDetail({ event, onClose }: SessionEventDetailProps) 
             {event.toolInput && (
               <div style={{ marginBottom: 16 }}>
                 <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
-                  Input
+                  {t('sessions.input')}
                 </div>
                 <pre style={{
                   background: 'var(--color-surface)',
@@ -146,7 +148,7 @@ export function SessionEventDetail({ event, onClose }: SessionEventDetailProps) 
               <div style={{ marginBottom: 16 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
                   <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Result
+                    {t('sessions.result')}
                   </span>
                   {event.toolStatus && (
                     <span style={{

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useTranslation } from '@/i18n'
 import {
   PanelRightClose,
   PanelRightOpen,
@@ -110,6 +111,7 @@ function getDefaultWidth() {
 }
 
 export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandState, onCycleExpand, externalActiveId, onNavigateToWhiteboard, workspaces = [], activeWorkspaceId, onSwitchWorkspace }: DirectorPanelProps) {
+  const { t } = useTranslation('smithyNext')
   const { isTeamMode, currentUser, getUserById, teamMembers } = useTeamContext()
   const [activeId, setActiveId] = useState(directors[0]?.id || '')
   const [viewMode, setViewMode] = useState<'chat' | 'threads'>('chat')
@@ -252,7 +254,7 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
   if (collapsed) {
     return (
       <div className="director-panel director-collapsed" style={{ width: 48, minWidth: 48, height: '100%', background: 'var(--color-bg-secondary)', borderLeft: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 8, gap: 4 }}>
-        <Tooltip label="Expand director panel" placement="left">
+        <Tooltip label={t('director.collapsed.expandPanel')} placement="left">
           <button onClick={onToggleCollapse} style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', borderRadius: 'var(--radius-sm)', transition: 'all var(--duration-fast)' }}
             onMouseEnter={e => e.currentTarget.style.background = 'var(--color-surface-hover)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -322,7 +324,7 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
             </div>
           </div>
           {/* (+) button — always adjacent to last tab */}
-          <Tooltip label="New director">
+          <Tooltip label={t('director.header.newDirector')}>
             <button style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', borderRadius: 'var(--radius-sm)', flexShrink: 0, transition: 'all var(--duration-fast)' }}
               onMouseEnter={e => e.currentTarget.style.background = 'var(--color-surface-hover)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -331,7 +333,7 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
         </div>
         {/* Action buttons: whiteboard, sessions, expand, collapse */}
         <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
-          <Tooltip label="Open whiteboard">
+          <Tooltip label={t('director.header.openWhiteboard')}>
             <button onClick={() => onNavigateToWhiteboard?.(activeId)} style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', borderRadius: 'var(--radius-sm)', transition: 'all var(--duration-fast)' }}
               onMouseEnter={e => e.currentTarget.style.background = 'var(--color-surface-hover)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -339,7 +341,7 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
               <Presentation size={14} strokeWidth={1.5} />
             </button>
           </Tooltip>
-          <Tooltip label={viewMode === 'threads' ? 'Back to chat' : 'View sessions'}>
+          <Tooltip label={viewMode === 'threads' ? t('director.header.backToChat') : t('director.header.viewSessions')}>
             <button onClick={() => setViewMode(viewMode === 'threads' ? 'chat' : 'threads')} style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: viewMode === 'threads' ? 'var(--color-primary-subtle)' : 'none', border: 'none', color: viewMode === 'threads' ? 'var(--color-text-accent)' : 'var(--color-text-tertiary)', cursor: 'pointer', borderRadius: 'var(--radius-sm)', transition: 'all var(--duration-fast)' }}
               onMouseEnter={e => { if (viewMode !== 'threads') e.currentTarget.style.background = 'var(--color-surface-hover)' }}
               onMouseLeave={e => e.currentTarget.style.background = viewMode === 'threads' ? 'var(--color-primary-subtle)' : 'transparent'}
@@ -348,7 +350,7 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
             </button>
           </Tooltip>
           {/* 3-state expand cycle: contracted → expanded (50%) → full-width */}
-          <Tooltip label={isFull ? 'Contract panel' : isExpanded ? 'Expand to full width' : 'Expand panel'}>
+          <Tooltip label={isFull ? t('director.header.contractPanel') : isExpanded ? t('director.header.expandToFullWidth') : t('director.header.expandPanel')}>
             <button
               onClick={onCycleExpand}
               style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: (isFull || isExpanded) ? 'var(--color-primary-subtle)' : 'none', border: 'none', color: (isFull || isExpanded) ? 'var(--color-text-accent)' : 'var(--color-text-tertiary)', cursor: 'pointer', borderRadius: 'var(--radius-sm)', transition: 'all var(--duration-fast)' }}
@@ -358,7 +360,7 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
               {isFull ? <Minimize2 size={14} strokeWidth={1.5} /> : isExpanded ? <Expand size={14} strokeWidth={1.5} /> : <Maximize2 size={14} strokeWidth={1.5} />}
             </button>
           </Tooltip>
-          <Tooltip label="Close panel">
+          <Tooltip label={t('director.header.closePanel')}>
             <button onClick={onToggleCollapse} style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', borderRadius: 'var(--radius-sm)', transition: 'all var(--duration-fast)' }}
               onMouseEnter={e => e.currentTarget.style.background = 'var(--color-surface-hover)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -385,7 +387,7 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
                 {ownerUser && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <UserAvatar user={ownerUser} size={22} showPresence />
-                    <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>Started by <strong style={{ fontWeight: 600, color: 'var(--color-text)' }}>{ownerUser.name}</strong></span>
+                    <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>{t('director.session.startedBy')} <strong style={{ fontWeight: 600, color: 'var(--color-text)' }}>{ownerUser.name}</strong></span>
                   </div>
                 )}
                 {/* Runtime badge — shows runtime name instead of generic connection type */}
@@ -410,16 +412,16 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
                 <div style={{ flex: 1 }} />
                 {/* 7.4: Viewer indicator — avatar stack */}
                 {viewerUsers.length > 0 && (
-                  <Tooltip label={viewerUsers.map(u => u.name).join(', ') + (viewerUsers.length === 1 ? ' is watching' : ' are watching')}>
+                  <Tooltip label={viewerUsers.map(u => u.name).join(', ') + (viewerUsers.length === 1 ? t('director.session.isWatching') : t('director.session.areWatching'))}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                       <AvatarStack users={viewerUsers} max={3} size={18} showPresence />
-                      <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>{viewerUsers.length} watching</span>
+                      <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>{viewerUsers.length}{t('director.session.watching')}</span>
                     </div>
                   </Tooltip>
                 )}
                 {/* 7.3: Session lock control — owner only */}
                 {isOwner && (
-                  <Tooltip label={isLocked ? 'Unlock session for team' : 'Lock session to read-only'}>
+                  <Tooltip label={isLocked ? t('director.session.unlockSession') : t('director.session.lockSession')}>
                     <button
                       onClick={() => setSessionLocks(prev => ({ ...prev, [activeDirector.id]: !isLocked }))}
                       style={{
@@ -440,9 +442,9 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
                 )}
                 {/* Non-owner sees lock indicator */}
                 {!isOwner && isLocked && (
-                  <Tooltip label={`Read-only for team — locked by ${ownerUser?.name || 'owner'}`}>
+                  <Tooltip label={t('director.session.readOnlyLockedBy', { ownerName: ownerUser?.name || 'owner' })}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 6px', borderRadius: 'var(--radius-sm)', background: 'var(--color-warning-subtle)', color: 'var(--color-warning)', fontSize: 10, fontWeight: 500 }}>
-                      <Lock size={10} strokeWidth={1.5} /> Locked
+                      <Lock size={10} strokeWidth={1.5} /> {t('director.session.locked')}
                     </div>
                   </Tooltip>
                 )}
@@ -451,12 +453,12 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
             {/* Action buttons row */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '8px 12px' }}>
               {activeDirector.status === 'running' ? (
-                <><SessionButton icon={Square} label="Stop" color="var(--color-danger)" /><SessionButton icon={RotateCcw} label="Restart" /></>
+                <><SessionButton icon={Square} label={t('director.session.stop')} color="var(--color-danger)" /><SessionButton icon={RotateCcw} label={t('director.session.restart')} /></>
               ) : (
-                <SessionButton icon={Play} label="Start" color="var(--color-success)" />
+                <SessionButton icon={Play} label={t('director.session.start')} color="var(--color-success)" />
               )}
               <div style={{ flex: 1 }} />
-              <SessionButton icon={Mail} label="Inbox" badge={activeDirector.unreadCount || undefined} />
+              <SessionButton icon={Mail} label={t('director.session.inbox')} badge={activeDirector.unreadCount || undefined} />
             </div>
           </div>
         )
@@ -493,13 +495,13 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
                 <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--color-primary)', animation: 'directorDot 1.4s ease-in-out infinite', animationDelay: '0.2s' }} />
                 <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--color-primary)', animation: 'directorDot 1.4s ease-in-out infinite', animationDelay: '0.4s' }} />
               </div>
-              <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>Working...</span>
+              <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>{t('director.working.working')}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto', fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--color-text-tertiary)', background: 'var(--color-surface)', padding: '2px 8px', borderRadius: 'var(--radius-sm)' }}>
                 <span>14s</span>
                 <span style={{ opacity: 0.3 }}>·</span>
                 <span>↑ 1.8k</span>
               </div>
-              <Tooltip label="Stop agent">
+              <Tooltip label={t('director.working.stopAgent')}>
                 <button
                   style={{
                     width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -527,8 +529,8 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
                 <Eye size={14} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
                 <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)', flex: 1 }}>
                   {sessionLocks[activeDirector.id]
-                    ? 'This session is locked — read only'
-                    : `Observing ${getUserById(activeDirector.ownerId)?.name || 'owner'}'s session`
+                    ? t('director.readOnly.sessionLockedReadOnly')
+                    : t('director.readOnly.observingSession', { ownerName: getUserById(activeDirector.ownerId)?.name || 'owner' })
                   }
                 </span>
                 {!sessionLocks[activeDirector.id] && (
@@ -541,7 +543,7 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
                     onMouseEnter={e => e.currentTarget.style.background = 'var(--color-primary-muted)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'var(--color-primary-subtle)'}
                   >
-                    Request control
+                    {t('director.readOnly.requestControl')}
                   </button>
                 )}
               </div>
@@ -589,7 +591,7 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
                         autoFocus
                         value={branchSearch}
                         onChange={e => setBranchSearch(e.target.value)}
-                        placeholder="Find a branch..."
+                        placeholder={t('director.branch.findBranch')}
                         style={{
                           width: '100%', height: 28, padding: '0 8px 0 26px',
                           background: 'var(--color-surface)', border: '1px solid var(--color-border-subtle)',
@@ -633,7 +635,7 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
                           >
                             {isActive ? <Check size={11} strokeWidth={2} style={{ flexShrink: 0 }} /> : <span style={{ width: 11, flexShrink: 0 }} />}
                             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{branch.name}</span>
-                            {branch.isDefault && <span style={{ fontSize: 9, color: 'var(--color-text-tertiary)', padding: '0 4px', background: 'var(--color-surface)', borderRadius: 'var(--radius-sm)' }}>default</span>}
+                            {branch.isDefault && <span style={{ fontSize: 9, color: 'var(--color-text-tertiary)', padding: '0 4px', background: 'var(--color-surface)', borderRadius: 'var(--radius-sm)' }}>{t('director.branch.default')}</span>}
                             {branch.pr && <span style={{ fontSize: 9, color: 'var(--color-text-accent)', padding: '0 4px', background: 'var(--color-primary-subtle)', borderRadius: 'var(--radius-sm)' }}>{branch.pr}</span>}
                           </button>
                         )
@@ -662,24 +664,24 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
                           onMouseLeave={e => e.currentTarget.style.background = 'none'}
                         >
                           <Plus size={11} strokeWidth={2} style={{ flexShrink: 0 }} />
-                          <span>Create <strong>{branchSearch.trim()}</strong></span>
+                          <span>{t('director.branch.create')} <strong>{branchSearch.trim()}</strong></span>
                         </button>
                       </>
                     )}
                     {mockBranches.filter(b => b.name.toLowerCase().includes(branchSearch.toLowerCase())).length === 0 && !branchSearch.trim() && (
-                      <div style={{ padding: '12px 8px', fontSize: 11, color: 'var(--color-text-tertiary)', textAlign: 'center' }}>No branches found</div>
+                      <div style={{ padding: '12px 8px', fontSize: 11, color: 'var(--color-text-tertiary)', textAlign: 'center' }}>{t('director.branch.noBranchesFound')}</div>
                     )}
                   </div>
                 </div>
               )}
-              <span style={{ marginLeft: 'auto' }}>Context: 24k</span>
+              <span style={{ marginLeft: 'auto' }}>{t('director.input.context')}: 24k</span>
             </div>
             <div style={{ padding: '6px 12px 8px', position: 'relative' }}>
               {/* Recording indicator */}
               {isRecording ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 12px', height: 56, background: 'var(--color-surface)', borderRadius: 'var(--radius-md)' }}>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-danger)', animation: 'pulse 1.5s ease-in-out infinite' }} />
-                  <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>Listening...</span>
+                  <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>{t('director.input.listening')}</span>
                   <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--color-text-tertiary)', marginLeft: 'auto' }}>0:03</span>
                   <button
                     onClick={() => setIsRecording(false)}
@@ -694,7 +696,7 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
                     value={inputValue}
                     onChange={v => mention.handleChange(v)}
                     onKeyDown={mention.handleKeyDown}
-                    placeholder={isTeamMode ? 'Ask a question or describe a task... (@ to mention)' : 'Ask a question or describe a task...'}
+                    placeholder={isTeamMode ? t('director.input.placeholderTeam') : t('director.input.placeholder')}
                   />
                   {mention.showDropdown && (
                     <MentionDropdown
@@ -714,7 +716,7 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
                     {/* ── Left side ── */}
                     {/* (+) Plus menu */}
                     <div ref={plusMenuRef} style={{ position: 'relative' }}>
-                      <ToolbarBtn title="Add" onClick={() => { setPlusMenuOpen(v => !v); setModeDropdownOpen(false); setModelDropdownOpen(false); setEffortDropdownOpen(false); setSkillsHovered(false) }} active={plusMenuOpen}>
+                      <ToolbarBtn title={t('director.input.addFilesOrPhotos')} onClick={() => { setPlusMenuOpen(v => !v); setModeDropdownOpen(false); setModelDropdownOpen(false); setEffortDropdownOpen(false); setSkillsHovered(false) }} active={plusMenuOpen}>
                         <Plus size={14} strokeWidth={1.5} />
                       </ToolbarBtn>
                       {plusMenuOpen && (
@@ -724,13 +726,13 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
                           borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-float)', zIndex: 120, overflow: 'visible',
                         }}>
                           <div style={{ padding: '4px' }}>
-                            <MenuRow icon={Image} label="Add files or photos" onClick={() => setPlusMenuOpen(false)} />
+                            <MenuRow icon={Image} label={t('director.input.addFilesOrPhotos')} onClick={() => setPlusMenuOpen(false)} />
                             <div
                               style={{ position: 'relative' }}
                               onMouseEnter={() => setSkillsHovered(true)}
                               onMouseLeave={() => setSkillsHovered(false)}
                             >
-                              <MenuRow icon={Zap} label="Skills" suffix={<ChevronRight size={11} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />} />
+                              <MenuRow icon={Zap} label={t('director.input.skills')} suffix={<ChevronRight size={11} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />} />
                               {skillsHovered && (
                                 <div style={{
                                   position: 'absolute', left: '100%', bottom: -4, marginLeft: 2,
@@ -750,7 +752,7 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
 
                     {/* Mode selector */}
                     <div ref={modeMenuRef} style={{ position: 'relative' }}>
-                      <ToolbarBtn title="Mode" onClick={() => { setModeDropdownOpen(v => !v); setPlusMenuOpen(false); setModelDropdownOpen(false); setEffortDropdownOpen(false); setSkillsHovered(false) }} active={modeDropdownOpen}>
+                      <ToolbarBtn title={t('director.input.mode')} onClick={() => { setModeDropdownOpen(v => !v); setPlusMenuOpen(false); setModelDropdownOpen(false); setEffortDropdownOpen(false); setSkillsHovered(false) }} active={modeDropdownOpen}>
                         <Shield size={12} strokeWidth={1.5} />
                         <span style={{ fontSize: 10, maxWidth: 70, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{selectedMode}</span>
                         <ChevronDown size={8} strokeWidth={1.5} />
@@ -762,10 +764,10 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
                           borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-float)', zIndex: 120, padding: '4px',
                         }}>
                           {([
-                            { label: 'Full Auto', desc: 'Full permissions to make changes' },
-                            { label: 'Ask Permissions', desc: 'Always ask before making changes' },
-                            { label: 'Plan Mode', desc: 'Create a plan before making changes' },
-                          ] as const).map(m => (
+                            { label: t('director.mode.fullAuto'), desc: t('director.mode.fullAutoDesc') },
+                            { label: t('director.mode.askPermissions'), desc: t('director.mode.askPermissionsDesc') },
+                            { label: t('director.mode.planMode'), desc: t('director.mode.planModeDesc') },
+                          ]).map(m => (
                             <button
                               key={m.label}
                               onClick={() => { setSelectedMode(m.label); setModeDropdownOpen(false) }}
@@ -794,7 +796,7 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
 
                     {/* Model selector */}
                     <div ref={modelMenuRef} style={{ position: 'relative' }}>
-                      <ToolbarBtn title="Model" onClick={() => { setModelDropdownOpen(v => !v); setPlusMenuOpen(false); setModeDropdownOpen(false); setEffortDropdownOpen(false); setSkillsHovered(false) }} active={modelDropdownOpen}>
+                      <ToolbarBtn title={t('director.input.model')} onClick={() => { setModelDropdownOpen(v => !v); setPlusMenuOpen(false); setModeDropdownOpen(false); setEffortDropdownOpen(false); setSkillsHovered(false) }} active={modelDropdownOpen}>
                         <span style={{ fontSize: 10 }}>{selectedModel}</span>
                         <ChevronDown size={8} strokeWidth={1.5} />
                       </ToolbarBtn>
@@ -813,7 +815,7 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
 
                     {/* Effort selector */}
                     <div ref={effortMenuRef} style={{ position: 'relative' }}>
-                      <ToolbarBtn title="Effort" onClick={() => { setEffortDropdownOpen(v => !v); setPlusMenuOpen(false); setModeDropdownOpen(false); setModelDropdownOpen(false); setSkillsHovered(false) }} active={effortDropdownOpen}>
+                      <ToolbarBtn title={t('director.input.effort')} onClick={() => { setEffortDropdownOpen(v => !v); setPlusMenuOpen(false); setModeDropdownOpen(false); setModelDropdownOpen(false); setSkillsHovered(false) }} active={effortDropdownOpen}>
                         <span style={{ fontSize: 10 }}>{selectedEffort}</span>
                         <ChevronDown size={8} strokeWidth={1.5} />
                       </ToolbarBtn>
@@ -832,11 +834,11 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
 
                     {/* Send / Mic button */}
                     {inputValue.trim() ? (
-                      <ToolbarBtn title="Send" onClick={() => {}} accent>
+                      <ToolbarBtn title={t('director.input.send')} onClick={() => {}} accent>
                         <Send size={13} strokeWidth={1.5} />
                       </ToolbarBtn>
                     ) : (
-                      <ToolbarBtn title="Voice input" onClick={() => setIsRecording(true)}>
+                      <ToolbarBtn title={t('director.input.voiceInput')} onClick={() => setIsRecording(true)}>
                         <Mic size={13} strokeWidth={1.5} />
                       </ToolbarBtn>
                     )}
@@ -858,6 +860,7 @@ export function DirectorPanel({ directors, collapsed, onToggleCollapse, expandSt
 
 // ── Chat Message Area ──
 function ChatMessageArea({ messages, director, onNavigateToWhiteboard }: { messages: DirectorMessage[]; director?: DirectorSession; onNavigateToWhiteboard?: (directorId: string) => void }) {
+  const { t } = useTranslation('smithyNext')
   const scrollRef = useRef<HTMLDivElement>(null)
   const [pinnedMsg, setPinnedMsg] = useState<DirectorMessage | null>(null)
 
@@ -948,6 +951,7 @@ function ChatMessageArea({ messages, director, onNavigateToWhiteboard }: { messa
 
 // ── User Message ──
 function UserMessageBubble({ msg }: { msg: DirectorMessage }) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div data-msg-id={msg.id} style={{ padding: '8px 12px' }}>
       <div style={{ display: 'flex', gap: 8, padding: '10px 12px', background: 'var(--color-surface)', borderRadius: 'var(--radius-md)' }}>
@@ -958,10 +962,10 @@ function UserMessageBubble({ msg }: { msg: DirectorMessage }) {
       </div>
       {/* Action buttons — below the bubble */}
       <div style={{ display: 'flex', gap: 2, marginTop: 4, justifyContent: 'flex-end', alignItems: 'center' }}>
-        <UserMsgAction icon={Undo2} tooltip="Rollback to here" />
-        <UserMsgAction icon={GitFork} tooltip="Fork from here" />
-        <UserMsgAction icon={Pencil} tooltip="Edit message" />
-        <UserMsgAction icon={Copy} tooltip="Copy message" />
+        <UserMsgAction icon={Undo2} tooltip={t('director.chat.rollbackToHere')} />
+        <UserMsgAction icon={GitFork} tooltip={t('director.chat.forkFromHere')} />
+        <UserMsgAction icon={Pencil} tooltip={t('director.chat.editMessage')} />
+        <UserMsgAction icon={Copy} tooltip={t('director.chat.copyMessage')} />
       </div>
     </div>
   )
@@ -1040,6 +1044,7 @@ function ToolUseBlock({ msg }: { msg: DirectorMessage }) {
 
 // ── Cross-Agent Message ──
 function CrossAgentMessageBlock({ msg }: { msg: DirectorMessage }) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div style={{ padding: '4px 12px' }}>
       <div style={{
@@ -1050,7 +1055,7 @@ function CrossAgentMessageBlock({ msg }: { msg: DirectorMessage }) {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
           <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 'var(--radius-full)', background: 'var(--color-primary-muted)', color: 'var(--color-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>
-            cross-agent
+            {t('director.chat.crossAgent')}
           </span>
           <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text)' }}>{msg.fromAgent}</span>
           <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>→</span>
@@ -1062,7 +1067,7 @@ function CrossAgentMessageBlock({ msg }: { msg: DirectorMessage }) {
         {msg.channelName && (
           <div style={{ marginTop: 4 }}>
             <span style={{ fontSize: 10, color: 'var(--color-primary)', cursor: 'pointer' }}>
-              View in Channel: {msg.channelName}
+              {t('director.chat.viewInChannel')}: {msg.channelName}
             </span>
           </div>
         )}
@@ -1084,6 +1089,7 @@ function SystemMessageLine({ msg }: { msg: DirectorMessage }) {
 
 // ── Whiteboard Card (in chat timeline) ──
 function WhiteboardCard({ msg, onNavigate }: { msg: DirectorMessage; onNavigate: () => void }) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div style={{ padding: '4px 12px' }}>
       <div
@@ -1105,7 +1111,7 @@ function WhiteboardCard({ msg, onNavigate }: { msg: DirectorMessage; onNavigate:
           <div style={{ fontSize: 12, color: 'var(--color-text)', fontWeight: 500 }}>{msg.content}</div>
           <div style={{ fontSize: 10, color: 'var(--color-text-tertiary)', marginTop: 1 }}>{msg.timestamp}</div>
         </div>
-        <span style={{ fontSize: 11, color: 'var(--color-primary)', fontWeight: 500 }}>View</span>
+        <span style={{ fontSize: 11, color: 'var(--color-primary)', fontWeight: 500 }}>{t('director.chat.view')}</span>
       </div>
     </div>
   )
@@ -1129,6 +1135,7 @@ function CrossWorkspaceThreadsView({
   onArchive: (id: string) => void
   onSwitchWorkspace: (id: string) => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const { isTeamMode, currentUser, getUserById } = useTeamContext()
   const [expandedWs, setExpandedWs] = useState<string | null>(null)
   const [sessionTab, setSessionTab] = useState<'my' | 'team'>('my')
@@ -1154,8 +1161,8 @@ function CrossWorkspaceThreadsView({
       {isTeamMode ? (
         <div style={{ display: 'flex', gap: 0, padding: '6px 12px', borderBottom: '1px solid var(--color-border-subtle)' }}>
           {([
-            { key: 'my' as const, label: 'My Sessions', count: myThreads.length },
-            { key: 'team' as const, label: 'Team Sessions', count: teamThreads.length },
+            { key: 'my' as const, label: t('director.threads.mySessions'), count: myThreads.length },
+            { key: 'team' as const, label: t('director.threads.teamSessions'), count: teamThreads.length },
           ]).map(tab => (
             <button
               key={tab.key}
@@ -1182,7 +1189,7 @@ function CrossWorkspaceThreadsView({
         </div>
       ) : (
         <div style={{ padding: '6px 12px', borderBottom: '1px solid var(--color-border-subtle)' }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)' }}>Sessions</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)' }}>{t('director.threads.sessions')}</span>
         </div>
       )}
 
@@ -1190,7 +1197,7 @@ function CrossWorkspaceThreadsView({
       {/* Current workspace threads */}
       {visibleThreads.length === 0 && otherWorkspaceThreads.length === 0 && (
         <div style={{ padding: 24, textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 12 }}>
-          {isTeamMode ? (sessionTab === 'my' ? 'No sessions started by you' : 'No team sessions') : 'No sessions'}
+          {isTeamMode ? (sessionTab === 'my' ? t('director.threads.noSessionsStartedByYou') : t('director.threads.noTeamSessions')) : t('director.threads.noSessions')}
         </div>
       )}
       {visibleThreads.map(thread => {
@@ -1265,7 +1272,7 @@ function CrossWorkspaceThreadsView({
                   <span style={{ flex: 1 }}>{ws.name}</span>
                   {runningCount > 0 && (
                     <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--color-success)', background: 'var(--color-success-subtle)', padding: '1px 6px', borderRadius: 'var(--radius-full)' }}>
-                      {runningCount} running
+                      {runningCount}{t('director.threads.running')}
                     </span>
                   )}
                   <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>
@@ -1318,9 +1325,10 @@ function CrossWorkspaceThreadsView({
 
 // ── Thread List View ──
 function ThreadListView({ threads, onSelectThread, onArchive }: { threads: (DirectorThread & { directorName: string; directorId: string })[]; onSelectThread: (t: DirectorThread & { directorId: string }) => void; onArchive: (id: string) => void }) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div style={{ flex: 1, overflow: 'auto' }}>
-      {threads.length === 0 && <div style={{ padding: 24, textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 12 }}>No sessions</div>}
+      {threads.length === 0 && <div style={{ padding: 24, textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 12 }}>{t('director.threads.noSessions')}</div>}
       {threads.map(thread => (
         <div key={thread.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderBottom: '1px solid var(--color-border-subtle)', cursor: 'pointer', transition: `background var(--duration-fast)` }}
           onClick={() => onSelectThread(thread)}
@@ -1344,7 +1352,7 @@ function ThreadListView({ threads, onSelectThread, onArchive }: { threads: (Dire
               {thread.tasksModified > 0 && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 10, fontWeight: 600, color: 'var(--color-warning)', background: 'var(--color-warning-subtle)', padding: '1px 5px', borderRadius: 'var(--radius-sm)' }}>~{thread.tasksModified}</span>}
               {thread.tasksDeleted > 0 && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 10, fontWeight: 600, color: 'var(--color-danger)', background: 'var(--color-danger-subtle)', padding: '1px 5px', borderRadius: 'var(--radius-sm)' }}>-{thread.tasksDeleted}</span>}
               <div style={{ flex: 1 }} />
-              <Tooltip label="Archive session">
+              <Tooltip label={t('director.threads.archiveSession')}>
                 <button onClick={e => { e.stopPropagation(); onArchive(thread.id) }} style={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', borderRadius: 'var(--radius-sm)', opacity: 0.5, transition: 'all var(--duration-fast)' }}
                   onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.background = 'var(--color-surface-hover)' }}
                   onMouseLeave={e => { e.currentTarget.style.opacity = '0.5'; e.currentTarget.style.background = 'none' }}
@@ -1367,6 +1375,7 @@ function StatusDotSmall({ status }: { status: DirectorSession['status'] }) {
 
 // ── Auto-expanding Textarea ──
 function AutoExpandTextarea({ value, onChange, placeholder, onKeyDown }: { value: string; onChange: (v: string) => void; placeholder: string; onKeyDown?: (e: React.KeyboardEvent) => void }) {
+  const { t } = useTranslation('smithyNext')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [manualHeight, setManualHeight] = useState<number | null>(null)
   const lastAutoHeight = useRef<number>(0)
@@ -1448,7 +1457,7 @@ function AutoExpandTextarea({ value, onChange, placeholder, onKeyDown }: { value
         }}
         onMouseEnter={e => e.currentTarget.style.opacity = '0.6'}
         onMouseLeave={e => e.currentTarget.style.opacity = '0.3'}
-        title="Drag to resize"
+        title={t('director.input.dragToResize')}
       >
         <svg width="10" height="5" viewBox="0 0 10 5" fill="none">
           <line x1="1" y1="1" x2="9" y2="1" stroke="var(--color-text-tertiary)" strokeWidth="1" strokeLinecap="round" />

@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from '@/i18n'
 import type { TimeRange, LayoutSize } from './metrics-types'
 import {
   mockMetricsTasks, reopenRateSeries, ciPassRateSeries,
@@ -20,6 +21,7 @@ interface MetricsQualityTabProps {
 }
 
 export function MetricsQualityTab({ timeRange, layout, onNavigateToTask }: MetricsQualityTabProps) {
+  const { t } = useTranslation('smithyNext')
   const tasks = mockMetricsTasks
   const completedTasks = tasks.filter(t => t.status === 'done')
   const ciFirstPass = completedTasks.length > 0
@@ -36,12 +38,12 @@ export function MetricsQualityTab({ timeRange, layout, onNavigateToTask }: Metri
 
   const ciChartData = useMemo(() => {
     const s = filterSeries(ciPassRateSeries, timeRange)
-    return { series: [{ data: s.map(p => p.value * 100), color: 'var(--color-success)', label: 'CI First-Pass Rate %' }], labels: s.map(p => p.date) }
+    return { series: [{ data: s.map(p => p.value * 100), color: 'var(--color-success)', label: t('metrics.ciFirstPassRateChartLabel') }], labels: s.map(p => p.date) }
   }, [timeRange])
 
   const reopenChartData = useMemo(() => {
     const s = filterSeries(reopenRateSeries, timeRange)
-    return { series: [{ data: s.map(p => p.value * 100), color: 'var(--color-danger)', label: 'Re-open Rate %' }], labels: s.map(p => p.date) }
+    return { series: [{ data: s.map(p => p.value * 100), color: 'var(--color-danger)', label: t('metrics.reopenRateChartLabel') }], labels: s.map(p => p.date) }
   }, [timeRange])
 
   const handoffDist = useMemo(() => {
@@ -78,29 +80,29 @@ export function MetricsQualityTab({ timeRange, layout, onNavigateToTask }: Metri
     <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Quality KPIs: 4 → 2 at medium/narrow */}
       <div style={{ display: 'grid', gridTemplateColumns: layout === 'wide' ? 'repeat(4, 1fr)' : 'repeat(2, 1fr)', gap: 12 }}>
-        <QualityKPI icon={<ShieldCheck size={12} />} label="CI First-Pass Rate" value={`${(ciFirstPass * 100).toFixed(0)}%`} trend={ciTrend.delta} sparkData={filterSeries(ciPassRateSeries, timeRange).map(p => p.value)} color="var(--color-success)" />
-        <QualityKPI icon={<RotateCcw size={12} />} label="Re-open Rate" value={`${(reopenRate * 100).toFixed(0)}%`} trend={reopenTrend.delta} inverted sparkData={filterSeries(reopenRateSeries, timeRange).map(p => p.value)} color="var(--color-danger)" />
-        <QualityKPI icon={<GitMerge size={12} />} label="Merge Success Rate" value={`${(mergeSuccessRate * 100).toFixed(0)}%`} color="var(--color-primary)" sparkData={[]} />
-        <QualityKPI icon={<ArrowLeftRight size={12} />} label="Avg Handoffs/Task" value={avgHandoffs.toFixed(2)} color="var(--color-warning)" sparkData={[]} />
+        <QualityKPI icon={<ShieldCheck size={12} />} label={t('metrics.ciFirstPassRate')} value={`${(ciFirstPass * 100).toFixed(0)}%`} trend={ciTrend.delta} sparkData={filterSeries(ciPassRateSeries, timeRange).map(p => p.value)} color="var(--color-success)" />
+        <QualityKPI icon={<RotateCcw size={12} />} label={t('metrics.reopenRate')} value={`${(reopenRate * 100).toFixed(0)}%`} trend={reopenTrend.delta} inverted sparkData={filterSeries(reopenRateSeries, timeRange).map(p => p.value)} color="var(--color-danger)" />
+        <QualityKPI icon={<GitMerge size={12} />} label={t('metrics.mergeSuccessRate')} value={`${(mergeSuccessRate * 100).toFixed(0)}%`} color="var(--color-primary)" sparkData={[]} />
+        <QualityKPI icon={<ArrowLeftRight size={12} />} label={t('metrics.avgHandoffsPerTask')} value={avgHandoffs.toFixed(2)} color="var(--color-warning)" sparkData={[]} />
       </div>
 
       {/* Trend Charts: side by side on wide, stacked otherwise */}
       <div style={{ display: 'grid', gridTemplateColumns: layout === 'wide' ? '1fr 1fr' : '1fr', gap: 20 }}>
         <section>
-          <div style={sectionLabel}>CI First-Pass Rate</div>
+          <div style={sectionLabel}>{t('metrics.ciFirstPassRate')}</div>
           <AreaChart series={ciChartData.series} labels={ciChartData.labels} height={160} />
         </section>
         <section>
-          <div style={sectionLabel}>Re-open Rate</div>
+          <div style={sectionLabel}>{t('metrics.reopenRate')}</div>
           <AreaChart series={reopenChartData.series} labels={reopenChartData.labels} height={160} />
         </section>
       </div>
 
       {/* Handoff Distribution */}
       <section>
-        <div style={sectionLabel}>Handoff Distribution</div>
+        <div style={sectionLabel}>{t('metrics.handoffDistribution')}</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {['0 handoffs', '1 handoff', '2 handoffs', '3+ handoffs'].map((label, i) => (
+          {[t('metrics.zeroHandoffs'), t('metrics.oneHandoff'), t('metrics.twoHandoffs'), t('metrics.threePlusHandoffs')].map((label, i) => (
             <div key={i} style={{ display: 'grid', gridTemplateColumns: '90px 1fr 32px', gap: 8, alignItems: 'center' }}>
               <span style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>{label}</span>
               <HorizontalBar value={handoffDist[i]} max={maxHandoff}
@@ -113,7 +115,7 @@ export function MetricsQualityTab({ timeRange, layout, onNavigateToTask }: Metri
 
       {/* Rework by Agent: scrollable at narrow */}
       <section>
-        <div style={sectionLabel}>Rework by Agent</div>
+        <div style={sectionLabel}>{t('metrics.reworkByAgent')}</div>
         <div style={{ overflowX: 'auto' }}>
           <div style={{ minWidth: layout === 'narrow' ? 500 : undefined }}>
             {(() => {
@@ -122,11 +124,11 @@ export function MetricsQualityTab({ timeRange, layout, onNavigateToTask }: Metri
               return (
                 <>
                   <div style={{ display: 'grid', gridTemplateColumns: cols, gap: 8, padding: '6px 0', borderBottom: '1px solid var(--color-border-subtle)' }}>
-                    <span style={colHeader}>Agent</span>
-                    <span style={colHeader}>Test Runs</span>
-                    <span style={colHeader}>Reconcile</span>
-                    <span style={colHeader}>Resumes</span>
-                    <span style={colHeader}>Recoveries</span>
+                    <span style={colHeader}>{t('metrics.agent')}</span>
+                    <span style={colHeader}>{t('metrics.testRunsCol')}</span>
+                    <span style={colHeader}>{t('metrics.reconcile')}</span>
+                    <span style={colHeader}>{t('metrics.resumes')}</span>
+                    <span style={colHeader}>{t('metrics.recoveries')}</span>
                   </div>
                   {agentRework.map(a => (
                     <div key={a.agentId} style={{ display: 'grid', gridTemplateColumns: cols, gap: 8, padding: '8px 0', borderBottom: '1px solid var(--color-border-subtle)', alignItems: 'center' }}>
@@ -149,19 +151,19 @@ export function MetricsQualityTab({ timeRange, layout, onNavigateToTask }: Metri
 
       {/* Top Rework Tasks */}
       <section>
-        <div style={sectionLabel}>Top Rework Tasks</div>
-        {topRework.map(t => (
-          <div key={t.id}
-            onClick={() => onNavigateToTask?.(t.id)}
+        <div style={sectionLabel}>{t('metrics.topReworkTasks')}</div>
+        {topRework.map(task => (
+          <div key={task.id}
+            onClick={() => onNavigateToTask?.(task.id)}
             style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid var(--color-border-subtle)', cursor: 'pointer' }}
             onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-surface-hover)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-            <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)', fontVariantNumeric: 'tabular-nums', flexShrink: 0, minWidth: 44 }}>{t.id}</span>
-            <span style={{ fontSize: 13, color: 'var(--color-text)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.title}</span>
+            <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)', fontVariantNumeric: 'tabular-nums', flexShrink: 0, minWidth: 44 }}>{task.id}</span>
+            <span style={{ fontSize: 13, color: 'var(--color-text)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{task.title}</span>
             <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-              {t.events.some(e => e.type === 'reopened') && <Badge label="reopened" color="var(--color-danger)" />}
-              {layout !== 'narrow' && t.testRunCount > 2 && <Badge label={`${t.testRunCount} CI runs`} color="var(--color-danger)" />}
-              {layout !== 'narrow' && t.handoffHistory.length > 0 && <Badge label={`${t.handoffHistory.length} handoff${t.handoffHistory.length > 1 ? 's' : ''}`} color="var(--color-warning)" />}
+              {task.events.some(e => e.type === 'reopened') && <Badge label={t('metrics.reopened')} color="var(--color-danger)" />}
+              {layout !== 'narrow' && task.testRunCount > 2 && <Badge label={t('metrics.ciRuns', { count: task.testRunCount })} color="var(--color-danger)" />}
+              {layout !== 'narrow' && task.handoffHistory.length > 0 && <Badge label={task.handoffHistory.length > 1 ? t('metrics.handoffCountPlural', { count: task.handoffHistory.length }) : t('metrics.handoffCount', { count: task.handoffHistory.length })} color="var(--color-warning)" />}
             </div>
           </div>
         ))}

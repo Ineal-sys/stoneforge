@@ -1,4 +1,5 @@
 import { AlertTriangle } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import type { ConflictItem } from '../mock-data'
 import { TEAM_MEMBERS } from '../mock-data'
 
@@ -9,6 +10,7 @@ interface ConflictBannerProps {
 }
 
 export function ConflictBanner({ conflicts, onKeepMine, onUseTheirs }: ConflictBannerProps) {
+  const { t } = useTranslation('smithyNext')
   if (conflicts.length === 0) return null
 
   return (
@@ -33,9 +35,9 @@ export function ConflictBanner({ conflicts, onKeepMine, onUseTheirs }: ConflictB
           >
             <AlertTriangle size={14} strokeWidth={1.5} style={{ color: 'var(--color-warning)', flexShrink: 0 }} />
             <span style={{ flex: 1, color: 'var(--color-text)', lineHeight: 1.4 }}>
-              <strong>Conflict:</strong> {remoteName} also changed the {conflict.property} of {conflict.entityId} to{' '}
+              <strong>{t('conflictBanner.conflict')}</strong> {remoteName} {t('conflictBanner.alsoChangedThe')} {conflict.property} {t('conflictBanner.of')} {conflict.entityId} {t('conflictBanner.to')}{' '}
               <span style={{ fontWeight: 600, textTransform: 'capitalize' }}>{conflict.remoteValue}</span>.
-              {' '}Keep your value (<span style={{ fontWeight: 600, textTransform: 'capitalize' }}>{conflict.localValue}</span>) or use theirs?
+              {' '}{t('conflictBanner.keepYourValue')} (<span style={{ fontWeight: 600, textTransform: 'capitalize' }}>{conflict.localValue}</span>) {t('conflictBanner.orUseTheirs')}
             </span>
             <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
               <button
@@ -53,7 +55,7 @@ export function ConflictBanner({ conflicts, onKeepMine, onUseTheirs }: ConflictB
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--color-surface-hover)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'var(--color-bg)'}
               >
-                Keep Mine
+                {t('conflictBanner.keepMine')}
               </button>
               <button
                 onClick={() => onUseTheirs(conflict.id)}
@@ -70,7 +72,7 @@ export function ConflictBanner({ conflicts, onKeepMine, onUseTheirs }: ConflictB
                 onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
                 onMouseLeave={e => e.currentTarget.style.opacity = '1'}
               >
-                Use Theirs
+                {t('conflictBanner.useTheirs')}
               </button>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import { Braces, FunctionSquare, Type, Hash, Package } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import type { EditorSymbol } from './editor-mock-data'
 
 interface Props {
@@ -28,6 +29,7 @@ const kindColors: Record<string, string> = {
 }
 
 export function EditorSymbolOutline({ symbols, activeLine, onSelectSymbol }: Props) {
+  const { t } = useTranslation('smithyNext')
   // Determine which symbol is "active" based on cursor line
   const activeSymbol = [...symbols].reverse().find(s => activeLine >= s.line)
 
@@ -46,7 +48,7 @@ export function EditorSymbolOutline({ symbols, activeLine, onSelectSymbol }: Pro
         letterSpacing: '0.05em',
         borderBottom: '1px solid var(--color-border-subtle)',
       }}>
-        Outline
+        {t('editor.outline')}
       </div>
       <div style={{ padding: '4px 0' }}>
         {symbols.map((symbol, i) => {
@@ -101,7 +103,7 @@ export function EditorSymbolOutline({ symbols, activeLine, onSelectSymbol }: Pro
             padding: '16px 12px', textAlign: 'center',
             color: 'var(--color-text-tertiary)', fontSize: 11,
           }}>
-            No symbols found
+            {t('editor.noSymbolsFound')}
           </div>
         )}
       </div>

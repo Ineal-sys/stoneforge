@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useTranslation } from '@/i18n'
 import { ChevronRight, ChevronDown, Folder, File, FileText, FileJson, FileCode, Search, FilePlus, FolderPlus, Bot } from 'lucide-react'
 import type { EditorFileEntry } from './editor-mock-data'
 
@@ -33,6 +34,7 @@ export function EditorExplorerPanel({
   fileTree, activeFilePath, onOpenFile, onNavigateToFolder,
   onRenameEntry, onDeleteEntry, clipboard, onClipboardAction, onPaste,
 }: Props) {
+  const { t } = useTranslation('smithyNext')
   const [filter, setFilter] = useState('')
   const [expanded, setExpanded] = useState<Set<string>>(
     new Set(['packages', 'packages/smithy', 'packages/smithy/src', 'packages/smithy/src/auth', 'apps'])
@@ -67,10 +69,10 @@ export function EditorExplorerPanel({
           padding: '0 4px',
         }}>
           <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Explorer
+            {t('editor.explorer')}
           </span>
           <div style={{ display: 'flex', gap: 2 }}>
-            <button title="New File" style={{
+            <button title={t('editor.newFile')} style={{
               width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'none', border: 'none', borderRadius: 'var(--radius-sm)',
               color: 'var(--color-text-tertiary)', cursor: 'pointer',
@@ -80,7 +82,7 @@ export function EditorExplorerPanel({
             >
               <FilePlus size={13} strokeWidth={1.5} />
             </button>
-            <button title="New Folder" style={{
+            <button title={t('editor.newFolder')} style={{
               width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'none', border: 'none', borderRadius: 'var(--radius-sm)',
               color: 'var(--color-text-tertiary)', cursor: 'pointer',
@@ -99,7 +101,7 @@ export function EditorExplorerPanel({
           }} />
           <input
             type="text"
-            placeholder="Filter files..."
+            placeholder={t('editor.filterFiles')}
             value={filter}
             onChange={e => setFilter(e.target.value)}
             style={{
@@ -214,6 +216,7 @@ function ContextMenu({ items, position, onClose }: {
 // ── Delete confirmation dialog ──
 
 function DeleteDialog({ name, onConfirm, onCancel }: { name: string; onConfirm: () => void; onCancel: () => void }) {
+  const { t } = useTranslation('smithyNext')
   return (
     <>
       <div style={{ position: 'fixed', inset: 0, background: 'var(--color-bg-overlay)', zIndex: 'var(--z-modal)' as any }} onClick={onCancel} />
@@ -225,20 +228,20 @@ function DeleteDialog({ name, onConfirm, onCancel }: { name: string; onConfirm: 
         zIndex: 'var(--z-modal)' as any,
       }}>
         <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', marginBottom: 8 }}>
-          Delete &ldquo;{name}&rdquo;?
+          {t('editor.deleteConfirmTitle', { name })}
         </div>
         <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>
-          This action cannot be undone. The file will be permanently deleted.
+          {t('editor.deleteConfirmMessage')}
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
           <button onClick={onCancel} style={{
             padding: '6px 12px', fontSize: 12, background: 'var(--color-surface)', border: 'none',
             borderRadius: 'var(--radius-sm)', color: 'var(--color-text)', cursor: 'pointer',
-          }}>Cancel</button>
+          }}>{t('editor.cancel')}</button>
           <button onClick={onConfirm} style={{
             padding: '6px 12px', fontSize: 12, background: 'var(--color-danger)', border: 'none',
             borderRadius: 'var(--radius-sm)', color: 'white', cursor: 'pointer',
-          }}>Delete</button>
+          }}>{t('editor.deleteFile')}</button>
         </div>
       </div>
     </>
@@ -268,6 +271,7 @@ function TreeItem({ entry, depth, expanded, onToggle, activeFilePath, onOpenFile
   const [renameValue, setRenameValue] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const renameInputRef = useRef<HTMLInputElement>(null)
+  const { t } = useTranslation('smithyNext')
 
   const isFolder = entry.type === 'folder'
   const isExpanded = expanded.has(entry.path)
@@ -333,31 +337,31 @@ function TreeItem({ entry, depth, expanded, onToggle, activeFilePath, onOpenFile
 
   // Build context menu items
   const menuItems: ContextMenuItem[] = isFolder ? [
-    { label: 'Open Folder', action: () => onNavigateToFolder(entry.path) },
-    { label: 'Expand/Collapse', action: () => onToggle(entry.path) },
+    { label: t('editor.openFolder'), action: () => onNavigateToFolder(entry.path) },
+    { label: t('editor.expandCollapse'), action: () => onToggle(entry.path) },
     { label: '', action: () => {}, separator: true },
-    { label: 'Cut', action: () => onClipboardAction?.(entry.path, 'cut'), shortcut: '⌘X' },
-    { label: 'Copy', action: () => onClipboardAction?.(entry.path, 'copy'), shortcut: '⌘C' },
-    { label: 'Paste', action: () => onPaste?.(entry.path), shortcut: '⌘V', disabled: !clipboard },
+    { label: t('editor.cut'), action: () => onClipboardAction?.(entry.path, 'cut'), shortcut: '⌘X' },
+    { label: t('editor.copy'), action: () => onClipboardAction?.(entry.path, 'copy'), shortcut: '⌘C' },
+    { label: t('editor.paste'), action: () => onPaste?.(entry.path), shortcut: '⌘V', disabled: !clipboard },
     { label: '', action: () => {}, separator: true },
-    { label: 'Copy Path', action: () => navigator.clipboard?.writeText(entry.path) },
-    { label: 'Copy Relative Path', action: () => navigator.clipboard?.writeText(entry.path) },
+    { label: t('editor.copyPath'), action: () => navigator.clipboard?.writeText(entry.path) },
+    { label: t('editor.copyRelativePath'), action: () => navigator.clipboard?.writeText(entry.path) },
     { label: '', action: () => {}, separator: true },
-    { label: 'Rename', action: startRename, shortcut: 'F2' },
-    { label: 'Delete', action: () => setDeleteConfirm(true), danger: true, shortcut: 'Del' },
+    { label: t('editor.rename'), action: startRename, shortcut: 'F2' },
+    { label: t('editor.delete'), action: () => setDeleteConfirm(true), danger: true, shortcut: 'Del' },
   ] : [
-    { label: 'Open', action: () => onOpenFile(entry.path) },
+    { label: t('editor.open'), action: () => onOpenFile(entry.path) },
     { label: '', action: () => {}, separator: true },
-    { label: 'Cut', action: () => onClipboardAction?.(entry.path, 'cut'), shortcut: '⌘X' },
-    { label: 'Copy', action: () => onClipboardAction?.(entry.path, 'copy'), shortcut: '⌘C' },
-    { label: 'Paste', action: () => onPaste?.(parentPath), shortcut: '⌘V', disabled: !clipboard },
+    { label: t('editor.cut'), action: () => onClipboardAction?.(entry.path, 'cut'), shortcut: '⌘X' },
+    { label: t('editor.copy'), action: () => onClipboardAction?.(entry.path, 'copy'), shortcut: '⌘C' },
+    { label: t('editor.paste'), action: () => onPaste?.(parentPath), shortcut: '⌘V', disabled: !clipboard },
     { label: '', action: () => {}, separator: true },
-    { label: 'Copy Path', action: () => navigator.clipboard?.writeText(entry.path) },
-    { label: 'Copy Relative Path', action: () => navigator.clipboard?.writeText(entry.path) },
-    { label: 'Copy Name', action: () => navigator.clipboard?.writeText(entry.name) },
+    { label: t('editor.copyPath'), action: () => navigator.clipboard?.writeText(entry.path) },
+    { label: t('editor.copyRelativePath'), action: () => navigator.clipboard?.writeText(entry.path) },
+    { label: t('editor.copyName'), action: () => navigator.clipboard?.writeText(entry.name) },
     { label: '', action: () => {}, separator: true },
-    { label: 'Rename', action: startRename, shortcut: 'F2' },
-    { label: 'Delete', action: () => setDeleteConfirm(true), danger: true, shortcut: 'Del' },
+    { label: t('editor.rename'), action: startRename, shortcut: 'F2' },
+    { label: t('editor.delete'), action: () => setDeleteConfirm(true), danger: true, shortcut: 'Del' },
   ]
 
   return (

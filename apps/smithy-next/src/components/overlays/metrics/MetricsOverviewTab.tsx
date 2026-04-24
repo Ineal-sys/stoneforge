@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from '@/i18n'
 import type { TimeRange, LayoutSize } from './metrics-types'
 import {
   mockUsageStats, mockActivityHeatmap, mockAgentTokenSplit,
@@ -28,6 +29,7 @@ function formatNumber(n: number): string {
 }
 
 export function MetricsOverviewTab({ timeRange, layout }: MetricsOverviewTabProps) {
+  const { t } = useTranslation('smithyNext')
   const tasksTrend = useMemo(() => computeTrend(tasksCompletedSeries, timeRange), [timeRange])
   const mrsTrend = useMemo(() => computeTrend(mrsMergedSeries, timeRange), [timeRange])
   const cycleTrend = useMemo(() => {
@@ -44,12 +46,12 @@ export function MetricsOverviewTab({ timeRange, layout }: MetricsOverviewTabProp
     const mrs = filterSeries(mrsMergedSeries, timeRange)
     return {
       series: [
-        { data: ts.map(p => p.value), color: 'var(--color-primary)', label: 'Tasks completed' },
-        { data: mrs.map(p => p.value), color: 'var(--color-success)', label: 'MRs merged' },
+        { data: ts.map(p => p.value), color: 'var(--color-primary)', label: t('metrics.tasksCompletedLegend') },
+        { data: mrs.map(p => p.value), color: 'var(--color-success)', label: t('metrics.mrsMergedLegend') },
       ],
       labels: ts.map(p => p.date),
     }
-  }, [timeRange])
+  }, [timeRange, t])
 
   const isNarrow = layout === 'narrow'
   const isMedium = layout === 'medium'
@@ -59,40 +61,40 @@ export function MetricsOverviewTab({ timeRange, layout }: MetricsOverviewTabProp
 
       {/* KPI Strip: 4 → 2 at medium/narrow */}
       <div style={{ display: 'grid', gridTemplateColumns: isNarrow || isMedium ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: 12 }}>
-        <KPICard icon={<CheckCircle2 size={12} />} label="Tasks Completed" value={String(tasksTrend.current)} trend={tasksTrend.delta} sparkData={filterSeries(tasksCompletedSeries, timeRange).map(p => p.value)} color="var(--color-primary)" />
-        <KPICard icon={<GitMerge size={12} />} label="MRs Merged" value={String(mrsTrend.current)} trend={mrsTrend.delta} sparkData={filterSeries(mrsMergedSeries, timeRange).map(p => p.value)} color="var(--color-success)" />
-        <KPICard icon={<Clock size={12} />} label="Avg Cycle Time" value={`${cycleTrend.current}h`} trend={cycleTrend.delta} inverted sparkData={filterSeries(cycleTimeSeries, timeRange).map(p => p.value)} color="var(--color-warning)" />
-        <KPICard icon={<DollarSign size={12} />} label="Total Cost" value={`$${costTrend.current}`} subtitle={tasksTrend.current > 0 ? `$${(costTrend.current / tasksTrend.current).toFixed(2)}/task` : ''} trend={costTrend.delta} inverted sparkData={filterSeries(costSeries, timeRange).map(p => p.value)} color="#8b5cf6" />
+        <KPICard icon={<CheckCircle2 size={12} />} label={t('metrics.tasksCompleted')} value={String(tasksTrend.current)} trend={tasksTrend.delta} sparkData={filterSeries(tasksCompletedSeries, timeRange).map(p => p.value)} color="var(--color-primary)" />
+        <KPICard icon={<GitMerge size={12} />} label={t('metrics.mrsMerged')} value={String(mrsTrend.current)} trend={mrsTrend.delta} sparkData={filterSeries(mrsMergedSeries, timeRange).map(p => p.value)} color="var(--color-success)" />
+        <KPICard icon={<Clock size={12} />} label={t('metrics.avgCycleTime')} value={`${cycleTrend.current}h`} trend={cycleTrend.delta} inverted sparkData={filterSeries(cycleTimeSeries, timeRange).map(p => p.value)} color="var(--color-warning)" />
+        <KPICard icon={<DollarSign size={12} />} label={t('metrics.totalCost')} value={`$${costTrend.current}`} subtitle={tasksTrend.current > 0 ? `$${(costTrend.current / tasksTrend.current).toFixed(2)}${t('metrics.perTask')}` : ''} trend={costTrend.delta} inverted sparkData={filterSeries(costSeries, timeRange).map(p => p.value)} color="#8b5cf6" />
       </div>
 
       {/* Usage stats + Activity heatmap: side-by-side on wide, stacked on medium/narrow */}
       {layout === 'wide' ? (
         <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: 20, alignItems: 'start' }}>
           <div>
-            <div style={sectionLabel}>Usage</div>
-            <StatRow label="Total tokens" value={formatTokens(mockUsageStats.totalTokens)} />
-            <StatRow label="Estimated cost" value={`$${formatNumber(mockUsageStats.estimatedCost)}`} />
-            <StatRow label="Sessions" value={formatNumber(mockUsageStats.totalSessions)} />
-            <StatRow label="Tool calls" value={formatNumber(mockUsageStats.totalToolCalls)} />
+            <div style={sectionLabel}>{t('metrics.usage')}</div>
+            <StatRow label={t('metrics.totalTokens')} value={formatTokens(mockUsageStats.totalTokens)} />
+            <StatRow label={t('metrics.estimatedCost')} value={`$${formatNumber(mockUsageStats.estimatedCost)}`} />
+            <StatRow label={t('metrics.sessions')} value={formatNumber(mockUsageStats.totalSessions)} />
+            <StatRow label={t('metrics.toolCalls')} value={formatNumber(mockUsageStats.totalToolCalls)} />
           </div>
           <div>
-            <div style={sectionLabel}>Activity</div>
+            <div style={sectionLabel}>{t('metrics.activity')}</div>
             <ActivityHeatmap data={mockActivityHeatmap} />
           </div>
         </div>
       ) : (
         <>
           <div>
-            <div style={sectionLabel}>Usage</div>
+            <div style={sectionLabel}>{t('metrics.usage')}</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0 20px' }}>
-              <StatRow label="Total tokens" value={formatTokens(mockUsageStats.totalTokens)} />
-              <StatRow label="Estimated cost" value={`$${formatNumber(mockUsageStats.estimatedCost)}`} />
-              <StatRow label="Sessions" value={formatNumber(mockUsageStats.totalSessions)} />
-              <StatRow label="Tool calls" value={formatNumber(mockUsageStats.totalToolCalls)} />
+              <StatRow label={t('metrics.totalTokens')} value={formatTokens(mockUsageStats.totalTokens)} />
+              <StatRow label={t('metrics.estimatedCost')} value={`$${formatNumber(mockUsageStats.estimatedCost)}`} />
+              <StatRow label={t('metrics.sessions')} value={formatNumber(mockUsageStats.totalSessions)} />
+              <StatRow label={t('metrics.toolCalls')} value={formatNumber(mockUsageStats.totalToolCalls)} />
             </div>
           </div>
           <div>
-            <div style={sectionLabel}>Activity</div>
+            <div style={sectionLabel}>{t('metrics.activity')}</div>
             <div style={{ overflowX: 'auto', marginLeft: -20, marginRight: -20, paddingLeft: 20, paddingRight: 20 }}>
               <div style={{ minWidth: 540 }}>
                 <ActivityHeatmap data={mockActivityHeatmap} />
@@ -104,14 +106,14 @@ export function MetricsOverviewTab({ timeRange, layout }: MetricsOverviewTabProp
 
       {/* Throughput Chart */}
       <section>
-        <div style={sectionLabel}>Throughput</div>
+        <div style={sectionLabel}>{t('metrics.throughput')}</div>
         <AreaChart series={throughputSeries.series} labels={throughputSeries.labels} height={100} />
       </section>
 
       {/* Agent split / Top models / Code churn: 3 → 1 at narrow */}
       <div style={{ display: 'grid', gridTemplateColumns: isNarrow ? '1fr' : 'repeat(3, 1fr)', gap: 20 }}>
         <div>
-          <div style={sectionLabel}>Agent split</div>
+          <div style={sectionLabel}>{t('metrics.agentSplit')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {mockAgentTokenSplit.map(a => (
               <DotRow key={a.role} color={a.color} label={a.label} value={formatTokens(a.tokens)} />
@@ -119,7 +121,7 @@ export function MetricsOverviewTab({ timeRange, layout }: MetricsOverviewTabProp
           </div>
         </div>
         <div>
-          <div style={sectionLabel}>Top models</div>
+          <div style={sectionLabel}>{t('metrics.topModels')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {mockModelTokenUsage.map(m => (
               <DotRow key={m.model} color={m.color} label={m.model} value={formatTokens(m.tokens)} />
@@ -127,11 +129,11 @@ export function MetricsOverviewTab({ timeRange, layout }: MetricsOverviewTabProp
           </div>
         </div>
         <div>
-          <div style={sectionLabel}>Code churn</div>
+          <div style={sectionLabel}>{t('metrics.codeChurn')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <DotRow color="var(--color-success)" label="Lines added" value={formatNumber(mockCodeChurn.linesAdded)} />
-            <DotRow color="var(--color-danger)" label="Lines removed" value={formatNumber(mockCodeChurn.linesRemoved)} />
-            <DotRow color="var(--color-text-tertiary)" label="Total changed" value={formatNumber(mockCodeChurn.totalChanged)} />
+            <DotRow color="var(--color-success)" label={t('metrics.linesAdded')} value={formatNumber(mockCodeChurn.linesAdded)} />
+            <DotRow color="var(--color-danger)" label={t('metrics.linesRemoved')} value={formatNumber(mockCodeChurn.linesRemoved)} />
+            <DotRow color="var(--color-text-tertiary)" label={t('metrics.totalChanged')} value={formatNumber(mockCodeChurn.totalChanged)} />
           </div>
         </div>
       </div>

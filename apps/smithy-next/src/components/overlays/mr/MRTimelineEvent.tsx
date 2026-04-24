@@ -4,6 +4,7 @@ import type { MRTimelineEvent as TimelineEvent, ReviewState } from './mr-types'
 import { HighlightedCode } from './syntax-highlight'
 import { currentUser } from '../../../mock-data'
 import { useTeamContext } from '../../../TeamContext'
+import { useTranslation } from '@/i18n'
 
 interface Props {
   event: TimelineEvent
@@ -11,10 +12,10 @@ interface Props {
 }
 
 const reviewStateLabel: Record<ReviewState, string> = {
-  approved: 'approved',
-  changes_requested: 'requested changes',
-  commented: 'commented',
-  pending: 'pending',
+  approved: 'mergeRequest.approvedLower',
+  changes_requested: 'mergeRequest.requestedChanges',
+  commented: 'mergeRequest.commentedLower',
+  pending: 'mergeRequest.pendingLower',
 }
 
 const reviewStateColor: Record<ReviewState, string> = {
@@ -32,6 +33,7 @@ const reviewStateBg: Record<ReviewState, string> = {
 }
 
 export function MRTimelineEventComponent({ event, onNavigateToSession }: Props) {
+  const { t } = useTranslation('smithyNext')
   switch (event.type) {
     case 'comment': return <CommentEvent event={event} />
     case 'review': return <ReviewEvent event={event} />
@@ -40,7 +42,7 @@ export function MRTimelineEventComponent({ event, onNavigateToSession }: Props) 
     case 'commit_push': return <CommitPushEvent event={event} />
     case 'ci_status': return <CIStatusEvent event={event} />
     case 'status_change': return <StatusChangeEvent event={event} />
-    case 'reviewer_added': return <CompactEvent event={event} text="was added as a reviewer" />
+    case 'reviewer_added': return <CompactEvent event={event} text={t('mergeRequest.wasAddedAsReviewer')} />
     default: return null
   }
 }
@@ -65,6 +67,7 @@ function Avatar({ avatar, author, authorUserId, size = 24, bg }: { avatar: strin
 }
 
 function CommentEvent({ event }: { event: TimelineEvent }) {
+  const { t } = useTranslation('smithyNext')
   const c = event.comment!
   const { getUserById } = useTeamContext()
   const resolvedUser = event.authorUserId ? getUserById(event.authorUserId) : undefined
@@ -75,9 +78,9 @@ function CommentEvent({ event }: { event: TimelineEvent }) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
           <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text)' }}>{displayName}</span>
-          <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>commented</span>
+          <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('mergeRequest.commentedLower')}</span>
           <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{event.createdAt}</span>
-          {c.isResolved && <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: 'var(--color-success)' }}><CheckCircle size={11} strokeWidth={2} /> Resolved</span>}
+          {c.isResolved && <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: 'var(--color-success)' }}><CheckCircle size={11} strokeWidth={2} /> {t('mergeRequest.resolved')}</span>}
         </div>
         {c.file && (
           <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--color-text-tertiary)', marginBottom: 6 }}>
@@ -93,6 +96,7 @@ function CommentEvent({ event }: { event: TimelineEvent }) {
 }
 
 function ReviewEvent({ event }: { event: TimelineEvent }) {
+  const { t } = useTranslation('smithyNext')
   const r = event.review!
   const [expanded, setExpanded] = useState(false)
   const { getUserById } = useTeamContext()
@@ -105,7 +109,7 @@ function ReviewEvent({ event }: { event: TimelineEvent }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
           <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text)' }}>{displayName}</span>
           <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 'var(--radius-full)', background: reviewStateBg[r.state], color: reviewStateColor[r.state], fontWeight: 500 }}>
-            {reviewStateLabel[r.state]}
+            {t(reviewStateLabel[r.state])}
           </span>
           <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{event.createdAt}</span>
         </div>
@@ -118,7 +122,7 @@ function ReviewEvent({ event }: { event: TimelineEvent }) {
           <div>
             <button onClick={() => setExpanded(!expanded)} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--color-text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0' }}>
               {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-              {r.comments.length} inline comment{r.comments.length > 1 ? 's' : ''}
+              {t('mergeRequest.inlineComment', { count: r.comments.length })}
             </button>
             {expanded && r.comments.map((ic, i) => (
               <div key={i} style={{ marginTop: 6, padding: 10, background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-sm)', borderLeft: '2px solid var(--color-border)' }}>
@@ -134,6 +138,7 @@ function ReviewEvent({ event }: { event: TimelineEvent }) {
 }
 
 function AgentReviewEvent({ event }: { event: TimelineEvent }) {
+  const { t } = useTranslation('smithyNext')
   const ms = event.agentReview!
   const [expanded, setExpanded] = useState(true)
   return (
@@ -141,7 +146,7 @@ function AgentReviewEvent({ event }: { event: TimelineEvent }) {
       <Avatar avatar="AZ" author="Review Agent" bg="rgba(59,130,246,0.15)" />
       <div style={{ flex: 1, minWidth: 0, background: 'rgba(59,130,246,0.04)', borderLeft: '3px solid var(--color-primary)', borderRadius: '0 var(--radius-md) var(--radius-md) 0', padding: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text)' }}>Review Agent</span>
+          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text)' }}>{t('mergeRequest.reviewAgent')}</span>
           <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 'var(--radius-full)', background: reviewStateBg[ms.state], color: reviewStateColor[ms.state], fontWeight: 500 }}>
             {reviewStateLabel[ms.state]}
           </span>
@@ -154,7 +159,7 @@ function AgentReviewEvent({ event }: { event: TimelineEvent }) {
           <div>
             <button onClick={() => setExpanded(!expanded)} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--color-text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0' }}>
               {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-              {ms.comments.length} inline comment{ms.comments.length > 1 ? 's' : ''}
+              {t('mergeRequest.inlineComment', { count: ms.comments.length })}
             </button>
             {expanded && ms.comments.map((ic, i) => (
               <div key={i} style={{ marginTop: 6, padding: 10, background: 'var(--color-bg-elevated)', borderRadius: 'var(--radius-sm)', borderLeft: '2px solid var(--color-primary)' }}>
@@ -163,8 +168,8 @@ function AgentReviewEvent({ event }: { event: TimelineEvent }) {
                 {ic.suggestion && (
                   <div style={{ marginTop: 8, background: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-sm)', overflow: 'hidden', border: '1px solid var(--color-border-subtle)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 8px', borderBottom: '1px solid var(--color-border-subtle)', background: 'rgba(34,197,94,0.04)' }}>
-                      <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)' }}>Suggested change</span>
-                      <button style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-success)', background: 'var(--color-success-subtle)', border: 'none', borderRadius: 'var(--radius-sm)', padding: '2px 8px', cursor: 'pointer' }}>Apply</button>
+                      <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)' }}>{t('mergeRequest.suggestedChange')}</span>
+                      <button style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-success)', background: 'var(--color-success-subtle)', border: 'none', borderRadius: 'var(--radius-sm)', padding: '2px 8px', cursor: 'pointer' }}>{t('mergeRequest.apply')}</button>
                     </div>
                     <HighlightedCode code={ic.suggestion} />
                   </div>
@@ -179,6 +184,7 @@ function AgentReviewEvent({ event }: { event: TimelineEvent }) {
 }
 
 function AgentActivityEvent({ event, onNavigateToSession }: { event: TimelineEvent; onNavigateToSession?: (id: string) => void }) {
+  const { t } = useTranslation('smithyNext')
   const a = event.agentActivity!
   const { isTeamMode, getUserById } = useTeamContext()
   // Resolve launcher for agent actions in team mode
@@ -191,7 +197,7 @@ function AgentActivityEvent({ event, onNavigateToSession }: { event: TimelineEve
         <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)' }}>{event.author}</span>
         {isTeamMode && isAgent && launcherUser && (
           <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>
-            launched by {launcherUser.name}
+            {t('mergeRequest.launchedBy', { name: launcherUser.name })}
           </span>
         )}
         <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>{a.action}</span>
@@ -207,6 +213,7 @@ function AgentActivityEvent({ event, onNavigateToSession }: { event: TimelineEve
 }
 
 function CommitPushEvent({ event }: { event: TimelineEvent }) {
+  const { t } = useTranslation('smithyNext')
   const [expanded, setExpanded] = useState(false)
   const commits = event.commits!
   const { getUserById } = useTeamContext()
@@ -222,7 +229,7 @@ function CommitPushEvent({ event }: { event: TimelineEvent }) {
           <GitCommit size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />
           <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)' }}>{displayName}</span>
           <button onClick={() => setExpanded(!expanded)} style={{ fontSize: 12, color: 'var(--color-text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 3 }}>
-            pushed {commits.length} commit{commits.length > 1 ? 's' : ''}
+            {t('mergeRequest.pushedCommits', { count: commits.length })}
             {expanded ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
           </button>
           {CIStatusIcon && (
@@ -248,6 +255,7 @@ function CommitPushEvent({ event }: { event: TimelineEvent }) {
 }
 
 function CIStatusEvent({ event }: { event: TimelineEvent }) {
+  const { t } = useTranslation('smithyNext')
   const ci = event.ciStatus!
   const color = ci.status === 'pass' ? 'var(--color-success)' : ci.status === 'fail' ? 'var(--color-danger)' : ci.status === 'running' ? 'var(--color-warning)' : 'var(--color-text-tertiary)'
   const Icon = ci.status === 'pass' ? Check : ci.status === 'fail' ? X : Activity
@@ -257,7 +265,7 @@ function CIStatusEvent({ event }: { event: TimelineEvent }) {
         <Icon size={13} strokeWidth={2} style={{ color }} />
       </div>
       <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>
-        <span style={{ fontWeight: 500, color }}>{ci.jobName}</span> — {ci.status === 'pass' ? 'passed' : ci.status === 'fail' ? 'failed' : ci.status === 'running' ? 'running' : 'queued'}
+        <span style={{ fontWeight: 500, color }}>{ci.jobName}</span> — {ci.status === 'pass' ? t('mergeRequest.passed') : ci.status === 'fail' ? t('mergeRequest.failed') : ci.status === 'running' ? t('mergeRequest.running') : t('mergeRequest.queued')}
       </span>
       <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginLeft: 'auto' }}>{event.createdAt}</span>
     </div>
@@ -265,6 +273,7 @@ function CIStatusEvent({ event }: { event: TimelineEvent }) {
 }
 
 function StatusChangeEvent({ event }: { event: TimelineEvent }) {
+  const { t } = useTranslation('smithyNext')
   const sc = event.statusChange!
   const { getUserById } = useTeamContext()
   const resolvedUser = event.authorUserId ? getUserById(event.authorUserId) : undefined
@@ -273,7 +282,7 @@ function StatusChangeEvent({ event }: { event: TimelineEvent }) {
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
       <Avatar avatar={event.avatar} author={event.author} authorUserId={event.authorUserId} size={20} />
       <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>
-        <span style={{ fontWeight: 500, color: 'var(--color-text-secondary)' }}>{displayName}</span> changed status from <span style={{ fontWeight: 500 }}>{sc.from}</span> to <span style={{ fontWeight: 500, color: sc.to === 'merged' ? 'var(--color-primary)' : 'var(--color-text)' }}>{sc.to}</span>
+        <span style={{ fontWeight: 500, color: 'var(--color-text-secondary)' }}>{displayName}</span> {t('mergeRequest.changedStatusFromTo', { from: sc.from, to: sc.to })}
       </span>
       <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginLeft: 'auto' }}>{event.createdAt}</span>
     </div>

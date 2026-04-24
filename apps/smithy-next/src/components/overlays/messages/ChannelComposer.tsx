@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
 import { Send, Bold, Italic, Code, Link, List, Paperclip } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 
 interface ChannelComposerProps {
   onSend: (content: string) => void
   placeholder?: string
 }
 
-export function ChannelComposer({ onSend, placeholder = 'Write a message...' }: ChannelComposerProps) {
+export function ChannelComposer({ onSend, placeholder }: ChannelComposerProps) {
+  const { t } = useTranslation('smithyNext')
   const [value, setValue] = useState('')
   const [toolbarVisible, setToolbarVisible] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -48,11 +50,11 @@ export function ChannelComposer({ onSend, placeholder = 'Write a message...' }: 
   }
 
   const toolbarButtons = [
-    { icon: Bold, title: 'Bold', action: () => insertMarkdown('**') },
-    { icon: Italic, title: 'Italic', action: () => insertMarkdown('*') },
-    { icon: Code, title: 'Code', action: () => insertMarkdown('`') },
-    { icon: Link, title: 'Link', action: () => insertMarkdown('[', '](url)') },
-    { icon: List, title: 'List', action: () => insertMarkdown('- ', '') },
+    { icon: Bold, title: t('messages.boldTitle'), action: () => insertMarkdown('**') },
+    { icon: Italic, title: t('messages.italicTitle'), action: () => insertMarkdown('*') },
+    { icon: Code, title: t('messages.codeTitle'), action: () => insertMarkdown('`') },
+    { icon: Link, title: t('messages.linkTitle'), action: () => insertMarkdown('[', '](url)') },
+    { icon: List, title: t('messages.listTitle'), action: () => insertMarkdown('- ', '') },
   ]
 
   return (
@@ -107,7 +109,7 @@ export function ChannelComposer({ onSend, placeholder = 'Write a message...' }: 
             color: 'var(--color-text-tertiary)', cursor: 'pointer',
             borderRadius: 'var(--radius-sm)', flexShrink: 0,
           }}
-          title="Attach file"
+          title={t('messages.attachFile')}
         >
           <Paperclip size={14} strokeWidth={1.5} />
         </button>
@@ -118,7 +120,7 @@ export function ChannelComposer({ onSend, placeholder = 'Write a message...' }: 
           onChange={e => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => setToolbarVisible(true)}
-          placeholder={placeholder}
+          placeholder={placeholder ?? t('messages.writeAMessage')}
           rows={1}
           style={{
             flex: 1, resize: 'none',
@@ -144,14 +146,14 @@ export function ChannelComposer({ onSend, placeholder = 'Write a message...' }: 
             flexShrink: 0,
             transition: 'background var(--duration-fast)',
           }}
-          title="Send (Cmd+Enter)"
+          title={t('messages.sendCmdEnter')}
         >
           <Send size={13} />
         </button>
       </div>
 
       <div style={{ fontSize: 10, color: 'var(--color-text-tertiary)', marginTop: 4, textAlign: 'right' }}>
-        {'\u2318'}+Enter to send
+        {t('messages.cmdEnterToSend')}
       </div>
     </div>
   )

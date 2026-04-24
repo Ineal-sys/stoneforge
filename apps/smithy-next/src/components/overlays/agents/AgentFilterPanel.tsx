@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useTranslation } from '@/i18n'
 import type { AgentExtended, AgentFilterField, AgentActiveFilter } from './agent-types'
 import { mockRuntimes } from '../runtimes/runtime-mock-data'
 
@@ -9,15 +10,16 @@ interface AgentFilterPanelProps {
   onClose: () => void
 }
 
-const TABS: { field: AgentFilterField; label: string }[] = [
-  { field: 'status', label: 'Status' },
-  { field: 'environment', label: 'Runtime' },
-  { field: 'model', label: 'Model' },
-  { field: 'provider', label: 'Provider' },
-]
-
 export function AgentFilterPanel({ agents, filters, onToggleFilter, onClose }: AgentFilterPanelProps) {
+  const { t } = useTranslation('smithyNext')
   const [activeTab, setActiveTab] = useState<AgentFilterField>('status')
+
+  const TABS: { field: AgentFilterField; label: string }[] = [
+    { field: 'status', label: t('agents.filter.status') },
+    { field: 'environment', label: t('agents.filter.runtime') },
+    { field: 'model', label: t('agents.filter.model') },
+    { field: 'provider', label: t('agents.filter.provider') },
+  ]
   const panelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -74,7 +76,7 @@ export function AgentFilterPanel({ agents, filters, onToggleFilter, onClose }: A
               onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
             >
               <FilterDot field={activeTab} value={value} />
-              <span style={{ flex: 1 }}>{formatValue(activeTab, value)}</span>
+              <span style={{ flex: 1 }}>{formatValue(activeTab, value, t)}</span>
               <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)', background: 'var(--color-surface)', borderRadius: 'var(--radius-full)', padding: '0 5px' }}>
                 {count}
               </span>
@@ -82,7 +84,7 @@ export function AgentFilterPanel({ agents, filters, onToggleFilter, onClose }: A
           )
         })}
         {values.length === 0 && (
-          <div style={{ padding: 12, fontSize: 12, color: 'var(--color-text-tertiary)', textAlign: 'center' }}>No values</div>
+          <div style={{ padding: 12, fontSize: 12, color: 'var(--color-text-tertiary)', textAlign: 'center' }}>{t('agents.filter.noValues')}</div>
         )}
       </div>
     </div>
@@ -110,10 +112,20 @@ function getValuesForField(field: AgentFilterField, agents: AgentExtended[]): { 
   return Array.from(counts.entries()).map(([value, count]) => ({ value, count })).sort((a, b) => b.count - a.count)
 }
 
-function formatValue(_field: AgentFilterField, value: string): string {
+function formatValue(_field: AgentFilterField, value: string, t: (key: string) => string): string {
+  const statusLabels: Record<string, string> = {
+    running: t('agents.filter.statusRunning'),
+    idle: t('agents.filter.statusIdle'),
+    error: t('agents.filter.statusError'),
+    starting: t('agents.filter.statusStarting'),
+  }
+  const envLabels: Record<string, string> = {
+    local: t('agents.filter.local'),
+    cloud: t('agents.filter.cloud'),
+  }
   const labels: Record<string, string> = {
-    running: 'Running', idle: 'Idle', error: 'Error', starting: 'Starting',
-    local: 'Local', cloud: 'Cloud',
+    ...statusLabels,
+    ...envLabels,
     'claude-code': 'Claude Code', codex: 'Codex', opencode: 'OpenCode',
   }
   return labels[value] || value.charAt(0).toUpperCase() + value.slice(1)

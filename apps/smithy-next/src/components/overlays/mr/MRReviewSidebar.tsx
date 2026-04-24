@@ -5,6 +5,7 @@ import { MRMergeFlow } from './MRMergeFlow'
 import { currentUser } from '../../../mock-data'
 import { useTeamContext } from '../../../TeamContext'
 import { PresenceDot } from '../../PresenceDot'
+import { useTranslation } from '@/i18n'
 
 interface MRReviewSidebarProps {
   mr: MergeRequestExtended
@@ -22,13 +23,14 @@ const reviewStateColor: Record<ReviewState, string> = {
 }
 
 const reviewStateLabel: Record<ReviewState, string> = {
-  approved: 'Approved',
-  changes_requested: 'Changes requested',
-  commented: 'Commented',
-  pending: 'Pending',
+  approved: 'mergeRequest.approved',
+  changes_requested: 'mergeRequest.changesRequested',
+  commented: 'mergeRequest.commented',
+  pending: 'mergeRequest.pendingLower',
 }
 
 export function MRReviewSidebar({ mr, onNavigateToTask, onNavigateToSession, onNavigateToAgents, onNavigateToPreview }: MRReviewSidebarProps) {
+  const { t } = useTranslation('smithyNext')
   const { isTeamMode, teamMembers } = useTeamContext()
   const [reviewDropdownOpen, setReviewDropdownOpen] = useState(false)
   const [localReviewers, setLocalReviewers] = useState<MRReviewer[]>(mr.reviewers)
@@ -60,9 +62,9 @@ export function MRReviewSidebar({ mr, onNavigateToTask, onNavigateToSession, onN
     <div className="mr-review-sidebar" style={{ width: 280, minWidth: 280, borderLeft: '1px solid var(--color-border)', overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '16px 16px 0', flex: 1 }}>
         {/* Reviewers */}
-        <SidebarSection title="Reviewers">
+        <SidebarSection title={t('mergeRequest.reviewers')}>
           {localReviewers.length === 0 ? (
-            <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', padding: '4px 0' }}>No reviewers yet</div>
+            <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', padding: '4px 0' }}>{t('mergeRequest.noReviewersYet')}</div>
           ) : (
             localReviewers.map(r => {
               const teamMember = teamMembers.find(m => m.name === r.name)
@@ -82,7 +84,7 @@ export function MRReviewSidebar({ mr, onNavigateToTask, onNavigateToSession, onN
                   <span style={{ fontSize: 12, color: 'var(--color-text)', flex: 1 }}>{r.name}</span>
                   <span style={{ fontSize: 11, color: reviewStateColor[r.state], display: 'flex', alignItems: 'center', gap: 3 }}>
                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: reviewStateColor[r.state] }} />
-                    {reviewStateLabel[r.state]}
+                    {t(reviewStateLabel[r.state])}
                   </span>
                 </div>
               )
@@ -104,7 +106,7 @@ export function MRReviewSidebar({ mr, onNavigateToTask, onNavigateToSession, onN
                 onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-tertiary)'}
               >
                 <UserPlus size={12} strokeWidth={1.5} />
-                Request review
+                {t('mergeRequest.requestReview')}
               </button>
 
               {reviewDropdownOpen && availableReviewers.length > 0 && (
@@ -115,7 +117,7 @@ export function MRReviewSidebar({ mr, onNavigateToTask, onNavigateToSession, onN
                   boxShadow: 'var(--shadow-float)',
                 }}>
                   <div style={{ padding: '6px 10px', borderBottom: '1px solid var(--color-border-subtle)', fontSize: 11, color: 'var(--color-text-tertiary)', fontWeight: 500 }}>
-                    Select reviewer
+                    {t('mergeRequest.selectReviewer')}
                   </div>
                   {availableReviewers.map(member => (
                     <button
@@ -153,7 +155,7 @@ export function MRReviewSidebar({ mr, onNavigateToTask, onNavigateToSession, onN
                   boxShadow: 'var(--shadow-float)',
                   fontSize: 11, color: 'var(--color-text-tertiary)',
                 }}>
-                  All team members are already reviewers
+                  {t('mergeRequest.allTeamMembersAreReviewers')}
                 </div>
               )}
             </div>
@@ -162,7 +164,7 @@ export function MRReviewSidebar({ mr, onNavigateToTask, onNavigateToSession, onN
 
         {/* Labels */}
         {mr.labels.length > 0 && (
-          <SidebarSection title="Labels">
+          <SidebarSection title={t('mergeRequest.labels')}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
               {mr.labels.map(l => (
                 <span key={l} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
@@ -175,12 +177,12 @@ export function MRReviewSidebar({ mr, onNavigateToTask, onNavigateToSession, onN
 
         {/* Stoneforge section */}
         <div style={{ borderTop: '1px solid var(--color-border-subtle)', marginTop: 12, paddingTop: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Stoneforge</div>
+          <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>{t('mergeRequest.stoneforge')}</div>
 
           {/* Linked task */}
           {mr.linkedTaskId && (
             <LinkRow
-              label="Task"
+              label={t('mergeRequest.task')}
               value={mr.linkedTaskId}
               mono
               onClick={() => onNavigateToTask?.(mr.linkedTaskId!)}
@@ -190,7 +192,7 @@ export function MRReviewSidebar({ mr, onNavigateToTask, onNavigateToSession, onN
           {/* Director — opens director panel */}
           {mr.createdByAgent && (
             <LinkRow
-              label="Director"
+              label={t('mergeRequest.director')}
               value={mr.createdByAgent}
               icon={<User size={11} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />}
               onClick={() => mr.agentSessionId && onNavigateToSession?.(mr.agentSessionId)}
@@ -200,7 +202,7 @@ export function MRReviewSidebar({ mr, onNavigateToTask, onNavigateToSession, onN
           {/* Worker — opens Agents/Workspaces page */}
           {mr.createdByAgent && (
             <LinkRow
-              label="Worker"
+              label={t('mergeRequest.worker')}
               value={mr.createdByAgent.replace('Director ', 'Worker ')}
               icon={<Bot size={11} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />}
               onClick={() => onNavigateToAgents?.()}
@@ -215,7 +217,7 @@ export function MRReviewSidebar({ mr, onNavigateToTask, onNavigateToSession, onN
               onMouseEnter={e => { if (mr.reviewAgentSessionId) (e.currentTarget.querySelector('.reviewer-name') as HTMLElement)?.style.setProperty('color', 'var(--color-text-accent)') }}
               onMouseLeave={e => { if (mr.reviewAgentSessionId) (e.currentTarget.querySelector('.reviewer-name') as HTMLElement)?.style.setProperty('color', 'var(--color-text-secondary)') }}
             >
-              <span style={{ color: 'var(--color-text-tertiary)', width: 70, flexShrink: 0 }}>Reviewer</span>
+              <span style={{ color: 'var(--color-text-tertiary)', width: 70, flexShrink: 0 }}>{t('mergeRequest.reviewer')}</span>
               <Bot size={11} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
               <span style={{
                 width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
@@ -225,7 +227,7 @@ export function MRReviewSidebar({ mr, onNavigateToTask, onNavigateToSession, onN
                   : 'var(--color-text-tertiary)',
               }} />
               <span className="reviewer-name" style={{ color: 'var(--color-text-secondary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', transition: `color var(--duration-fast)` }}>
-                {mr.reviewAgentName || 'Review Agent'}
+                {mr.reviewAgentName || t('mergeRequest.reviewAgent')}
               </span>
               {mr.reviewAgentSessionId && <ExternalLink size={10} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />}
             </div>
@@ -240,8 +242,8 @@ export function MRReviewSidebar({ mr, onNavigateToTask, onNavigateToSession, onN
               onMouseLeave={e => (e.currentTarget.querySelector('.link-value') as HTMLElement)?.style.setProperty('color', 'var(--color-text-secondary)')}
             >
               <LinkRow
-                label="Preview"
-                value={mr.previewStatus === 'ready' ? 'Ready' : mr.previewStatus === 'building' ? 'Building...' : 'Failed'}
+                label={t('mergeRequest.preview')}
+                value={mr.previewStatus === 'ready' ? t('mergeRequest.ready') : mr.previewStatus === 'building' ? t('mergeRequest.building') : t('mergeRequest.failed')}
                 statusColor={mr.previewStatus === 'ready' ? 'var(--color-success)' : mr.previewStatus === 'building' ? 'var(--color-warning)' : 'var(--color-danger)'}
                 icon={<Globe size={11} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />}
               />

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from '@/i18n'
 import { ChevronDown } from 'lucide-react'
 import type { AgentExtended } from './agent-types'
 
@@ -14,6 +15,7 @@ const statusColor: Record<string, string> = {
 }
 
 export function AgentSidebar({ agents, selectedAgentId, onSelectAgent }: AgentSidebarProps) {
+  const { t } = useTranslation('smithyNext')
   const running = agents.filter(a => a.status === 'running' || a.status === 'starting')
   const idle = agents.filter(a => a.status === 'idle')
   const error = agents.filter(a => a.status === 'error')
@@ -24,12 +26,12 @@ export function AgentSidebar({ agents, selectedAgentId, onSelectAgent }: AgentSi
       overflow: 'auto', display: 'flex', flexDirection: 'column',
     }}>
       <div style={{ padding: '10px 12px', fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', borderBottom: '1px solid var(--color-border-subtle)', textTransform: 'uppercase' as const, letterSpacing: '0.05em' }}>
-        Agents
+        {t('agents.sidebar.agents')}
       </div>
       <div style={{ padding: '12px 0' }}>
-        {running.length > 0 && <SidebarSection title="Running" agents={running} selectedId={selectedAgentId} onSelect={onSelectAgent} />}
-        {idle.length > 0 && <SidebarSection title="Idle" agents={idle} selectedId={selectedAgentId} onSelect={onSelectAgent} />}
-        {error.length > 0 && <SidebarSection title="Error" agents={error} selectedId={selectedAgentId} onSelect={onSelectAgent} />}
+        {running.length > 0 && <SidebarSection title={t('agents.sidebar.running')} agents={running} selectedId={selectedAgentId} onSelect={onSelectAgent} />}
+        {idle.length > 0 && <SidebarSection title={t('agents.sidebar.idle')} agents={idle} selectedId={selectedAgentId} onSelect={onSelectAgent} />}
+        {error.length > 0 && <SidebarSection title={t('agents.sidebar.error')} agents={error} selectedId={selectedAgentId} onSelect={onSelectAgent} />}
       </div>
     </div>
   )

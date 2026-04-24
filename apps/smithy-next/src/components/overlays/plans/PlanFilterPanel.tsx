@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useTranslation } from '@/i18n'
 import type { Plan } from '../../../mock-data'
 import type { PlanFilterField, PlanActiveFilter } from './plan-types'
 import { PLAN_STATUS_CONFIG } from './plan-types'
@@ -10,13 +11,14 @@ interface PlanFilterPanelProps {
   onClose: () => void
 }
 
-const TABS: { field: PlanFilterField; label: string }[] = [
-  { field: 'status', label: 'Status' },
-  { field: 'tag', label: 'Tags' },
-  { field: 'creator', label: 'Creator' },
+const TABS: { field: PlanFilterField; labelKey: string }[] = [
+  { field: 'status', labelKey: 'plans.status' },
+  { field: 'tag', labelKey: 'plans.tags' },
+  { field: 'creator', labelKey: 'plans.creator' },
 ]
 
 export function PlanFilterPanel({ plans, filters, onToggleFilter, onClose }: PlanFilterPanelProps) {
+  const { t } = useTranslation('smithyNext')
   const [activeTab, setActiveTab] = useState<PlanFilterField>('status')
   const panelRef = useRef<HTMLDivElement>(null)
 
@@ -53,7 +55,7 @@ export function PlanFilterPanel({ plans, filters, onToggleFilter, onClose }: Pla
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
               }}
             >
-              {tab.label}
+              {t(tab.labelKey)}
               {tabCount > 0 && <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-primary)' }} />}
             </button>
           )
@@ -87,7 +89,7 @@ export function PlanFilterPanel({ plans, filters, onToggleFilter, onClose }: Pla
           )
         })}
         {values.length === 0 && (
-          <div style={{ padding: 12, fontSize: 12, color: 'var(--color-text-tertiary)', textAlign: 'center' }}>No values</div>
+          <div style={{ padding: 12, fontSize: 12, color: 'var(--color-text-tertiary)', textAlign: 'center' }}>{t('plans.noValues')}</div>
         )}
       </div>
     </div>

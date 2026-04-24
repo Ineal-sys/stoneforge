@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useTranslation } from '@/i18n'
 import { ArrowLeft, Pencil, Trash2, MoreHorizontal, ChevronDown, ChevronRight, X, Plus, Copy, Code, AlertTriangle } from 'lucide-react'
 import type { RoleDefinition, RoleDefinitionCategory, WorkspaceResourceRef, HookBinding, HookEvent } from './agent-types'
 import { DEFAULT_TOOL_NAMES, HOOK_EVENT_CATEGORIES } from './agent-types'
@@ -47,6 +48,7 @@ const sectionLabelStyle: React.CSSProperties = {
 function ResourceViewItem({ name, path, description, onOpenInEditor }: {
   name: string; path: string; description?: string; onOpenInEditor?: (path: string) => void
 }) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '6px 0' }}>
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -57,7 +59,7 @@ function ResourceViewItem({ name, path, description, onOpenInEditor }: {
       {onOpenInEditor && (
         <button
           onClick={() => onOpenInEditor(path)}
-          title="Open in Editor"
+          title={t('agents.roleDefinition.openInEditor')}
           style={{
             width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: 'transparent', border: 'none', borderRadius: 'var(--radius-sm)',
@@ -82,6 +84,7 @@ function ResourceEditRow({ item, onChange, onRemove, onOpenInEditor, namePlaceho
   namePlaceholder?: string
   pathPlaceholder?: string
 }) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start', padding: '4px 0' }}>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -89,27 +92,27 @@ function ResourceEditRow({ item, onChange, onRemove, onOpenInEditor, namePlaceho
           <input
             value={item.name}
             onChange={e => onChange({ ...item, name: e.target.value })}
-            placeholder={namePlaceholder || 'Name'}
+            placeholder={namePlaceholder || t('agents.roleDefinition.namePlaceholderShort')}
             style={{ ...inputStyle, height: 28, fontSize: 11, flex: 1 }}
           />
           <input
             value={item.path}
             onChange={e => onChange({ ...item, path: e.target.value })}
-            placeholder={pathPlaceholder || 'File path'}
+            placeholder={pathPlaceholder || t('agents.roleDefinition.filePathPlaceholder')}
             style={{ ...inputStyle, height: 28, fontSize: 11, fontFamily: 'var(--font-mono)', flex: 2 }}
           />
         </div>
         <input
           value={item.description || ''}
           onChange={e => onChange({ ...item, description: e.target.value || undefined })}
-          placeholder="Description (optional)"
+          placeholder={t('agents.roleDefinition.descriptionOptionalPlaceholder')}
           style={{ ...inputStyle, height: 26, fontSize: 11 }}
         />
       </div>
       {onOpenInEditor && item.path && (
         <button
           onClick={() => onOpenInEditor(item.path)}
-          title="Open in Editor"
+          title={t('agents.roleDefinition.openInEditor')}
           style={{
             width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: 'transparent', border: 'none', borderRadius: 'var(--radius-sm)',
@@ -144,6 +147,7 @@ function HookEditRow({ hook, onChange, onRemove, onOpenInEditor }: {
   onRemove: () => void
   onOpenInEditor?: (path: string) => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const [eventDropdownOpen, setEventDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -213,21 +217,21 @@ function HookEditRow({ hook, onChange, onRemove, onOpenInEditor }: {
           <input
             value={hook.path}
             onChange={e => onChange({ ...hook, path: e.target.value })}
-            placeholder="File path"
+            placeholder={t('agents.roleDefinition.filePathPlaceholder')}
             style={{ ...inputStyle, height: 28, fontSize: 11, fontFamily: 'var(--font-mono)', flex: 2 }}
           />
         </div>
         <input
           value={hook.name || ''}
           onChange={e => onChange({ ...hook, name: e.target.value || undefined })}
-          placeholder="Display name (optional)"
+          placeholder={t('agents.roleDefinition.displayNamePlaceholder')}
           style={{ ...inputStyle, height: 26, fontSize: 11 }}
         />
       </div>
       {onOpenInEditor && hook.path && (
         <button
           onClick={() => onOpenInEditor(hook.path)}
-          title="Open in Editor"
+          title={t('agents.roleDefinition.openInEditor')}
           style={{
             width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: 'transparent', border: 'none', borderRadius: 'var(--radius-sm)',
@@ -275,6 +279,7 @@ function AddButton({ label, onClick }: { label: string; onClick: () => void }) {
 }
 
 export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDelete, isNew, onOpenInEditor }: RoleDefinitionDetailViewProps) {
+  const { t } = useTranslation('smithyNext')
   const [editing, setEditing] = useState(!!isNew)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -403,7 +408,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
 
           {/* Name */}
           <h1 style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text)', margin: 0, flexShrink: 0 }}>
-            {editing ? (formName || 'New Role Definition') : roleDefinition.name}
+            {editing ? (formName || t('agents.roleDefinition.new')) : roleDefinition.name}
           </h1>
 
           {/* Category badge */}
@@ -422,7 +427,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
               fontSize: 10, fontWeight: 500, padding: '2px 8px', borderRadius: 'var(--radius-full)',
               background: 'var(--color-surface)', color: 'var(--color-text-tertiary)', flexShrink: 0,
             }}>
-              Built-in
+              {t('agents.roleDefinition.builtIn')}
             </span>
           )}
 
@@ -436,14 +441,14 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
                 background: 'transparent', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)',
                 color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
               }}>
-                Cancel
+                {t('agents.roleDefinition.cancel')}
               </button>
               <button onClick={handleSave} style={{
                 height: 26, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 5,
                 background: 'var(--color-primary)', border: 'none', borderRadius: 'var(--radius-sm)',
                 color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
               }}>
-                Save
+                {t('agents.roleDefinition.save')}
               </button>
             </div>
           ) : (
@@ -454,7 +459,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
                 background: 'transparent', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)',
                 color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
               }}>
-                <Pencil size={11} strokeWidth={1.5} /> Edit
+                <Pencil size={11} strokeWidth={1.5} /> {t('agents.roleDefinition.edit')}
               </button>
 
               {/* Delete button */}
@@ -487,9 +492,9 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
                     width: 160, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)',
                     borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-float)', padding: 4,
                   }}>
-                    <MenuItem icon={<Copy size={12} strokeWidth={1.5} />} label="Duplicate" onClick={() => setMenuOpen(false)} />
+                    <MenuItem icon={<Copy size={12} strokeWidth={1.5} />} label={t('agents.roleDefinition.duplicate')} onClick={() => setMenuOpen(false)} />
                     <div style={{ height: 1, background: 'var(--color-border-subtle)', margin: '4px 0' }} />
-                    <MenuItem label="Export as JSON" onClick={() => setMenuOpen(false)} />
+                    <MenuItem label={t('agents.roleDefinition.exportAsJson')} onClick={() => setMenuOpen(false)} />
                   </div>
                 )}
               </div>
@@ -505,19 +510,19 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
           <>
             {/* Name */}
             <div>
-              <div style={labelStyle}>Name</div>
-              <input value={formName} onChange={e => setFormName(e.target.value)} placeholder="e.g. Frontend Specialist" style={inputStyle} />
+              <div style={labelStyle}>{t('agents.roleDefinition.nameLabel')}</div>
+              <input value={formName} onChange={e => setFormName(e.target.value)} placeholder={t('agents.roleDefinition.namePlaceholder')} style={inputStyle} />
             </div>
 
             {/* Description */}
             <div>
-              <div style={labelStyle}>Description</div>
-              <textarea value={formDescription} onChange={e => setFormDescription(e.target.value)} rows={3} placeholder="Brief description of what this role does..." style={textareaStyle} />
+              <div style={labelStyle}>{t('agents.roleDefinition.descriptionLabel')}</div>
+              <textarea value={formDescription} onChange={e => setFormDescription(e.target.value)} rows={3} placeholder={t('agents.roleDefinition.descriptionPlaceholder')} style={textareaStyle} />
             </div>
 
             {/* Category */}
             <div>
-              <div style={labelStyle}>Category</div>
+              <div style={labelStyle}>{t('agents.roleDefinition.categoryLabel')}</div>
               <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                 {(['orchestrator', 'executor', 'reviewer', 'custom'] as const).map(cat => {
                   const isActive = cat === 'custom'
@@ -550,7 +555,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
                 <input
                   value={formCustomCategory}
                   onChange={e => setFormCustomCategory(e.target.value)}
-                  placeholder="Custom category name..."
+                  placeholder={t('agents.roleDefinition.customCategoryPlaceholder')}
                   style={{ ...inputStyle, marginTop: 8, maxWidth: 240 }}
                 />
               )}
@@ -558,12 +563,12 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
 
             {/* Role Prompt */}
             <div>
-              <div style={labelStyle}>Role Prompt</div>
+              <div style={labelStyle}>{t('agents.roleDefinition.rolePromptLabel')}</div>
               <textarea
                 value={formRolePrompt}
                 onChange={e => setFormRolePrompt(e.target.value)}
                 rows={6}
-                placeholder="Instructions sent to the agent at the start of each session. Define the role's behavior, constraints, and approach..."
+                placeholder={t('agents.roleDefinition.rolePromptPlaceholder')}
                 style={{
                   ...textareaStyle,
                   fontFamily: 'var(--font-mono)',
@@ -576,7 +581,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
 
             {/* Tags */}
             <div>
-              <div style={labelStyle}>Tags</div>
+              <div style={labelStyle}>{t('agents.roleDefinition.tagsLabel')}</div>
               <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
                 {formTags.map(tag => (
                   <span key={tag} style={{ fontSize: 11, padding: '3px 6px 3px 8px', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -599,7 +604,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
                     if (e.key === 'Enter' && formTagInput.trim()) { const t = formTagInput.trim(); if (!formTags.includes(t)) setFormTags(prev => [...prev, t]); setFormTagInput(''); e.preventDefault() }
                     if (e.key === 'Backspace' && !formTagInput && formTags.length > 0) setFormTags(prev => prev.slice(0, -1))
                   }}
-                  placeholder={formTags.length === 0 ? 'Add tags (comma-separated)...' : 'Add tag...'}
+                  placeholder={formTags.length === 0 ? t('agents.roleDefinition.addTagsPlaceholder') : t('agents.roleDefinition.addTagPlaceholder')}
                   style={{ flex: 1, minWidth: 100, height: 26, padding: '0 6px', fontSize: 11, background: 'transparent', border: 'none', outline: 'none', color: 'var(--color-text)', fontFamily: 'inherit' }}
                 />
               </div>
@@ -609,7 +614,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
             {/* Default Tools — checkbox grid */}
             <div>
               <div style={{ ...sectionLabelStyle, justifyContent: 'space-between' }}>
-                <span>Default Tools</span>
+                <span>{t('agents.roleDefinition.defaultToolsLabel')}</span>
                 <button
                   onClick={toggleAllDefaultTools}
                   style={{
@@ -618,12 +623,12 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
                     textTransform: 'none', letterSpacing: 'normal',
                   }}
                 >
-                  {allDefaultToolsSelected ? 'Deselect All' : 'Select All'}
+                  {allDefaultToolsSelected ? t('agents.roleDefinition.deselectAll') : t('agents.roleDefinition.selectAll')}
                 </button>
               </div>
               {noDefaultToolsSelected && (
                 <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 6 }}>
-                  No tools selected — all default tools will be enabled
+                  {t('agents.roleDefinition.noToolsSelected')}
                 </div>
               )}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px' }}>
@@ -649,10 +654,10 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
 
             {/* Custom Tools — file path references */}
             <div>
-              <div style={labelStyle}>Custom Tools</div>
+              <div style={labelStyle}>{t('agents.roleDefinition.customToolsLabel')}</div>
               {formCustomTools.length === 0 && (
                 <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 4 }}>
-                  No custom tools configured
+                  {t('agents.roleDefinition.noCustomTools')}
                 </div>
               )}
               {formCustomTools.map((tool, i) => (
@@ -666,15 +671,15 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
                   pathPlaceholder=".stoneforge/tools/my-tool.ts"
                 />
               ))}
-              <AddButton label="Add Custom Tool" onClick={() => setFormCustomTools(prev => [...prev, { name: '', path: '' }])} />
+              <AddButton label={t('agents.roleDefinition.addCustomTool')} onClick={() => setFormCustomTools(prev => [...prev, { name: '', path: '' }])} />
             </div>
 
             {/* Skills — file path references */}
             <div>
-              <div style={labelStyle}>Skills</div>
+              <div style={labelStyle}>{t('agents.roleDefinition.skillsLabel')}</div>
               {formSkills.length === 0 && (
                 <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 4 }}>
-                  No skills configured
+                  {t('agents.roleDefinition.noSkills')}
                 </div>
               )}
               {formSkills.map((skill, i) => (
@@ -688,15 +693,15 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
                   pathPlaceholder=".stoneforge/skills/my-skill.md"
                 />
               ))}
-              <AddButton label="Add Skill" onClick={() => setFormSkills(prev => [...prev, { name: '', path: '' }])} />
+              <AddButton label={t('agents.roleDefinition.addSkill')} onClick={() => setFormSkills(prev => [...prev, { name: '', path: '' }])} />
             </div>
 
             {/* Hooks — event + file path */}
             <div>
-              <div style={labelStyle}>Hooks</div>
+              <div style={labelStyle}>{t('agents.roleDefinition.hooksLabel')}</div>
               {formHooks.length === 0 && (
                 <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 4 }}>
-                  No hooks configured
+                  {t('agents.roleDefinition.noHooks')}
                 </div>
               )}
               {formHooks.map((hook, i) => (
@@ -708,7 +713,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
                   onOpenInEditor={onOpenInEditor}
                 />
               ))}
-              <AddButton label="Add Hook" onClick={() => setFormHooks(prev => [...prev, { event: 'agent:start' as HookEvent, path: '' }])} />
+              <AddButton label={t('agents.roleDefinition.addHook')} onClick={() => setFormHooks(prev => [...prev, { event: 'agent:start' as HookEvent, path: '' }])} />
             </div>
 
             {/* Advanced — System Prompt Override */}
@@ -721,7 +726,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
                 }}
               >
                 {advancedExpanded ? <ChevronDown size={12} strokeWidth={1.5} /> : <ChevronRight size={12} strokeWidth={1.5} />}
-                <span style={{ ...labelStyle, marginBottom: 0 }}>Advanced</span>
+                <span style={{ ...labelStyle, marginBottom: 0 }}>{t('agents.roleDefinition.advanced')}</span>
               </button>
               {advancedExpanded && (
                 <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -736,7 +741,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
                       }}
                       style={{ accentColor: 'var(--color-primary)', width: 13, height: 13, margin: 0 }}
                     />
-                    <span style={{ fontSize: 12, color: 'var(--color-text)' }}>Override system prompt</span>
+                    <span style={{ fontSize: 12, color: 'var(--color-text)' }}>{t('agents.roleDefinition.overrideSystemPrompt')}</span>
                   </label>
                   {systemPromptOverrideEnabled && (
                     <>
@@ -744,7 +749,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, padding: '6px 8px', background: 'rgba(245,158,11,0.06)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(245,158,11,0.15)' }}>
                         <AlertTriangle size={12} strokeWidth={1.5} style={{ color: '#f59e0b', flexShrink: 0, marginTop: 1 }} />
                         <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', lineHeight: 1.4 }}>
-                          Overrides the default provider system prompt. Most roles don't need this.
+                          {t('agents.roleDefinition.systemPromptWarning')}
                         </span>
                       </div>
                       {/* Textarea */}
@@ -753,7 +758,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
                           value={formSystemPromptOverride}
                           onChange={e => setFormSystemPromptOverride(e.target.value)}
                           rows={6}
-                          placeholder="Custom system prompt..."
+                          placeholder={t('agents.roleDefinition.customSystemPromptPlaceholder')}
                           style={{
                             ...textareaStyle,
                             fontFamily: 'var(--font-mono)',
@@ -775,7 +780,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
             {/* Description */}
             {roleDefinition.description && (
               <div>
-                <div style={labelStyle}>Description</div>
+                <div style={labelStyle}>{t('agents.roleDefinition.descriptionLabel')}</div>
                 <div style={{ fontSize: 13, color: 'var(--color-text)', lineHeight: 1.5 }}>
                   {roleDefinition.description}
                 </div>
@@ -784,7 +789,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
 
             {/* Role Prompt */}
             <div>
-              <div style={labelStyle}>Role Prompt</div>
+              <div style={labelStyle}>{t('agents.roleDefinition.rolePromptLabel')}</div>
               <div style={{
                 padding: 12, background: 'var(--color-surface)', borderRadius: 'var(--radius-sm)',
                 border: '1px solid var(--color-border-subtle)', fontFamily: 'var(--font-mono)',
@@ -798,7 +803,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
             {/* Tags */}
             {roleDefinition.tags.length > 0 && (
               <div>
-                <div style={labelStyle}>Tags</div>
+                <div style={labelStyle}>{t('agents.roleDefinition.tagsLabel')}</div>
                 <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                   {roleDefinition.tags.map(tag => (
                     <span key={tag} style={{
@@ -814,7 +819,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
 
             {/* Default Tools */}
             <div>
-              <div style={labelStyle}>Default Tools</div>
+              <div style={labelStyle}>{t('agents.roleDefinition.defaultToolsLabel')}</div>
               {roleDefinition.defaultTools && roleDefinition.defaultTools.length > 0 ? (
                 <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                   {roleDefinition.defaultTools.map(tool => (
@@ -829,7 +834,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
                 </div>
               ) : (
                 <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>
-                  All default tools enabled
+                  {t('agents.roleDefinition.allDefaultToolsEnabled')}
                 </div>
               )}
             </div>
@@ -837,7 +842,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
             {/* Custom Tools */}
             {hasCustomTools && (
               <div>
-                <div style={labelStyle}>Custom Tools</div>
+                <div style={labelStyle}>{t('agents.roleDefinition.customToolsLabel')}</div>
                 {roleDefinition.customTools!.map((tool, i) => (
                   <ResourceViewItem key={i} {...tool} onOpenInEditor={onOpenInEditor} />
                 ))}
@@ -847,7 +852,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
             {/* Skills */}
             {hasSkills && (
               <div>
-                <div style={labelStyle}>Skills</div>
+                <div style={labelStyle}>{t('agents.roleDefinition.skillsLabel')}</div>
                 {roleDefinition.skills!.map((skill, i) => (
                   <ResourceViewItem key={i} {...skill} onOpenInEditor={onOpenInEditor} />
                 ))}
@@ -857,7 +862,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
             {/* Hooks */}
             {hasHooks && (
               <div>
-                <div style={labelStyle}>Hooks</div>
+                <div style={labelStyle}>{t('agents.roleDefinition.hooksLabel')}</div>
                 {roleDefinition.hooks!.map((hook, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '6px 0' }}>
                     <span style={{
@@ -877,7 +882,7 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
                     {onOpenInEditor && (
                       <button
                         onClick={() => onOpenInEditor(hook.path)}
-                        title="Open in Editor"
+                        title={t('agents.roleDefinition.openInEditor')}
                         style={{
                           width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center',
                           background: 'transparent', border: 'none', borderRadius: 'var(--radius-sm)',
@@ -905,14 +910,14 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
                   }}
                 >
                   {viewAdvancedExpanded ? <ChevronDown size={12} strokeWidth={1.5} /> : <ChevronRight size={12} strokeWidth={1.5} />}
-                  <span style={{ ...labelStyle, marginBottom: 0 }}>Advanced</span>
+                  <span style={{ ...labelStyle, marginBottom: 0 }}>{t('agents.roleDefinition.advanced')}</span>
                 </button>
                 {viewAdvancedExpanded && (
                   <div style={{ marginTop: 12 }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 8, padding: '6px 8px', background: 'rgba(245,158,11,0.06)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(245,158,11,0.15)' }}>
                       <AlertTriangle size={12} strokeWidth={1.5} style={{ color: '#f59e0b', flexShrink: 0, marginTop: 1 }} />
                       <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', lineHeight: 1.4 }}>
-                        Custom system prompt overrides the default provider prompt.
+                        {t('agents.roleDefinition.customSystemPromptViewWarning')}
                       </span>
                     </div>
                     <div style={{
@@ -934,8 +939,8 @@ export function RoleDefinitionDetailView({ roleDefinition, onBack, onSave, onDel
 
             {/* Metadata footer */}
             <div style={{ display: 'flex', gap: 16, fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 8 }}>
-              <span>Created: {new Date(roleDefinition.createdAt).toLocaleDateString()}</span>
-              <span>Updated: {new Date(roleDefinition.updatedAt).toLocaleDateString()}</span>
+              <span>{t('agents.roleDefinition.created')}: {new Date(roleDefinition.createdAt).toLocaleDateString()}</span>
+              <span>{t('agents.roleDefinition.updated')}: {new Date(roleDefinition.updatedAt).toLocaleDateString()}</span>
             </div>
           </>
         )}

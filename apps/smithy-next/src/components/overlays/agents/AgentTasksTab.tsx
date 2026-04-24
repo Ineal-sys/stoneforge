@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from '@/i18n'
 import { GitBranch } from 'lucide-react'
 import type { AgentExtended, AgentTaskRef } from './agent-types'
 
@@ -15,10 +16,11 @@ const statusColor: Record<string, string> = {
   done: 'var(--color-success)', error: 'var(--color-danger)',
 }
 const statusLabel: Record<string, string> = {
-  'in-progress': 'In Progress', open: 'Open', done: 'Done', error: 'Error',
+  'in-progress': 'inProgress', open: 'open', done: 'done', error: 'error',
 }
 
 export function AgentTasksTab({ agent, onNavigateToTask }: AgentTasksTabProps) {
+  const { t } = useTranslation('smithyNext')
   const [sortBy, setSortBy] = useState<TaskSort>('recent')
 
   // Collect all tasks across sessions
@@ -52,7 +54,7 @@ export function AgentTasksTab({ agent, onNavigateToTask }: AgentTasksTabProps) {
               color: sortBy === s ? 'var(--color-text)' : 'var(--color-text-tertiary)',
             }}
           >
-            {s === 'recent' ? 'Recent' : s === 'timeSpent' ? 'Time spent' : 'Status'}
+            {s === 'recent' ? t('agents.tasksTab.recent') : s === 'timeSpent' ? t('agents.tasksTab.timeSpent') : t('agents.tasksTab.status')}
           </button>
         ))}
       </div>
@@ -60,7 +62,7 @@ export function AgentTasksTab({ agent, onNavigateToTask }: AgentTasksTabProps) {
       {/* Tasks list */}
       {tasks.length === 0 ? (
         <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 13 }}>
-          No tasks yet
+          {t('agents.tasksTab.noTasksYet')}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -87,7 +89,7 @@ export function AgentTasksTab({ agent, onNavigateToTask }: AgentTasksTabProps) {
                 background: 'var(--color-surface)', color: statusColor[task.status] || 'var(--color-text-tertiary)',
                 whiteSpace: 'nowrap', flexShrink: 0,
               }}>
-                {statusLabel[task.status] || task.status}
+                {t(`agents.tasksTab.${statusLabel[task.status] || task.status}`)}
               </span>
               <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', flexShrink: 0, fontFamily: 'var(--font-mono)' }}>
                 {task.timeSpent}

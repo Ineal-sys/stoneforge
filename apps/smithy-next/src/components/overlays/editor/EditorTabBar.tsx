@@ -1,5 +1,6 @@
 import { X, FileText, FileJson, FileCode, File } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from '@/i18n'
 import type { EditorTab } from './editor-mock-data'
 
 interface Props {
@@ -24,6 +25,7 @@ function getFileIcon(path: string) {
 }
 
 export function EditorTabBar({ tabs, activeTabId, onSelectTab, onCloseTab, onPinTab }: Props) {
+  const { t } = useTranslation('smithyNext')
   const [contextMenu, setContextMenu] = useState<{ tabId: string; x: number; y: number } | null>(null)
 
   if (tabs.length === 0) return null
@@ -138,12 +140,12 @@ export function EditorTabBar({ tabs, activeTabId, onSelectTab, onCloseTab, onPin
             minWidth: 160,
           }}>
             {[
-              { label: 'Close', action: () => onCloseTab(contextMenu.tabId) },
-              { label: 'Close Others', action: () => {
-                tabs.forEach(t => { if (t.id !== contextMenu.tabId) onCloseTab(t.id) })
+              { label: t('editor.close'), action: () => onCloseTab(contextMenu.tabId) },
+              { label: t('editor.closeOthers'), action: () => {
+                tabs.forEach(tab => { if (tab.id !== contextMenu.tabId) onCloseTab(tab.id) })
               }},
-              { label: 'Close All', action: () => {
-                tabs.forEach(t => onCloseTab(t.id))
+              { label: t('editor.closeAll'), action: () => {
+                tabs.forEach(tab => onCloseTab(tab.id))
               }},
             ].map(item => (
               <button

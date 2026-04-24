@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef, type MouseEvent as ReactMouseEvent } from 'react'
 import { LayoutList, LayoutDashboard, Plus } from 'lucide-react'
 import type { Session, SessionEvent, ToolName } from './sessions/session-types'
+import { useTranslation } from '@/i18n'
 import { SessionListView } from './sessions/SessionListView'
 import { SessionDetailView } from './sessions/SessionDetailView'
 import { CreateSessionDialog } from './sessions/CreateSessionDialog'
@@ -51,6 +52,7 @@ export function SessionsOverlay({
   agents, tasks, onCreateSession,
   initialView, onViewChange,
 }: SessionsOverlayProps) {
+  const { t } = useTranslation('smithyNext')
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
 
   // View mode: explicit prop wins → else localStorage → else 'list' (default per plan)
@@ -273,8 +275,8 @@ export function SessionsOverlay({
       background: 'var(--color-surface)',
       borderRadius: 'var(--radius-sm)',
     }}>
-      <ViewToggleBtn active={view === 'list'} onClick={() => changeView('list')} label="List" Icon={LayoutList} />
-      <ViewToggleBtn active={view === 'canvas'} onClick={() => changeView('canvas')} label="Canvas" Icon={LayoutDashboard} />
+      <ViewToggleBtn active={view === 'list'} onClick={() => changeView('list')} label={t('sessions.list')} Icon={LayoutList} />
+      <ViewToggleBtn active={view === 'canvas'} onClick={() => changeView('canvas')} label={t('sessions.canvas')} Icon={LayoutDashboard} />
     </div>
   )
 
@@ -309,7 +311,7 @@ export function SessionsOverlay({
           environment: 'local',
           linkedTaskId: config.taskId,
           events: [
-            { id: `ev-${Date.now()}`, type: 'session_start', title: 'Session started', content: 'Session initialized', timestamp: 0, duration: 500 },
+            { id: `ev-${Date.now()}`, type: 'session_start', title: t('sessions.sessionStarted'), content: t('sessions.sessionStarted'), timestamp: 0, duration: 500 },
             ...(config.initialMessage ? [{
               id: `ev-${Date.now() + 1}`, type: 'user_message' as const, title: config.initialMessage.slice(0, 40),
               content: config.initialMessage, timestamp: 500, duration: 800,
@@ -333,12 +335,12 @@ export function SessionsOverlay({
       borderBottom: '1px solid var(--color-border-subtle)',
       flexShrink: 0,
     }}>
-      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>Sessions</span>
+      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{t('sessions.sessions')}</span>
       <span
         className="hidden md:inline"
         style={{ fontSize: 12, color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-mono)' }}
       >
-        {liveSessions.filter(s => s.status === 'active').length} active
+        {liveSessions.filter(s => s.status === 'active').length} {t('sessions.active')}
       </span>
       {viewToggle}
       <div style={{ flex: 1 }} />
@@ -357,7 +359,7 @@ export function SessionsOverlay({
             color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
           }}
         >
-          <Plus size={12} strokeWidth={2} /> New Session
+          <Plus size={12} strokeWidth={2} /> {t('sessions.newSession')}
         </button>
       )}
     </div>

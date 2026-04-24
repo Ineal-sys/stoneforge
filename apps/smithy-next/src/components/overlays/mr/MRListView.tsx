@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react'
 import { GitMerge, Check, X, Clock, ChevronRight, Plus, Minus, Bot, Search, Filter, SlidersHorizontal, ArrowUpDown, ArrowDown, ArrowUp, GitPullRequest } from 'lucide-react'
 import type { MergeRequestExtended, ReviewState } from './mr-types'
 import { CreateMRDialog } from './CreateMRDialog'
+import { useTranslation } from '@/i18n'
 
 // ── Filter types ──
 type MRFilterField = 'status' | 'author' | 'label' | 'ciStatus' | 'steward'
@@ -17,6 +18,7 @@ interface MRListViewProps {
 }
 
 export function MRListView({ mergeRequests, onSelectMR, onCreateMR }: MRListViewProps) {
+  const { t } = useTranslation('smithyNext')
   const [createOpen, setCreateOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchExpanded, setSearchExpanded] = useState(false)
@@ -84,7 +86,7 @@ export function MRListView({ mergeRequests, onSelectMR, onCreateMR }: MRListView
   // Group results
   const groups = useMemo(() => {
     if (groupBy === 'none') {
-      return [{ title: 'All', dotColor: 'var(--color-text-tertiary)', items: filtered }]
+      return [{ title: t('mergeRequest.all'), dotColor: 'var(--color-text-tertiary)', items: filtered }]
     }
     if (groupBy === 'author') {
       const byAuthor = new Map<string, MergeRequestExtended[]>()
@@ -102,10 +104,10 @@ export function MRListView({ mergeRequests, onSelectMR, onCreateMR }: MRListView
     const merged = filtered.filter(mr => mr.status === 'merged')
     const closed = filtered.filter(mr => mr.status === 'closed')
     const groups = []
-    if (draft.length) groups.push({ title: 'Draft', dotColor: 'var(--color-warning)', items: draft })
-    if (open.length) groups.push({ title: 'Open', dotColor: 'var(--color-success)', items: open })
-    if (merged.length) groups.push({ title: 'Merged', dotColor: 'var(--color-primary)', items: merged })
-    if (closed.length) groups.push({ title: 'Closed', dotColor: 'var(--color-danger)', items: closed })
+    if (draft.length) groups.push({ title: t('mergeRequest.draft'), dotColor: 'var(--color-warning)', items: draft })
+    if (open.length) groups.push({ title: t('mergeRequest.open'), dotColor: 'var(--color-success)', items: open })
+    if (merged.length) groups.push({ title: t('mergeRequest.mergedStatus'), dotColor: 'var(--color-primary)', items: merged })
+    if (closed.length) groups.push({ title: t('mergeRequest.closedStatus'), dotColor: 'var(--color-danger)', items: closed })
     return groups
   }, [filtered, groupBy])
 
@@ -123,7 +125,7 @@ export function MRListView({ mergeRequests, onSelectMR, onCreateMR }: MRListView
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Toolbar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', flexShrink: 0, borderBottom: '1px solid var(--color-border-subtle)', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>Merge Requests</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{t('mergeRequest.mergeRequests')}</span>
 
         {/* Active filter pills — inline */}
         {filters.map((f, i) => (
@@ -133,7 +135,7 @@ export function MRListView({ mergeRequests, onSelectMR, onCreateMR }: MRListView
           </span>
         ))}
         {filters.length > 0 && (
-          <button onClick={() => setFilters([])} style={{ height: 22, padding: '0 6px', border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11 }}>Clear all</button>
+          <button onClick={() => setFilters([])} style={{ height: 22, padding: '0 6px', border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11 }}>{t('mergeRequest.clearAll')}</button>
         )}
 
         <div style={{ flex: 1 }} />
@@ -143,7 +145,7 @@ export function MRListView({ mergeRequests, onSelectMR, onCreateMR }: MRListView
           <div className="mr-search-desktop" style={{ display: 'flex' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: 200, height: 26, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '0 8px' }}>
               <Search size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
-              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search merge requests..." style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
+              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t('mergeRequest.searchMergeRequests')} style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
               {searchQuery && <button onClick={() => setSearchQuery('')} style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', padding: 0, display: 'flex' }}><X size={11} strokeWidth={2} /></button>}
             </div>
           </div>
@@ -151,7 +153,7 @@ export function MRListView({ mergeRequests, onSelectMR, onCreateMR }: MRListView
             {searchExpanded ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: 180, height: 26, background: 'var(--color-surface)', border: '1px solid var(--color-border-focus)', borderRadius: 'var(--radius-sm)', padding: '0 8px' }}>
                 <Search size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
-                <input ref={searchInputRef} autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search..." onBlur={() => { if (!searchQuery) setSearchExpanded(false) }} style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
+                <input ref={searchInputRef} autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t('mergeRequest.searchMergeRequests')} onBlur={() => { if (!searchQuery) setSearchExpanded(false) }} style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
                 <button onClick={() => { setSearchQuery(''); setSearchExpanded(false) }} style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', padding: 0, display: 'flex' }}><X size={11} strokeWidth={2} /></button>
               </div>
             ) : (
@@ -165,7 +167,7 @@ export function MRListView({ mergeRequests, onSelectMR, onCreateMR }: MRListView
         {/* Filter button */}
         <div style={{ position: 'relative' }}>
           <button onClick={() => { setFilterOpen(!filterOpen); setDisplayOpen(false) }} style={{ height: 26, padding: '0 8px', display: 'flex', alignItems: 'center', gap: 4, border: 'none', borderRadius: 'var(--radius-sm)', background: filters.length > 0 ? 'var(--color-primary-subtle)' : 'var(--color-surface)', color: filters.length > 0 ? 'var(--color-text-accent)' : 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11, fontWeight: 500 }}>
-            <Filter size={12} strokeWidth={1.5} /> Filter {filters.length > 0 && `(${filters.length})`}
+            <Filter size={12} strokeWidth={1.5} /> {t('mergeRequest.filter')} {filters.length > 0 && `(${filters.length})`}
           </button>
           {filterOpen && <MRFilterPanel mergeRequests={mergeRequests} filters={filters} onToggleFilter={toggleFilter} onClear={() => setFilters([])} onClose={() => setFilterOpen(false)} />}
         </div>
@@ -173,7 +175,7 @@ export function MRListView({ mergeRequests, onSelectMR, onCreateMR }: MRListView
         {/* Display options */}
         <div style={{ position: 'relative' }}>
           <button onClick={() => { setDisplayOpen(!displayOpen); setFilterOpen(false) }} style={{ height: 26, padding: '0 8px', display: 'flex', alignItems: 'center', gap: 4, border: 'none', borderRadius: 'var(--radius-sm)', background: displayOpen ? 'var(--color-surface-active)' : 'var(--color-surface)', color: displayOpen ? 'var(--color-text)' : 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11, fontWeight: 500 }}>
-            <SlidersHorizontal size={12} strokeWidth={1.5} /> Display
+            <SlidersHorizontal size={12} strokeWidth={1.5} /> {t('mergeRequest.display')}
           </button>
           {displayOpen && <MRDisplayPanel groupBy={groupBy} onGroupByChange={setGroupBy} sortField={sortField} onSortChange={setSortField} sortAsc={sortAsc} onSortDirChange={() => setSortAsc(!sortAsc)} onClose={() => setDisplayOpen(false)} />}
         </div>
@@ -184,7 +186,7 @@ export function MRListView({ mergeRequests, onSelectMR, onCreateMR }: MRListView
             background: 'var(--color-primary)', border: 'none', borderRadius: 'var(--radius-sm)',
             color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
           }}>
-            <GitPullRequest size={12} strokeWidth={2} /> New MR
+            <GitPullRequest size={12} strokeWidth={2} /> {t('mergeRequest.newMR')}
           </button>
         )}
       </div>
@@ -195,7 +197,7 @@ export function MRListView({ mergeRequests, onSelectMR, onCreateMR }: MRListView
       {/* Grouped MR list */}
       {groups.length === 0 && (
         <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 13 }}>
-          No merge requests match your filters
+          {t('mergeRequest.noMergeRequestsMatchFilters')}
         </div>
       )}
       {groups.map(group => (
@@ -247,6 +249,7 @@ function MRFilterPanel({ mergeRequests, filters, onToggleFilter, onClear, onClos
   mergeRequests: MergeRequestExtended[]; filters: MRActiveFilter[]
   onToggleFilter: (field: MRFilterField, value: string) => void; onClear: () => void; onClose: () => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const [activeTab, setActiveTab] = useState<MRFilterField>('status')
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -258,9 +261,9 @@ function MRFilterPanel({ mergeRequests, filters, onToggleFilter, onClear, onClos
     switch (activeTab) {
       case 'status':
         return [
-          { value: 'draft', label: 'Draft', count: mergeRequests.filter(m => m.isDraft).length, isActive: filters.some(f => f.field === 'status' && f.value === 'draft') },
-          { value: 'open', label: 'Open', count: mergeRequests.filter(m => m.status === 'open' && !m.isDraft).length, isActive: filters.some(f => f.field === 'status' && f.value === 'open') },
-          { value: 'merged', label: 'Merged', count: mergeRequests.filter(m => m.status === 'merged').length, isActive: filters.some(f => f.field === 'status' && f.value === 'merged') },
+          { value: 'draft', label: t('mergeRequest.draft'), count: mergeRequests.filter(m => m.isDraft).length, isActive: filters.some(f => f.field === 'status' && f.value === 'draft') },
+          { value: 'open', label: t('mergeRequest.open'), count: mergeRequests.filter(m => m.status === 'open' && !m.isDraft).length, isActive: filters.some(f => f.field === 'status' && f.value === 'open') },
+          { value: 'merged', label: t('mergeRequest.mergedStatus'), count: mergeRequests.filter(m => m.status === 'merged').length, isActive: filters.some(f => f.field === 'status' && f.value === 'merged') },
         ]
       case 'author': {
         const authors = new Map<string, number>()
@@ -274,13 +277,13 @@ function MRFilterPanel({ mergeRequests, filters, onToggleFilter, onClear, onClos
       }
       case 'ciStatus':
         return ['pass', 'fail', 'pending'].map(s => ({
-          value: s, label: s === 'pass' ? 'Passing' : s === 'fail' ? 'Failing' : 'Pending',
+          value: s, label: s === 'pass' ? t('mergeRequest.passing') : s === 'fail' ? t('mergeRequest.failing') : t('mergeRequest.pending'),
           count: mergeRequests.filter(m => m.ciStatus === s).length,
           isActive: filters.some(f => f.field === 'ciStatus' && f.value === s),
         }))
       case 'steward':
         return ['approved', 'changes_requested', 'pending', 'reviewing'].map(s => ({
-          value: s, label: s === 'changes_requested' ? 'Changes requested' : s.charAt(0).toUpperCase() + s.slice(1),
+          value: s, label: s === 'changes_requested' ? t('mergeRequest.changesRequested') : s.charAt(0).toUpperCase() + s.slice(1),
           count: mergeRequests.filter(m => m.reviewAgentStatus === s).length,
           isActive: filters.some(f => f.field === 'steward' && f.value === s),
         })).filter(i => i.count > 0)
@@ -289,17 +292,17 @@ function MRFilterPanel({ mergeRequests, filters, onToggleFilter, onClear, onClos
   }
 
   const tabs: { field: MRFilterField; label: string }[] = [
-    { field: 'status', label: 'Status' },
-    { field: 'author', label: 'Author' },
-    { field: 'label', label: 'Labels' },
-    { field: 'ciStatus', label: 'CI' },
-    { field: 'steward', label: 'Reviewer' },
+    { field: 'status', label: t('mergeRequest.status') },
+    { field: 'author', label: t('mergeRequest.author') },
+    { field: 'label', label: t('mergeRequest.labels') },
+    { field: 'ciStatus', label: t('mergeRequest.ci') },
+    { field: 'steward', label: t('mergeRequest.reviewer') },
   ]
 
   return (
     <div ref={ref} style={{ position: 'absolute', top: 32, right: 0, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', minWidth: 280, maxWidth: 'calc(100vw - 32px)', boxShadow: 'var(--shadow-float)', zIndex: 1060 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '8px 12px', gap: 8 }}>
-        {filters.length > 0 && <button onClick={onClear} style={{ border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11 }}>Clear</button>}
+        {filters.length > 0 && <button onClick={onClear} style={{ border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11 }}>{t('mergeRequest.clearAll')}</button>}
       </div>
       <div style={{ display: 'flex', gap: 2, padding: '0 8px 8px', borderBottom: '1px solid var(--color-border-subtle)' }}>
         {tabs.map(tab => {
@@ -344,6 +347,7 @@ function MRDisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange, sor
   sortField: MRSortField; onSortChange: (v: MRSortField) => void; sortAsc: boolean; onSortDirChange: () => void
   onClose: () => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const h = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) onClose() }
@@ -351,22 +355,22 @@ function MRDisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange, sor
   }, [onClose])
 
   const groupOptions: { value: MRGroupField; label: string }[] = [
-    { value: 'status', label: 'Status' },
-    { value: 'author', label: 'Author' },
-    { value: 'none', label: 'No grouping' },
+    { value: 'status', label: t('mergeRequest.status') },
+    { value: 'author', label: t('mergeRequest.author') },
+    { value: 'none', label: t('mergeRequest.noGrouping') },
   ]
   const sortOptions: { value: MRSortField; label: string }[] = [
-    { value: 'created', label: 'Date created' },
-    { value: 'title', label: 'Title' },
-    { value: 'additions', label: 'Changes (+/-)' },
-    { value: 'filesChanged', label: 'Files changed' },
+    { value: 'created', label: t('mergeRequest.dateCreated') },
+    { value: 'title', label: t('mergeRequest.title') },
+    { value: 'additions', label: t('mergeRequest.changesPlusMinus') },
+    { value: 'filesChanged', label: t('mergeRequest.filesChanged') },
   ]
 
   return (
     <div ref={ref} style={{ position: 'absolute', top: 32, right: 0, width: 240, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-float)', zIndex: 1060, padding: '8px 0' }}>
       {/* Group by */}
       <div style={{ padding: '4px 12px 8px' }}>
-        <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Group by</div>
+        <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>{t('mergeRequest.groupBy')}</div>
         {groupOptions.map(opt => (
           <button key={opt.value} onClick={() => onGroupByChange(opt.value)} style={{
             display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '6px 8px',
@@ -389,10 +393,10 @@ function MRDisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange, sor
       {/* Sort by */}
       <div style={{ padding: '8px 12px 4px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sort by</span>
+          <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('mergeRequest.sortBy')}</span>
           <button onClick={onSortDirChange} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-tertiary)', display: 'flex', alignItems: 'center', gap: 3, fontSize: 10 }}>
             {sortAsc ? <ArrowUp size={10} strokeWidth={2} /> : <ArrowDown size={10} strokeWidth={2} />}
-            {sortAsc ? 'Asc' : 'Desc'}
+            {sortAsc ? t('mergeRequest.asc') : t('mergeRequest.desc')}
           </button>
         </div>
         {sortOptions.map(opt => (
@@ -424,6 +428,7 @@ const reviewStateBorderColor: Record<ReviewState, string> = {
 }
 
 function MRRow({ mr, onClick, searchQuery }: { mr: MergeRequestExtended; onClick: () => void; searchQuery?: string }) {
+  const { t } = useTranslation('smithyNext')
   const ciColor = mr.ciStatus === 'pass' ? 'var(--color-success)' : mr.ciStatus === 'fail' ? 'var(--color-danger)' : 'var(--color-warning)'
   const CIIcon = mr.ciStatus === 'pass' ? Check : mr.ciStatus === 'fail' ? X : Clock
   const statusColor = mr.status === 'merged' ? 'var(--color-primary)' : 'var(--color-text-secondary)'
@@ -456,7 +461,7 @@ function MRRow({ mr, onClick, searchQuery }: { mr: MergeRequestExtended; onClick
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--color-text)' }}>
           {mr.isDraft && (
-            <span style={{ fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 'var(--radius-sm)', background: 'rgba(245,158,11,0.1)', color: 'var(--color-warning)' }}>Draft</span>
+            <span style={{ fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 'var(--radius-sm)', background: 'rgba(245,158,11,0.1)', color: 'var(--color-warning)' }}>{t('mergeRequest.draft')}</span>
           )}
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{highlightMatch(mr.title)}</span>
           <CIIcon size={13} strokeWidth={2} style={{ color: ciColor, flexShrink: 0 }} />
@@ -464,7 +469,7 @@ function MRRow({ mr, onClick, searchQuery }: { mr: MergeRequestExtended; onClick
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, fontSize: 11, color: 'var(--color-text-tertiary)' }}>
           <span>{mr.id}</span>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10 }}>{mr.branch}</span>
-          <span>by {mr.author}</span>
+          <span>{t('mergeRequest.by', { author: mr.author })}</span>
           <span>{mr.createdAt}</span>
         </div>
       </div>
@@ -489,7 +494,7 @@ function MRRow({ mr, onClick, searchQuery }: { mr: MergeRequestExtended; onClick
             <span style={{ position: 'absolute', bottom: -1, right: -1, width: 6, height: 6, borderRadius: '50%', background: stewardDotColor, border: '1px solid var(--color-bg-elevated)' }} />
           </div>
         )}
-        <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{mr.filesChanged} files</span>
+        <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('mergeRequest.files', { count: mr.filesChanged })}</span>
         <ChevronRight size={14} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />
       </div>
     </div>

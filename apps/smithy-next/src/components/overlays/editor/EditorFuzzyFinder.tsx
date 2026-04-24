@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
+import { useTranslation } from '@/i18n'
 import { File, FileCode, FileJson, FileText, Folder } from 'lucide-react'
 import { flattenFileTree, mockEditorFileTree, type EditorFileEntry } from './editor-mock-data'
 
@@ -22,6 +23,7 @@ function getEntryIcon(entry: EditorFileEntry) {
 }
 
 export function EditorFuzzyFinder({ visible, onClose, onOpenFile, onNavigateToFolder }: Props) {
+  const { t } = useTranslation('smithyNext')
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -114,7 +116,7 @@ export function EditorFuzzyFinder({ visible, onClose, onOpenFile, onNavigateToFo
           <input
             ref={inputRef}
             type="text"
-            placeholder="Search files by name..."
+            placeholder={t('editor.searchFilesByName')}
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -189,7 +191,7 @@ export function EditorFuzzyFinder({ visible, onClose, onOpenFile, onNavigateToFo
               padding: 16, textAlign: 'center',
               color: 'var(--color-text-tertiary)', fontSize: 12,
             }}>
-              No files match &ldquo;{query}&rdquo;
+              {t('editor.noFilesMatch', { query })}
             </div>
           )}
         </div>

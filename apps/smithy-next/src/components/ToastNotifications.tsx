@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { X, ArrowRight, CheckCircle2, AlertCircle, GitPullRequest, CircleDot, MessageCircle, Users } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import type { WorkspaceInfo } from '../mock-data'
 import { TEAM_MEMBERS } from '../mock-data'
 import { WorkspaceIconMark } from './WorkspaceIconMark'
@@ -20,14 +21,17 @@ interface ToastNotificationsProps {
   onSwitch: (workspaceId: string) => void
 }
 
-const typeConfig: Record<ToastItem['type'], { icon: typeof CheckCircle2; color: string; label: string }> = {
-  'agent-completed': { icon: CheckCircle2, color: 'var(--color-success)', label: 'Completed' },
-  'agent-error': { icon: AlertCircle, color: 'var(--color-danger)', label: 'Error' },
-  'mr-review': { icon: GitPullRequest, color: 'var(--color-primary)', label: 'Review' },
-  'ci-failed': { icon: CircleDot, color: 'var(--color-danger)', label: 'CI Failed' },
-  'ci-passed': { icon: CircleDot, color: 'var(--color-success)', label: 'CI Passed' },
-  'agent-needs-input': { icon: MessageCircle, color: 'var(--color-warning)', label: 'Input Needed' },
-  'team-change': { icon: Users, color: 'var(--color-primary)', label: 'Team Update' },
+function useToastTypeConfig() {
+  const { t } = useTranslation('smithyNext')
+  return {
+    'agent-completed': { icon: CheckCircle2, color: 'var(--color-success)', label: t('toastNotifications.completed') },
+    'agent-error': { icon: AlertCircle, color: 'var(--color-danger)', label: t('toastNotifications.error') },
+    'mr-review': { icon: GitPullRequest, color: 'var(--color-primary)', label: t('toastNotifications.review') },
+    'ci-failed': { icon: CircleDot, color: 'var(--color-danger)', label: t('toastNotifications.ciFailed') },
+    'ci-passed': { icon: CircleDot, color: 'var(--color-success)', label: t('toastNotifications.ciPassed') },
+    'agent-needs-input': { icon: MessageCircle, color: 'var(--color-warning)', label: t('toastNotifications.inputNeeded') },
+    'team-change': { icon: Users, color: 'var(--color-primary)', label: t('toastNotifications.teamUpdate') },
+  }
 }
 
 export function ToastNotifications({ toasts, workspaces, onDismiss, onSwitch }: ToastNotificationsProps) {
@@ -63,6 +67,8 @@ function ToastCard({ toast, workspace, onDismiss, onSwitch }: {
   onDismiss: () => void
   onSwitch: () => void
 }) {
+  const typeConfig = useToastTypeConfig()
+  const { t } = useTranslation('smithyNext')
   const [hovering, setHovering] = useState(false)
   const [exiting, setExiting] = useState(false)
 
@@ -107,7 +113,7 @@ function ToastCard({ toast, workspace, onDismiss, onSwitch }: {
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
         <WorkspaceIconMark icon={workspace?.icon} size={20} fontSize={10} />
         <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-secondary)', flex: 1 }}>
-          {workspace?.name || 'Unknown'}
+          {workspace?.name || t('toastNotifications.unknown')}
         </span>
         <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>{toast.timestamp}</span>
         <button
@@ -157,7 +163,7 @@ function ToastCard({ toast, workspace, onDismiss, onSwitch }: {
           onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
           onMouseLeave={e => e.currentTarget.style.opacity = '1'}
         >
-          Switch <ArrowRight size={11} strokeWidth={2} />
+          {t('toastNotifications.switch')} <ArrowRight size={11} strokeWidth={2} />
         </button>
       </div>
     </div>

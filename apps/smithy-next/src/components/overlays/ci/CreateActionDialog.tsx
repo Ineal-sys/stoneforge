@@ -1,6 +1,7 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef } from 'react'
 import { X, FileCode, Plus, Trash2 } from 'lucide-react'
 import type { CIAction } from './ci-types'
+import { useTranslation } from '@/i18n'
 
 interface CreateActionDialogProps {
   onClose: () => void
@@ -15,11 +16,11 @@ interface TriggerConfig {
   cron?: string
 }
 
-const TRIGGER_LABELS: Record<TriggerType, string> = {
-  push: 'Push',
-  pull_request: 'Pull Request',
-  schedule: 'Schedule',
-  workflow_dispatch: 'Manual',
+const TRIGGER_LABEL_KEYS: Record<TriggerType, string> = {
+  push: 'ci.push',
+  pull_request: 'ci.pullRequestLabel',
+  schedule: 'ci.schedule',
+  workflow_dispatch: 'ci.manualTrigger',
 }
 
 const DEFAULT_JOBS_YAML = `jobs:
@@ -130,6 +131,7 @@ function parseYaml(yaml: string): { name: string; triggers: TriggerConfig[]; job
 }
 
 export function CreateActionDialog({ onClose, onCreate }: CreateActionDialogProps) {
+  const { t } = useTranslation('smithyNext')
   const [name, setName] = useState('')
   const [fileName, setFileName] = useState('')
   const [triggers, setTriggers] = useState<TriggerConfig[]>([{ type: 'push', branches: 'main' }])
@@ -143,12 +145,12 @@ export function CreateActionDialog({ onClose, onCreate }: CreateActionDialogProp
   const effectiveFileName = fileName || autoFileName
 
   // Form → YAML sync
-  const updateFromForm = useCallback((newName: string, newTriggers: TriggerConfig[], newJobsYaml: string) => {
+  const updateFromForm = (newName: string, newTriggers: TriggerConfig[], newJobsYaml: string) => {
     syncSource.current = 'form'
     setYaml(generateYaml(newName, newTriggers, newJobsYaml))
     // Reset after microtask so yaml onChange doesn't re-parse
     queueMicrotask(() => { syncSource.current = null })
-  }, [])
+  }
 
   const handleNameChange = (val: string) => {
     setName(val)
@@ -223,7 +225,7 @@ export function CreateActionDialog({ onClose, onCreate }: CreateActionDialogProp
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', borderBottom: '1px solid var(--color-border-subtle)' }}>
           <FileCode size={14} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
-          <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>Create Action</span>
+          <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{t('ci.createAction')}</span>
           <button onClick={onClose} style={closeBtnStyle}><X size={14} strokeWidth={1.5} /></button>
         </div>
 
@@ -231,17 +233,17 @@ export function CreateActionDialog({ onClose, onCreate }: CreateActionDialogProp
         <div style={{ flex: 1, padding: 16, overflow: 'auto' }}>
           {/* Name */}
           <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>Name <span style={{ color: 'var(--color-danger)' }}>*</span></label>
+            <label style={labelStyle}>{t('ci.name')} <span style={{ color: 'var(--color-danger)' }}>*</span></label>
             <input
               autoFocus value={name} onChange={e => handleNameChange(e.target.value)}
-              placeholder="e.g. CI, Deploy Staging, Nightly E2E"
+              placeholder={t('ci.namePlaceholder')}
               style={inputStyle}
             />
           </div>
 
           {/* File name */}
           <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>File name</label>
+            <label style={labelStyle}>{t('ci.fileName')}</label>
             <div style={{
               display: 'flex', alignItems: 'center', height: 32,
               background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)',
@@ -264,14 +266,14 @@ export function CreateActionDialog({ onClose, onCreate }: CreateActionDialogProp
           {/* Trigger events */}
           <div style={{ marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-              <label style={{ ...labelStyle, marginBottom: 0 }}>Trigger events</label>
+              <label style={{ ...labelStyle, marginBottom: 0 }}>{t('ci.triggerEvents')}</label>
               {!allTriggerTypesUsed && (
                 <button onClick={addTrigger} style={{
                   height: 22, padding: '0 6px', display: 'flex', alignItems: 'center', gap: 3,
                   border: 'none', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)',
                   color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11,
                 }}>
-                  <Plus size={10} strokeWidth={2} /> Add
+                  <Plus size={10} strokeWidth={2} /> {t('ci.add')}
                 </button>
               )}
             </div>
@@ -300,9 +302,9 @@ export function CreateActionDialog({ onClose, onCreate }: CreateActionDialogProp
                       outline: 'none', cursor: 'pointer', flexShrink: 0,
                     }}
                   >
-                    {(Object.keys(TRIGGER_LABELS) as TriggerType[]).map(t => (
-                      <option key={t} value={t} disabled={t !== trigger.type && triggers.some(x => x.type === t)}>
-                        {TRIGGER_LABELS[t]}
+                    {(Object.keys(TRIGGER_LABEL_KEYS) as TriggerType[]).map(trigType => (
+                      <option key={trigType} value={trigType} disabled={trigType !== trigger.type && triggers.some(x => x.type === trigType)}>
+                        {t(TRIGGER_LABEL_KEYS[trigType])}
                       </option>
                     ))}
                   </select>
@@ -311,7 +313,7 @@ export function CreateActionDialog({ onClose, onCreate }: CreateActionDialogProp
                     <input
                       value={trigger.branches || ''}
                       onChange={e => updateTrigger(i, { branches: e.target.value })}
-                      placeholder="main, develop"
+                      placeholder={t('ci.branchesPlaceholder')}
                       style={{
                         flex: 1, height: 28, padding: '0 8px',
                         border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-sm)',
@@ -337,7 +339,7 @@ export function CreateActionDialog({ onClose, onCreate }: CreateActionDialogProp
 
                   {trigger.type === 'workflow_dispatch' && (
                     <span style={{ flex: 1, fontSize: 11, color: 'var(--color-text-tertiary)', padding: '0 4px' }}>
-                      Enables manual triggering via "Run action"
+                      {t('ci.enablesManualTriggering')}
                     </span>
                   )}
 
@@ -352,7 +354,7 @@ export function CreateActionDialog({ onClose, onCreate }: CreateActionDialogProp
               ))}
               {triggers.length === 0 && (
                 <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', padding: '4px 0' }}>
-                  No triggers. Click "+ Add" to add a trigger event.
+                  {t('ci.noTriggers')}
                 </div>
               )}
             </div>
@@ -360,7 +362,7 @@ export function CreateActionDialog({ onClose, onCreate }: CreateActionDialogProp
 
           {/* YAML editor */}
           <div>
-            <label style={labelStyle}>YAML</label>
+            <label style={labelStyle}>{t('ci.yaml')}</label>
             <textarea
               value={yaml}
               onChange={e => handleYamlChange(e.target.value)}
@@ -396,7 +398,7 @@ export function CreateActionDialog({ onClose, onCreate }: CreateActionDialogProp
             height: 32, padding: '0 14px', border: 'none', borderRadius: 'var(--radius-sm)',
             background: 'var(--color-surface)', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
           }}>
-            Cancel
+            {t('ci.cancel')}
           </button>
           <button
             onClick={handleSubmit}
@@ -409,7 +411,7 @@ export function CreateActionDialog({ onClose, onCreate }: CreateActionDialogProp
               cursor: name.trim() ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 500,
             }}
           >
-            <FileCode size={12} strokeWidth={2} /> Create Action
+            <FileCode size={12} strokeWidth={2} /> {t('ci.createAction')}
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Columns2, AlignJustify, Eye, PanelLeftClose, PanelLeft } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import type { DiffFile } from '../../mock-data'
 import type { InlineReviewComment } from '../overlays/mr/mr-types'
 import { MRFileTree } from '../overlays/mr/MRFileTree'
@@ -31,6 +32,7 @@ export function FilesChangedView({
   hideWhitespace: externalHideWhitespace,
   onOpenInEditor,
 }: FilesChangedViewProps) {
+  const { t } = useTranslation('smithyNext')
   const [viewMode, setViewMode] = useState<'unified' | 'split'>(() => window.innerWidth <= 768 ? 'unified' : 'unified')
   const [hideWhitespace, setHideWhitespace] = useState(externalHideWhitespace ?? false)
   const [treeCollapsed, setTreeCollapsed] = useState(() => window.innerWidth <= 900)
@@ -69,7 +71,7 @@ export function FilesChangedView({
         <button
           onClick={() => setTreeCollapsed(!treeCollapsed)}
           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--color-text-tertiary)', display: 'flex' }}
-          title={treeCollapsed ? 'Show file tree' : 'Hide file tree'}
+          title={treeCollapsed ? t('filesChanged.showFileTree') : t('filesChanged.hideFileTree')}
         >
           {treeCollapsed ? <PanelLeft size={14} strokeWidth={1.5} /> : <PanelLeftClose size={14} strokeWidth={1.5} />}
         </button>
@@ -85,7 +87,7 @@ export function FilesChangedView({
               cursor: 'pointer', fontSize: 11,
             }}
           >
-            <AlignJustify size={12} strokeWidth={1.5} /> Unified
+            <AlignJustify size={12} strokeWidth={1.5} /> {t('filesChanged.unified')}
           </button>
           <button
             onClick={() => setViewMode('split')}
@@ -96,7 +98,7 @@ export function FilesChangedView({
               cursor: 'pointer', fontSize: 11,
             }}
           >
-            <Columns2 size={12} strokeWidth={1.5} /> Split
+            <Columns2 size={12} strokeWidth={1.5} /> {t('filesChanged.split')}
           </button>
         </div>
 
@@ -108,7 +110,7 @@ export function FilesChangedView({
             onChange={e => setHideWhitespace(e.target.checked)}
             style={{ accentColor: 'var(--color-primary)' }}
           />
-          <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Hide whitespace</span>
+          <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('filesChanged.hideWhitespace')}</span>
         </label>
 
         <div style={{ flex: 1 }} />
@@ -117,7 +119,7 @@ export function FilesChangedView({
         {showViewed && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--color-text-tertiary)' }}>
             <Eye size={12} strokeWidth={1.5} />
-            {viewedCount}/{files.length} files viewed
+            {t('filesChanged.filesViewed', { viewed: viewedCount, total: files.length })}
           </div>
         )}
       </div>

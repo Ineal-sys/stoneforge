@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { MessageSquare, Copy, Bot } from 'lucide-react'
 import type { MsgMessage } from './message-types'
+import { useTranslation } from '@/i18n'
 
 interface MessageBubbleProps {
   message: MsgMessage
@@ -39,6 +40,7 @@ function renderMarkdown(text: string): string {
 }
 
 export function MessageBubble({ message, onOpenThread }: MessageBubbleProps) {
+  const { t } = useTranslation('smithyNext')
   const [hovered, setHovered] = useState(false)
   const { sender } = message
   const isAgent = sender.entityType === 'agent'
@@ -142,7 +144,7 @@ export function MessageBubble({ message, onOpenThread }: MessageBubbleProps) {
             onMouseLeave={e => e.currentTarget.style.background = 'none'}
           >
             <MessageSquare size={12} />
-            {message.replyCount} {message.replyCount === 1 ? 'reply' : 'replies'}
+            {t('messages.replyCount', { count: message.replyCount })}
           </button>
         )}
       </div>
@@ -167,7 +169,7 @@ export function MessageBubble({ message, onOpenThread }: MessageBubbleProps) {
             }}
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-surface-hover)'; e.currentTarget.style.color = 'var(--color-text)' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--color-text-tertiary)' }}
-            title="Reply in thread"
+            title={t('messages.replyInThread')}
           >
             <MessageSquare size={13} />
           </button>
@@ -180,7 +182,7 @@ export function MessageBubble({ message, onOpenThread }: MessageBubbleProps) {
             }}
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-surface-hover)'; e.currentTarget.style.color = 'var(--color-text)' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--color-text-tertiary)' }}
-            title="Copy"
+            title={t('messages.copy')}
           >
             <Copy size={13} />
           </button>

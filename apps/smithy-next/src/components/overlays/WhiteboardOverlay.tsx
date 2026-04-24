@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { ArrowLeft, PenTool } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import type { WhiteboardEntry, DesignAnnotation } from '../../mock-data'
 import { WhiteboardTabBar } from './whiteboard/WhiteboardTabBar'
 import { WhiteboardCanvas } from './whiteboard/WhiteboardCanvas'
@@ -18,6 +19,7 @@ export function WhiteboardOverlay({
   directorId, directorName, whiteboards, onBack, onDesignHandoff, theme,
 }: WhiteboardOverlayProps) {
   const [designMode, setDesignMode] = useState(false)
+  const { t } = useTranslation('smithyNext')
   const [annotationsByWhiteboard, setAnnotationsByWhiteboard] = useState<Record<string, DesignAnnotation[]>>({})
 
   const [activeWhiteboardId, setActiveWhiteboardId] = useState<string>(() => {
@@ -54,7 +56,7 @@ export function WhiteboardOverlay({
         >
           <ArrowLeft size={14} strokeWidth={1.5} />
         </button>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>Whiteboard</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{t('whiteboard.whiteboard')}</span>
         <span style={{ fontSize: 13, color: 'var(--color-text-tertiary)' }}>—</span>
         <span style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>{shortName}</span>
 
@@ -63,7 +65,7 @@ export function WhiteboardOverlay({
         {/* Design Mode toggle */}
         <button
           onClick={() => setDesignMode(p => !p)}
-          title="Design mode"
+          title={t('whiteboard.designMode')}
           style={{
             height: 26, padding: '0 8px', display: 'flex', alignItems: 'center', gap: 4,
             background: designMode ? 'var(--color-primary-subtle)' : 'none',
@@ -76,7 +78,7 @@ export function WhiteboardOverlay({
           onMouseLeave={e => { if (!designMode) e.currentTarget.style.background = 'none' }}
         >
           <PenTool size={13} strokeWidth={1.5} />
-          <span className="hidden md:inline">Feedback</span>
+          <span className="hidden md:inline">{t('whiteboard.feedback')}</span>
           {currentAnnotations.length > 0 && (
             <span style={{
               fontSize: 9, fontWeight: 600, padding: '0 4px', borderRadius: 8,

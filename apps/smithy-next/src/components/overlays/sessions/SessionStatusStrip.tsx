@@ -1,5 +1,6 @@
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react'
 import type { Session } from './session-types'
+import { useTranslation } from '@/i18n'
 
 interface SessionStatusStripProps {
   sessions: Session[]
@@ -12,6 +13,7 @@ function formatTokens(n: number): string {
 }
 
 export function SessionStatusStrip({ sessions }: SessionStatusStripProps) {
+  const { t } = useTranslation('smithyNext')
   const activeCount = sessions.filter(s => s.status === 'active').length
   const errorCount = sessions.filter(s => s.status === 'error').length
   const completedCount = sessions.filter(s => s.status === 'completed').length
@@ -39,7 +41,7 @@ export function SessionStatusStrip({ sessions }: SessionStatusStripProps) {
           flexShrink: 0,
         }} />
         <span style={{ fontWeight: 600, fontFamily: 'var(--font-mono)', fontSize: 12 }}>{activeCount}</span>
-        active
+        {t('sessions.activeLabel')}
       </div>
 
       {/* Errors — only show if > 0 */}
@@ -54,7 +56,7 @@ export function SessionStatusStrip({ sessions }: SessionStatusStripProps) {
             flexShrink: 0,
           }} />
           <span style={{ fontWeight: 600, fontFamily: 'var(--font-mono)', fontSize: 12 }}>{errorCount}</span>
-          error{errorCount !== 1 ? 's' : ''}
+          {t('sessions.errors')}
         </div>
       )}
 
@@ -69,7 +71,7 @@ export function SessionStatusStrip({ sessions }: SessionStatusStripProps) {
           flexShrink: 0,
         }} />
         <span style={{ fontWeight: 600, fontFamily: 'var(--font-mono)', fontSize: 12 }}>{completedCount}</span>
-        completed
+        {t('sessions.completed')}
       </div>
 
       <div style={{ flex: 1 }} />

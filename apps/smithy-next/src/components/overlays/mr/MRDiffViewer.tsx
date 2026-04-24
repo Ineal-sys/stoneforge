@@ -5,6 +5,7 @@ import type { InlineReviewComment } from './mr-types'
 import { MRInlineComment } from './MRInlineComment'
 import { highlightLine, HighlightedCode } from './syntax-highlight'
 import { RichTextEditor } from './RichTextEditor'
+import { useTranslation } from '@/i18n'
 
 interface MRDiffViewerProps {
   files: DiffFile[]
@@ -28,6 +29,7 @@ const statusColor: Record<string, string> = {
 const statusLetter: Record<string, string> = { added: 'A', modified: 'M', deleted: 'D' }
 
 export function MRDiffViewer({ files, viewMode, viewedFiles, onToggleViewed, inlineComments = {}, scrollToFile, hideWhitespace = false, enableCommenting = true, onOpenInEditor }: MRDiffViewerProps) {
+  const { t } = useTranslation('smithyNext')
   const [expandedFiles, setExpandedFiles] = useState<Set<string>>(() => new Set(files.map(f => f.path)))
   const [commentingOn, setCommentingOn] = useState<string | null>(null)
   const [hoveringLine, setHoveringLine] = useState<string | null>(null)
@@ -181,7 +183,7 @@ export function MRDiffViewer({ files, viewMode, viewedFiles, onToggleViewed, inl
                 <div style={{ width: 14, height: 14, borderRadius: 3, border: isViewed ? 'none' : '1.5px solid var(--color-border)', background: isViewed ? 'var(--color-success)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {isViewed && <Check size={10} strokeWidth={3} style={{ color: 'white' }} />}
                 </div>
-                Viewed
+                {t('mergeRequest.viewed')}
               </div>
             </div>
 
@@ -306,10 +308,10 @@ export function MRDiffViewer({ files, viewMode, viewedFiles, onToggleViewed, inl
                               {/* Single-line comment form */}
                               {enableCommenting && isCommenting && !lineComments && (
                                 <div style={{ margin: '0 24px 4px', padding: '8px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-focus)', borderRadius: 'var(--radius-md)' }}>
-                                  <RichTextEditor value={newCommentText} onChange={setNewCommentText} placeholder="Write a comment..." minHeight={60} maxHeight={150} />
+                                  <RichTextEditor value={newCommentText} onChange={setNewCommentText} placeholder={t('mergeRequest.writeAComment')} minHeight={60} maxHeight={150} />
                                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6, marginTop: 6 }}>
-                                    <button onClick={() => { setCommentingOn(null); setNewCommentText('') }} style={{ height: 26, padding: '0 10px', background: 'var(--color-surface)', border: 'none', borderRadius: 'var(--radius-sm)', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 11 }}>Cancel</button>
-                                    <button style={{ height: 26, padding: '0 10px', background: 'var(--color-primary)', border: 'none', borderRadius: 'var(--radius-sm)', color: 'white', cursor: 'pointer', fontSize: 11, fontWeight: 500 }}>Comment</button>
+                                    <button onClick={() => { setCommentingOn(null); setNewCommentText('') }} style={{ height: 26, padding: '0 10px', background: 'var(--color-surface)', border: 'none', borderRadius: 'var(--radius-sm)', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 11 }}>{t('mergeRequest.cancel')}</button>
+                                    <button style={{ height: 26, padding: '0 10px', background: 'var(--color-primary)', border: 'none', borderRadius: 'var(--radius-sm)', color: 'white', cursor: 'pointer', fontSize: 11, fontWeight: 500 }}>{t('mergeRequest.comment')}</button>
                                   </div>
                                 </div>
                               )}
@@ -428,6 +430,7 @@ function SelectionCommentForm({ selectedLines, value, onChange, onCancel }: {
   selectedLines: { file: string; startLine: number; endLine: number; lines: { type: string; content: string }[] } | null
   value: string; onChange: (v: string) => void; onCancel: () => void
 }) {
+  const { t } = useTranslation('smithyNext')
   // Auto-enable suggestion when multi-line selection is used (fix #6)
   const [showSuggestion, setShowSuggestion] = useState(true)
   const [suggestion, setSuggestion] = useState(() => {
@@ -442,10 +445,10 @@ function SelectionCommentForm({ selectedLines, value, onChange, onCancel }: {
     <div data-selection-comment style={{ margin: '0 24px 4px', padding: '10px 12px', background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-focus)', borderRadius: 'var(--radius-md)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, fontSize: 11, color: 'var(--color-text-tertiary)' }}>
         <MessageSquare size={12} strokeWidth={1.5} />
-        Comment on {selectedLines ? selectedLines.endLine - selectedLines.startLine + 1 : 0} selected lines
+        {t('mergeRequest.commentOnSelectedLines', { count: selectedLines ? selectedLines.endLine - selectedLines.startLine + 1 : 0 })}
       </div>
 
-      <RichTextEditor value={value} onChange={onChange} placeholder="Write a comment..." minHeight={60} maxHeight={120} />
+      <RichTextEditor value={value} onChange={onChange} placeholder={t('mergeRequest.writeAComment')} minHeight={60} maxHeight={120} />
 
       {/* Suggestion toggle */}
       <div style={{ marginTop: 8 }}>
@@ -459,23 +462,23 @@ function SelectionCommentForm({ selectedLines, value, onChange, onCancel }: {
           }}
         >
           {showSuggestion ? <Check size={11} strokeWidth={2} /> : <PlusIcon size={11} strokeWidth={2} />}
-          {showSuggestion ? 'Suggestion added' : 'Add a suggestion'}
+          {showSuggestion ? t('mergeRequest.suggestionAdded') : t('mergeRequest.addASuggestion')}
         </button>
       </div>
 
       {showSuggestion && (
         <div style={{ marginTop: 6, border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 8px', background: 'rgba(34,197,94,0.04)', borderBottom: '1px solid var(--color-border-subtle)' }}>
-            <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)' }}>Suggested change (editable)</span>
+            <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)' }}>{t('mergeRequest.suggestedChangeEditable')}</span>
           </div>
           <SyntaxTextarea value={suggestion} onChange={setSuggestion} />
         </div>
       )}
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6, marginTop: 8 }}>
-        <button onClick={onCancel} style={{ height: 26, padding: '0 10px', background: 'var(--color-surface)', border: 'none', borderRadius: 'var(--radius-sm)', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 11 }}>Cancel</button>
+        <button onClick={onCancel} style={{ height: 26, padding: '0 10px', background: 'var(--color-surface)', border: 'none', borderRadius: 'var(--radius-sm)', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 11 }}>{t('mergeRequest.cancel')}</button>
         <button style={{ height: 26, padding: '0 10px', background: 'var(--color-primary)', border: 'none', borderRadius: 'var(--radius-sm)', color: 'white', cursor: 'pointer', fontSize: 11, fontWeight: 500 }}>
-          {showSuggestion ? 'Submit suggestion' : 'Comment'}
+          {showSuggestion ? t('mergeRequest.submitSuggestion') : t('mergeRequest.comment')}
         </button>
       </div>
     </div>
@@ -485,6 +488,7 @@ function SelectionCommentForm({ selectedLines, value, onChange, onCancel }: {
 // ── Syntax-highlighted editable textarea ──
 // Shows highlighted code by default; click to edit, blur to return to preview
 function SyntaxTextarea({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const { t } = useTranslation('smithyNext')
   const [editing, setEditing] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -516,7 +520,7 @@ function SyntaxTextarea({ value, onChange }: { value: string; onChange: (v: stri
     <div
       onClick={() => setEditing(true)}
       style={{ cursor: 'text', position: 'relative' }}
-      title="Click to edit"
+      title={t('mergeRequest.clickToEdit')}
     >
       <HighlightedCode code={value} />
     </div>

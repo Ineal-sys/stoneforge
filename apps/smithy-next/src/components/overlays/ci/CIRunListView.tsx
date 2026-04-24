@@ -8,6 +8,7 @@ import { CIFilterPanel } from './CIFilterPanel'
 import { CIManualTriggerDialog } from './CIManualTriggerDialog'
 import { CreateActionDialog } from './CreateActionDialog'
 import { useTeamContext } from '../../../TeamContext'
+import { useTranslation } from '@/i18n'
 
 interface CIRunListViewProps {
   runs: CIRun[]
@@ -24,11 +25,12 @@ const statusColor: Record<string, string> = {
   queued: 'var(--color-text-tertiary)', cancelled: 'var(--color-text-tertiary)', skipped: 'var(--color-text-tertiary)',
 }
 
-const eventLabels: Record<string, string> = {
-  push: 'push', pull_request: 'PR', schedule: 'schedule', manual: 'manual', merge_group: 'merge',
+const eventLabelKeys: Record<string, string> = {
+  push: 'ci.eventPush', pull_request: 'ci.eventPR', schedule: 'ci.eventSchedule', manual: 'ci.eventManual', merge_group: 'ci.eventMerge',
 }
 
 export function CIRunListView({ runs, actions, onSelectRun, onCreateAction }: CIRunListViewProps) {
+  const { t } = useTranslation('smithyNext')
   const [createActionOpen, setCreateActionOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchExpanded, setSearchExpanded] = useState(false)
@@ -98,7 +100,7 @@ export function CIRunListView({ runs, actions, onSelectRun, onCreateAction }: CI
 
   // Group
   const grouped = useMemo(() => {
-    if (groupBy === 'none') return [{ key: 'all', label: 'All runs', runs: filtered }]
+    if (groupBy === 'none') return [{ key: 'all', label: t('ci.allRuns'), runs: filtered }]
     if (groupBy === 'action') {
       const groups = new Map<string, CIRun[]>()
       filtered.forEach(r => {
@@ -113,11 +115,11 @@ export function CIRunListView({ runs, actions, onSelectRun, onCreateAction }: CI
     const queued = filtered.filter(r => r.status === 'queued')
     const completed = filtered.filter(r => r.status !== 'running' && r.status !== 'queued')
     const groups: { key: string; label: string; runs: CIRun[] }[] = []
-    if (running.length) groups.push({ key: 'running', label: 'Running', runs: running })
-    if (queued.length) groups.push({ key: 'queued', label: 'Queued', runs: queued })
-    if (completed.length) groups.push({ key: 'completed', label: 'Completed', runs: completed })
+    if (running.length) groups.push({ key: 'running', label: t('ci.runningGroup'), runs: running })
+    if (queued.length) groups.push({ key: 'queued', label: t('ci.queuedGroup'), runs: queued })
+    if (completed.length) groups.push({ key: 'completed', label: t('ci.completedGroup'), runs: completed })
     return groups
-  }, [filtered, groupBy])
+  }, [filtered, groupBy, t])
 
   // Workflow sidebar counts
   const actionCounts = useMemo(() => {
@@ -135,11 +137,11 @@ export function CIRunListView({ runs, actions, onSelectRun, onCreateAction }: CI
       }}>
         <div style={{ padding: '0 12px', marginBottom: 12 }}>
           <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Actions
+            {t('ci.actions')}
           </span>
         </div>
         <SidebarItem
-          label="All actions"
+          label={t('ci.allActions')}
           count={runs.length}
           active={!selectedAction}
           onClick={() => setSelectedAction(null)}
@@ -159,7 +161,7 @@ export function CIRunListView({ runs, actions, onSelectRun, onCreateAction }: CI
       <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         {/* Toolbar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', flexShrink: 0, borderBottom: '1px solid var(--color-border-subtle)', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>CI/CD</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{t('ci.ciCd')}</span>
 
           {/* Active filter pills — inline in toolbar */}
           {filters.map(f => (
@@ -172,7 +174,7 @@ export function CIRunListView({ runs, actions, onSelectRun, onCreateAction }: CI
             </span>
           ))}
           {filters.length > 0 && (
-            <button onClick={() => setFilters([])} style={{ height: 22, padding: '0 6px', border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11 }}>Clear all</button>
+            <button onClick={() => setFilters([])} style={{ height: 22, padding: '0 6px', border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11 }}>{t('ci.clearAll')}</button>
           )}
 
           <div style={{ flex: 1 }} />
@@ -191,7 +193,7 @@ export function CIRunListView({ runs, actions, onSelectRun, onCreateAction }: CI
                   <input
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Search CI runs..."
+                    placeholder={t('ci.searchCIRuns')}
                     style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }}
                   />
                   {searchQuery && (
@@ -216,7 +218,7 @@ export function CIRunListView({ runs, actions, onSelectRun, onCreateAction }: CI
                       autoFocus
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
-                      placeholder="Search..."
+                      placeholder={t('ci.searchCIRuns')}
                       onBlur={() => { if (!searchQuery) setSearchExpanded(false) }}
                       style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 12, fontFamily: 'inherit' }}
                     />
@@ -241,7 +243,7 @@ export function CIRunListView({ runs, actions, onSelectRun, onCreateAction }: CI
                 color: filters.length > 0 ? 'var(--color-text-accent)' : 'var(--color-text-tertiary)',
                 cursor: 'pointer', fontSize: 11, fontWeight: 500,
               }}>
-                <Filter size={12} strokeWidth={1.5} /> Filter {filters.length > 0 && `(${filters.length})`}
+                <Filter size={12} strokeWidth={1.5} /> {t('ci.filter')} {filters.length > 0 && `(${filters.length})`}
               </button>
               {filterOpen && (
                 <CIFilterPanel runs={runs} filters={filters} onToggleFilter={toggleFilter} onClose={() => setFilterOpen(false)} />
@@ -257,7 +259,7 @@ export function CIRunListView({ runs, actions, onSelectRun, onCreateAction }: CI
                 color: displayOpen ? 'var(--color-text)' : 'var(--color-text-tertiary)',
                 cursor: 'pointer', fontSize: 11, fontWeight: 500,
               }}>
-                <SlidersHorizontal size={12} strokeWidth={1.5} /> Display
+                <SlidersHorizontal size={12} strokeWidth={1.5} /> {t('ci.display')}
               </button>
               {displayOpen && (
                 <DisplayPanel
@@ -275,7 +277,7 @@ export function CIRunListView({ runs, actions, onSelectRun, onCreateAction }: CI
                 background: 'var(--color-surface)', border: 'none', borderRadius: 'var(--radius-sm)',
                 color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
               }}>
-                <FileCode size={12} strokeWidth={1.5} /> New Action
+                <FileCode size={12} strokeWidth={1.5} /> {t('ci.newAction')}
               </button>
             )}
 
@@ -285,7 +287,7 @@ export function CIRunListView({ runs, actions, onSelectRun, onCreateAction }: CI
               background: 'var(--color-primary)', border: 'none', borderRadius: 'var(--radius-sm)',
               color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
             }}>
-              <Play size={12} strokeWidth={2} /> Run action
+              <Play size={12} strokeWidth={2} /> {t('ci.runAction')}
             </button>
         </div>
 
@@ -309,7 +311,7 @@ export function CIRunListView({ runs, actions, onSelectRun, onCreateAction }: CI
 
           {filtered.length === 0 && (
             <div style={{ padding: 48, textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 13 }}>
-              {searchQuery || filters.length > 0 ? 'No runs match your filters' : 'No CI runs'}
+              {searchQuery || filters.length > 0 ? t('ci.noRunsMatchFilters') : t('ci.noCIRuns')}
             </div>
           )}
         </div>
@@ -382,6 +384,7 @@ function SidebarItem({ label, count, active, onClick }: { label: string; count: 
 }
 
 function RunRow({ run, onClick, onDeleteRun }: { run: CIRun; onClick: () => void; onDeleteRun: () => void }) {
+  const { t } = useTranslation('smithyNext')
   const [menuOpen, setMenuOpen] = useState(false)
   const { getUserById, isTeamMode } = useTeamContext()
   const Icon = statusIcon[run.status] || Clock
@@ -392,6 +395,8 @@ function RunRow({ run, onClick, onDeleteRun }: { run: CIRun; onClick: () => void
 
   // Resolve actorUserId to full user for team-mode attribution
   const actorUser = run.actorUserId ? getUserById(run.actorUserId) : undefined
+
+  const eventLabelKey = eventLabelKeys[run.event]
 
   return (
     <div
@@ -412,7 +417,7 @@ function RunRow({ run, onClick, onDeleteRun }: { run: CIRun; onClick: () => void
           <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text)' }}>{run.action.name}</span>
           <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-mono)' }}>#{run.runNumber}</span>
           <span style={{ fontSize: 10, padding: '1px 5px', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text-tertiary)', fontWeight: 500 }}>
-            {eventLabels[run.event] || run.event}
+            {eventLabelKey ? t(eventLabelKey) : run.event}
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--color-text-tertiary)' }}>
@@ -445,7 +450,7 @@ function RunRow({ run, onClick, onDeleteRun }: { run: CIRun; onClick: () => void
           <span>{run.createdAt}</span>
           {run.triggeredByWorkflowId && (
             <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: 'var(--color-warning)' }}>
-              <Zap size={10} strokeWidth={1.5} /> Workflow
+              <Zap size={10} strokeWidth={1.5} /> {t('ci.workflow')}
             </span>
           )}
         </div>
@@ -487,10 +492,10 @@ function RunRow({ run, onClick, onDeleteRun }: { run: CIRun; onClick: () => void
               style={{ position: 'absolute', top: 28, right: 0, zIndex: 1060, width: 180, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-float)', padding: 4 }}
             >
               <button onClick={() => setMenuOpen(false)} style={menuItemStyle}>
-                <FileCode size={12} strokeWidth={1.5} /> View action file
+                <FileCode size={12} strokeWidth={1.5} /> {t('ci.viewActionFile')}
               </button>
               <button onClick={() => { setMenuOpen(false); onDeleteRun() }} style={{ ...menuItemStyle, color: 'var(--color-danger)' }}>
-                <Trash2 size={12} strokeWidth={1.5} /> Delete run
+                <Trash2 size={12} strokeWidth={1.5} /> {t('ci.deleteRun')}
               </button>
             </div>
           )}
@@ -501,6 +506,7 @@ function RunRow({ run, onClick, onDeleteRun }: { run: CIRun; onClick: () => void
 }
 
 function DeleteRunConfirmDialog({ run, onClose, onConfirm }: { run: CIRun; onClose: () => void; onConfirm: () => void }) {
+  const { t } = useTranslation('smithyNext')
   return (
     <>
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'var(--color-bg-overlay)', zIndex: 1040 }} />
@@ -512,24 +518,24 @@ function DeleteRunConfirmDialog({ run, onClose, onConfirm }: { run: CIRun; onClo
         zIndex: 1050, padding: '20px',
       }}>
         <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', marginBottom: 8 }}>
-          Delete run?
+          {t('ci.deleteRunQuestion')}
         </div>
         <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 16, lineHeight: 1.5 }}>
-          Are you sure you want to delete <span style={{ fontWeight: 500, color: 'var(--color-text)' }}>{run.action.name} #{run.runNumber}</span>? This action cannot be undone.
+          {t('ci.deleteRunConfirm', { name: run.action.name, number: String(run.runNumber) })}
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
           <button onClick={onClose} style={{
             height: 32, padding: '0 14px', border: 'none', borderRadius: 'var(--radius-sm)',
             background: 'var(--color-surface)', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
           }}>
-            Cancel
+            {t('ci.cancel')}
           </button>
           <button onClick={onConfirm} style={{
             height: 32, padding: '0 14px', display: 'flex', alignItems: 'center', gap: 5,
             border: 'none', borderRadius: 'var(--radius-sm)',
             background: 'var(--color-danger)', color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
           }}>
-            <Trash2 size={12} strokeWidth={1.5} /> Delete
+            <Trash2 size={12} strokeWidth={1.5} /> {t('ci.delete')}
           </button>
         </div>
       </div>
@@ -543,6 +549,7 @@ function DisplayPanel({ groupBy, onGroupBy, sortField, onSortField, sortAsc, onS
   sortAsc: boolean; onSortAsc: (v: boolean) => void
   onClose: () => void
 }) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div style={{
       position: 'absolute', top: 36, right: 0, zIndex: 1060,
@@ -551,7 +558,7 @@ function DisplayPanel({ groupBy, onGroupBy, sortField, onSortField, sortAsc, onS
     }}>
       {/* Group by */}
       <div style={{ marginBottom: 8 }}>
-        <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', padding: '4px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Group by</div>
+        <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', padding: '4px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('ci.groupBy')}</div>
         {(['status', 'action', 'none'] as CIGroupField[]).map(g => (
           <button key={g} onClick={() => { onGroupBy(g); onClose() }} style={{
             width: '100%', display: 'flex', alignItems: 'center', gap: 6, padding: '5px 6px',
@@ -559,15 +566,15 @@ function DisplayPanel({ groupBy, onGroupBy, sortField, onSortField, sortAsc, onS
             border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
             color: groupBy === g ? 'var(--color-text)' : 'var(--color-text-secondary)', fontSize: 12, textAlign: 'left',
           }}>
-            {g === 'none' ? 'None' : g.charAt(0).toUpperCase() + g.slice(1)}
+            {g === 'none' ? t('ci.none') : g === 'status' ? t('ci.status') : g.charAt(0).toUpperCase() + g.slice(1)}
           </button>
         ))}
       </div>
 
       {/* Sort by */}
       <div style={{ borderTop: '1px solid var(--color-border-subtle)', paddingTop: 8 }}>
-        <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', padding: '4px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sort by</div>
-        {([['created', 'Created'], ['runNumber', 'Run number'], ['duration', 'Duration']] as [CISortField, string][]).map(([field, label]) => (
+        <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', padding: '4px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('ci.sortBy')}</div>
+        {([['created', t('ci.created')], ['runNumber', t('ci.runNumber')], ['duration', t('ci.duration')]] as [CISortField, string][]).map(([field, label]) => (
           <button key={field} onClick={() => {
             if (sortField === field) onSortAsc(!sortAsc)
             else { onSortField(field); onSortAsc(false) }
@@ -595,4 +602,3 @@ const menuItemStyle: React.CSSProperties = {
   background: 'transparent', border: 'none', borderRadius: 'var(--radius-sm)',
   color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 12, textAlign: 'left' as const,
 }
-

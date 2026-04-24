@@ -1,24 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
 import { AlertCircle, AlertTriangle, Info, Bot, Cpu, Zap, Activity, Search, ChevronDown, ChevronRight } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import type { TimeRange, LayoutSize } from './metrics/metrics-types'
 import { MetricsOverviewTab } from './metrics/MetricsOverviewTab'
 import { MetricsProvidersTab } from './metrics/MetricsProvidersTab'
 import { MetricsQualityTab } from './metrics/MetricsQualityTab'
 
 type MetricsTab = 'overview' | 'providers' | 'quality' | 'event-log'
-
-const tabs: { id: MetricsTab; label: string }[] = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'providers', label: 'Providers & Models' },
-  { id: 'quality', label: 'Quality' },
-  { id: 'event-log', label: 'Event Log' },
-]
-
-const timeRanges: { id: TimeRange; label: string }[] = [
-  { id: '7d', label: '7d' },
-  { id: '14d', label: '14d' },
-  { id: '30d', label: '30d' },
-]
 
 interface MetricsOverlayProps {
   onBack: () => void
@@ -31,6 +19,21 @@ interface MetricsOverlayProps {
 }
 
 export function MetricsOverlay({ initialTab, onTabChange, onNavigateToTask }: MetricsOverlayProps) {
+  const { t } = useTranslation('smithyNext')
+
+  const tabs: { id: MetricsTab; label: string }[] = [
+    { id: 'overview', label: t('metrics.overview') },
+    { id: 'providers', label: t('metrics.providersAndModels') },
+    { id: 'quality', label: t('metrics.quality') },
+    { id: 'event-log', label: t('metrics.eventLog') },
+  ]
+
+  const timeRanges: { id: TimeRange; label: string }[] = [
+    { id: '7d', label: '7d' },
+    { id: '14d', label: '14d' },
+    { id: '30d', label: '30d' },
+  ]
+
   const [activeTab, setActiveTab] = useState<MetricsTab>(() => {
     if (initialTab && tabs.some(t => t.id === initialTab)) return initialTab as MetricsTab
     return 'overview'
@@ -74,7 +77,7 @@ export function MetricsOverlay({ initialTab, onTabChange, onNavigateToTask }: Me
         display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px',
         flexShrink: 0, borderBottom: '1px solid var(--color-border-subtle)',
       }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', marginRight: 8 }}>Metrics</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', marginRight: 8 }}>{t('metrics.metrics')}</span>
 
         <div style={{ display: 'flex', gap: 2 }}>
           {tabs.map(tab => (
@@ -158,14 +161,15 @@ const severityConfig: Record<EventSeverity, { icon: typeof Info; color: string; 
   error: { icon: AlertCircle, color: 'var(--color-danger)', bg: 'rgba(239,68,68,0.06)' },
 }
 
-const sourceConfig: Record<EventSource, { icon: typeof Bot; label: string; color: string }> = {
-  system: { icon: Activity, label: 'System', color: 'var(--color-text-tertiary)' },
-  agent: { icon: Bot, label: 'Agent', color: 'var(--color-primary)' },
-  automation: { icon: Zap, label: 'Automation', color: '#a855f7' },
-  daemon: { icon: Cpu, label: 'Daemon', color: 'var(--color-success)' },
+const sourceConfig: Record<EventSource, { icon: typeof Bot; labelKey: string; color: string }> = {
+  system: { icon: Activity, labelKey: 'metrics.system', color: 'var(--color-text-tertiary)' },
+  agent: { icon: Bot, labelKey: 'metrics.agentSource', color: 'var(--color-primary)' },
+  automation: { icon: Zap, labelKey: 'metrics.automation', color: '#a855f7' },
+  daemon: { icon: Cpu, labelKey: 'metrics.daemon', color: 'var(--color-success)' },
 }
 
 function EventLogTab() {
+  const { t } = useTranslation('smithyNext')
   const [search, setSearch] = useState('')
   const [severityFilter, setSeverityFilter] = useState<EventSeverity | 'all'>('all')
   const [sourceFilter, setSourceFilter] = useState<EventSource | 'all'>('all')
@@ -198,7 +202,7 @@ function EventLogTab() {
           <Search size={13} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-tertiary)' }} />
           <input
             value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search events..."
+            placeholder={t('metrics.searchEvents')}
             style={{ width: '100%', padding: '5px 8px 5px 28px', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text)', fontSize: 12, outline: 'none' }}
           />
         </div>
@@ -206,22 +210,22 @@ function EventLogTab() {
           value={severityFilter} onChange={e => setSeverityFilter(e.target.value as EventSeverity | 'all')}
           style={{ padding: '5px 8px', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text)', fontSize: 12, cursor: 'pointer' }}
         >
-          <option value="all">All severities</option>
-          <option value="error">Errors</option>
-          <option value="warning">Warnings</option>
-          <option value="info">Info</option>
+          <option value="all">{t('metrics.allSeverities')}</option>
+          <option value="error">{t('metrics.errors')}</option>
+          <option value="warning">{t('metrics.warnings')}</option>
+          <option value="info">{t('metrics.info')}</option>
         </select>
         <select
           value={sourceFilter} onChange={e => setSourceFilter(e.target.value as EventSource | 'all')}
           style={{ padding: '5px 8px', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-sm)', background: 'var(--color-surface)', color: 'var(--color-text)', fontSize: 12, cursor: 'pointer' }}
         >
-          <option value="all">All sources</option>
-          <option value="agent">Agent</option>
-          <option value="daemon">Daemon</option>
-          <option value="automation">Automation</option>
-          <option value="system">System</option>
+          <option value="all">{t('metrics.allSources')}</option>
+          <option value="agent">{t('metrics.agentSource')}</option>
+          <option value="daemon">{t('metrics.daemon')}</option>
+          <option value="automation">{t('metrics.automation')}</option>
+          <option value="system">{t('metrics.system')}</option>
         </select>
-        <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{filtered.length} events</span>
+        <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('metrics.eventsCount', { count: filtered.length })}</span>
       </div>
 
       {/* Event list */}
@@ -246,7 +250,7 @@ function EventLogTab() {
                 <SevIcon size={13} style={{ color: sev.color, flexShrink: 0 }} />
                 <span style={{ fontSize: 11, padding: '1px 6px', borderRadius: 'var(--radius-full)', background: `color-mix(in srgb, ${src.color} 12%, transparent)`, color: src.color, display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
                   <SrcIcon size={10} />
-                  {src.label}
+                  {t(src.labelKey)}
                 </span>
                 <span style={{ fontSize: 12, color: 'var(--color-text)', flex: 1 }}>{ev.message}</span>
                 {ev.linkedEntity && (
@@ -268,7 +272,7 @@ function EventLogTab() {
         })}
         {filtered.length === 0 && (
           <div style={{ padding: 40, textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 13 }}>
-            No events match the current filters
+            {t('metrics.noEventsMatchFilters')}
           </div>
         )}
       </div>

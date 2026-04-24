@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { X, Bot, Play, SquareKanban } from 'lucide-react'
 
+import { useTranslation } from '@/i18n'
 interface AgentOption {
   id: string
   name: string
@@ -22,6 +23,7 @@ interface CreateSessionDialogProps {
 }
 
 export function CreateSessionDialog({ onClose, onCreate, agents, tasks, preselectedAgentId }: CreateSessionDialogProps) {
+  const { t } = useTranslation('smithyNext')
   const [agentId, setAgentId] = useState(preselectedAgentId || agents[0]?.id || '')
   const [taskId, setTaskId] = useState('')
   const [initialMessage, setInitialMessage] = useState('')
@@ -59,7 +61,7 @@ export function CreateSessionDialog({ onClose, onCreate, agents, tasks, preselec
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', borderBottom: '1px solid var(--color-border-subtle)' }}>
           <Bot size={14} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
-          <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>New Session</span>
+          <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{t('sessions.newSession')}</span>
           <button onClick={onClose} style={closeBtnStyle}><X size={14} strokeWidth={1.5} /></button>
         </div>
 
@@ -68,7 +70,7 @@ export function CreateSessionDialog({ onClose, onCreate, agents, tasks, preselec
           {/* Agent selector */}
           <div style={{ marginBottom: 16 }}>
             <label style={labelStyle}>
-              Agent <span style={{ color: 'var(--color-danger)' }}>*</span>
+              {t('sessions.agent')} <span style={{ color: 'var(--color-danger)' }}>*</span>
             </label>
             {preselectedAgentId ? (
               <div style={{
@@ -84,7 +86,7 @@ export function CreateSessionDialog({ onClose, onCreate, agents, tasks, preselec
               </div>
             ) : (
               <select value={agentId} onChange={e => setAgentId(e.target.value)} style={selectStyle}>
-                <option value="" disabled>Select an agent...</option>
+                <option value="" disabled>{t('sessions.selectAnAgent')}</option>
                 {agents.map(a => (
                   <option key={a.id} value={a.id}>
                     {a.name} ({a.model}) — {a.status}
@@ -98,10 +100,10 @@ export function CreateSessionDialog({ onClose, onCreate, agents, tasks, preselec
           {tasks && tasks.length > 0 && (
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle}>
-                <SquareKanban size={11} strokeWidth={1.5} style={{ verticalAlign: -1 }} /> Link to task
+                <SquareKanban size={11} strokeWidth={1.5} style={{ verticalAlign: -1 }} /> {t('sessions.linkToTask')}
               </label>
               <select value={taskId} onChange={e => setTaskId(e.target.value)} style={selectStyle}>
-                <option value="">None</option>
+                <option value="">{t('sessions.none')}</option>
                 {tasks.map(t => (
                   <option key={t.id} value={t.id}>{t.id}: {t.title}</option>
                 ))}
@@ -111,12 +113,12 @@ export function CreateSessionDialog({ onClose, onCreate, agents, tasks, preselec
 
           {/* Initial message */}
           <div>
-            <label style={labelStyle}>Initial message</label>
+            <label style={labelStyle}>{t('sessions.initialMessage')}</label>
             <textarea
               ref={messageRef}
               value={initialMessage}
               onChange={e => setInitialMessage(e.target.value)}
-              placeholder="Optional prompt for the agent to start with..."
+              placeholder={t('sessions.initialMessagePlaceholder')}
               style={{
                 width: '100%', minHeight: 80, padding: '8px 10px', resize: 'vertical',
                 background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)',
@@ -133,7 +135,7 @@ export function CreateSessionDialog({ onClose, onCreate, agents, tasks, preselec
             height: 32, padding: '0 14px', border: 'none', borderRadius: 'var(--radius-sm)',
             background: 'var(--color-surface)', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
           }}>
-            Cancel
+            {t('sessions.cancel')}
           </button>
           <button
             onClick={handleSubmit}
@@ -146,7 +148,7 @@ export function CreateSessionDialog({ onClose, onCreate, agents, tasks, preselec
               cursor: agentId ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 500,
             }}
           >
-            <Play size={12} strokeWidth={2} /> Start Session
+            <Play size={12} strokeWidth={2} /> {t('sessions.startSession')}
           </button>
         </div>
       </div>

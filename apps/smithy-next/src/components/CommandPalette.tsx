@@ -4,6 +4,7 @@ import {
   Code, FileText, MessageSquare, Map, BarChart3, Network, Activity,
   Plus, Terminal, Sun, Moon,
 } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import type { Task } from '../mock-data'
 
 interface CommandPaletteProps {
@@ -44,33 +45,34 @@ export function CommandPalette({
   const [activeIndex, setActiveIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation('smithyNext')
 
   // Focus input on mount
   useEffect(() => { inputRef.current?.focus() }, [])
 
   // Build navigation items
   const navItems: PaletteItem[] = useMemo(() => [
-    { id: 'nav-tasks', icon: SquareKanban, label: 'Tasks', shortcut: '⌘1', group: 'navigation', onSelect: () => { onNavigate('kanban'); onClose() } },
-    { id: 'nav-mrs', icon: GitMerge, label: 'Merge Requests', shortcut: '⌘2', group: 'navigation', onSelect: () => { onNavigate('merge-requests'); onClose() } },
-    { id: 'nav-ci', icon: CircleDot, label: 'CI/CD', shortcut: '⌘3', group: 'navigation', onSelect: () => { onNavigate('ci'); onClose() } },
-    { id: 'nav-preview', icon: Eye, label: 'Preview', shortcut: '⌘4', group: 'navigation', onSelect: () => { onNavigate('preview'); onClose() } },
-    { id: 'nav-agents', icon: Bot, label: 'Agents', shortcut: '⌘5', group: 'navigation', onSelect: () => { onNavigate('agents'); onClose() } },
-    { id: 'nav-automations', icon: Zap, label: 'Automations', shortcut: '⌘6', group: 'navigation', onSelect: () => { onNavigate('automations'); onClose() } },
-    { id: 'nav-editor', icon: Code, label: 'Editor', group: 'navigation', onSelect: () => { onNavigate('editor'); onClose() } },
-    { id: 'nav-docs', icon: FileText, label: 'Documents', group: 'navigation', onSelect: () => { onNavigate('documents'); onClose() } },
-    { id: 'nav-channels', icon: MessageSquare, label: 'Channels', group: 'navigation', onSelect: () => { onNavigate('channels'); onClose() } },
-    { id: 'nav-plans', icon: Map, label: 'Plans', group: 'navigation', onSelect: () => { onNavigate('plans'); onClose() } },
-    { id: 'nav-metrics', icon: BarChart3, label: 'Metrics', group: 'navigation', onSelect: () => { onNavigate('metrics'); onClose() } },
-    { id: 'nav-sessions', icon: Activity, label: 'Sessions', group: 'navigation', onSelect: () => { onNavigate('sessions'); onClose() } },
-  ], [onNavigate, onClose])
+    { id: 'nav-tasks', icon: SquareKanban, label: t('commandPalette.navTasks'), shortcut: '⌘1', group: 'navigation', onSelect: () => { onNavigate('kanban'); onClose() } },
+    { id: 'nav-mrs', icon: GitMerge, label: t('commandPalette.navMergeRequests'), shortcut: '⌘2', group: 'navigation', onSelect: () => { onNavigate('merge-requests'); onClose() } },
+    { id: 'nav-ci', icon: CircleDot, label: t('commandPalette.navCiCd'), shortcut: '⌘3', group: 'navigation', onSelect: () => { onNavigate('ci'); onClose() } },
+    { id: 'nav-preview', icon: Eye, label: t('commandPalette.navPreview'), shortcut: '⌘4', group: 'navigation', onSelect: () => { onNavigate('preview'); onClose() } },
+    { id: 'nav-agents', icon: Bot, label: t('commandPalette.navAgents'), shortcut: '⌘5', group: 'navigation', onSelect: () => { onNavigate('agents'); onClose() } },
+    { id: 'nav-automations', icon: Zap, label: t('commandPalette.navAutomations'), shortcut: '⌘6', group: 'navigation', onSelect: () => { onNavigate('automations'); onClose() } },
+    { id: 'nav-editor', icon: Code, label: t('commandPalette.navEditor'), group: 'navigation', onSelect: () => { onNavigate('editor'); onClose() } },
+    { id: 'nav-docs', icon: FileText, label: t('commandPalette.navDocuments'), group: 'navigation', onSelect: () => { onNavigate('documents'); onClose() } },
+    { id: 'nav-channels', icon: MessageSquare, label: t('commandPalette.navChannels'), group: 'navigation', onSelect: () => { onNavigate('channels'); onClose() } },
+    { id: 'nav-plans', icon: Map, label: t('commandPalette.navPlans'), group: 'navigation', onSelect: () => { onNavigate('plans'); onClose() } },
+    { id: 'nav-metrics', icon: BarChart3, label: t('commandPalette.navMetrics'), group: 'navigation', onSelect: () => { onNavigate('metrics'); onClose() } },
+    { id: 'nav-sessions', icon: Activity, label: t('commandPalette.navSessions'), group: 'navigation', onSelect: () => { onNavigate('sessions'); onClose() } },
+  ], [onNavigate, onClose, t])
 
   // Build action items
   const actionItems: PaletteItem[] = useMemo(() => [
-    { id: 'act-create', icon: Plus, label: 'Create task', shortcut: 'C', group: 'actions', onSelect: () => { onCreateTask(); onClose() } },
-    { id: 'act-new-workspace', icon: Network, label: 'New Workspace', group: 'actions', onSelect: () => { onNewWorkspace(); onClose() } },
-    { id: 'act-terminal', icon: Terminal, label: 'Toggle terminal', shortcut: '⌘`', group: 'actions', onSelect: () => { onToggleTerminal(); onClose() } },
-    { id: 'act-theme', icon: theme === 'dark' ? Sun : Moon, label: theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode', group: 'actions', onSelect: () => { onToggleTheme(); onClose() } },
-  ], [onCreateTask, onNewWorkspace, onToggleTerminal, onToggleTheme, onClose, theme])
+    { id: 'act-create', icon: Plus, label: t('commandPalette.actionCreateTask'), shortcut: 'C', group: 'actions', onSelect: () => { onCreateTask(); onClose() } },
+    { id: 'act-new-workspace', icon: Network, label: t('commandPalette.actionNewWorkspace'), group: 'actions', onSelect: () => { onNewWorkspace(); onClose() } },
+    { id: 'act-terminal', icon: Terminal, label: t('commandPalette.actionToggleTerminal'), shortcut: '⌘`', group: 'actions', onSelect: () => { onToggleTerminal(); onClose() } },
+    { id: 'act-theme', icon: theme === 'dark' ? Sun : Moon, label: theme === 'dark' ? t('commandPalette.actionSwitchToLightMode') : t('commandPalette.actionSwitchToDarkMode'), group: 'actions', onSelect: () => { onToggleTheme(); onClose() } },
+  ], [onCreateTask, onNewWorkspace, onToggleTerminal, onToggleTheme, onClose, theme, t])
 
   // Filter and build visible items
   const visibleItems = useMemo(() => {
@@ -139,18 +141,18 @@ export function CommandPalette({
     let flatIndex = 0
     const navGroup = visibleItems.filter(i => i.group === 'navigation')
     if (navGroup.length) {
-      g.push({ key: 'navigation', label: 'Navigation', items: navGroup.map(i => ({ ...i, flatIndex: flatIndex++ })) })
+      g.push({ key: 'navigation', label: t('commandPalette.groupNavigation'), items: navGroup.map(i => ({ ...i, flatIndex: flatIndex++ })) })
     }
     const taskGroup = visibleItems.filter(i => i.group === 'tasks')
     if (taskGroup.length) {
-      g.push({ key: 'tasks', label: 'Tasks', items: taskGroup.map(i => ({ ...i, flatIndex: flatIndex++ })) })
+      g.push({ key: 'tasks', label: t('commandPalette.groupTasks'), items: taskGroup.map(i => ({ ...i, flatIndex: flatIndex++ })) })
     }
     const actionGroup = visibleItems.filter(i => i.group === 'actions')
     if (actionGroup.length) {
-      g.push({ key: 'actions', label: 'Actions', items: actionGroup.map(i => ({ ...i, flatIndex: flatIndex++ })) })
+      g.push({ key: 'actions', label: t('commandPalette.groupActions'), items: actionGroup.map(i => ({ ...i, flatIndex: flatIndex++ })) })
     }
     return g
-  }, [visibleItems])
+  }, [visibleItems, t])
 
   return (
     <>
@@ -188,7 +190,7 @@ export function CommandPalette({
             ref={inputRef}
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Search or type a command..."
+            placeholder={t('commandPalette.searchPlaceholder')}
             style={{
               flex: 1, background: 'none', border: 'none', outline: 'none',
               color: 'var(--color-text)', fontSize: 14,
@@ -218,7 +220,7 @@ export function CommandPalette({
               padding: '24px 16px', textAlign: 'center',
               color: 'var(--color-text-tertiary)', fontSize: 13,
             }}>
-              No results found
+              {t('commandPalette.noResults')}
             </div>
           ) : groups.map(group => (
             <div key={group.key}>
@@ -288,13 +290,13 @@ export function CommandPalette({
           fontSize: 10, color: 'var(--color-text-tertiary)',
         }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            <kbd style={kbdStyle}>↑↓</kbd> navigate
+            <kbd style={kbdStyle}>↑↓</kbd> {t('commandPalette.navigate')}
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            <kbd style={kbdStyle}>↵</kbd> select
+            <kbd style={kbdStyle}>↵</kbd> {t('commandPalette.select')}
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            <kbd style={kbdStyle}>esc</kbd> close
+            <kbd style={kbdStyle}>esc</kbd> {t('commandPalette.close')}
           </span>
         </div>
       </div>

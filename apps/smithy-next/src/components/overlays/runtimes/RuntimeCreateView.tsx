@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import type { RuntimeMode, Host, SandboxTier } from './runtime-types'
 import { runtimeModeLabels, runtimeModeColors, hostStatusColors, tunnelStatusColors, sandboxTierLabels } from './runtime-types'
+import { useTranslation } from '@/i18n'
 
 interface RuntimeCreateViewProps {
   onBack: () => void
@@ -23,6 +24,7 @@ interface RuntimeCreateViewProps {
 }
 
 export function RuntimeCreateView({ onBack, hosts, editingRuntime }: RuntimeCreateViewProps) {
+  const { t } = useTranslation('smithyNext')
   const isEdit = !!editingRuntime
   const [name, setName] = useState(editingRuntime?.name || '')
   const [selectedMode, setSelectedMode] = useState<RuntimeMode>(editingRuntime?.mode || 'worktrees')
@@ -75,10 +77,22 @@ export function RuntimeCreateView({ onBack, hosts, editingRuntime }: RuntimeCrea
   }
 
   const modeCards: { mode: RuntimeMode; icon: typeof GitBranch; label: string; description: string }[] = [
-    { mode: 'worktrees', icon: GitBranch, label: 'Worktree', description: 'Git worktrees on the host filesystem.' },
-    { mode: 'docker', icon: Container, label: 'Docker', description: 'Docker containers on the host.' },
-    { mode: 'sandbox', icon: Cloud, label: 'Sandbox', description: 'Ephemeral cloud environments, provisioned on demand.' },
+    { mode: 'worktrees', icon: GitBranch, label: t('runtimes.worktree'), description: t('runtimes.worktreeDescription') },
+    { mode: 'docker', icon: Container, label: t('runtimes.docker'), description: t('runtimes.dockerDescription') },
+    { mode: 'sandbox', icon: Cloud, label: t('runtimes.sandbox'), description: t('runtimes.sandboxDescription') },
   ]
+
+  const hostPrompt: Record<RuntimeMode, string> = {
+    worktrees: t('runtimes.hostSelectionPromptWorktrees'),
+    docker: t('runtimes.hostSelectionPromptDocker'),
+    sandbox: t('runtimes.hostSelectionPromptSandbox'),
+  }
+
+  const emptyHostMsg: Record<RuntimeMode, string> = {
+    sandbox: t('runtimes.noCloudProviders'),
+    docker: t('runtimes.noDockerHosts'),
+    worktrees: t('runtimes.noHostsConnected'),
+  }
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -95,14 +109,14 @@ export function RuntimeCreateView({ onBack, hosts, editingRuntime }: RuntimeCrea
           <ArrowLeft size={14} strokeWidth={1.5} />
         </button>
         <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>
-          {isEdit ? 'Edit Runtime' : 'New Runtime'}
+          {isEdit ? t('runtimes.editRuntime') : t('runtimes.newRuntimeTitle')}
         </span>
         <div style={{ flex: 1 }} />
         <button onClick={onBack} style={{
           height: 28, padding: '0 12px', border: '1px solid var(--color-border)',
           background: 'var(--color-surface)', borderRadius: 'var(--radius-sm)',
           color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
-        }}>Cancel</button>
+        }}>{t('runtimes.cancel')}</button>
         <button onClick={handleSave} disabled={!canSave} style={{
           height: 28, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 5,
           background: canSave ? 'var(--color-primary)' : 'var(--color-surface)',
@@ -111,7 +125,7 @@ export function RuntimeCreateView({ onBack, hosts, editingRuntime }: RuntimeCrea
           cursor: canSave ? 'pointer' : 'not-allowed', fontSize: 12, fontWeight: 500,
           opacity: canSave ? 1 : 0.6,
         }}>
-          <Save size={12} strokeWidth={1.5} /> {isEdit ? 'Save' : 'Create'}
+          <Save size={12} strokeWidth={1.5} /> {isEdit ? t('runtimes.save') : t('runtimes.create')}
         </button>
       </div>
 
@@ -120,13 +134,13 @@ export function RuntimeCreateView({ onBack, hosts, editingRuntime }: RuntimeCrea
         {/* Name */}
         <div style={{ marginBottom: 24 }}>
           <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
-            Name
+            {t('runtimes.runtimeName')}
           </label>
           <input
             autoFocus
             value={name}
             onChange={e => setName(e.target.value)}
-            placeholder="e.g. adam-macbook, cloud-sandbox"
+            placeholder={t('runtimes.namePlaceholder')}
             style={{
               width: '100%', height: 34, padding: '0 10px', fontSize: 13, fontFamily: 'inherit',
               background: 'var(--color-surface)', border: '1px solid var(--color-border)',
@@ -140,10 +154,10 @@ export function RuntimeCreateView({ onBack, hosts, editingRuntime }: RuntimeCrea
         {/* Step 1: Mode selector */}
         <div style={{ marginBottom: 24 }}>
           <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 4 }}>
-            Execution Mode
+            {t('runtimes.executionMode')}
           </label>
           <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 12px' }}>
-            Choose how agents run in this runtime.
+            {t('runtimes.chooseExecutionMode')}
           </p>
           <div className="rt-create-mode-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
             {modeCards.map(card => {
@@ -168,22 +182,16 @@ export function RuntimeCreateView({ onBack, hosts, editingRuntime }: RuntimeCrea
         {/* Step 2: Host selector (filtered by mode) */}
         <div style={{ marginBottom: 24 }}>
           <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', marginBottom: 4 }}>
-            Host
+            {t('runtimes.hostName')}
           </label>
           <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 12px' }}>
-            {selectedMode === 'sandbox'
-              ? 'Select the cloud provider for this sandbox.'
-              : selectedMode === 'docker'
-                ? 'Select the machine or cloud provider to run Docker containers.'
-                : 'Select the machine to run worktrees on.'}
-            {isEdit && <span style={{ fontStyle: 'italic' }}> Host cannot be changed after creation.</span>}
+            {hostPrompt[selectedMode]}
+            {isEdit && <span style={{ fontStyle: 'italic' }}> {t('runtimes.hostCannotChange')}</span>}
           </p>
           {hostsForMode.length === 0 ? (
             <div style={{ padding: 16, textAlign: 'center', background: 'var(--color-surface)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-subtle)' }}>
               <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>
-                {selectedMode === 'sandbox' ? 'No cloud providers connected.' :
-                  selectedMode === 'docker' ? 'No hosts with Docker capability.' :
-                    'No hosts connected.'}
+                {emptyHostMsg[selectedMode]}
               </span>
             </div>
           ) : (
@@ -245,22 +253,22 @@ export function RuntimeCreateView({ onBack, hosts, editingRuntime }: RuntimeCrea
         <div style={{ marginBottom: 24 }}>
           {selectedMode === 'worktrees' && (
             <div>
-              <FieldLabel>Worktree path</FieldLabel>
+              <FieldLabel>{t('runtimes.worktreePath')}</FieldLabel>
               <PathInput value={worktreePath} onChange={setWorktreePath} placeholder=".stoneforge/worktrees" icon={<FolderOpen size={13} />} />
             </div>
           )}
           {selectedMode === 'docker' && (
             <div>
-              <FieldLabel>Docker image</FieldLabel>
+              <FieldLabel>{t('runtimes.dockerImage')}</FieldLabel>
               <PathInput value={dockerImage} onChange={setDockerImage} placeholder="ghcr.io/stoneforge/worker:latest" icon={<Container size={13} />} />
             </div>
           )}
           {selectedMode === 'sandbox' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
-                <FieldLabel>Sandbox tier</FieldLabel>
+                <FieldLabel>{t('runtimes.sandboxTier')}</FieldLabel>
                 <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '0 0 8px' }}>
-                  Resource allocation for each sandbox instance.
+                  {t('runtimes.sandboxTierDescription')}
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
                   {(['small', 'medium', 'large', 'gpu'] as SandboxTier[]).map(tier => {
@@ -288,8 +296,8 @@ export function RuntimeCreateView({ onBack, hosts, editingRuntime }: RuntimeCrea
                 </div>
               </div>
               <div>
-                <FieldLabel>Base image (optional)</FieldLabel>
-                <PathInput value={sandboxBaseImage} onChange={setSandboxBaseImage} placeholder="Default sandbox image" icon={<Cloud size={13} />} />
+                <FieldLabel>{t('runtimes.baseImageOptional')}</FieldLabel>
+                <PathInput value={sandboxBaseImage} onChange={setSandboxBaseImage} placeholder={t('runtimes.defaultSandboxImage')} icon={<Cloud size={13} />} />
               </div>
             </div>
           )}
@@ -300,7 +308,7 @@ export function RuntimeCreateView({ onBack, hosts, editingRuntime }: RuntimeCrea
           <Checkbox
             checked={isDefault}
             onChange={setIsDefault}
-            label="Set as workspace default runtime — new agents will use this runtime by default"
+            label={t('runtimes.setAsWorkspaceDefault')}
           />
         </div>
       </div>
@@ -319,6 +327,7 @@ function ModeCard({ icon, name, description, selected, accentColor, accentBg, on
   icon: React.ReactNode; name: string; description: string
   selected: boolean; accentColor: string; accentBg: string; onClick: () => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -342,7 +351,7 @@ function ModeCard({ icon, name, description, selected, accentColor, accentBg, on
             fontSize: 11, fontWeight: 500, color: accentColor,
             background: `color-mix(in srgb, ${accentColor} 12%, transparent)`,
             padding: '1px 8px', borderRadius: 'var(--radius-full)',
-          }}>selected</span>
+          }}>{t('runtimes.selected')}</span>
         )}
       </div>
       <p style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--color-text-secondary)', margin: 0 }}>

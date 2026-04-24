@@ -1,5 +1,6 @@
 import { ArrowLeft, File, Folder, ChevronRight, ChevronDown, GitBranch } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from '@/i18n'
 
 interface EditorOverlayProps {
   onBack: () => void
@@ -77,6 +78,7 @@ export async function exchangeCodeForToken(
 }`
 
 export function EditorOverlay({ onBack, filePath, branch }: EditorOverlayProps) {
+  const { t } = useTranslation('smithyNext')
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
     new Set(['packages', 'packages/smithy', 'packages/smithy/src', 'packages/smithy/src/auth'])
   )
@@ -111,7 +113,7 @@ export function EditorOverlay({ onBack, filePath, branch }: EditorOverlayProps) 
         >
           <ArrowLeft size={14} strokeWidth={1.5} />
         </button>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>Editor</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{t('editor.title')}</span>
         <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-mono)' }}>{filePath || 'packages/smithy/src/auth/pkce.ts'}</span>
         {branch && (
           <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--color-text-tertiary)', marginLeft: 'auto', fontFamily: 'var(--font-mono)' }}>

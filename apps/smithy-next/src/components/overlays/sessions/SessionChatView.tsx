@@ -5,6 +5,7 @@ import {
   File, FileEdit, Terminal, Search as SearchIcon,
 } from 'lucide-react'
 import type { SessionEvent, Session } from './session-types'
+import { useTranslation } from '@/i18n'
 
 interface SessionChatViewProps {
   session: Session
@@ -22,6 +23,7 @@ function formatDuration(ms: number): string {
 }
 
 export function SessionChatView({ session, events, selectedEventId, onSelectEvent, scrollToEventId }: SessionChatViewProps) {
+  const { t } = useTranslation('smithyNext')
   const containerRef = useRef<HTMLDivElement>(null)
   const eventRefs = useRef<Map<string, HTMLDivElement>>(new Map())
   const [isAtBottom, setIsAtBottom] = useState(true)
@@ -95,7 +97,7 @@ export function SessionChatView({ session, events, selectedEventId, onSelectEven
             zIndex: 10,
           }}
         >
-          New messages below
+          {t('sessions.newMessagesBelow')}
         </button>
       )}
     </div>
@@ -104,10 +106,11 @@ export function SessionChatView({ session, events, selectedEventId, onSelectEven
 
 // ── Session Start — matching DirectorPanel system message style ──
 function SessionStartMsg({ session }: { session: Session }) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div style={{ padding: '2px 12px' }}>
       <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', padding: '4px 10px', fontStyle: 'italic' }}>
-        Session started · {session.agent.name} · {session.agent.model} · {session.environment}
+        {t('sessions.sessionStarted')} · {session.agent.name} · {session.agent.model} · {session.environment}
       </div>
     </div>
   )
@@ -159,6 +162,7 @@ function AgentMsg({ event }: { event: SessionEvent }) {
 
 // ── Cross-Agent Message — distinct visual treatment ──
 function CrossAgentMsg({ event }: { event: SessionEvent }) {
+  const { t } = useTranslation('smithyNext')
   const ca = event.crossAgent!
   return (
     <div style={{ padding: '6px 12px' }}>
@@ -176,7 +180,7 @@ function CrossAgentMsg({ event }: { event: SessionEvent }) {
             background: 'var(--color-primary-muted)', color: 'var(--color-primary)',
             fontWeight: 600, letterSpacing: '0.3px', textTransform: 'uppercase',
           }}>
-            agent message
+            {t('sessions.agentMessage')}
           </span>
           <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text)' }}>{ca.fromAgent}</span>
           <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>→</span>

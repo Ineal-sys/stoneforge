@@ -1,4 +1,5 @@
 import { useState, useRef, useMemo, useEffect } from 'react'
+import { useTranslation } from '@/i18n'
 import {
   Search, Filter, SlidersHorizontal, X, Plus,
   GitBranch, Container, Box, ChevronRight, ChevronDown, ArrowDown, ArrowUp,
@@ -49,6 +50,7 @@ const groupDotColor: Record<string, string> = {
 }
 
 export function AgentListView({ agents, onSelectAgent, onCreateAgent, onToggleAgentEnabled }: AgentListViewProps) {
+  const { t } = useTranslation('smithyNext')
   const [searchQuery, setSearchQuery] = useState('')
   const [searchExpanded, setSearchExpanded] = useState(false)
   const [filters, setFilters] = useState<AgentActiveFilter[]>([])
@@ -110,16 +112,16 @@ export function AgentListView({ agents, onSelectAgent, onCreateAgent, onToggleAg
 
   // Group
   const groups = useMemo(() => {
-    if (groupBy === 'none') return [{ title: 'All agents', dotColor: 'var(--color-text-tertiary)', items: filtered }]
+    if (groupBy === 'none') return [{ title: t('agents.list.allAgents'), dotColor: 'var(--color-text-tertiary)', items: filtered }]
 
     if (groupBy === 'status') {
       const running = filtered.filter(a => a.status === 'running' || a.status === 'starting')
       const idle = filtered.filter(a => a.status === 'idle')
       const error = filtered.filter(a => a.status === 'error')
       const groups: { title: string; dotColor: string; items: AgentExtended[] }[] = []
-      if (running.length) groups.push({ title: 'Running', dotColor: 'var(--color-success)', items: running })
-      if (idle.length) groups.push({ title: 'Idle', dotColor: 'var(--color-text-tertiary)', items: idle })
-      if (error.length) groups.push({ title: 'Error', dotColor: 'var(--color-danger)', items: error })
+      if (running.length) groups.push({ title: t('agents.list.running'), dotColor: 'var(--color-success)', items: running })
+      if (idle.length) groups.push({ title: t('agents.list.idle'), dotColor: 'var(--color-text-tertiary)', items: idle })
+      if (error.length) groups.push({ title: t('agents.list.error'), dotColor: 'var(--color-danger)', items: error })
       return groups
     }
 
@@ -146,14 +148,14 @@ export function AgentListView({ agents, onSelectAgent, onCreateAgent, onToggleAg
       }))
     }
 
-    return [{ title: 'All agents', dotColor: 'var(--color-text-tertiary)', items: filtered }]
+    return [{ title: t('agents.list.allAgents'), dotColor: 'var(--color-text-tertiary)', items: filtered }]
   }, [filtered, groupBy])
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Toolbar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', flexShrink: 0, borderBottom: '1px solid var(--color-border-subtle)', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>Agents</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{t('agents.list.agents')}</span>
 
         {/* Active filter pills */}
         {filters.map(f => (
@@ -166,7 +168,7 @@ export function AgentListView({ agents, onSelectAgent, onCreateAgent, onToggleAg
           </span>
         ))}
         {filters.length > 0 && (
-          <button onClick={() => setFilters([])} style={{ height: 22, padding: '0 6px', border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11 }}>Clear all</button>
+          <button onClick={() => setFilters([])} style={{ height: 22, padding: '0 6px', border: 'none', background: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11 }}>{t('agents.list.clearAll')}</button>
         )}
 
         <div style={{ flex: 1 }} />
@@ -176,7 +178,7 @@ export function AgentListView({ agents, onSelectAgent, onCreateAgent, onToggleAg
           <div className="agent-search-desktop" style={{ display: 'flex' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: 200, height: 26, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '0 8px' }}>
               <Search size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
-              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search agents..." style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
+              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t('agents.list.searchAgents')} style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
               {searchQuery && <button onClick={() => setSearchQuery('')} style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', padding: 0, display: 'flex' }}><X size={11} strokeWidth={2} /></button>}
             </div>
           </div>
@@ -184,7 +186,7 @@ export function AgentListView({ agents, onSelectAgent, onCreateAgent, onToggleAg
             {searchExpanded ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: 180, height: 26, background: 'var(--color-surface)', border: '1px solid var(--color-border-focus)', borderRadius: 'var(--radius-sm)', padding: '0 8px' }}>
                 <Search size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
-                <input ref={searchInputRef} autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search..." onBlur={() => { if (!searchQuery) setSearchExpanded(false) }} style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
+                <input ref={searchInputRef} autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t('agents.list.search')} onBlur={() => { if (!searchQuery) setSearchExpanded(false) }} style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', color: 'var(--color-text)', fontSize: 11, fontFamily: 'inherit' }} />
                 <button onClick={() => { setSearchQuery(''); setSearchExpanded(false) }} style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer', padding: 0, display: 'flex' }}><X size={11} strokeWidth={2} /></button>
               </div>
             ) : (
@@ -202,7 +204,7 @@ export function AgentListView({ agents, onSelectAgent, onCreateAgent, onToggleAg
             background: filters.length > 0 ? 'var(--color-primary-subtle)' : 'var(--color-surface)',
             color: filters.length > 0 ? 'var(--color-text-accent)' : 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11, fontWeight: 500,
           }}>
-            <Filter size={12} strokeWidth={1.5} /> Filter {filters.length > 0 && `(${filters.length})`}
+            <Filter size={12} strokeWidth={1.5} /> {t('agents.list.filter')} {filters.length > 0 && `(${filters.length})`}
           </button>
           {filterOpen && <AgentFilterPanel agents={agents} filters={filters} onToggleFilter={toggleFilter} onClose={() => setFilterOpen(false)} />}
         </div>
@@ -214,9 +216,9 @@ export function AgentListView({ agents, onSelectAgent, onCreateAgent, onToggleAg
             background: displayOpen ? 'var(--color-surface-active)' : 'var(--color-surface)',
             color: displayOpen ? 'var(--color-text)' : 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11, fontWeight: 500,
           }}>
-            <SlidersHorizontal size={12} strokeWidth={1.5} /> Display
+            <SlidersHorizontal size={12} strokeWidth={1.5} /> {t('agents.list.display')}
           </button>
-          {displayOpen && <DisplayPanel groupBy={groupBy} onGroupByChange={setGroupBy} sortField={sortField} onSortChange={setSortField} sortAsc={sortAsc} onSortDirChange={() => setSortAsc(!sortAsc)} onClose={() => setDisplayOpen(false)} />}
+          {displayOpen && <DisplayPanel groupBy={groupBy} onGroupByChange={setGroupBy} sortField={sortField} onSortChange={setSortField} sortAsc={sortAsc} onSortDirChange={() => setSortAsc(!sortAsc)} onClose={() => setDisplayOpen(false)} t={t} />}
         </div>
 
         {/* New Agent */}
@@ -225,7 +227,7 @@ export function AgentListView({ agents, onSelectAgent, onCreateAgent, onToggleAg
           background: 'var(--color-primary)', border: 'none', borderRadius: 'var(--radius-sm)',
           color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 500,
         }}>
-          <Plus size={12} strokeWidth={1.5} /> New Agent
+          <Plus size={12} strokeWidth={1.5} /> {t('agents.list.newAgent')}
         </button>
       </div>
 
@@ -233,7 +235,7 @@ export function AgentListView({ agents, onSelectAgent, onCreateAgent, onToggleAg
       <div style={{ flex: 1, overflow: 'auto', padding: '8px 16px 16px' }}>
         {groups.length === 0 && (
           <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 13 }}>
-            No agents match your filters
+            {t('agents.list.noAgentsMatch')}
           </div>
         )}
         {groups.map(group => (
@@ -244,6 +246,7 @@ export function AgentListView({ agents, onSelectAgent, onCreateAgent, onToggleAg
                 agent={agent}
                 onClick={() => onSelectAgent(agent)}
                 onToggleEnabled={() => onToggleAgentEnabled?.(agent.id)}
+                t={t}
               />
             ))}
           </Section>
@@ -284,9 +287,10 @@ function Section({ title, count, children }: { title: string; count: number; dot
   )
 }
 
-function AgentRow({ agent, onClick, onToggleEnabled }: {
+function AgentRow({ agent, onClick, onToggleEnabled, t }: {
   agent: AgentExtended; onClick: () => void;
   onToggleEnabled?: () => void;
+  t: (key: string) => string;
 }) {
   const [hovered, setHovered] = useState(false)
   const RuntimeIcon = getRuntimeModeIcon(agent.runtimeId)
@@ -350,7 +354,7 @@ function AgentRow({ agent, onClick, onToggleEnabled }: {
 
       {/* Sessions count */}
       <span className="agent-row-sessions" style={{ fontSize: 11, color: 'var(--color-text-tertiary)', flexShrink: 0, minWidth: 60, textAlign: 'right' }}>
-        {sessionCount} {sessionCount === 1 ? 'session' : 'sessions'}
+        {sessionCount} {sessionCount === 1 ? t('agents.list.session') : t('agents.list.sessions')}
       </span>
 
       {/* Last active */}
@@ -361,7 +365,7 @@ function AgentRow({ agent, onClick, onToggleEnabled }: {
       {/* Enable/disable toggle */}
       <button
         onClick={e => { e.stopPropagation(); onToggleEnabled?.() }}
-        title={agent.enabled ? 'Disable agent' : 'Enable agent'}
+        title={agent.enabled ? t('agents.list.disableAgent') : t('agents.list.enableAgent')}
         style={{
           width: 32, height: 18, borderRadius: 9, border: 'none', cursor: 'pointer', flexShrink: 0,
           background: agent.enabled ? 'var(--color-success)' : 'var(--color-surface-active)',
@@ -384,11 +388,12 @@ function AgentRow({ agent, onClick, onToggleEnabled }: {
 
 // ── Display Panel ──
 
-function DisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange, sortAsc, onSortDirChange, onClose }: {
+function DisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange, sortAsc, onSortDirChange, onClose, t }: {
   groupBy: AgentGroupField; onGroupByChange: (g: AgentGroupField) => void;
   sortField: AgentSortField; onSortChange: (s: AgentSortField) => void;
   sortAsc: boolean; onSortDirChange: () => void;
   onClose: () => void;
+  t: (key: string) => string;
 }) {
   const panelRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -400,13 +405,13 @@ function DisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange, sortA
   }, [onClose])
 
   const groupOptions: { value: AgentGroupField; label: string }[] = [
-    { value: 'status', label: 'Status' },
-    { value: 'provider', label: 'Provider' }, { value: 'environment', label: 'Runtime' },
-    { value: 'none', label: 'None' },
+    { value: 'status', label: t('agents.list.groupStatus') },
+    { value: 'provider', label: t('agents.list.groupProvider') }, { value: 'environment', label: t('agents.list.groupRuntime') },
+    { value: 'none', label: t('agents.list.groupNone') },
   ]
   const sortOptions: { value: AgentSortField; label: string }[] = [
-    { value: 'name', label: 'Name' }, { value: 'status', label: 'Status' },
-    { value: 'lastActive', label: 'Last active' }, { value: 'sessions', label: 'Sessions' },
+    { value: 'name', label: t('agents.list.sortName') }, { value: 'status', label: t('agents.list.sortStatus') },
+    { value: 'lastActive', label: t('agents.list.sortLastActive') }, { value: 'sessions', label: t('agents.list.sortSessions') },
   ]
 
   return (
@@ -415,7 +420,7 @@ function DisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange, sortA
       width: 220, background: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)',
       borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-float)', padding: 8,
     }}>
-      <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '4px 4px 6px' }}>Group by</div>
+      <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '4px 4px 6px' }}>{t('agents.list.groupBy')}</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 12 }}>
         {groupOptions.map(opt => (
           <button key={opt.value} onClick={() => onGroupByChange(opt.value)} style={{
@@ -428,7 +433,7 @@ function DisplayPanel({ groupBy, onGroupByChange, sortField, onSortChange, sortA
         ))}
       </div>
 
-      <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '4px 4px 6px' }}>Sort by</div>
+      <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '4px 4px 6px' }}>{t('agents.list.sortBy')}</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
         {sortOptions.map(opt => (
           <button key={opt.value} onClick={() => {

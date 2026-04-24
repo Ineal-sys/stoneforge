@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X, GitPullRequest, GitBranch } from 'lucide-react'
 import type { MergeRequestExtended } from './mr-types'
+import { useTranslation } from '@/i18n'
 
 interface CreateMRDialogProps {
   onClose: () => void
@@ -19,6 +20,7 @@ const REVIEWER_OPTIONS = [
 ]
 
 export function CreateMRDialog({ onClose, onCreate }: CreateMRDialogProps) {
+  const { t } = useTranslation('smithyNext')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [sourceBranch, setSourceBranch] = useState(MOCK_BRANCHES[0])
@@ -63,7 +65,7 @@ export function CreateMRDialog({ onClose, onCreate }: CreateMRDialogProps) {
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', borderBottom: '1px solid var(--color-border-subtle)' }}>
           <GitPullRequest size={14} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
-          <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>New Merge Request</span>
+          <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{t('mergeRequest.newMergeRequest')}</span>
           <button onClick={onClose} style={closeBtnStyle}><X size={14} strokeWidth={1.5} /></button>
         </div>
 
@@ -71,12 +73,12 @@ export function CreateMRDialog({ onClose, onCreate }: CreateMRDialogProps) {
         <div style={{ flex: 1, padding: 16, overflow: 'auto' }}>
           {/* Title */}
           <div style={{ marginBottom: 16 }}>
-            <label style={labelStyle}>Title <span style={{ color: 'var(--color-danger)' }}>*</span></label>
+            <label style={labelStyle}>{t('mergeRequest.title')} <span style={{ color: 'var(--color-danger)' }}>*</span></label>
             <input
               autoFocus
               value={title}
               onChange={e => setTitle(e.target.value)}
-              placeholder="Merge request title"
+              placeholder={t('mergeRequest.titlePlaceholder')}
               style={inputStyle}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && title.trim()) handleSubmit() }}
             />
@@ -85,14 +87,14 @@ export function CreateMRDialog({ onClose, onCreate }: CreateMRDialogProps) {
           {/* Branches */}
           <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
             <div style={{ flex: 1 }}>
-              <label style={labelStyle}><GitBranch size={11} strokeWidth={1.5} style={{ verticalAlign: -1 }} /> Source</label>
+              <label style={labelStyle}><GitBranch size={11} strokeWidth={1.5} style={{ verticalAlign: -1 }} /> {t('mergeRequest.source')}</label>
               <select value={sourceBranch} onChange={e => setSourceBranch(e.target.value)} style={selectStyle}>
                 {MOCK_BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
               </select>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: 6, color: 'var(--color-text-tertiary)', fontSize: 12 }}>→</div>
             <div style={{ flex: 1 }}>
-              <label style={labelStyle}>Target</label>
+              <label style={labelStyle}>{t('mergeRequest.target')}</label>
               <select value={targetBranch} onChange={e => setTargetBranch(e.target.value)} style={selectStyle}>
                 {TARGET_BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
               </select>
@@ -101,11 +103,11 @@ export function CreateMRDialog({ onClose, onCreate }: CreateMRDialogProps) {
 
           {/* Description */}
           <div style={{ marginBottom: 16 }}>
-            <label style={labelStyle}>Description</label>
+            <label style={labelStyle}>{t('mergeRequest.description')}</label>
             <textarea
               value={description}
               onChange={e => setDescription(e.target.value)}
-              placeholder="Describe the changes..."
+              placeholder={t('mergeRequest.descriptionPlaceholder')}
               style={{
                 width: '100%', minHeight: 80, padding: '8px 10px', resize: 'vertical',
                 background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border-subtle)',
@@ -117,7 +119,7 @@ export function CreateMRDialog({ onClose, onCreate }: CreateMRDialogProps) {
 
           {/* Reviewers */}
           <div style={{ marginBottom: 16, position: 'relative' }}>
-            <label style={labelStyle}>Reviewers</label>
+            <label style={labelStyle}>{t('mergeRequest.reviewers')}</label>
             <button
               onClick={() => { setReviewerDropdownOpen(!reviewerDropdownOpen); setLabelDropdownOpen(false) }}
               style={{
@@ -125,7 +127,7 @@ export function CreateMRDialog({ onClose, onCreate }: CreateMRDialogProps) {
                 color: reviewers.length > 0 ? 'var(--color-text)' : 'var(--color-text-tertiary)',
               }}
             >
-              {reviewers.length > 0 ? reviewers.join(', ') : 'Select reviewers...'}
+              {reviewers.length > 0 ? reviewers.join(', ') : t('mergeRequest.selectReviewersPlaceholder')}
             </button>
             {reviewerDropdownOpen && (
               <div style={dropdownStyle}>
@@ -147,7 +149,7 @@ export function CreateMRDialog({ onClose, onCreate }: CreateMRDialogProps) {
 
           {/* Labels */}
           <div style={{ marginBottom: 16, position: 'relative' }}>
-            <label style={labelStyle}>Labels</label>
+            <label style={labelStyle}>{t('mergeRequest.labels')}</label>
             <button
               onClick={() => { setLabelDropdownOpen(!labelDropdownOpen); setReviewerDropdownOpen(false) }}
               style={{
@@ -155,7 +157,7 @@ export function CreateMRDialog({ onClose, onCreate }: CreateMRDialogProps) {
                 color: labels.length > 0 ? 'var(--color-text)' : 'var(--color-text-tertiary)',
               }}
             >
-              {labels.length > 0 ? labels.join(', ') : 'Select labels...'}
+              {labels.length > 0 ? labels.join(', ') : t('mergeRequest.selectLabelsPlaceholder')}
             </button>
             {labelDropdownOpen && (
               <div style={dropdownStyle}>
@@ -192,7 +194,7 @@ export function CreateMRDialog({ onClose, onCreate }: CreateMRDialogProps) {
                   transition: 'transform 0.15s',
                 }} />
               </div>
-              <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>Mark as draft</span>
+              <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>{t('mergeRequest.markAsDraft')}</span>
             </label>
           </div>
         </div>
@@ -203,7 +205,7 @@ export function CreateMRDialog({ onClose, onCreate }: CreateMRDialogProps) {
             height: 32, padding: '0 14px', border: 'none', borderRadius: 'var(--radius-sm)',
             background: 'var(--color-surface)', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
           }}>
-            Cancel
+            {t('mergeRequest.cancel')}
           </button>
           <button
             onClick={handleSubmit}
@@ -216,7 +218,7 @@ export function CreateMRDialog({ onClose, onCreate }: CreateMRDialogProps) {
               cursor: title.trim() ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 500,
             }}
           >
-            <GitPullRequest size={12} strokeWidth={2} /> Create MR
+            <GitPullRequest size={12} strokeWidth={2} /> {t('mergeRequest.createMR')}
           </button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { Plus } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import type { WhiteboardEntry } from '../../../mock-data'
 
 interface WhiteboardTabBarProps {
@@ -11,6 +12,7 @@ interface WhiteboardTabBarProps {
 export function WhiteboardTabBar({
   whiteboards, activeWhiteboardId, onWhiteboardChange, onNewWhiteboard,
 }: WhiteboardTabBarProps) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div style={{
       height: 36, minHeight: 36, display: 'flex', alignItems: 'stretch',
@@ -46,7 +48,7 @@ export function WhiteboardTabBar({
       {/* New whiteboard button */}
       <button
         onClick={onNewWhiteboard}
-        title="New whiteboard"
+        title={t('whiteboard.newWhiteboard')}
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           width: 28, padding: 0, background: 'none', border: 'none',

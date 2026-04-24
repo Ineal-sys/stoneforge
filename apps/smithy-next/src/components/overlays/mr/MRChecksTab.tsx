@@ -1,26 +1,28 @@
 import { useState } from 'react'
 import { Check, X, Loader, Clock, ChevronDown, ChevronRight, ShieldCheck, ShieldAlert } from 'lucide-react'
 import type { MRCheck, MRCheckJob } from './mr-types'
+import { useTranslation } from '@/i18n'
 
 interface MRChecksTabProps {
   checks: MRCheck[]
 }
 
 export function MRChecksTab({ checks }: MRChecksTabProps) {
+  const { t } = useTranslation('smithyNext')
   const required = checks.filter(c => c.required)
   const optional = checks.filter(c => !c.required)
 
   return (
     <div style={{ height: '100%', overflow: 'auto', padding: '8px 0' }}>
       {required.length > 0 && (
-        <CheckSection title="Required" icon={<ShieldCheck size={13} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />} checks={required} />
+        <CheckSection title={t('mergeRequest.requiredSection')} icon={<ShieldCheck size={13} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />} checks={required} />
       )}
       {optional.length > 0 && (
-        <CheckSection title="Optional" icon={<ShieldAlert size={13} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />} checks={optional} />
+        <CheckSection title={t('mergeRequest.optionalSection')} icon={<ShieldAlert size={13} strokeWidth={1.5} style={{ color: 'var(--color-text-tertiary)' }} />} checks={optional} />
       )}
       {checks.length === 0 && (
         <div style={{ padding: 24, textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 13 }}>
-          No checks configured
+          {t('mergeRequest.noChecksConfigured')}
         </div>
       )}
     </div>
@@ -96,6 +98,7 @@ function ActionRow({ action }: { action: MRCheck }) {
 
 // Job row within an action (expandable to show logs)
 function JobRow({ job }: { job: MRCheckJob }) {
+  const { t } = useTranslation('smithyNext')
   const [logsExpanded, setLogsExpanded] = useState(false)
   const jStatus = job.status === 'skipped' ? 'success' : job.status
   const JIcon = statusIcon[jStatus] || Clock
@@ -116,7 +119,7 @@ function JobRow({ job }: { job: MRCheckJob }) {
         <JIcon size={12} strokeWidth={2} style={{ color: jColor, flexShrink: 0, ...(job.status === 'running' ? { animation: 'spin 1s linear infinite' } : {}) }} />
         <span style={{ flex: 1, fontSize: 12, color: job.status === 'skipped' ? 'var(--color-text-tertiary)' : 'var(--color-text-secondary)' }}>
           {job.name}
-          {job.status === 'skipped' && <span style={{ marginLeft: 6, fontSize: 10, color: 'var(--color-text-tertiary)' }}>Skipped</span>}
+          {job.status === 'skipped' && <span style={{ marginLeft: 6, fontSize: 10, color: 'var(--color-text-tertiary)' }}>{t('mergeRequest.skipped')}</span>}
         </span>
         {job.duration && <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{job.duration}</span>}
         {job.logs && (

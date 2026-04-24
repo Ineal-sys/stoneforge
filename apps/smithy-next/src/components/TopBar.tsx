@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { GitBranch, Square, Zap, Cpu } from "lucide-react";
+import { useTranslation } from '@/i18n';
 import { Tooltip } from "./Tooltip";
 import { NotificationInbox } from "./NotificationInbox";
 import { SyncIndicator } from "./SyncIndicator";
@@ -63,6 +64,7 @@ export function TopBar({
   daemonState,
   onNavigateToRuntimes,
 }: TopBarProps) {
+  const { t } = useTranslation('smithyNext');
   const isTeamMode = appMode === 'team'
   const daemonHost = daemonState ? mockHosts.find(h => h.id === daemonState.hostId) : null
   const daemonDotColor = daemonState?.status === 'running' ? 'var(--color-success)' : daemonState?.status === 'error' ? 'var(--color-danger)' : 'var(--color-text-tertiary)'
@@ -157,7 +159,7 @@ export function TopBar({
 
         {/* Daemon indicator (both modes) */}
         {daemonState && (
-          <Tooltip label={`Dispatch daemon ${daemonState.status} on ${daemonHost?.name || 'unknown'}${daemonState.status !== 'running' ? ' — autonomous workflows paused' : ''}`}>
+          <Tooltip label={`${t('topBar.daemonRunningOn', { status: daemonState.status, host: daemonHost?.name || 'unknown' })}${daemonState.status !== 'running' ? ` ${t('topBar.daemonPaused')}` : ''}`}>
             <button
               onClick={() => onNavigateToRuntimes?.()}
               style={{
@@ -178,7 +180,7 @@ export function TopBar({
             >
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: daemonDotColor, flexShrink: 0 }} />
               <Cpu size={11} strokeWidth={1.5} />
-              <span className="topbar-btn-label">{daemonHost?.name || 'daemon'}</span>
+              <span className="topbar-btn-label">{daemonHost?.name || t('topBar.daemon')}</span>
             </button>
           </Tooltip>
         )}
@@ -212,7 +214,7 @@ export function TopBar({
         />
 
         {/* Command palette */}
-        <Tooltip label="Command palette" shortcut="⌘K">
+        <Tooltip label={t('topBar.commandPalette')} shortcut={t('topBar.commandPaletteShortcut')}>
           <button
             onClick={onOpenSearch}
             style={{
@@ -251,11 +253,12 @@ export function TopBar({
 
 
 function AutopilotButton() {
+  const { t } = useTranslation('smithyNext');
   const [on, setOn] = useState(true);
   return (
     <Tooltip
       label={
-        on ? "Autopilot on — click to pause" : "Autopilot off — click to resume"
+        on ? t('topBar.autopilotOn') : t('topBar.autopilotOff')
       }
     >
       <button
@@ -287,15 +290,16 @@ function AutopilotButton() {
         }
       >
         <Zap size={12} strokeWidth={1.5} />
-        <span className="topbar-btn-label">{on ? "Auto" : "Paused"}</span>
+        <span className="topbar-btn-label">{on ? t('topBar.auto') : t('topBar.paused')}</span>
       </button>
     </Tooltip>
   );
 }
 
 function StopAllButton() {
+  const { t } = useTranslation('smithyNext');
   return (
-    <Tooltip label="Stop all agents">
+    <Tooltip label={t('topBar.stopAllAgents')}>
       <button
         style={{
           height: 26,
@@ -322,7 +326,7 @@ function StopAllButton() {
         }}
       >
         <Square size={11} strokeWidth={2} />
-        <span className="topbar-btn-label">Stop all</span>
+        <span className="topbar-btn-label">{t('topBar.stopAll')}</span>
       </button>
     </Tooltip>
   );

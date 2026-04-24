@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { Bold, Italic, Code, List, ListOrdered, Link2, Quote, Heading2, Image, Minus } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 
 interface RichTextEditorProps {
   value: string
@@ -10,7 +11,8 @@ interface RichTextEditorProps {
   onKeyDown?: (e: React.KeyboardEvent) => void
 }
 
-export function RichTextEditor({ value, onChange, placeholder = 'Leave a comment...', minHeight = 80, maxHeight = 200, onKeyDown: externalKeyDown }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange, placeholder, minHeight = 80, maxHeight = 200, onKeyDown: externalKeyDown }: RichTextEditorProps) {
+  const { t } = useTranslation('smithyNext')
   const [activeTab, setActiveTab] = useState<'write' | 'preview'>('write')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -33,19 +35,19 @@ export function RichTextEditor({ value, onChange, placeholder = 'Leave a comment
   const wrapSelection = (wrapper: string) => insertMarkdown(wrapper, wrapper)
 
   const tools: { icon: typeof Bold; label: string; action: () => void; separator?: boolean }[] = [
-    { icon: Heading2, label: 'Heading', action: () => insertMarkdown('### ') },
-    { icon: Bold, label: 'Bold', action: () => wrapSelection('**') },
-    { icon: Italic, label: 'Italic', action: () => wrapSelection('_') },
-    { icon: Code, label: 'Code', action: () => wrapSelection('`') },
-    { icon: Link2, label: 'Link', action: () => insertMarkdown('[', '](url)') },
-    { icon: Quote, label: 'Quote', action: () => insertMarkdown('> ') },
-    { icon: Minus, label: 'Divider', action: () => insertMarkdown('\n---\n'), separator: true },
-    { icon: List, label: 'Bullet list', action: () => insertMarkdown('- ') },
-    { icon: ListOrdered, label: 'Numbered list', action: () => insertMarkdown('1. ') },
+    { icon: Heading2, label: t('mergeRequest.heading'), action: () => insertMarkdown('### ') },
+    { icon: Bold, label: t('mergeRequest.bold'), action: () => wrapSelection('**') },
+    { icon: Italic, label: t('mergeRequest.italic'), action: () => wrapSelection('_') },
+    { icon: Code, label: t('mergeRequest.code'), action: () => wrapSelection('`') },
+    { icon: Link2, label: t('mergeRequest.link'), action: () => insertMarkdown('[', '](url)') },
+    { icon: Quote, label: t('mergeRequest.quote'), action: () => insertMarkdown('> ') },
+    { icon: Minus, label: t('mergeRequest.divider'), action: () => insertMarkdown('\n---\n'), separator: true },
+    { icon: List, label: t('mergeRequest.bulletList'), action: () => insertMarkdown('- ') },
+    { icon: ListOrdered, label: t('mergeRequest.numberedList'), action: () => insertMarkdown('1. ') },
   ]
 
   const renderPreview = () => {
-    if (!value.trim()) return <span style={{ color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>Nothing to preview</span>
+    if (!value.trim()) return <span style={{ color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>{t('mergeRequest.nothingToPreview')}</span>
     // Simple markdown rendering for prototype
     const lines = value.split('\n')
     return lines.map((line, i) => {
@@ -95,7 +97,7 @@ export function RichTextEditor({ value, onChange, placeholder = 'Leave a comment
             borderRadius: 'var(--radius-sm)',
           }}
         >
-          Write
+          {t('mergeRequest.write')}
         </button>
         <button
           onClick={() => setActiveTab('preview')}
@@ -106,7 +108,7 @@ export function RichTextEditor({ value, onChange, placeholder = 'Leave a comment
             borderRadius: 'var(--radius-sm)',
           }}
         >
-          Preview
+          {t('mergeRequest.previewTab')}
         </button>
 
         <div style={{ width: 1, height: 16, background: 'var(--color-border-subtle)', margin: '0 6px' }} />
@@ -174,7 +176,7 @@ export function RichTextEditor({ value, onChange, placeholder = 'Leave a comment
         padding: '4px 8px', borderTop: '1px solid var(--color-border-subtle)',
         background: 'var(--color-bg-secondary)', fontSize: 10, color: 'var(--color-text-tertiary)',
       }}>
-        Supports Markdown. <span style={{ fontFamily: 'var(--font-mono)' }}>**bold**</span> <span style={{ fontFamily: 'var(--font-mono)' }}>_italic_</span> <span style={{ fontFamily: 'var(--font-mono)' }}>`code`</span>
+        {t('mergeRequest.supportsMarkdown')} <span style={{ fontFamily: 'var(--font-mono)' }}>**bold**</span> <span style={{ fontFamily: 'var(--font-mono)' }}>_italic_</span> <span style={{ fontFamily: 'var(--font-mono)' }}>`code`</span>
       </div>
     </div>
   )

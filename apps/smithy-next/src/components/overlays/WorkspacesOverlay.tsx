@@ -16,6 +16,7 @@ import {
   X,
   Check,
 } from 'lucide-react'
+import { useTranslation } from '@/i18n'
 import { WorkspaceIconMark } from '../WorkspaceIconMark'
 import type { WorkspaceInfo, WorkspaceActivity } from '../../mock-data'
 import { mockWorkspaceActivity, mockWorkspaceThreads } from '../../mock-data'
@@ -31,19 +32,20 @@ interface WorkspacesOverlayProps {
 type SortField = 'activity' | 'status' | 'name' | 'agents'
 type FilterTab = 'status' | 'agents'
 
-const STATUS_OPTIONS: { value: WorkspaceInfo['status']; label: string; color: string }[] = [
-  { value: 'active', label: 'Active', color: 'var(--color-success)' },
-  { value: 'needs-attention', label: 'Needs attention', color: 'var(--color-warning)' },
-  { value: 'error', label: 'Error', color: 'var(--color-danger)' },
-  { value: 'idle', label: 'Idle', color: 'var(--color-text-tertiary)' },
+const STATUS_OPTIONS: { value: WorkspaceInfo['status']; labelKey: string; color: string }[] = [
+  { value: 'active', labelKey: 'workspacesOverlay.active', color: 'var(--color-success)' },
+  { value: 'needs-attention', labelKey: 'workspacesOverlay.needsAttention', color: 'var(--color-warning)' },
+  { value: 'error', labelKey: 'workspacesOverlay.error', color: 'var(--color-danger)' },
+  { value: 'idle', labelKey: 'workspacesOverlay.idle', color: 'var(--color-text-tertiary)' },
 ]
 
 const AGENT_OPTIONS = [
-  { value: 'running', label: 'Has running agents' },
-  { value: 'none', label: 'No running agents' },
+  { value: 'running', labelKey: 'workspacesOverlay.hasRunningAgents' },
+  { value: 'none', labelKey: 'workspacesOverlay.noRunningAgents' },
 ]
 
 export function WorkspacesOverlay({ onBack, workspaces, activeWorkspaceId, onSwitchWorkspace, onNewWorkspace }: WorkspacesOverlayProps) {
+  const { t } = useTranslation('smithyNext')
   const [searchQuery, setSearchQuery] = useState('')
   const [filterStatuses, setFilterStatuses] = useState<Set<string>>(new Set())
   const [filterAgents, setFilterAgents] = useState<Set<string>>(new Set())
@@ -72,12 +74,14 @@ export function WorkspacesOverlay({ onBack, workspaces, activeWorkspaceId, onSwi
   const filterPills: { field: string; value: string; onRemove: () => void }[] = useMemo(() => {
     const pills: { field: string; value: string; onRemove: () => void }[] = []
     filterStatuses.forEach(s => {
-      const label = STATUS_OPTIONS.find(o => o.value === s)?.label || s
-      pills.push({ field: 'Status', value: label, onRemove: () => setFilterStatuses(prev => { const n = new Set(prev); n.delete(s); return n }) })
+      const opt = STATUS_OPTIONS.find(o => o.value === s)
+      const label = opt ? t(opt.labelKey) : s
+      pills.push({ field: t('workspacesOverlay.status'), value: label, onRemove: () => setFilterStatuses(prev => { const n = new Set(prev); n.delete(s); return n }) })
     })
     filterAgents.forEach(a => {
-      const label = AGENT_OPTIONS.find(o => o.value === a)?.label || a
-      pills.push({ field: 'Agents', value: label, onRemove: () => setFilterAgents(prev => { const n = new Set(prev); n.delete(a); return n }) })
+      const opt = AGENT_OPTIONS.find(o => o.value === a)
+      const label = opt ? t(opt.labelKey) : a
+      pills.push({ field: t('workspacesOverlay.agents'), value: label, onRemove: () => setFilterAgents(prev => { const n = new Set(prev); n.delete(a); return n }) })
     })
     return pills
   }, [filterStatuses, filterAgents])
@@ -146,7 +150,7 @@ export function WorkspacesOverlay({ onBack, workspaces, activeWorkspaceId, onSwi
         display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px',
         flexShrink: 0, borderBottom: '1px solid var(--color-border-subtle)', flexWrap: 'wrap',
       }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>Workspaces</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{t('workspacesOverlay.workspaces')}</span>
 
         {/* Active filter pills */}
         {filterPills.map((pill, i) => (
@@ -163,7 +167,7 @@ export function WorkspacesOverlay({ onBack, workspaces, activeWorkspaceId, onSwi
           <button onClick={clearAllFilters} style={{
             height: 22, padding: '0 6px', border: 'none', background: 'none',
             color: 'var(--color-text-tertiary)', fontSize: 11, cursor: 'pointer',
-          }}>Clear all</button>
+          }}>{t('workspacesOverlay.clearAll')}</button>
         )}
 
         <div style={{ flex: 1 }} />
@@ -179,7 +183,7 @@ export function WorkspacesOverlay({ onBack, workspaces, activeWorkspaceId, onSwi
           <input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search workspaces..."
+            placeholder={t('workspacesOverlay.searchWorkspaces')}
             style={{
               flex: 1, background: 'none', border: 'none', outline: 'none',
               color: 'var(--color-text)', fontSize: 11, minWidth: 0,
@@ -207,7 +211,7 @@ export function WorkspacesOverlay({ onBack, workspaces, activeWorkspaceId, onSwi
             onMouseLeave={e => { if (!activeFilterCount) e.currentTarget.style.background = 'var(--color-surface)' }}
           >
             <Filter size={12} strokeWidth={1.5} />
-            Filter{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+            {t('workspacesOverlay.filter')}{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
           </button>
 
           {/* Filter panel */}
@@ -266,7 +270,7 @@ export function WorkspacesOverlay({ onBack, workspaces, activeWorkspaceId, onSwi
                       onMouseLeave={e => { e.currentTarget.style.background = checked ? 'var(--color-primary-subtle)' : 'transparent' }}
                     >
                       <span style={{ width: 8, height: 8, borderRadius: '50%', background: opt.color, flexShrink: 0 }} />
-                      <span style={{ flex: 1 }}>{opt.label}</span>
+                      <span style={{ flex: 1 }}>{t(opt.labelKey)}</span>
                       <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>{count}</span>
                     </button>
                   )
@@ -292,7 +296,7 @@ export function WorkspacesOverlay({ onBack, workspaces, activeWorkspaceId, onSwi
                       onMouseLeave={e => { e.currentTarget.style.background = checked ? 'var(--color-primary-subtle)' : 'transparent' }}
                     >
                       <Bot size={12} strokeWidth={1.5} style={{ color: opt.value === 'running' ? 'var(--color-success)' : 'var(--color-text-tertiary)', flexShrink: 0 }} />
-                      <span style={{ flex: 1 }}>{opt.label}</span>
+                      <span style={{ flex: 1 }}>{t(opt.labelKey)}</span>
                       <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>{count}</span>
                     </button>
                   )
@@ -318,7 +322,7 @@ export function WorkspacesOverlay({ onBack, workspaces, activeWorkspaceId, onSwi
             onMouseLeave={e => { if (!displayOpen) e.currentTarget.style.background = displayOpen ? 'var(--color-surface-active)' : 'var(--color-surface)' }}
           >
             <SlidersHorizontal size={12} strokeWidth={1.5} />
-            Display
+            {t('workspacesOverlay.display')}
           </button>
 
           {/* Display panel */}
@@ -331,13 +335,13 @@ export function WorkspacesOverlay({ onBack, workspaces, activeWorkspaceId, onSwi
               padding: '8px',
             }}>
               {/* Sort by */}
-              <div style={{ padding: '4px 6px', fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Sort by</div>
+              <div style={{ padding: '4px 6px', fontSize: 10, fontWeight: 500, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>{t('workspacesOverlay.sort')}</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, padding: '0 2px 8px' }}>
                 {([
-                  { value: 'activity', label: 'Activity' },
-                  { value: 'status', label: 'Status' },
-                  { value: 'name', label: 'Name' },
-                  { value: 'agents', label: 'Agents' },
+                  { value: 'activity', label: t('workspacesOverlay.activity') },
+                  { value: 'status', label: t('workspacesOverlay.status') },
+                  { value: 'name', label: t('workspacesOverlay.name') },
+                  { value: 'agents', label: t('workspacesOverlay.agents') },
                 ] as { value: SortField; label: string }[]).map(opt => {
                   const isActive = sortField === opt.value
                   return (
@@ -375,7 +379,7 @@ export function WorkspacesOverlay({ onBack, workspaces, activeWorkspaceId, onSwi
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
                   {sortAsc ? <ArrowUp size={11} strokeWidth={2} /> : <ArrowDown size={11} strokeWidth={2} />}
-                  {sortAsc ? 'Ascending' : 'Descending'}
+                  {sortAsc ? t('workspacesOverlay.ascending') : t('workspacesOverlay.descending')}
                 </button>
               </div>
             </div>
@@ -419,14 +423,14 @@ export function WorkspacesOverlay({ onBack, workspaces, activeWorkspaceId, onSwi
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-tertiary)' }}
           >
             <Plus size={20} strokeWidth={1.5} />
-            <span style={{ fontSize: 13, fontWeight: 500 }}>Add Workspace</span>
+            <span style={{ fontSize: 13, fontWeight: 500 }}>{t('workspacesOverlay.addWorkspace')}</span>
           </div>
         </div>
 
         {/* Empty state */}
         {filtered.length === 0 && (
           <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--color-text-tertiary)', fontSize: 13 }}>
-            No workspaces match your filters
+            {t('workspacesOverlay.noWorkspacesMatch')}
           </div>
         )}
       </div>
@@ -442,8 +446,9 @@ function WorkspaceCard({ workspace, isActive, activity, threadCount, runningThre
   runningThreads: number
   onSwitch: () => void
 }) {
+  const { t } = useTranslation('smithyNext')
   const borderColor = workspace.status === 'active' ? 'var(--color-success)' : workspace.status === 'needs-attention' ? 'var(--color-warning)' : workspace.status === 'error' ? 'var(--color-danger)' : 'var(--color-border)'
-  const statusLabel = workspace.status === 'active' ? 'Active' : workspace.status === 'needs-attention' ? 'Needs attention' : workspace.status === 'error' ? 'Error' : 'Idle'
+  const statusLabel = workspace.status === 'active' ? t('workspacesOverlay.active') : workspace.status === 'needs-attention' ? t('workspacesOverlay.needsAttention') : workspace.status === 'error' ? t('workspacesOverlay.error') : t('workspacesOverlay.idle')
   const statusBg = workspace.status === 'active' ? 'var(--color-success-subtle)' : workspace.status === 'needs-attention' ? 'var(--color-warning-subtle)' : workspace.status === 'error' ? 'var(--color-danger-subtle)' : 'var(--color-surface)'
 
   const activityIcon: Record<WorkspaceActivity['type'], { icon: typeof CheckCircle2; color: string }> = {
@@ -472,7 +477,7 @@ function WorkspaceCard({ workspace, isActive, activity, threadCount, runningThre
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>{workspace.name}</span>
-            {isActive && <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--color-primary)', background: 'var(--color-primary-subtle)', padding: '1px 6px', borderRadius: 'var(--radius-full)' }}>Current</span>}
+            {isActive && <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--color-primary)', background: 'var(--color-primary-subtle)', padding: '1px 6px', borderRadius: 'var(--radius-full)' }}>{t('workspacesOverlay.current')}</span>}
           </div>
           {workspace.repo && <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-mono)', marginTop: 2 }}>{workspace.repo}</div>}
         </div>
@@ -519,7 +524,7 @@ function WorkspaceCard({ workspace, isActive, activity, threadCount, runningThre
             </div>
           )
         }) : (
-          <div style={{ padding: '12px 16px', fontSize: 11, color: 'var(--color-text-tertiary)' }}>No recent activity</div>
+          <div style={{ padding: '12px 16px', fontSize: 11, color: 'var(--color-text-tertiary)' }}>{t('workspacesOverlay.noRecentActivity')}</div>
         )}
       </div>
 
@@ -527,12 +532,12 @@ function WorkspaceCard({ workspace, isActive, activity, threadCount, runningThre
       <div style={{ padding: '8px 16px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, fontSize: 10, color: 'var(--color-text-tertiary)' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            <Bot size={10} strokeWidth={1.5} /> {workspace.agentCount} agent{workspace.agentCount !== 1 ? 's' : ''}
+            <Bot size={10} strokeWidth={1.5} /> {workspace.agentCount} {t('workspacesOverlay.agent', { count: workspace.agentCount })}
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-            <Clock size={10} strokeWidth={1.5} /> {threadCount} thread{threadCount !== 1 ? 's' : ''}
+            <Clock size={10} strokeWidth={1.5} /> {threadCount} {t('workspacesOverlay.thread', { count: threadCount })}
           </span>
-          {runningThreads > 0 && <span style={{ color: 'var(--color-success)', fontWeight: 600 }}>{runningThreads} running</span>}
+          {runningThreads > 0 && <span style={{ color: 'var(--color-success)', fontWeight: 600 }}>{runningThreads} {t('workspacesOverlay.running')}</span>}
         </div>
 
         <button
@@ -551,7 +556,7 @@ function WorkspaceCard({ workspace, isActive, activity, threadCount, runningThre
           onMouseLeave={e => { if (!isActive) e.currentTarget.style.opacity = '1' }}
           disabled={isActive}
         >
-          {isActive ? 'Current' : 'Switch'} {!isActive && <ArrowRight size={11} strokeWidth={2} />}
+          {isActive ? t('workspacesOverlay.current') : t('workspacesOverlay.switch')} {!isActive && <ArrowRight size={11} strokeWidth={2} />}
         </button>
       </div>
     </div>

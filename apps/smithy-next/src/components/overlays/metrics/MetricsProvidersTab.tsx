@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from '@/i18n'
 import type { TimeRange, LayoutSize, ModelMetrics, Insight } from './metrics-types'
 import { mockMetricsTasks, computeModelMetrics, computeInsights } from './metrics-mock-data'
 import { HorizontalBar } from './MetricsCharts'
@@ -18,6 +19,7 @@ interface MetricsProvidersTabProps {
 }
 
 export function MetricsProvidersTab({ timeRange, layout }: MetricsProvidersTabProps) {
+  const { t } = useTranslation('smithyNext')
   const models = useMemo(() => computeModelMetrics(mockMetricsTasks, timeRange), [timeRange])
   const insights = useMemo(() => computeInsights(models), [models])
   const [dismissedInsights, setDismissedInsights] = useState<Set<string>>(new Set())
@@ -60,19 +62,19 @@ export function MetricsProvidersTab({ timeRange, layout }: MetricsProvidersTabPr
 
       {/* Model Comparison Table */}
       <section>
-        <div style={sectionLabel}>Model Comparison</div>
+        <div style={sectionLabel}>{t('metrics.modelComparison')}</div>
         <div style={{ overflowX: 'auto' }}>
           <div style={{ minWidth: 800 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '120px repeat(8, 1fr)', gap: 4, padding: '6px 0', borderBottom: '1px solid var(--color-border-subtle)' }}>
-              <span style={colHeader}>Model</span>
-              <SortableHeader label="Tasks" field="tasksCompleted" current={sortField} onSort={handleSort} />
-              <SortableHeader label="Avg Time" field="avgTaskDurationHours" current={sortField} onSort={handleSort} />
-              <SortableHeader label="$/Task" field="costPerCompletedTask" current={sortField} onSort={handleSort} />
-              <SortableHeader label="$/MR" field="costPerMergedMR" current={sortField} onSort={handleSort} />
-              <SortableHeader label="CI Pass %" field="ciPassRateFirstAttempt" current={sortField} onSort={handleSort} />
-              <SortableHeader label="Re-open" field="reopenRate" current={sortField} onSort={handleSort} />
-              <SortableHeader label="Handoff" field="handoffRate" current={sortField} onSort={handleSort} />
-              <SortableHeader label="Cache %" field="cacheHitRate" current={sortField} onSort={handleSort} />
+              <span style={colHeader}>{t('metrics.model')}</span>
+              <SortableHeader label={t('metrics.tasks')} field="tasksCompleted" current={sortField} onSort={handleSort} />
+              <SortableHeader label={t('metrics.avgTime')} field="avgTaskDurationHours" current={sortField} onSort={handleSort} />
+              <SortableHeader label={t('metrics.dollarPerTask')} field="costPerCompletedTask" current={sortField} onSort={handleSort} />
+              <SortableHeader label={t('metrics.dollarPerMR')} field="costPerMergedMR" current={sortField} onSort={handleSort} />
+              <SortableHeader label={t('metrics.ciPassPercent')} field="ciPassRateFirstAttempt" current={sortField} onSort={handleSort} />
+              <SortableHeader label={t('metrics.reopen')} field="reopenRate" current={sortField} onSort={handleSort} />
+              <SortableHeader label={t('metrics.handoff')} field="handoffRate" current={sortField} onSort={handleSort} />
+              <SortableHeader label={t('metrics.cachePercent')} field="cacheHitRate" current={sortField} onSort={handleSort} />
             </div>
             {sortedModels.map(m => (
               <div key={m.model} style={{ display: 'grid', gridTemplateColumns: '120px repeat(8, 1fr)', gap: 4, padding: '8px 0', borderBottom: '1px solid var(--color-border-subtle)', alignItems: 'center' }}>
@@ -94,27 +96,27 @@ export function MetricsProvidersTab({ timeRange, layout }: MetricsProvidersTabPr
       {/* Rework + Cost Efficiency: side by side on wide, stacked otherwise */}
       <div style={{ display: 'grid', gridTemplateColumns: layout === 'wide' ? '1fr 1fr' : '1fr', gap: 20 }}>
         <section>
-          <div style={sectionLabel}>Rework Indicators by Model</div>
+          <div style={sectionLabel}>{t('metrics.reworkIndicatorsByModel')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {models.map(m => (
               <div key={m.model} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text)' }}>{shortModel(m.model)}</span>
-                <BarRow label="Test runs" value={m.avgTestRunCount} max={maxRework} rework />
-                <BarRow label="Reconciliations" value={m.avgReconciliationCount} max={maxRework} rework />
-                <BarRow label="Resumes" value={m.avgResumeCount} max={maxRework} rework />
+                <BarRow label={t('metrics.testRuns')} value={m.avgTestRunCount} max={maxRework} rework />
+                <BarRow label={t('metrics.reconciliations')} value={m.avgReconciliationCount} max={maxRework} rework />
+                <BarRow label={t('metrics.resumes')} value={m.avgResumeCount} max={maxRework} rework />
               </div>
             ))}
           </div>
         </section>
 
         <section>
-          <div style={sectionLabel}>Cost Efficiency by Model</div>
+          <div style={sectionLabel}>{t('metrics.costEfficiencyByModel')}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {models.map(m => (
               <div key={m.model} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text)' }}>{shortModel(m.model)}</span>
-                <BarRow label="Per task" value={m.costPerCompletedTask} max={maxCost} color="var(--color-primary)" format={v => `$${v.toFixed(2)}`} />
-                <BarRow label="Per MR" value={m.costPerMergedMR} max={maxCost} color="#8b5cf6" format={v => `$${v.toFixed(2)}`} />
+                <BarRow label={t('metrics.perTaskCost')} value={m.costPerCompletedTask} max={maxCost} color="var(--color-primary)" format={v => `$${v.toFixed(2)}`} />
+                <BarRow label={t('metrics.perMRCost')} value={m.costPerMergedMR} max={maxCost} color="#8b5cf6" format={v => `$${v.toFixed(2)}`} />
               </div>
             ))}
           </div>
@@ -173,17 +175,18 @@ function InsightBanner({ insight, onDismiss }: { insight: Insight; onDismiss: ()
 }
 
 function ModelCard({ model: m }: { model: ModelMetrics }) {
+  const { t } = useTranslation('smithyNext')
   return (
     <div style={{ background: 'var(--color-surface)', borderRadius: 'var(--radius-md)', padding: 12 }}>
       <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', marginBottom: 2 }}>{shortModel(m.model)}</div>
       <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 10 }}>{m.provider}</div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 12px' }}>
-        <MiniStat label="Tasks" value={String(m.tasksCompleted)} />
-        <MiniStat label="Avg Speed" value={`${m.avgTaskDurationHours.toFixed(1)}h`} />
-        <MiniStat label="Cost/Task" value={`$${m.costPerCompletedTask.toFixed(2)}`} />
-        <MiniStat label="CI Pass %" value={`${(m.ciPassRateFirstAttempt * 100).toFixed(0)}%`} />
-        <MiniStat label="Re-open %" value={`${(m.reopenRate * 100).toFixed(0)}%`} />
-        <MiniStat label="Cache Hit" value={`${(m.cacheHitRate * 100).toFixed(0)}%`} />
+        <MiniStat label={t('metrics.tasks')} value={String(m.tasksCompleted)} />
+        <MiniStat label={t('metrics.avgSpeed')} value={`${m.avgTaskDurationHours.toFixed(1)}h`} />
+        <MiniStat label={t('metrics.costPerTask')} value={`$${m.costPerCompletedTask.toFixed(2)}`} />
+        <MiniStat label={t('metrics.ciPassRate')} value={`${(m.ciPassRateFirstAttempt * 100).toFixed(0)}%`} />
+        <MiniStat label={t('metrics.reopenPercent')} value={`${(m.reopenRate * 100).toFixed(0)}%`} />
+        <MiniStat label={t('metrics.cacheHit')} value={`${(m.cacheHitRate * 100).toFixed(0)}%`} />
       </div>
     </div>
   )
