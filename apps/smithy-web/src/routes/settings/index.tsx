@@ -34,6 +34,7 @@ import {
   Workflow,
   Sparkles,
 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { ShortcutsSection } from '@stoneforge/ui';
 import { useContainerIsMobile } from '../../hooks';
 import {
@@ -52,6 +53,7 @@ import { InlinePresetSelector } from '../../components/settings/index.js';
 type TabValue = 'preferences' | 'workspace';
 
 export function SettingsPage() {
+  const { t } = useTranslation('smithy');
   const search = useSearch({ from: '/settings' }) as { tab?: string };
   const navigate = useNavigate();
 
@@ -72,16 +74,16 @@ export function SettingsPage() {
           <Settings className="w-5 h-5 text-[var(--color-primary)]" />
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-[var(--color-text)]">Settings</h1>
+          <h1 className="text-xl font-semibold text-[var(--color-text)]">{t('settings.title')}</h1>
           <p className="text-sm text-[var(--color-text-secondary)]">
-            Configure your preferences and workspace
+            {t('settings.subtitle')}
           </p>
         </div>
       </div>
 
       {/* Tabs: Preferences | Workspace */}
       <div className="border-b border-[var(--color-border)]">
-        <nav className="flex gap-1" aria-label="Settings tabs">
+        <nav className="flex gap-1" aria-label={t('settings.tabsLabel')}>
           <button
             onClick={() => setTab('preferences')}
             className={`pb-3 px-4 text-sm font-medium border-b-2 transition-colors ${
@@ -93,7 +95,7 @@ export function SettingsPage() {
           >
             <span className="flex items-center gap-2">
               <Palette className="w-4 h-4" />
-              Preferences
+              {t('settings.tabPreferences')}
             </span>
           </button>
           <button
@@ -107,7 +109,7 @@ export function SettingsPage() {
           >
             <span className="flex items-center gap-2">
               <Folder className="w-4 h-4" />
-              Workspace
+              {t('settings.tabWorkspace')}
             </span>
           </button>
         </nav>
@@ -124,6 +126,7 @@ export function SettingsPage() {
 // ============================================================================
 
 function PreferencesTab() {
+  const { t } = useTranslation('smithy');
   const { theme, notifications, agentDefaults } = useSettings();
   const isMobile = useContainerIsMobile();
 
@@ -132,71 +135,71 @@ function PreferencesTab() {
       {/* Theme */}
       <SettingsSection
         icon={Palette}
-        title="Theme"
-        description="Choose how the interface looks"
+        title={t('settings.themeTitle')}
+        description={t('settings.themeDesc')}
       >
         <div className="flex items-center gap-2">
           <ThemeButton
             theme="light"
             icon={Sun}
-            label="Light"
+            label={t('settings.themeLight')}
             isActive={theme.theme === 'light'}
             onClick={() => theme.setTheme('light')}
           />
           <ThemeButton
             theme="dark"
             icon={Moon}
-            label="Dark"
+            label={t('settings.themeDark')}
             isActive={theme.theme === 'dark'}
             onClick={() => theme.setTheme('dark')}
           />
           <ThemeButton
             theme="system"
             icon={Monitor}
-            label="System"
+            label={t('settings.themeSystem')}
             isActive={theme.theme === 'system'}
             onClick={() => theme.setTheme('system')}
           />
         </div>
         <p className="mt-2 text-xs text-[var(--color-text-tertiary)]">
           {theme.theme === 'system'
-            ? `Currently using ${theme.resolvedTheme} theme based on system preference`
-            : `Using ${theme.theme} theme`}
+            ? t('settings.themeSystemUsing', { theme: theme.resolvedTheme })
+            : t('settings.themeUsing', { theme: theme.theme })}
         </p>
       </SettingsSection>
 
       {/* Notifications */}
       <SettingsSection
         icon={Bell}
-        title="Notifications"
-        description="Configure how you receive alerts"
+        title={t('settings.notificationsTitle')}
+        description={t('settings.notificationsDesc')}
       >
         <div className="space-y-3">
           <ToggleSetting
-            label="Task completion alerts"
-            description="Notify when tasks are completed"
+            label={t('settings.notifTaskCompletion')}
+            description={t('settings.notifTaskCompletionDesc')}
             checked={notifications.settings.taskCompletion}
             onChange={(checked) => notifications.setSettings({ taskCompletion: checked })}
             testId="settings-notify-task"
           />
           <ToggleSetting
-            label="Agent health warnings"
-            description="Notify when agents encounter issues"
+            label={t('settings.notifAgentHealth')}
+            description={t('settings.notifAgentHealthDesc')}
             checked={notifications.settings.agentHealth}
             onChange={(checked) => notifications.setSettings({ agentHealth: checked })}
             testId="settings-notify-health"
           />
           <ToggleSetting
-            label="Merge notifications"
-            description="Notify when branches are merged"
+            label={t('settings.notifMerge')}
+            description={t('settings.notifMergeDesc')}
             checked={notifications.settings.mergeNotifications}
             onChange={(checked) => notifications.setSettings({ mergeNotifications: checked })}
             testId="settings-notify-merge"
           />
           <div className="pt-2 border-t border-[var(--color-border)]">
             <ToggleSetting
-              label="Sound"
-              description="Play a sound when notifications arrive"
+              label={t('settings.notifSound')}
+              description={t('settings.notifSoundDesc')}
               checked={notifications.settings.sound}
               onChange={(checked) => notifications.setSettings({ sound: checked })}
               icon={notifications.settings.sound ? Volume2 : VolumeX}
@@ -205,7 +208,7 @@ function PreferencesTab() {
           </div>
           <div className="pt-2">
             <label className="block text-sm text-[var(--color-text-secondary)] mb-1">
-              Toast duration
+              {t('settings.toastDuration')}
             </label>
             <select
               value={notifications.settings.toastDuration}
@@ -213,10 +216,10 @@ function PreferencesTab() {
               className="px-3 py-2 text-sm rounded-md border border-[var(--color-border)] bg-[var(--color-input-bg)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
               data-testid="settings-toast-duration"
             >
-              <option value="3000">3 seconds</option>
-              <option value="5000">5 seconds</option>
-              <option value="10000">10 seconds</option>
-              <option value="0">Don't auto-dismiss</option>
+              <option value="3000">{t('settings.toast3s')}</option>
+              <option value="5000">{t('settings.toast5s')}</option>
+              <option value="10000">{t('settings.toast10s')}</option>
+              <option value="0">{t('settings.toastNever')}</option>
             </select>
           </div>
           <div className="pt-2">
@@ -226,7 +229,7 @@ function PreferencesTab() {
               data-testid="settings-notify-reset"
             >
               <RotateCcw className="w-4 h-4" />
-              Reset to defaults
+              {t('settings.resetDefaults')}
             </button>
           </div>
         </div>
@@ -243,8 +246,8 @@ function PreferencesTab() {
       {/* Keyboard Shortcuts */}
       <SettingsSection
         icon={Keyboard}
-        title="Keyboard Shortcuts"
-        description="Quick access to common actions"
+        title={t('settings.keyboardShortcutsTitle')}
+        description={t('settings.keyboardShortcutsDesc')}
       >
         <ShortcutsSection defaults={DEFAULT_SHORTCUTS} isMobile={isMobile} />
       </SettingsSection>
@@ -277,6 +280,7 @@ const PROVIDER_DEFAULT_EXECUTABLES: Record<string, string> = {
 };
 
 function AgentDefaultsSection({ settings, setSettings, setDefaultModel, resetToDefaults }: AgentDefaultsSectionProps) {
+  const { t } = useTranslation('smithy');
   const { data: providersData } = useProviders();
   const providers = useMemo(() => providersData?.providers ?? [], [providersData?.providers]);
   const {
@@ -300,8 +304,8 @@ function AgentDefaultsSection({ settings, setSettings, setDefaultModel, resetToD
   return (
     <SettingsSection
       icon={Bot}
-      title="Agent Defaults"
-      description="Default provider and model for new agents"
+      title={t('settings.agentDefaultsTitle')}
+      description={t('settings.agentDefaultsDesc')}
     >
       <div className="space-y-4">
         {/* Default Provider */}
@@ -310,7 +314,7 @@ function AgentDefaultsSection({ settings, setSettings, setDefaultModel, resetToD
             htmlFor="default-provider"
             className="block text-sm text-[var(--color-text-secondary)] mb-1"
           >
-            Default Provider
+            {t('settings.defaultProvider')}
           </label>
           <div className="relative">
             <select
@@ -323,21 +327,21 @@ function AgentDefaultsSection({ settings, setSettings, setDefaultModel, resetToD
               {availableProviders.map((p) => (
                 <option key={p.name} value={p.name} disabled={!p.available}>
                   {PROVIDER_LABELS[p.name] ?? p.name}
-                  {!p.available ? ' (not installed)' : ''}
+                  {!p.available ? t('settings.notInstalled') : ''}
                 </option>
               ))}
             </select>
             <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)] pointer-events-none" />
           </div>
           <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
-            Provider used by default when creating new agents
+            {t('settings.defaultProviderHelp')}
           </p>
         </div>
 
         {/* Default Model per Provider */}
         <div>
           <label className="block text-sm text-[var(--color-text-secondary)] mb-2">
-            Default Model per Provider
+            {t('settings.defaultModelPerProvider')}
           </label>
           <div className="space-y-3">
             {availableProviders
@@ -353,7 +357,7 @@ function AgentDefaultsSection({ settings, setSettings, setDefaultModel, resetToD
               ))}
           </div>
           <p className="mt-2 text-xs text-[var(--color-text-tertiary)]">
-            These models will be pre-selected when creating agents with the corresponding provider
+            {t('settings.defaultModelHelp')}
           </p>
         </div>
 
@@ -362,24 +366,24 @@ function AgentDefaultsSection({ settings, setSettings, setDefaultModel, resetToD
           <div className="flex items-center gap-2 mb-2">
             <Terminal className="w-4 h-4 text-[var(--color-text-secondary)]" />
             <label className="block text-sm text-[var(--color-text-secondary)]">
-              Custom Executable Paths
+              {t('settings.customExecPaths')}
             </label>
           </div>
           <p className="text-xs text-[var(--color-text-tertiary)] mb-3">
-            Override the default executable path for each provider. Leave empty to use the system default.
+            {t('settings.customExecPathsHelp')}
           </p>
 
           {execPathsError && (
             <div className="flex items-center gap-2 mb-3 px-3 py-2 text-xs text-[var(--color-danger-text)] bg-[var(--color-danger-muted)] border border-[var(--color-danger)] rounded-md">
               <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-              <span>Failed to load executable paths: {execPathsError}</span>
+              <span>{t('settings.customExecPathsError', { error: execPathsError })}</span>
             </div>
           )}
 
           {execPathsLoading ? (
             <div className="flex items-center gap-2 py-2 text-xs text-[var(--color-text-tertiary)]">
               <Loader2 className="w-3 h-3 animate-spin" />
-              Loading executable paths...
+              {t('settings.customExecPathsLoading')}
             </div>
           ) : (
             <div className="space-y-3">
@@ -405,7 +409,7 @@ function AgentDefaultsSection({ settings, setSettings, setDefaultModel, resetToD
             data-testid="settings-agent-defaults-reset"
           >
             <RotateCcw className="w-4 h-4" />
-            Reset to defaults
+            {t('settings.resetDefaults')}
           </button>
         </div>
       </div>
@@ -418,6 +422,7 @@ function AgentDefaultsSection({ settings, setSettings, setDefaultModel, resetToD
 // ============================================================================
 
 function OnboardingTourSection() {
+  const { t } = useTranslation('smithy');
   const navigate = useNavigate();
 
   const handleRestartTour = useCallback(() => {
@@ -430,13 +435,12 @@ function OnboardingTourSection() {
   return (
     <SettingsSection
       icon={Sparkles}
-      title="Onboarding Tour"
-      description="Guided walkthrough of the dashboard"
+      title={t('settings.onboardingTitle')}
+      description={t('settings.onboardingDesc')}
     >
       <div className="space-y-3">
         <p className="text-sm text-[var(--color-text-secondary)]">
-          Take a guided tour of the key areas of the dashboard. The tour highlights
-          the activity dashboard, agent cards, system status, navigation, and more.
+          {t('settings.onboardingDescription')}
         </p>
         <button
           onClick={handleRestartTour}
@@ -444,7 +448,7 @@ function OnboardingTourSection() {
           data-testid="settings-restart-onboarding"
         >
           <RotateCcw className="w-4 h-4" />
-          Restart Onboarding Tour
+          {t('settings.restartOnboarding')}
         </button>
       </div>
     </SettingsSection>
@@ -465,6 +469,7 @@ function ProviderModelSelector({
   selectedModel: string;
   onModelChange: (model: string) => void;
 }) {
+  const { t } = useTranslation('smithy');
   const { data: modelsData, isLoading } = useProviderModels(providerName);
   const allModels = useMemo(() => modelsData?.models ?? [], [modelsData?.models]);
   const defaultModel = useMemo(() => allModels.find((m) => m.isDefault), [allModels]);
@@ -479,7 +484,7 @@ function ProviderModelSelector({
         {isLoading ? (
           <div className="flex items-center gap-2 py-2 text-xs text-[var(--color-text-tertiary)]">
             <Loader2 className="w-3 h-3 animate-spin" />
-            Loading models...
+            {t('settings.loadingModels')}
           </div>
         ) : (
           <>
@@ -491,8 +496,8 @@ function ProviderModelSelector({
             >
               <option value="">
                 {defaultModel
-                  ? `Provider default (${defaultModel.displayName})`
-                  : 'Provider default'}
+                  ? t('settings.providerDefaultModel', { model: defaultModel.displayName })
+                  : t('settings.providerDefault')}
               </option>
               {models.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -524,6 +529,7 @@ function ExecutablePathInput({
   defaultExecutable: string;
   onPathChange: (path: string) => void;
 }) {
+  const { t } = useTranslation('smithy');
   const hasCustomPath = currentPath.trim() !== '';
 
   return (
@@ -533,9 +539,9 @@ function ExecutablePathInput({
         {hasCustomPath && (
           <span
             className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded bg-[var(--color-success-muted)] text-[var(--color-success)]"
-            title="Custom executable path is set"
+            title={t('settings.customExecPathSet')}
           >
-            custom
+            {t('settings.customBadge')}
           </span>
         )}
       </span>
@@ -556,6 +562,7 @@ function ExecutablePathInput({
 // ============================================================================
 
 function WorkspaceTab() {
+  const { t } = useTranslation('smithy');
   const { workspace, stewardSchedules, resetAllToDefaults } = useSettings();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
@@ -567,13 +574,13 @@ function WorkspaceTab() {
       {/* Git Worktrees */}
       <SettingsSection
         icon={GitBranch}
-        title="Git Worktrees"
-        description="Configure how agent worktrees are managed"
+        title={t('settings.gitWorktreesTitle')}
+        description={t('settings.gitWorktreesDesc')}
       >
         <div className="space-y-4">
           <div>
             <label className="block text-sm text-[var(--color-text-secondary)] mb-1">
-              Worktree directory
+              {t('settings.worktreeDirectory')}
             </label>
             <input
               type="text"
@@ -584,12 +591,12 @@ function WorkspaceTab() {
               data-testid="settings-worktree-dir"
             />
             <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
-              Directory relative to workspace root where agent worktrees are created
+              {t('settings.worktreeDirectoryHelp')}
             </p>
           </div>
           <div>
             <label className="block text-sm text-[var(--color-text-secondary)] mb-1">
-              Default branch
+              {t('settings.defaultBranch')}
             </label>
             <input
               type="text"
@@ -600,12 +607,12 @@ function WorkspaceTab() {
               data-testid="settings-default-branch"
             />
             <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
-              Branch used as base for new worktrees
+              {t('settings.defaultBranchHelp')}
             </p>
           </div>
           <ToggleSetting
-            label="Auto-merge passing branches"
-            description="Automatically merge branches when tests pass"
+            label={t('settings.autoMerge')}
+            description={t('settings.autoMergeDesc')}
             checked={workspace.settings.autoMerge}
             onChange={(checked) => workspace.setSettings({ autoMerge: checked })}
             testId="settings-auto-merge"
@@ -616,13 +623,13 @@ function WorkspaceTab() {
       {/* Ephemeral Tasks */}
       <SettingsSection
         icon={Clock}
-        title="Ephemeral Tasks"
-        description="Configure temporary task retention"
+        title={t('settings.ephemeralTasksTitle')}
+        description={t('settings.ephemeralTasksDesc')}
       >
         <div className="space-y-4">
           <div>
             <label className="block text-sm text-[var(--color-text-secondary)] mb-1">
-              Retention period
+              {t('settings.retentionPeriod')}
             </label>
             <select
               value={workspace.settings.ephemeralRetention}
@@ -630,15 +637,15 @@ function WorkspaceTab() {
               className="w-full px-3 py-2 rounded-md border border-[var(--color-border)] bg-[var(--color-input-bg)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
               data-testid="settings-ephemeral-retention"
             >
-              <option value="1h">1 hour</option>
-              <option value="6h">6 hours</option>
-              <option value="12h">12 hours</option>
-              <option value="24h">24 hours</option>
-              <option value="7d">7 days</option>
-              <option value="30d">30 days</option>
+              <option value="1h">{t('settings.retention1h')}</option>
+              <option value="6h">{t('settings.retention6h')}</option>
+              <option value="12h">{t('settings.retention12h')}</option>
+              <option value="24h">{t('settings.retention24h')}</option>
+              <option value="7d">{t('settings.retention7d')}</option>
+              <option value="30d">{t('settings.retention30d')}</option>
             </select>
             <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
-              Completed ephemeral tasks are automatically deleted after this period
+              {t('settings.retentionHelp')}
             </p>
           </div>
         </div>
@@ -647,21 +654,21 @@ function WorkspaceTab() {
       {/* Steward Schedules */}
       <SettingsSection
         icon={Shield}
-        title="Steward Schedules"
-        description="Configure automated steward execution"
+        title={t('settings.stewardSchedulesTitle')}
+        description={t('settings.stewardSchedulesDesc')}
       >
         <div className="space-y-4">
           <ToggleSetting
-            label="Merge Steward"
-            description="Automatically merges completed branches"
+            label={t('settings.mergeSteward')}
+            description={t('settings.mergeStewardDesc')}
             checked={stewardSchedules.settings.mergeStewardEnabled}
             onChange={(checked) => stewardSchedules.setSettings({ mergeStewardEnabled: checked })}
             testId="settings-merge-steward"
           />
 
           <ToggleSetting
-            label="Docs Steward"
-            description="Maintains and updates documentation"
+            label={t('settings.docsSteward')}
+            description={t('settings.docsStewardDesc')}
             checked={stewardSchedules.settings.docsStewardEnabled}
             onChange={(checked) => stewardSchedules.setSettings({ docsStewardEnabled: checked })}
             testId="settings-docs-steward"
@@ -674,7 +681,7 @@ function WorkspaceTab() {
               data-testid="settings-steward-reset"
             >
               <RotateCcw className="w-4 h-4" />
-              Reset to defaults
+              {t('settings.resetDefaults')}
             </button>
           </div>
         </div>
@@ -686,8 +693,8 @@ function WorkspaceTab() {
       {/* Danger Zone */}
       <SettingsSection
         icon={Trash2}
-        title="Reset All Settings"
-        description="Reset all settings to their default values"
+        title={t('settings.resetAllTitle')}
+        description={t('settings.resetAllDesc')}
         variant="danger"
       >
         {!showResetConfirm ? (
@@ -697,11 +704,11 @@ function WorkspaceTab() {
             data-testid="settings-reset-all"
           >
             <RotateCcw className="w-4 h-4" />
-            Reset All Settings
+            {t('settings.resetAllButton')}
           </button>
         ) : (
           <div className="flex items-center gap-2">
-            <span className="text-sm text-[var(--color-text-secondary)]">Are you sure?</span>
+            <span className="text-sm text-[var(--color-text-secondary)]">{t('settings.areYouSure')}</span>
             <button
               onClick={() => {
                 resetAllToDefaults();
@@ -711,14 +718,14 @@ function WorkspaceTab() {
               data-testid="settings-reset-confirm"
             >
               <Check className="w-4 h-4" />
-              Yes, Reset
+              {t('settings.yesReset')}
             </button>
             <button
               onClick={() => setShowResetConfirm(false)}
               className="px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition-colors"
               data-testid="settings-reset-cancel"
             >
-              Cancel
+              {t('common:button.cancel')}
             </button>
           </div>
         )}
@@ -732,6 +739,7 @@ function WorkspaceTab() {
 // ============================================================================
 
 function DirectorSection() {
+  const { t } = useTranslation('smithy');
   const { data: daemonStatus } = useDaemonStatus();
   const updateConfig = useUpdateDaemonConfig();
   const enabled = daemonStatus?.config?.directorInboxForwardingEnabled ?? false;
@@ -739,12 +747,12 @@ function DirectorSection() {
   return (
     <SettingsSection
       icon={MessageSquare}
-      title="Director"
-      description="Configure director agent behavior"
+      title={t('settings.directorTitle')}
+      description={t('settings.directorDesc')}
     >
       <ToggleSetting
-        label="Auto-forward inbox messages"
-        description="Forward new messages to the director's terminal when idle (120s debounce)"
+        label={t('settings.autoForwardInbox')}
+        description={t('settings.autoForwardInboxDesc')}
         checked={enabled}
         onChange={(checked) => updateConfig.mutate({ directorInboxForwardingEnabled: checked })}
         testId="settings-director-forwarding"
@@ -758,23 +766,24 @@ function DirectorSection() {
 // ============================================================================
 
 function WorkflowPresetSection() {
+  const { t } = useTranslation('smithy');
   const { preset, isLoading, error, setPreset } = useWorkflowPreset();
 
   return (
     <SettingsSection
       icon={Workflow}
-      title="Workflow Preset"
-      description="Controls how agents merge code and what permissions they have"
+      title={t('settings.workflowPresetTitle')}
+      description={t('settings.workflowPresetDesc')}
     >
       {isLoading ? (
         <div className="flex items-center gap-2 py-2 text-xs text-[var(--color-text-tertiary)]">
           <Loader2 className="w-3 h-3 animate-spin" />
-          Loading workflow preset...
+          {t('settings.workflowPresetLoading')}
         </div>
       ) : error ? (
         <div className="flex items-center gap-2 px-3 py-2 text-xs text-[var(--color-danger-text)] bg-[var(--color-danger-muted)] border border-[var(--color-danger)] rounded-md">
           <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-          <span>Failed to load workflow preset: {error}</span>
+          <span>{t('settings.workflowPresetError', { error })}</span>
         </div>
       ) : (
         <InlinePresetSelector currentPreset={preset} onSelect={setPreset} />

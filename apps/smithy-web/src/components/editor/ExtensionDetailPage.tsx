@@ -12,6 +12,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useQuery } from '@tanstack/react-query';
 import { marked } from 'marked';
 import {
@@ -170,6 +171,7 @@ function MarkdownContent({ content, isLoading, error, emptyMessage }: MarkdownCo
 // ============================================================================
 
 export function ExtensionDetailPage({ extensionId, className = '' }: ExtensionDetailPageProps) {
+  const { t } = useTranslation('smithy');
   const [activeTab, setActiveTab] = useState<DetailTab>('details');
 
   // Parse extensionId into namespace and name
@@ -266,9 +268,9 @@ export function ExtensionDetailPage({ extensionId, className = '' }: ExtensionDe
     return (
       <div className={`flex flex-col items-center justify-center h-full text-center p-6 ${className}`}>
         <AlertCircle className="w-12 h-12 text-[var(--color-danger)] mb-4" />
-        <h3 className="text-lg font-medium text-[var(--color-text)] mb-2">Failed to Load Extension</h3>
+        <h3 className="text-lg font-medium text-[var(--color-text)] mb-2">{t('editor.failedToLoadExtension')}</h3>
         <p className="text-sm text-[var(--color-text-secondary)]">
-          {metadataError instanceof Error ? metadataError.message : 'Could not load extension details.'}
+          {metadataError instanceof Error ? metadataError.message : t('editor.couldNotLoadDetails')}
         </p>
       </div>
     );
@@ -319,7 +321,7 @@ export function ExtensionDetailPage({ extensionId, className = '' }: ExtensionDe
               )}
             </div>
             <p className="text-sm text-[var(--color-text-secondary)] line-clamp-2">
-              {extension.description || 'No description available'}
+              {extension.description || t('editor.noDescriptionAvailable')}
             </p>
           </div>
 
@@ -414,7 +416,7 @@ export function ExtensionDetailPage({ extensionId, className = '' }: ExtensionDe
               content={readmeContent || ''}
               isLoading={readmeLoading}
               error={readmeError instanceof Error ? readmeError.message : null}
-              emptyMessage="No details available"
+              emptyMessage={t('editor.noDetailsAvailable')}
             />
           )}
           {activeTab === 'changelog' && (
@@ -422,7 +424,7 @@ export function ExtensionDetailPage({ extensionId, className = '' }: ExtensionDe
               content={changelogContent || ''}
               isLoading={changelogLoading}
               error={changelogError instanceof Error ? changelogError.message : null}
-              emptyMessage="No changelog available"
+              emptyMessage={t('editor.noChangelogAvailable')}
             />
           )}
         </div>
@@ -439,18 +441,18 @@ export function ExtensionDetailPage({ extensionId, className = '' }: ExtensionDe
             </h3>
             <dl className="space-y-2">
               <div>
-                <dt className="text-xs text-[var(--color-text-muted)]">Identifier</dt>
+                <dt className="text-xs text-[var(--color-text-muted)]">{t('editor.identifier')}</dt>
                 <dd className="text-sm text-[var(--color-text)] font-mono">
                   {extensionId}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-[var(--color-text-muted)]">Version</dt>
+                <dt className="text-xs text-[var(--color-text-muted)]">{t('editor.version')}</dt>
                 <dd className="text-sm text-[var(--color-text)]">{extension.version}</dd>
               </div>
               {extension.timestamp && (
                 <div>
-                  <dt className="text-xs text-[var(--color-text-muted)]">Last Updated</dt>
+                  <dt className="text-xs text-[var(--color-text-muted)]">{t('editor.lastUpdated')}</dt>
                   <dd className="text-sm text-[var(--color-text)]">
                     {formatRelativeTime(extension.timestamp)}
                   </dd>
@@ -467,7 +469,7 @@ export function ExtensionDetailPage({ extensionId, className = '' }: ExtensionDe
             <dl className="space-y-2">
               {extension.timestamp && (
                 <div>
-                  <dt className="text-xs text-[var(--color-text-muted)]">Last Released</dt>
+                  <dt className="text-xs text-[var(--color-text-muted)]">{t('editor.lastReleased')}</dt>
                   <dd className="text-sm text-[var(--color-text)]">
                     {formatDate(extension.timestamp)}
                   </dd>
@@ -510,7 +512,7 @@ export function ExtensionDetailPage({ extensionId, className = '' }: ExtensionDe
                     className="flex items-center gap-2 text-sm text-[var(--color-primary)] hover:underline"
                   >
                     <Folder className="w-3.5 h-3.5" />
-                    <span>Repository</span>
+                    <span>{t('editor.repository')}</span>
                     <ExternalLink className="w-3 h-3 ml-auto" />
                   </a>
                 </li>
@@ -524,7 +526,7 @@ export function ExtensionDetailPage({ extensionId, className = '' }: ExtensionDe
                     className="flex items-center gap-2 text-sm text-[var(--color-primary)] hover:underline"
                   >
                     <Scale className="w-3.5 h-3.5" />
-                    <span>License</span>
+                    <span>{t('editor.license')}</span>
                     <ExternalLink className="w-3 h-3 ml-auto" />
                   </a>
                 </li>
@@ -538,7 +540,7 @@ export function ExtensionDetailPage({ extensionId, className = '' }: ExtensionDe
                     className="flex items-center gap-2 text-sm text-[var(--color-primary)] hover:underline"
                   >
                     <LinkIcon className="w-3.5 h-3.5" />
-                    <span>Marketplace</span>
+                    <span>{t('editor.marketplaceSection')}</span>
                     <ExternalLink className="w-3 h-3 ml-auto" />
                   </a>
                 </li>

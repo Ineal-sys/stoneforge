@@ -10,6 +10,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   X,
   Plus,
@@ -73,6 +74,7 @@ function poolToFormState(pool: AgentPool): FormState {
 // ============================================================================
 
 export function EditPoolDialog({ isOpen, onClose, pool, onSuccess }: EditPoolDialogProps) {
+  const { t } = useTranslation('smithy');
   const [form, setForm] = useState<FormState>(() => poolToFormState(pool));
   const [error, setError] = useState<string | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -269,7 +271,7 @@ export function EditPoolDialog({ isOpen, onClose, pool, onSuccess }: EditPoolDia
                   type="text"
                   value={form.description}
                   onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="e.g., Pool for ephemeral build workers"
+                  placeholder={t('pool.poolDescriptionPlaceholder')}
                   className="
                     w-full px-3 py-2
                     text-sm
@@ -373,7 +375,7 @@ export function EditPoolDialog({ isOpen, onClose, pool, onSuccess }: EditPoolDia
                         className="rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
                         data-testid="edit-pool-enabled"
                       />
-                      <span className="text-sm text-[var(--color-text)]">Pool enabled</span>
+                      <span className="text-sm text-[var(--color-text)]">{t('pool.poolEnabled')}</span>
                     </label>
 
                     {/* Tags */}

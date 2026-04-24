@@ -3,12 +3,13 @@
  *
  * Non-dismissable modal that blocks the app when one or more providers
  * required by registered agents are not installed on the machine.
- * Shows install instructions and a per-provider "Verify Installation" button.
+ * Shows install instructions and a per-provider "t('provider.verifyInstallation')" button.
  * Also offers a "change provider" option so users can switch affected agents
  * to an already-installed provider.
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   Dialog,
   DialogContent,
@@ -31,7 +32,7 @@ export interface ProviderInstallModalProps {
   missingProviders: MissingProvider[];
   /** Providers that are installed and available (for the change-provider UI) */
   availableProviders: ProviderInfo[];
-  /** Called when the user clicks "Verify Installation" */
+  /** Called when the user clicks verify */
   onVerify: (providerName: string) => Promise<unknown>;
   /** Whether a given provider is currently being verified */
   isVerifying: (providerName: string) => boolean;
@@ -51,6 +52,7 @@ interface AgentProviderChangeRowProps {
 }
 
 function AgentProviderChangeRow({ agent, availableProviders, onChangeProvider }: AgentProviderChangeRowProps) {
+  const { t } = useTranslation('smithy');
   const [selectedProvider, setSelectedProvider] = useState('');
   const [isChanging, setIsChanging] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +64,7 @@ function AgentProviderChangeRow({ agent, availableProviders, onChangeProvider }:
     try {
       await onChangeProvider(agent.id, selectedProvider);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to change provider');
+      setError(err instanceof Error ? err.message : t('provider.failedToChange'));
     } finally {
       setIsChanging(false);
     }
@@ -153,6 +155,7 @@ function ProviderCard({
   isVerified,
   onChangeProvider,
 }: ProviderCardProps) {
+  const { t } = useTranslation('smithy');
   const agentNames = provider.agents.map((a) => a.name).join(', ');
   const hasAlternatives = availableProviders.length > 0;
 
@@ -217,10 +220,10 @@ function ProviderCard({
             {isVerifying ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Verifying...
+                {t('provider.verifying')}
               </>
             ) : (
-              'Verify Installation'
+              t('provider.verifyInstallation')
             )}
           </button>
         </div>
@@ -266,6 +269,7 @@ export function ProviderInstallModal({
   isVerifying,
   onChangeProvider,
 }: ProviderInstallModalProps) {
+  const { t } = useTranslation('smithy');
   // Track which providers have been verified (verified = was missing, now available)
   const [verifiedProviders, setVerifiedProviders] = useState<Set<string>>(new Set());
 
@@ -313,13 +317,13 @@ export function ProviderInstallModal({
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-[var(--color-warning)]" />
             <DialogTitle>
-              {isPlural ? 'Providers Not Installed' : 'Provider Not Installed'}
+              {isPlural ? t('provider.providersNotInstalled') : t('provider.providerNotInstalled')}
             </DialogTitle>
           </div>
           <DialogDescription>
             {isPlural
-              ? 'Some providers required by your agents are not installed. Install them and click "Verify Installation" to continue, or change affected agents to use an installed provider.'
-              : 'A provider required by your agents is not installed. Install it and click "Verify Installation" to continue, or change affected agents to use an installed provider.'}
+              ? t('provider.notInstalledPluralDescription')
+              : t('provider.notInstalledSingularDescription')}
           </DialogDescription>
         </DialogHeader>
 

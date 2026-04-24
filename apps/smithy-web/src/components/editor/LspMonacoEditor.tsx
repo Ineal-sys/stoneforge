@@ -12,6 +12,7 @@
  */
 
 import { useState, memo, useEffect, useRef } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import * as monaco from 'monaco-editor';
 import { getKeyboardManager } from '@stoneforge/ui';
 import { useLsp, isPotentialLspLanguage, getActiveClient, type LspState } from '../../lib/monaco-lsp';
@@ -187,6 +188,7 @@ function LspMonacoEditorComponent({
 }: LspMonacoEditorProps) {
   // Monaco should already be initialized by FileEditorPage before this component mounts.
   // Verify initialization state for defensive coding.
+  const { t } = useTranslation('smithy');
   const [error] = useState<string | null>(() => {
     if (!isMonacoInitialized()) {
       console.error('[LspMonacoEditor] Monaco not initialized! FileEditorPage should call initializeMonaco() first.');
@@ -467,7 +469,7 @@ function LspMonacoEditorComponent({
     return (
       <div className={`flex items-center justify-center h-full bg-[var(--color-surface)] ${className}`}>
         <div className="text-center p-4">
-          <p className="text-[var(--color-danger)] mb-2">Failed to load editor</p>
+          <p className="text-[var(--color-danger)] mb-2">{t('editor.failedToLoadEditor')}</p>
           <p className="text-sm text-[var(--color-text-secondary)]">{error}</p>
         </div>
       </div>

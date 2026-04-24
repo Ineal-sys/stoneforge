@@ -21,6 +21,7 @@ import { useGlobalKeyboardShortcuts, useOnboardingTour } from '../../hooks';
 import { useContainerWidthObserver, ContainerWidthProvider } from '../../hooks/useContainerBreakpoint';
 import { BREAKPOINTS, useWindowSize } from '../../hooks/useBreakpoint';
 import { toast } from 'sonner';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   OnboardingTour,
   type TourStep,
@@ -78,11 +79,12 @@ function useHealth() {
 
 // Connection status indicator
 function ConnectionStatus({ health }: { health: ReturnType<typeof useHealth> }) {
+  const { t } = useTranslation('smithy');
   if (health.isLoading) {
     return (
       <div className="flex items-center gap-2 text-[var(--color-text-tertiary)]">
         <div className="w-2 h-2 rounded-full bg-[var(--color-text-tertiary)] animate-pulse" />
-        <span className="text-sm">Connecting...</span>
+        <span className="text-sm">{t('appShell.connecting')}</span>
       </div>
     );
   }
@@ -91,7 +93,7 @@ function ConnectionStatus({ health }: { health: ReturnType<typeof useHealth> }) 
     return (
       <div className="flex items-center gap-2 text-[var(--color-danger-text)]">
         <div className="w-2 h-2 rounded-full bg-[var(--color-danger)]" />
-        <span className="text-sm font-medium">Disconnected</span>
+        <span className="text-sm font-medium">{t('appShell.disconnected')}</span>
       </div>
     );
   }
@@ -99,7 +101,7 @@ function ConnectionStatus({ health }: { health: ReturnType<typeof useHealth> }) 
   return (
     <div className="flex items-center gap-2 text-[var(--color-success-text)]">
       <div className="w-2 h-2 rounded-full bg-[var(--color-success)]" />
-      <span className="text-sm font-medium">Connected</span>
+      <span className="text-sm font-medium">{t('appShell.connected')}</span>
     </div>
   );
 }
@@ -111,22 +113,24 @@ interface RouteConfig {
   parent?: string;
 }
 
-const ROUTE_CONFIG: Record<string, RouteConfig> = {
-  '/activity': { label: 'Activity', icon: Activity },
-  '/tasks': { label: 'Tasks', icon: CheckSquare },
-  '/merge-requests': { label: 'Merge Requests', icon: GitMerge },
-  '/plans': { label: 'Plans', icon: ClipboardList },
-  '/agents': { label: 'Agents', icon: Users },
-  '/workspaces': { label: 'Workspaces', icon: LayoutGrid },
-  '/workflows': { label: 'Workflows', icon: Workflow },
-  '/metrics': { label: 'Metrics', icon: BarChart3 },
-  '/settings': { label: 'Settings', icon: Settings },
-  // Collaborate section
-  '/inbox': { label: 'Inbox', icon: Inbox },
-  '/messages': { label: 'Messages', icon: MessageSquare },
-  '/documents': { label: 'Documents', icon: FileText },
-  '/editor': { label: 'Editor', icon: FileCode },
-};
+function getRouteConfig(t: (key: string) => string): Record<string, RouteConfig> {
+  return {
+    '/activity': { label: t('appShell.routeActivity'), icon: Activity },
+    '/tasks': { label: t('appShell.routeTasks'), icon: CheckSquare },
+    '/merge-requests': { label: t('appShell.routeMergeRequests'), icon: GitMerge },
+    '/plans': { label: t('appShell.routePlans'), icon: ClipboardList },
+    '/agents': { label: t('appShell.routeAgents'), icon: Users },
+    '/workspaces': { label: t('appShell.routeWorkspaces'), icon: LayoutGrid },
+    '/workflows': { label: t('appShell.routeWorkflows'), icon: Workflow },
+    '/metrics': { label: t('appShell.routeMetrics'), icon: BarChart3 },
+    '/settings': { label: t('appShell.routeSettings'), icon: Settings },
+    // Collaborate section
+    '/inbox': { label: t('appShell.routeInbox'), icon: Inbox },
+    '/messages': { label: t('appShell.routeMessages'), icon: MessageSquare },
+    '/documents': { label: t('appShell.routeDocuments'), icon: FileText },
+    '/editor': { label: t('appShell.routeEditor'), icon: FileCode },
+  };
+}
 
 interface BreadcrumbItem {
   label: string;
@@ -135,7 +139,7 @@ interface BreadcrumbItem {
   isLast: boolean;
 }
 
-function useBreadcrumbs(): BreadcrumbItem[] {
+function useBreadcrumbs(routeConfig: Record<string, RouteConfig>): BreadcrumbItem[] {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
 
@@ -146,7 +150,7 @@ function useBreadcrumbs(): BreadcrumbItem[] {
     // Build breadcrumb chain from current path
     const pathsToResolve: string[] = [];
     while (path) {
-      const config = ROUTE_CONFIG[path];
+      const config = routeConfig[path];
       if (config) {
         pathsToResolve.unshift(path);
         path = config.parent || '';
@@ -162,7 +166,7 @@ function useBreadcrumbs(): BreadcrumbItem[] {
 
     // Create breadcrumb items
     pathsToResolve.forEach((p, index) => {
-      const config = ROUTE_CONFIG[p];
+      const config = routeConfig[p];
       if (config) {
         breadcrumbs.push({
           label: config.label,
@@ -174,18 +178,19 @@ function useBreadcrumbs(): BreadcrumbItem[] {
     });
 
     return breadcrumbs;
-  }, [currentPath]);
+  }, [currentPath, routeConfig]);
 }
 
-function Breadcrumbs() {
-  const breadcrumbs = useBreadcrumbs();
+function Breadcrumbs({ routeConfig }: { routeConfig: Record<string, RouteConfig> }) {
+  const { t } = useTranslation('smithy');
+  const breadcrumbs = useBreadcrumbs(routeConfig);
 
   if (breadcrumbs.length === 0) {
     return null;
   }
 
   return (
-    <nav aria-label="Breadcrumb" data-testid="breadcrumbs">
+    <nav aria-label={t('appShell.breadcrumb')} data-testid="breadcrumbs">
       <ol className="flex items-center gap-1 text-sm">
         {breadcrumbs.map((crumb, index) => {
           const Icon = crumb.icon;
@@ -220,8 +225,8 @@ function Breadcrumbs() {
   );
 }
 
-function BreadcrumbsMobile() {
-  const breadcrumbs = useBreadcrumbs();
+function BreadcrumbsMobile({ routeConfig }: { routeConfig: Record<string, RouteConfig> }) {
+  const breadcrumbs = useBreadcrumbs(routeConfig);
   const lastCrumb = breadcrumbs[breadcrumbs.length - 1];
 
   if (!lastCrumb) {
@@ -299,359 +304,324 @@ function useDirectorPanelState() {
 // Onboarding Tour Step Definitions
 // ============================================================================
 
-const ONBOARDING_STEPS: TourStep[] = [
-  // ── Section 1: Command Center (route: /activity) ──────────────────────
-  {
-    id: 'welcome',
-    targetTestId: 'activity-page',
-    title: 'Welcome to Stoneforge',
-    description:
-      'Your command center -- see all active agents, tasks, and system health at a glance.',
-    section: 'Command Center',
-    route: '/activity',
-  },
-  {
-    id: 'system-status',
-    targetTestId: 'system-status-bar',
-    title: 'System Status',
-    description:
-      'These indicators show active agents, in-progress tasks, and merge request pipeline health. A quick pulse check.',
-    section: 'Command Center',
-    route: '/activity',
-  },
-  {
-    id: 'agent-cards',
-    targetTestId: 'active-agents-section',
-    title: 'Active Agents',
-    description:
-      'Each card is a running agent showing its status, current task, and live output. Click one to open its terminal.',
-    section: 'Command Center',
-    route: '/activity',
-  },
-  {
-    id: 'header-bar',
-    targetTestId: 'header',
-    title: 'Global Controls',
-    description:
-      'The header gives you the command palette (Cmd+K), daemon toggle, emergency stop, notifications, and theme switch -- available on every page.',
-    section: 'Command Center',
-    route: '/activity',
-  },
-  {
-    id: 'stop-all-agents',
-    targetTestId: 'stop-all-agents-button',
-    title: 'Emergency Stop',
-    description:
-      'This button immediately stops all running agents. Use it as an emergency brake if you see something going wrong and need to intervene quickly.',
-    section: 'Command Center',
-    route: '/activity',
-  },
-  {
-    id: 'daemon-toggle',
-    targetTestId: 'daemon-toggle',
-    title: 'Autopilot',
-    description:
-      'The Autopilot toggle controls the dispatch daemon. When enabled, tasks are automatically assigned to available agents. Turn it off when you want to pause automatic work assignment and assign tasks manually.',
-    section: 'Command Center',
-    route: '/activity',
-  },
+function getOnboardingSteps(t: (key: string) => string): TourStep[] {
+  return [
+    // ── Section 1: Command Center (route: /activity) ──────────────────────
+    {
+      id: 'welcome',
+      targetTestId: 'activity-page',
+      title: t('onboarding.welcomeTitle'),
+      description: t('onboarding.welcomeDesc'),
+      section: t('onboarding.sectionCommandCenter'),
+      route: '/activity',
+    },
+    {
+      id: 'system-status',
+      targetTestId: 'system-status-bar',
+      title: t('onboarding.systemStatusTitle'),
+      description: t('onboarding.systemStatusDesc'),
+      section: t('onboarding.sectionCommandCenter'),
+      route: '/activity',
+    },
+    {
+      id: 'agent-cards',
+      targetTestId: 'active-agents-section',
+      title: t('onboarding.activeAgentsTitle'),
+      description: t('onboarding.activeAgentsDesc'),
+      section: t('onboarding.sectionCommandCenter'),
+      route: '/activity',
+    },
+    {
+      id: 'header-bar',
+      targetTestId: 'header',
+      title: t('onboarding.globalControlsTitle'),
+      description: t('onboarding.globalControlsDesc'),
+      section: t('onboarding.sectionCommandCenter'),
+      route: '/activity',
+    },
+    {
+      id: 'stop-all-agents',
+      targetTestId: 'stop-all-agents-button',
+      title: t('onboarding.emergencyStopTitle'),
+      description: t('onboarding.emergencyStopDesc'),
+      section: t('onboarding.sectionCommandCenter'),
+      route: '/activity',
+    },
+    {
+      id: 'daemon-toggle',
+      targetTestId: 'daemon-toggle',
+      title: t('onboarding.autopilotTitle'),
+      description: t('onboarding.autopilotDesc'),
+      section: t('onboarding.sectionCommandCenter'),
+      route: '/activity',
+    },
 
-  // ── Section 2: Managing Work (routes: /tasks, /plans, /merge-requests) ─
-  {
-    id: 'tasks-overview',
-    targetTestId: 'tasks-page',
-    title: 'Task Board',
-    description:
-      'All work items live here. Switch between list and Kanban views, filter by status tabs, search, sort, and group tasks however you like.',
-    section: 'Managing Work',
-    route: '/tasks',
-  },
-  {
-    id: 'tasks-create',
-    targetTestId: 'tasks-create',
-    title: 'Create Tasks',
-    description:
-      "You can manually create tasks here, but you usually won't need to. Just give work to the Director and it will plan and create tasks for you automatically.",
-    section: 'Managing Work',
-    route: '/tasks',
-  },
-  {
-    id: 'tasks-views',
-    targetTestId: 'tasks-tab-in_progress',
-    title: 'Status Tabs',
-    description:
-      'Filter tasks by lifecycle stage. "In Progress" and "Awaiting Merge" show what agents are actively working on.',
-    section: 'Managing Work',
-    route: '/tasks',
-  },
-  {
-    id: 'tasks-detail',
-    targetTestId: 'task-detail-panel',
-    title: 'Task Details',
-    description:
-      'Click any task to open its detail panel. View and edit the title, status, priority, assignee, and description. Track dependencies and view the full task history.',
-    section: 'Managing Work',
-    route: '/tasks',
-  },
-  {
-    id: 'plans-overview',
-    targetTestId: 'plans-page',
-    title: 'Plans & Roadmap',
-    description:
-      'Plans group related tasks into a coordinated effort. Switch to Roadmap view for a timeline visualization.',
-    section: 'Managing Work',
-    route: '/plans',
-  },
-  {
-    id: 'plans-detail',
-    targetTestId: 'plan-detail-panel',
-    title: 'Plan Details',
-    description:
-      'Click a plan to see its tasks, progress, and status. Add or remove tasks, activate draft plans, and track completion across the entire effort.',
-    section: 'Managing Work',
-    route: '/plans',
-  },
-  {
-    id: 'merge-requests',
-    targetTestId: 'merge-requests-page',
-    title: 'Merge Requests',
-    description:
-      'When agents complete work, their branches appear here. Review diffs, approve, request changes, or merge directly.',
-    section: 'Managing Work',
-    route: '/merge-requests',
-  },
+    // ── Section 2: Managing Work (routes: /tasks, /plans, /merge-requests) ─
+    {
+      id: 'tasks-overview',
+      targetTestId: 'tasks-page',
+      title: t('onboarding.taskBoardTitle'),
+      description: t('onboarding.taskBoardDesc'),
+      section: t('onboarding.sectionManagingWork'),
+      route: '/tasks',
+    },
+    {
+      id: 'tasks-create',
+      targetTestId: 'tasks-create',
+      title: t('onboarding.createTasksTitle'),
+      description: t('onboarding.createTasksDesc'),
+      section: t('onboarding.sectionManagingWork'),
+      route: '/tasks',
+    },
+    {
+      id: 'tasks-views',
+      targetTestId: 'tasks-tab-in_progress',
+      title: t('onboarding.statusTabsTitle'),
+      description: t('onboarding.statusTabsDesc'),
+      section: t('onboarding.sectionManagingWork'),
+      route: '/tasks',
+    },
+    {
+      id: 'tasks-detail',
+      targetTestId: 'task-detail-panel',
+      title: t('onboarding.taskDetailsTitle'),
+      description: t('onboarding.taskDetailsDesc'),
+      section: t('onboarding.sectionManagingWork'),
+      route: '/tasks',
+    },
+    {
+      id: 'plans-overview',
+      targetTestId: 'plans-page',
+      title: t('onboarding.plansRoadmapTitle'),
+      description: t('onboarding.plansRoadmapDesc'),
+      section: t('onboarding.sectionManagingWork'),
+      route: '/plans',
+    },
+    {
+      id: 'plans-detail',
+      targetTestId: 'plan-detail-panel',
+      title: t('onboarding.planDetailsTitle'),
+      description: t('onboarding.planDetailsDesc'),
+      section: t('onboarding.sectionManagingWork'),
+      route: '/plans',
+    },
+    {
+      id: 'merge-requests',
+      targetTestId: 'merge-requests-page',
+      title: t('onboarding.mergeRequestsTitle'),
+      description: t('onboarding.mergeRequestsDesc'),
+      section: t('onboarding.sectionManagingWork'),
+      route: '/merge-requests',
+    },
 
-  // ── Section 3: Agent Fleet (routes: /agents, /workspaces) ─────────────
-  {
-    id: 'agents-overview',
-    targetTestId: 'agents-page',
-    title: 'Agent Registry',
-    description:
-      'Meet your fleet: Directors orchestrate, Workers execute tasks, Stewards review code. Create, configure, and manage agents here.',
-    section: 'Agent Fleet',
-    route: '/agents',
-  },
-  {
-    id: 'agents-create-modal',
-    targetTestId: 'agents-create',
-    title: 'Create Agents',
-    description:
-      'Click (+) to add agents. Workers execute individual tasks, Persistent Workers stay running across tasks, and Stewards handle code review and merges. Each type serves a different role in your workflow.',
-    section: 'Agent Fleet',
-    route: '/agents',
-  },
-  {
-    id: 'agents-settings',
-    targetTestId: 'agent-provider-model-section',
-    title: 'Agent Provider & Model',
-    description:
-      'Each agent can use a different AI provider and model. Select the provider (Claude, OpenAI, etc.) and specific model for this agent. These settings can be changed later from the agent\'s settings.',
-    section: 'Agent Fleet',
-    route: '/agents',
-    noAutoAdvance: true,
-  },
-  {
-    id: 'workspaces-overview',
-    targetTestId: 'workspaces-page',
-    title: 'Workspaces',
-    description:
-      'A tmux-like multiplexer. Watch agents work in real time, interact with their terminals, or run commands yourself.',
-    section: 'Agent Fleet',
-    route: '/workspaces',
-  },
-  {
-    id: 'workspaces-layout',
-    targetTestId: 'workspaces-layout-btn',
-    title: 'Layout Presets',
-    description:
-      'Choose single, columns, rows, or grid layouts. Add panes to monitor multiple agents side by side.',
-    section: 'Agent Fleet',
-    route: '/workspaces',
-  },
+    // ── Section 3: Agent Fleet (routes: /agents, /workspaces) ─────────────
+    {
+      id: 'agents-overview',
+      targetTestId: 'agents-page',
+      title: t('onboarding.agentRegistryTitle'),
+      description: t('onboarding.agentRegistryDesc'),
+      section: t('onboarding.sectionAgentFleet'),
+      route: '/agents',
+    },
+    {
+      id: 'agents-create-modal',
+      targetTestId: 'agents-create',
+      title: t('onboarding.createAgentsTitle'),
+      description: t('onboarding.createAgentsDesc'),
+      section: t('onboarding.sectionAgentFleet'),
+      route: '/agents',
+    },
+    {
+      id: 'agents-settings',
+      targetTestId: 'agent-provider-model-section',
+      title: t('onboarding.agentProviderModelTitle'),
+      description: t('onboarding.agentProviderModelDesc'),
+      section: t('onboarding.sectionAgentFleet'),
+      route: '/agents',
+      noAutoAdvance: true,
+    },
+    {
+      id: 'workspaces-overview',
+      targetTestId: 'workspaces-page',
+      title: t('onboarding.workspacesTitle'),
+      description: t('onboarding.workspacesDesc'),
+      section: t('onboarding.sectionAgentFleet'),
+      route: '/workspaces',
+    },
+    {
+      id: 'workspaces-layout',
+      targetTestId: 'workspaces-layout-btn',
+      title: t('onboarding.layoutPresetsTitle'),
+      description: t('onboarding.layoutPresetsDesc'),
+      section: t('onboarding.sectionAgentFleet'),
+      route: '/workspaces',
+    },
 
-  // ── Section 4: The Director (right sidebar, no route) ─────────────────
-  // All conditionally enabled based on directorAgent existence.
-  // onActivate callbacks are wired in the tourSteps useMemo below.
-  {
-    id: 'director-intro',
-    targetTestId: 'director-panel',
-    title: 'Meet the Director',
-    description:
-      'The Director is your AI orchestrator. It reads your backlog, creates plans, assigns tasks to workers, and manages the entire workflow. This panel is your primary interface.',
-    section: 'The Director',
-    route: '/activity',
-  },
-  {
-    id: 'director-tabs',
-    targetTestId: 'director-panel-header',
-    title: 'Director Tabs',
-    description:
-      'Each tab is a separate director session. Click (+) to create new directors, right-click a tab to delete one.',
-    section: 'The Director',
-  },
-  {
-    id: 'director-actions',
-    targetTestId: 'director-panel-header',
-    targetSelector: '[data-testid^="director-sift-backlog-"]',
-    title: 'Sift Backlog',
-    description:
-      'The pickaxe icon triggers backlog sifting — the director reads your task backlog, prioritizes work, and creates plans for your agents.',
-    section: 'The Director',
-    noAutoAdvance: true,
-  },
-  {
-    id: 'director-start',
-    targetTestId: 'director-panel-header',
-    targetSelector: '[data-testid^="director-start-"], [data-testid^="director-restart-"]',
-    title: 'Start the Director',
-    description:
-      'Click the green play button to start a director session. Once running, use the yellow restart button to reset it, or the red stop button to end the session.',
-    section: 'The Director',
-    noAutoAdvance: true,
-  },
-  {
-    id: 'director-messages',
-    targetTestId: 'director-panel-header',
-    targetSelector: '[data-testid^="toggle-messages-queue-"]',
-    title: 'Process Messages',
-    description:
-      'Toggle the mail icon to see queued messages. Process them all at once, or click the play button on individual messages. The director reads and responds to each one.',
-    section: 'The Director',
-    noAutoAdvance: true,
-  },
+    // ── Section 4: The Director (right sidebar, no route) ─────────────────
+    // All conditionally enabled based on directorAgent existence.
+    // onActivate callbacks are wired in the tourSteps useMemo below.
+    {
+      id: 'director-intro',
+      targetTestId: 'director-panel',
+      title: t('onboarding.meetDirectorTitle'),
+      description: t('onboarding.meetDirectorDesc'),
+      section: t('onboarding.sectionDirector'),
+      route: '/activity',
+    },
+    {
+      id: 'director-tabs',
+      targetTestId: 'director-panel-header',
+      title: t('onboarding.directorTabsTitle'),
+      description: t('onboarding.directorTabsDesc'),
+      section: t('onboarding.sectionDirector'),
+    },
+    {
+      id: 'director-actions',
+      targetTestId: 'director-panel-header',
+      targetSelector: '[data-testid^="director-sift-backlog-"]',
+      title: t('onboarding.siftBacklogTitle'),
+      description: t('onboarding.siftBacklogDesc'),
+      section: t('onboarding.sectionDirector'),
+      noAutoAdvance: true,
+    },
+    {
+      id: 'director-start',
+      targetTestId: 'director-panel-header',
+      targetSelector: '[data-testid^="director-start-"], [data-testid^="director-restart-"]',
+      title: t('onboarding.startDirectorTitle'),
+      description: t('onboarding.startDirectorDesc'),
+      section: t('onboarding.sectionDirector'),
+      noAutoAdvance: true,
+    },
+    {
+      id: 'director-messages',
+      targetTestId: 'director-panel-header',
+      targetSelector: '[data-testid^="toggle-messages-queue-"]',
+      title: t('onboarding.processMessagesTitle'),
+      description: t('onboarding.processMessagesDesc'),
+      section: t('onboarding.sectionDirector'),
+      noAutoAdvance: true,
+    },
 
-  // ── Section 5: Collaboration (routes: /messages, /documents, /inbox) ──
-  {
-    id: 'messages-overview',
-    targetTestId: 'messages-page',
-    title: 'Team Messages',
-    description:
-      'Slack-style channels for team communication. Create channels, send messages to agents, and keep conversations organized with threading.',
-    section: 'Collaboration',
-    route: '/messages',
-  },
-  {
-    id: 'messages-channel',
-    targetTestId: 'message-composer',
-    title: 'Send Messages',
-    description:
-      'Select a channel and type a message in the composer. Attach documents, embed tasks, and use threads to keep conversations organized.',
-    section: 'Collaboration',
-    route: '/messages',
-  },
-  {
-    id: 'documents-overview',
-    targetTestId: 'documents-page',
-    title: 'Document Library',
-    description:
-      'A Notion-like workspace for project knowledge. Organize docs into libraries, drag-and-drop to reorder, and share documentation across the team.',
-    section: 'Collaboration',
-    route: '/documents',
-  },
-  {
-    id: 'documents-detail',
-    targetTestId: 'document-detail-panel',
-    title: 'Edit Documents',
-    description:
-      'Click a document to view and edit it. Write in Markdown, track versions, link related documents, and expand to fullscreen for focused editing.',
-    section: 'Collaboration',
-    route: '/documents',
-  },
-  {
-    id: 'inbox-overview',
-    targetTestId: 'inbox-page',
-    title: 'Inbox',
-    description:
-      'Your personal feed of @mentions, direct messages, and agent notifications. Filter, archive, and reply from one place.',
-    section: 'Collaboration',
-    route: '/inbox',
-  },
-  {
-    id: 'notification-bell',
-    targetTestId: 'notification-center',
-    title: 'Notifications',
-    description:
-      'The bell icon shows real-time alerts: approval requests, agent errors, and important events.',
-    section: 'Collaboration',
-    // Conditionally enabled based on 'approve' preset — set at render time
-  },
+    // ── Section 5: Collaboration (routes: /messages, /documents, /inbox) ──
+    {
+      id: 'messages-overview',
+      targetTestId: 'messages-page',
+      title: t('onboarding.teamMessagesTitle'),
+      description: t('onboarding.teamMessagesDesc'),
+      section: t('onboarding.sectionCollaboration'),
+      route: '/messages',
+    },
+    {
+      id: 'messages-channel',
+      targetTestId: 'message-composer',
+      title: t('onboarding.sendMessagesTitle'),
+      description: t('onboarding.sendMessagesDesc'),
+      section: t('onboarding.sectionCollaboration'),
+      route: '/messages',
+    },
+    {
+      id: 'documents-overview',
+      targetTestId: 'documents-page',
+      title: t('onboarding.documentLibraryTitle'),
+      description: t('onboarding.documentLibraryDesc'),
+      section: t('onboarding.sectionCollaboration'),
+      route: '/documents',
+    },
+    {
+      id: 'documents-detail',
+      targetTestId: 'document-detail-panel',
+      title: t('onboarding.editDocumentsTitle'),
+      description: t('onboarding.editDocumentsDesc'),
+      section: t('onboarding.sectionCollaboration'),
+      route: '/documents',
+    },
+    {
+      id: 'inbox-overview',
+      targetTestId: 'inbox-page',
+      title: t('onboarding.inboxTitle'),
+      description: t('onboarding.inboxDesc'),
+      section: t('onboarding.sectionCollaboration'),
+      route: '/inbox',
+    },
+    {
+      id: 'notification-bell',
+      targetTestId: 'notification-center',
+      title: t('onboarding.notificationsTitle'),
+      description: t('onboarding.notificationsDesc'),
+      section: t('onboarding.sectionCollaboration'),
+      // Conditionally enabled based on 'approve' preset — set at render time
+    },
 
-  // ── Section 6: Power Tools (routes: /editor, /workflows, /metrics) ────
-  {
-    id: 'editor-overview',
-    targetTestId: 'file-editor-page',
-    title: 'Code Editor',
-    description:
-      'A full Monaco editor with LSP support. Browse files, edit code with syntax highlighting and completions, and install extensions.',
-    section: 'Power Tools',
-    route: '/editor',
-  },
-  {
-    id: 'workflows-overview',
-    targetTestId: 'workflows-page',
-    title: 'Workflows',
-    description:
-      'Create reusable workflow templates (playbooks) and monitor active workflow execution with dependency tracking and progress visualization.',
-    section: 'Power Tools',
-    route: '/workflows',
-  },
-  {
-    id: 'workflows-editor',
-    targetTestId: 'workflow-editor-dialog',
-    title: 'Create Workflow Templates',
-    description:
-      'Build reusable workflow templates with multiple steps. Add task steps (assigned to agents) or function steps (custom code). Define variables, set dependencies between steps, and export as YAML.',
-    section: 'Power Tools',
-    route: '/workflows',
-    noAutoAdvance: true,
-  },
-  {
-    id: 'metrics-overview',
-    targetTestId: 'metrics-page',
-    title: 'Metrics Dashboard',
-    description:
-      'Track task throughput, agent performance, and provider usage over time. Use the time range selector to zoom into trends.',
-    section: 'Power Tools',
-    route: '/metrics',
-  },
-  {
-    id: 'command-palette',
-    targetTestId: 'command-palette-trigger',
-    title: 'Command Palette',
-    description:
-      'Press Cmd+K from anywhere to navigate pages, create tasks, toggle panels, and access every action without touching the mouse.',
-    section: 'Power Tools',
-  },
+    // ── Section 6: Power Tools (routes: /editor, /workflows, /metrics) ────
+    {
+      id: 'editor-overview',
+      targetTestId: 'file-editor-page',
+      title: t('onboarding.codeEditorTitle'),
+      description: t('onboarding.codeEditorDesc'),
+      section: t('onboarding.sectionPowerTools'),
+      route: '/editor',
+    },
+    {
+      id: 'workflows-overview',
+      targetTestId: 'workflows-page',
+      title: t('onboarding.workflowsTitle'),
+      description: t('onboarding.workflowsDesc'),
+      section: t('onboarding.sectionPowerTools'),
+      route: '/workflows',
+    },
+    {
+      id: 'workflows-editor',
+      targetTestId: 'workflow-editor-dialog',
+      title: t('onboarding.createWorkflowTemplatesTitle'),
+      description: t('onboarding.createWorkflowTemplatesDesc'),
+      section: t('onboarding.sectionPowerTools'),
+      route: '/workflows',
+      noAutoAdvance: true,
+    },
+    {
+      id: 'metrics-overview',
+      targetTestId: 'metrics-page',
+      title: t('onboarding.metricsDashboardTitle'),
+      description: t('onboarding.metricsDashboardDesc'),
+      section: t('onboarding.sectionPowerTools'),
+      route: '/metrics',
+    },
+    {
+      id: 'command-palette',
+      targetTestId: 'command-palette-trigger',
+      title: t('onboarding.commandPaletteTitle'),
+      description: t('onboarding.commandPaletteDesc'),
+      section: t('onboarding.sectionPowerTools'),
+    },
 
-  // ── Section 7: Settings & Wrap-Up ─────────────────────────────────────
-  {
-    id: 'settings-overview',
-    targetTestId: 'settings-page',
-    title: 'Settings',
-    description:
-      'Customize your theme, notification preferences, default providers, keyboard shortcuts, and workspace configuration. Restart this tour anytime from here.',
-    section: 'Settings & Wrap-Up',
-    route: '/settings',
-  },
-  {
-    id: 'workflow-presets',
-    targetTestId: 'settings-section-workflow-preset',
-    title: 'Workflow Presets',
-    description:
-      'Choose how Stoneforge operates. Auto mode merges work directly to main for fast iteration. Review mode merges to a review branch for you to inspect. Approve mode requires your approval before agents take restricted actions.',
-    section: 'Settings & Wrap-Up',
-    route: '/settings',
-  },
-  {
-    id: 'tour-complete',
-    targetTestId: 'activity-page',
-    title: "You're Ready!",
-    description:
-      'You have seen the full power of Stoneforge. Start by opening the Director panel and starting a session -- it will read your backlog and begin orchestrating work. Press Cmd+K anytime to find any feature.',
-    section: 'Settings & Wrap-Up',
-    route: '/activity',
-  },
-];
+    // ── Section 7: Settings & Wrap-Up ─────────────────────────────────────
+    {
+      id: 'settings-overview',
+      targetTestId: 'settings-page',
+      title: t('onboarding.settingsTitle'),
+      description: t('onboarding.settingsDesc'),
+      section: t('onboarding.sectionSettings'),
+      route: '/settings',
+    },
+    {
+      id: 'workflow-presets',
+      targetTestId: 'settings-section-workflow-preset',
+      title: t('onboarding.workflowPresetsTitle'),
+      description: t('onboarding.workflowPresetsDesc'),
+      section: t('onboarding.sectionSettings'),
+      route: '/settings',
+    },
+    {
+      id: 'tour-complete',
+      targetTestId: 'activity-page',
+      title: t('onboarding.readyTitle'),
+      description: t('onboarding.readyDesc'),
+      section: t('onboarding.sectionSettings'),
+      route: '/activity',
+    },
+  ];
+}
 
 // Director panel dimension constants (must match DirectorPanel.tsx)
 const DIRECTOR_PANEL_COLLAPSED_WIDTH = 48; // w-12
@@ -661,6 +631,8 @@ const DIRECTOR_PANEL_MAX_WIDTH = 800;
 const DIRECTOR_PANEL_WIDTH_KEY = 'orchestrator-director-panel-width';
 
 export function AppShell() {
+  const { t } = useTranslation('smithy');
+
   const {
     desktopCollapsed,
     setDesktopCollapsed,
@@ -736,6 +708,9 @@ export function AppShell() {
   const workflowPreset = useWorkflowPreset();
   const { director: directorAgent } = useDirector();
 
+  // Translated route config for breadcrumbs and document title
+  const routeConfig = useMemo(() => getRouteConfig(t), [t]);
+
   // Director step IDs that require directorAgent and auto-expand the panel
   const DIRECTOR_STEP_IDS = new Set([
     'director-intro',
@@ -754,8 +729,9 @@ export function AppShell() {
   ]);
 
   // Build steps with conditional enablement and onActivate callbacks
+  const onboardingSteps = useMemo(() => getOnboardingSteps(t), [t]);
   const tourSteps = useMemo(() => {
-    return ONBOARDING_STEPS.map((step) => {
+    return onboardingSteps.map((step) => {
       // ── Activity section: inject mock agent data ──────────────────────
       if (step.id === 'agent-cards') {
         return {
@@ -1009,7 +985,7 @@ export function AppShell() {
 
       return step;
     });
-  }, [workflowPreset.preset, directorAgent, setDirectorCollapsed, isMobile, queryClient, router]);
+  }, [onboardingSteps, workflowPreset.preset, directorAgent, setDirectorCollapsed, isMobile, queryClient, router]);
 
   const onboardingTour = useOnboardingTour(tourSteps);
 
@@ -1137,16 +1113,16 @@ export function AppShell() {
     onNewRequest: useCallback(
       (request: { agentName?: string; agentId: string; toolName: string }) => {
         const agentLabel = request.agentName || request.agentId;
-        toast.warning(`Approval needed: ${agentLabel}`, {
-          description: `${request.toolName} requires approval`,
+        toast.warning(t('appShell.approvalNeeded', { agentLabel }), {
+          description: t('appShell.approvalDescription', { toolName: request.toolName }),
           duration: 8000,
           action: {
-            label: 'View',
+            label: t('appShell.view'),
             onClick: () => openNotificationSidebar(),
           },
         });
       },
-      [openNotificationSidebar]
+      [openNotificationSidebar, t]
     ),
   });
 
@@ -1248,9 +1224,9 @@ export function AppShell() {
   const routerState = useRouterState();
   useEffect(() => {
     const path = routerState.location.pathname;
-    const config = ROUTE_CONFIG[path];
-    document.title = config ? `Stoneforge | ${config.label}` : 'Stoneforge';
-  }, [routerState.location.pathname]);
+    const config = routeConfig[path];
+    document.title = config ? t('appShell.documentTitle', { label: config.label }) : t('appShell.documentTitleDefault');
+  }, [routerState.location.pathname, routeConfig, t]);
 
   const sidebarCollapsed = isMobile ? true : isTablet ? true : desktopCollapsed;
 
@@ -1293,18 +1269,18 @@ export function AppShell() {
                 <button
                   onClick={openMobileDrawer}
                   className="p-2 -ml-2 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors duration-150 touch-target flex-shrink-0"
-                  aria-label="Open navigation menu"
+                  aria-label={t('appShell.openNavigation')}
                   aria-expanded={mobileDrawerOpen}
                   data-testid="mobile-menu-button"
                 >
                   <Menu className="w-5 h-5" />
                 </button>
                 <div className="flex-1 text-center whitespace-nowrap">
-                  <BreadcrumbsMobile />
+                  <BreadcrumbsMobile routeConfig={routeConfig} />
                 </div>
                 <button
                   className="p-2 -mr-2 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors duration-150 touch-target flex-shrink-0"
-                  aria-label="Search"
+                  aria-label={t('appShell.search')}
                   data-testid="mobile-search-button"
                 >
                   <Search className="w-5 h-5" />
@@ -1315,7 +1291,7 @@ export function AppShell() {
             {/* Tablet & Desktop: Full breadcrumbs */}
             {!isMobile && (
               <div className="flex-shrink-0 whitespace-nowrap">
-                <Breadcrumbs />
+                <Breadcrumbs routeConfig={routeConfig} />
               </div>
             )}
 
@@ -1325,11 +1301,11 @@ export function AppShell() {
                 <button
                   onClick={() => setCommandPaletteOpen(true)}
                   className="flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--color-text-muted)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)] transition-colors duration-150 whitespace-nowrap"
-                  aria-label="Open command palette"
+                  aria-label={t('appShell.openCommandPalette')}
                   data-testid="command-palette-trigger"
                 >
                   <Search className="w-4 h-4 flex-shrink-0" />
-                  <span className="hidden @lg:inline">Search...</span>
+                  <span className="hidden @lg:inline">{t('appShell.searchPlaceholder')}</span>
                   <kbd className="hidden @md:flex items-center gap-0.5 px-1.5 py-0.5 text-xs bg-[var(--color-bg)] border border-[var(--color-border)] rounded">
                     <Command className="w-3 h-3" />K
                   </kbd>

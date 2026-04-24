@@ -3,11 +3,13 @@
  */
 
 import { Activity, CheckCircle, GitPullRequest, Users } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useSessions } from '../../api/hooks/useAgents.js';
 import { useTasksByStatus } from '../../api/hooks/useTasks.js';
 import { useDaemonStatus } from '../../api/hooks/useDaemon.js';
 
 export function SystemStatusBar() {
+  const { t } = useTranslation('smithy');
   const { data: sessionsData } = useSessions({ status: 'running' });
   const { inProgress, awaitingMerge, closed } = useTasksByStatus();
   const { data: daemonStatus } = useDaemonStatus();
@@ -21,25 +23,25 @@ export function SystemStatusBar() {
     >
       <StatusPill
         icon={<Users className="w-3.5 h-3.5" />}
-        label="Active Agents"
+        label={t('activity.activeAgents')}
         value={activeAgentCount}
         color={activeAgentCount > 0 ? 'primary' : 'muted'}
       />
       <StatusPill
         icon={<Activity className="w-3.5 h-3.5" />}
-        label="In Progress"
+        label={t('activity.inProgress')}
         value={inProgress.length}
         color={inProgress.length > 0 ? 'warning' : 'muted'}
       />
       <StatusPill
         icon={<GitPullRequest className="w-3.5 h-3.5" />}
-        label="In Review"
+        label={t('activity.inReview')}
         value={awaitingMerge.length}
         color={awaitingMerge.length > 0 ? 'info' : 'muted'}
       />
       <StatusPill
         icon={<CheckCircle className="w-3.5 h-3.5" />}
-        label="Completed"
+        label={t('activity.completed')}
         value={closed.length}
         color="muted"
       />
@@ -52,7 +54,7 @@ export function SystemStatusBar() {
           }`}
         />
         <span className="text-[var(--color-text-secondary)]">
-          {daemonStatus?.isRunning ? 'Daemon Running' : 'Daemon Stopped'}
+          {daemonStatus?.isRunning ? t('activity.daemonRunning') : t('activity.daemonStopped')}
         </span>
       </div>
     </div>

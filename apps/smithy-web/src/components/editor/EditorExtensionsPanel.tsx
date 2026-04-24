@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   Search,
   Loader2,
@@ -81,6 +82,7 @@ const CATEGORY_MAP: Record<CategoryFilter, string | undefined> = {
 // ============================================================================
 
 export function EditorExtensionsPanel({ className = '', onExtensionClick }: EditorExtensionsPanelProps) {
+  const { t } = useTranslation('smithy');
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceTimerRef = useRef<number | null>(null);
 
@@ -241,7 +243,7 @@ export function EditorExtensionsPanel({ className = '', onExtensionClick }: Edit
       );
 
       if (hasCodeCategory && !hasDeclarativeCategory) {
-        reasons.push('This extension likely requires code execution');
+        reasons.push(t('editor.extensionRequiresCode'));
         return { isCompatible: false, reasons };
       }
 
@@ -431,7 +433,7 @@ export function EditorExtensionsPanel({ className = '', onExtensionClick }: Edit
             type="text"
             value={searchState.query}
             onChange={handleSearchChange}
-            placeholder="Search extensions..."
+            placeholder={t('editor.searchExtensions')}
             className="w-full h-7 pl-7 pr-7 text-xs bg-[var(--color-surface)] border border-[var(--color-border)] rounded focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]"
             data-testid="extensions-search-input"
           />
@@ -439,7 +441,7 @@ export function EditorExtensionsPanel({ className = '', onExtensionClick }: Edit
             <button
               onClick={handleClear}
               className="absolute right-1.5 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-[var(--color-surface-hover)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
-              title="Clear search"
+              title={t('editor.clearSearch')}
               data-testid="extensions-search-clear"
             >
               <X className="w-3.5 h-3.5" />
@@ -573,9 +575,9 @@ export function EditorExtensionsPanel({ className = '', onExtensionClick }: Edit
                   return (
                     <div className="flex flex-col items-center justify-center py-8 text-center px-3">
                       <X className="w-8 h-8 text-[var(--color-text-muted)] mb-3" />
-                      <h4 className="text-sm font-medium text-[var(--color-text)] mb-1">No Results</h4>
+                      <h4 className="text-sm font-medium text-[var(--color-text)] mb-1">{t('editor.noResults')}</h4>
                       <p className="text-xs text-[var(--color-text-secondary)]">
-                        No extensions found for "{searchState.query}"
+                        {t('editor.noExtensionsFound')} " "{searchState.query}"
                       </p>
                     </div>
                   );
@@ -588,7 +590,7 @@ export function EditorExtensionsPanel({ className = '', onExtensionClick }: Edit
                         Browse Extensions
                       </h4>
                       <p className="text-xs text-[var(--color-text-secondary)]">
-                        Search for themes, languages, and snippets
+                        {t('editor.searchThemesLanguages')}
                       </p>
                     </div>
                   );
@@ -597,9 +599,9 @@ export function EditorExtensionsPanel({ className = '', onExtensionClick }: Edit
                   return (
                     <div className="flex flex-col items-center justify-center py-8 text-center px-3">
                       <Search className="w-8 h-8 text-[var(--color-text-muted)] mb-3" />
-                      <h4 className="text-sm font-medium text-[var(--color-text)] mb-1">Find More</h4>
+                      <h4 className="text-sm font-medium text-[var(--color-text)] mb-1">{t('editor.findMore')}</h4>
                       <p className="text-xs text-[var(--color-text-secondary)]">
-                        Search for more extensions above
+                        {t('editor.searchMoreExtensions')}
                       </p>
                     </div>
                   );
@@ -625,7 +627,7 @@ export function EditorExtensionsPanel({ className = '', onExtensionClick }: Edit
                 Browse Extensions
               </h4>
               <p className="text-xs text-[var(--color-text-secondary)]">
-                Search for themes, languages, and snippets
+                {t('editor.searchThemesLanguages')}
               </p>
             </div>
           )}

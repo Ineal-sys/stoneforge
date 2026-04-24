@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   X,
   Inbox,
@@ -163,6 +164,7 @@ function InboxDetailPanel({
   onRestore,
   isPending,
 }: InboxDetailPanelProps) {
+  const { t } = useTranslation('smithy');
   const isUnread = item.status === 'unread';
   const isArchived = item.status === 'archived';
   const senderName = item.sender?.name ?? 'Unknown';
@@ -196,12 +198,12 @@ function InboxDetailPanel({
                   {item.sourceType === 'mention' ? (
                     <>
                       <AtSign className="w-2.5 h-2.5" />
-                      Mention
+                      {t('agent.mention')}
                     </>
                   ) : (
                     <>
                       <MessageSquare className="w-2.5 h-2.5" />
-                      Direct
+                      {t('agent.direct')}
                     </>
                   )}
                 </span>
@@ -217,7 +219,7 @@ function InboxDetailPanel({
               <button
                 onClick={onRestore}
                 className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
-                title="Restore"
+                title={t('agent.restore')}
               >
                 <RefreshCw className="w-4 h-4" />
               </button>
@@ -227,7 +229,7 @@ function InboxDetailPanel({
                   <button
                     onClick={onMarkRead}
                     className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-                    title="Mark as read"
+                    title={t('agent.markAsRead')}
                   >
                     <CheckCheck className="w-4 h-4" />
                   </button>
@@ -235,7 +237,7 @@ function InboxDetailPanel({
                   <button
                     onClick={onMarkUnread}
                     className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-                    title="Mark as unread"
+                    title={t('agent.markAsUnread')}
                   >
                     <Mail className="w-4 h-4" />
                   </button>
@@ -243,7 +245,7 @@ function InboxDetailPanel({
                 <button
                   onClick={onArchive}
                   className="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded transition-colors"
-                  title="Archive"
+                  title={t('agent.archive')}
                 >
                   <Archive className="w-4 h-4" />
                 </button>
@@ -260,7 +262,7 @@ function InboxDetailPanel({
       {/* Content */}
       <div className="flex-1 overflow-auto p-3">
         <div className="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-          {messageContent || <span className="text-gray-400 italic">No content</span>}
+          {messageContent || <span className="text-gray-400 italic">{t('agent.noContent')}</span>}
         </div>
       </div>
     </div>
@@ -268,10 +270,11 @@ function InboxDetailPanel({
 }
 
 function EmptyInboxState({ view }: { view: InboxViewType }) {
+  const { t } = useTranslation('smithy');
   const messages: Record<InboxViewType, { title: string; subtitle: string }> = {
-    unread: { title: 'No unread messages', subtitle: 'All caught up!' },
-    all: { title: 'No messages', subtitle: 'This agent has no messages yet' },
-    archived: { title: 'No archived messages', subtitle: 'Archive messages to see them here' },
+    unread: { title: t('agent.inboxNoUnread'), subtitle: t('agent.inboxAllCaughtUp') },
+    all: { title: t('agent.inboxNoMessages'), subtitle: t('agent.inboxNoMessagesYet') },
+    archived: { title: t('agent.inboxNoArchived'), subtitle: t('agent.inboxArchiveHint') },
   };
 
   return (
@@ -297,6 +300,7 @@ interface AgentInboxDrawerProps {
 export function AgentInboxDrawer({ isOpen, onClose, agentId, agentName }: AgentInboxDrawerProps) {
   const [view, setView] = useState<InboxViewType>('unread');
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const { t } = useTranslation('smithy');
 
   const { data: inboxData, isLoading, error, refetch } = useAgentInbox(agentId, view);
   const { data: countData } = useAgentInboxCount(agentId);
@@ -344,11 +348,11 @@ export function AgentInboxDrawer({ isOpen, onClose, agentId, agentName }: AgentI
             <Inbox className="w-5 h-5 text-gray-500 dark:text-gray-400" />
             <div>
               <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-                Inbox: {agentName}
+                {t('agent.inboxTitle', { name: agentName })}
               </h2>
               {unreadCount > 0 && (
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {unreadCount} unread message{unreadCount !== 1 ? 's' : ''}
+                  {t('agent.unreadMessageCount', { count: unreadCount })}
                 </p>
               )}
             </div>
@@ -361,7 +365,7 @@ export function AgentInboxDrawer({ isOpen, onClose, agentId, agentName }: AgentI
                 disabled={markAllRead.isPending}
                 className="text-xs px-2 py-1 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors disabled:opacity-50"
               >
-                {markAllRead.isPending ? 'Marking...' : 'Mark all read'}
+                {markAllRead.isPending ? t('agent.marking') : t('agent.markAllRead')}
               </button>
             )}
             <button
@@ -388,7 +392,7 @@ export function AgentInboxDrawer({ isOpen, onClose, agentId, agentName }: AgentI
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
             >
-              {v === 'unread' ? 'Unread' : v === 'all' ? 'All' : 'Archived'}
+              {v === 'unread' ? t('agent.unread') : v === 'all' ? t('agent.all') : t('agent.archived')}
               {v === 'unread' && unreadCount > 0 && (
                 <span className="ml-1.5 px-1.5 py-0.5 text-[10px] bg-blue-500 text-white rounded-full">
                   {unreadCount}
@@ -400,7 +404,7 @@ export function AgentInboxDrawer({ isOpen, onClose, agentId, agentName }: AgentI
           <button
             onClick={() => refetch()}
             className="ml-auto p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-            title="Refresh"
+            title={t('agent.refresh')}
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
@@ -410,7 +414,7 @@ export function AgentInboxDrawer({ isOpen, onClose, agentId, agentName }: AgentI
         <div className="flex-1 flex overflow-hidden">
           {error ? (
             <div className="flex-1 flex items-center justify-center text-red-500 dark:text-red-400 p-6">
-              <p className="text-sm">Failed to load inbox: {error.message}</p>
+              <p className="text-sm">{t('agent.inboxLoadFailed')}: {error.message}</p>
             </div>
           ) : isLoading ? (
             <div className="flex-1 flex items-center justify-center text-gray-400">
@@ -446,7 +450,7 @@ export function AgentInboxDrawer({ isOpen, onClose, agentId, agentName }: AgentI
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500">
                     <ChevronRight className="w-8 h-8 mb-2" />
-                    <p className="text-sm">Select a message to view</p>
+                    <p className="text-sm">{t('agent.selectMessageToView')}</p>
                   </div>
                 )}
               </div>

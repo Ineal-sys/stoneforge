@@ -6,6 +6,7 @@
  */
 
 import { MessageSquare } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { StreamEvent } from '../workspace/types';
 import type { SessionMessage } from '../../api/types';
 import { MarkdownContent } from './MarkdownContent';
@@ -34,11 +35,12 @@ interface TranscriptViewerProps {
  * TranscriptViewer - Renders a list of transcript events
  */
 export function TranscriptViewer({ events }: TranscriptViewerProps) {
+  const { t } = useTranslation('smithy');
   if (events.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] p-6">
         <MessageSquare className="w-8 h-8 mb-2 opacity-50" />
-        <p className="text-sm">No transcript available for this session</p>
+        <p className="text-sm">{t('shared.noTranscript')}</p>
       </div>
     );
   }

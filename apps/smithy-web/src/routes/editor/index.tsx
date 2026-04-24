@@ -19,6 +19,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type * as monaco from 'monaco-editor';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   FileCode,
   Loader2,
@@ -95,12 +96,13 @@ function getLanguageFromDocument(doc: Document | null): string {
 // ============================================================================
 
 function NoFileSelected() {
+  const { t } = useTranslation('smithy');
   return (
     <div className="flex flex-col items-center justify-center h-full text-center p-6" data-testid="editor-no-file-selected">
       <FileCode className="w-12 h-12 text-[var(--color-text-muted)] mb-4" />
-      <h3 className="text-lg font-medium text-[var(--color-text)] mb-2">Select a File</h3>
+      <h3 className="text-lg font-medium text-[var(--color-text)] mb-2">{t('editor.selectFile')}</h3>
       <p className="text-sm text-[var(--color-text-secondary)] max-w-xs">
-        Choose a file from the sidebar to view its content in the editor.
+        {t('editor.selectFileDescription')}
       </p>
     </div>
   );
@@ -118,6 +120,7 @@ interface SourceToggleProps {
 }
 
 function SourceToggle({ source, onSourceChange, isWorkspaceOpen, workspaceName }: SourceToggleProps) {
+  const { t } = useTranslation('smithy');
   return (
     <div className="flex items-center gap-1 p-1 bg-[var(--color-surface-hover)] rounded-lg">
       <button
@@ -132,7 +135,7 @@ function SourceToggle({ source, onSourceChange, isWorkspaceOpen, workspaceName }
         title={isWorkspaceOpen ? `Workspace: ${workspaceName}` : 'No workspace open'}
       >
         <HardDrive className="w-3 h-3" />
-        Local
+        {t('editor.local')}
       </button>
       <button
         onClick={() => onSourceChange('documents')}
@@ -145,7 +148,7 @@ function SourceToggle({ source, onSourceChange, isWorkspaceOpen, workspaceName }
         `}
       >
         <Database className="w-3 h-3" />
-        Docs
+        {t('editor.docs')}
       </button>
     </div>
   );
@@ -161,14 +164,15 @@ interface ActivityBarProps {
 }
 
 function ActivityBar({ activePanel, onPanelChange }: ActivityBarProps) {
+  const { t } = useTranslation('smithy');
   const topItems: { id: SidebarPanel; icon: React.ComponentType<{ className?: string }>; label: string }[] = [
-    { id: 'files', icon: Files, label: 'Explorer' },
-    { id: 'search', icon: Search, label: 'Search' },
-    { id: 'extensions', icon: Puzzle, label: 'Extensions' },
+    { id: 'files', icon: Files, label: t('editor.explorer') },
+    { id: 'search', icon: Search, label: t('editor.search') },
+    { id: 'extensions', icon: Puzzle, label: t('editor.extensions') },
   ];
 
   const bottomItems: { id: SidebarPanel; icon: React.ComponentType<{ className?: string }>; label: string }[] = [
-    { id: 'settings', icon: Settings, label: 'Settings' },
+    { id: 'settings', icon: Settings, label: t('editor.settings') },
   ];
 
   const renderItem = (item: { id: SidebarPanel; icon: React.ComponentType<{ className?: string }>; label: string }) => {
@@ -217,6 +221,7 @@ function ActivityBar({ activePanel, onPanelChange }: ActivityBarProps) {
 // ============================================================================
 
 export function FileEditorPage() {
+  const { t } = useTranslation('smithy');
   // Monaco initialization state - must complete before rendering editor
   const [monacoReady, setMonacoReady] = useState(false);
   const [monacoError, setMonacoError] = useState<string | null>(null);
@@ -1003,9 +1008,9 @@ export function FileEditorPage() {
   // Get subtitle based on state
   const subtitle = useMemo(() => {
     if (activeTab) return activeTab.path;
-    if (fileSource === 'workspace' && isWorkspaceOpen) return `Workspace: ${workspaceName}`;
-    if (fileSource === 'documents') return 'Document library';
-    return 'Open a workspace or select a document';
+    if (fileSource === 'workspace' && isWorkspaceOpen) return t('editor.workspaceSubtitle', { name: workspaceName });
+    if (fileSource === 'documents') return t('editor.documentLibrary');
+    return t('editor.openWorkspaceOrDocument');
   }, [activeTab, fileSource, isWorkspaceOpen, workspaceName]);
 
   // Handle Monaco editor mount - store reference for navigation
@@ -1043,7 +1048,7 @@ export function FileEditorPage() {
             <FileCode className="w-5 h-5 text-[var(--color-primary)]" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-[var(--color-text)]">Editor</h1>
+            <h1 className="text-xl font-semibold text-[var(--color-text)]">{t('editor.title')}</h1>
             <p className="text-sm text-[var(--color-text-secondary)]">
               {subtitle}
             </p>
@@ -1068,7 +1073,7 @@ export function FileEditorPage() {
               <div className="px-3 py-2 border-b border-[var(--color-border)] bg-[var(--color-surface-hover)] space-y-2">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
-                    Explorer
+                    {t('editor.explorer')}
                   </h2>
                   <SourceToggle
                     source={fileSource}
@@ -1085,33 +1090,33 @@ export function FileEditorPage() {
                       onClick={refreshTree}
                       disabled={workspaceLoading}
                       className="flex items-center gap-1 px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)] rounded transition-colors disabled:opacity-50"
-                      title="Refresh"
+                      title={t('editor.refresh')}
                     >
                       <RefreshCw className={`w-3 h-3 ${workspaceLoading ? 'animate-spin' : ''}`} />
                     </button>
                     <button
                       onClick={() => handleOpenCreatePopup('file')}
                       className="flex items-center gap-1 px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)] rounded transition-colors"
-                      title="New File"
+                      title={t('editor.newFile')}
                     >
                       <FilePlus className="w-3 h-3" />
                     </button>
                     <button
                       onClick={() => handleOpenCreatePopup('folder')}
                       className="flex items-center gap-1 px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)] rounded transition-colors"
-                      title="New Folder"
+                      title={t('editor.newFolder')}
                     >
                       <FolderPlus className="w-3 h-3" />
                     </button>
                     <button
                       onClick={handleCollapseAll}
                       className="flex items-center gap-1 px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)] rounded transition-colors"
-                      title="Collapse All"
+                      title={t('editor.collapseAll')}
                     >
                       <FoldVertical className="w-3 h-3" />
                     </button>
                     <span className="flex-1 text-xs text-[var(--color-text-muted)] truncate ml-1">
-                      {workspaceName || 'Workspace'}
+                      {workspaceName || t('editor.workspace')}
                     </span>
                   </div>
                 )}
@@ -1127,13 +1132,13 @@ export function FileEditorPage() {
                   <div className="flex flex-col items-center justify-center py-8 text-center" data-testid="editor-error-tree">
                     <AlertCircle className="w-5 h-5 text-[var(--color-danger)] mb-2" />
                     <p className="text-xs text-[var(--color-text-secondary)]">
-                      {fileSource === 'workspace' ? workspaceError : 'Failed to load documents'}
+                      {fileSource === 'workspace' ? workspaceError : t('editor.failedToLoadDocuments')}
                     </p>
                   </div>
                 ) : isTreeEmpty ? (
                   <div className="text-center py-8" data-testid="editor-empty-tree">
                     <p className="text-xs text-[var(--color-text-muted)]">
-                      {fileSource === 'workspace' ? 'No files found' : 'No documents available'}
+                      {fileSource === 'workspace' ? t('editor.noFilesFound') : t('editor.noDocumentsAvailable')}
                     </p>
                   </div>
                 ) : (
@@ -1162,7 +1167,7 @@ export function FileEditorPage() {
               {/* Search header */}
               <div className="px-3 py-2 border-b border-[var(--color-border)] bg-[var(--color-surface-hover)]">
                 <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
-                  Search
+                  {t('editor.search')}
                 </h2>
               </div>
 
@@ -1179,7 +1184,7 @@ export function FileEditorPage() {
             <>
               <div className="px-3 py-2 border-b border-[var(--color-border)] bg-[var(--color-surface-hover)]">
                 <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
-                  Extensions
+                  {t('editor.extensions')}
                 </h2>
               </div>
               <EditorExtensionsPanel onExtensionClick={handleExtensionClick} />
@@ -1191,7 +1196,7 @@ export function FileEditorPage() {
             <>
               <div className="px-3 py-2 border-b border-[var(--color-border)] bg-[var(--color-surface-hover)]">
                 <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
-                  Settings
+                  {t('editor.settings')}
                 </h2>
               </div>
               <EditorSettingsPanel
@@ -1218,14 +1223,14 @@ export function FileEditorPage() {
           {monacoError ? (
             <div className="flex flex-col items-center justify-center h-full text-center p-6" data-testid="editor-monaco-error">
               <AlertCircle className="w-8 h-8 text-[var(--color-danger)] mb-3" />
-              <h3 className="text-lg font-medium text-[var(--color-text)] mb-2">Editor Failed to Load</h3>
+              <h3 className="text-lg font-medium text-[var(--color-text)] mb-2">{t('editor.failedToLoad')}</h3>
               <p className="text-sm text-[var(--color-text-secondary)]">{monacoError}</p>
             </div>
           ) : !monacoReady ? (
             /* Monaco initialization loading state */
             <div className="flex flex-col items-center justify-center h-full" data-testid="editor-monaco-loading">
               <Loader2 className="w-8 h-8 animate-spin text-[var(--color-text-muted)] mb-3" />
-              <p className="text-sm text-[var(--color-text-secondary)]">Initializing editor...</p>
+              <p className="text-sm text-[var(--color-text-secondary)]">{t('editor.initializing')}</p>
             </div>
           ) : tabs.length === 0 ? (
             <NoFileSelected />
@@ -1236,9 +1241,9 @@ export function FileEditorPage() {
           ) : hasContentError || fileError ? (
             <div className="flex flex-col items-center justify-center h-full text-center p-6" data-testid="editor-error-content">
               <AlertCircle className="w-8 h-8 text-[var(--color-danger)] mb-3" />
-              <h3 className="text-lg font-medium text-[var(--color-text)] mb-2">Failed to Load</h3>
+              <h3 className="text-lg font-medium text-[var(--color-text)] mb-2">{t('editor.failedToLoadContent')}</h3>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                {fileError || 'Could not load the file content.'}
+                {fileError || t('editor.couldNotLoadFileContent')}
               </p>
             </div>
           ) : activeTab ? (
@@ -1257,7 +1262,7 @@ export function FileEditorPage() {
                     <div className="flex items-center gap-2">
                       <Braces className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
                       <span className="text-xs font-medium text-[var(--color-text-secondary)]">
-                        {languageInfo?.displayName || 'Plain Text'}
+                        {languageInfo?.displayName || t('editor.plainText')}
                       </span>
                     </div>
                     {/* LSP status indicator */}
@@ -1319,7 +1324,7 @@ export function FileEditorPage() {
                           }
                           disabled:opacity-50
                         `}
-                        title={activeTab.hasUnsavedChanges ? 'Save (Cmd+S)' : 'No unsaved changes'}
+                        title={activeTab.hasUnsavedChanges ? t('editor.saveShortcut') : t('editor.noUnsavedChanges')}
                         data-testid="save-button"
                       >
                         {isSaving ? (
@@ -1327,13 +1332,13 @@ export function FileEditorPage() {
                         ) : (
                           <Save className="w-3.5 h-3.5" />
                         )}
-                        <span>Save</span>
+                        <span>{t('editor.save')}</span>
                       </button>
                     )}
                     {/* Read-only indicator for documents */}
                     {activeTab.source === 'documents' && (
                       <span className="text-xs text-[var(--color-text-muted)]">
-                        Read Only
+                        {t('editor.readOnly')}
                       </span>
                     )}
                   </div>
@@ -1365,10 +1370,10 @@ export function FileEditorPage() {
             data-testid="create-popup-dialog"
           >
             <h3 className="text-sm font-semibold text-[var(--color-text)] mb-3">
-              {createPopup.type === 'file' ? 'New File' : 'New Folder'}
+              {createPopup.type === 'file' ? t('editor.newFile') : t('editor.newFolder')}
             </h3>
             <label className="block text-xs text-[var(--color-text-secondary)] mb-1">
-              {createPopup.type === 'file' ? 'Enter file name:' : 'Enter folder name:'}
+              {createPopup.type === 'file' ? t('editor.enterFileName') : t('editor.enterFolderName')}
             </label>
             <input
               ref={createPopupInputRef}
@@ -1413,7 +1418,7 @@ export function FileEditorPage() {
                 data-testid="create-popup-submit"
               >
                 {isCreating && <Loader2 className="w-3 h-3 animate-spin" />}
-                {isCreating ? 'Creating…' : 'Create'}
+                {isCreating ? t('editor.creating') : t('editor.create')}
               </button>
             </div>
           </div>

@@ -21,6 +21,7 @@ import { PluginKey } from '@tiptap/pm/state';
 import { ReactRenderer } from '@tiptap/react';
 import tippy, { Instance as TippyInstance, Props as TippyProps } from 'tippy.js';
 import { forwardRef, useEffect, useImperativeHandle, useState, useCallback } from 'react';
+import { useTranslation, type TFunction } from '@stoneforge/i18n';
 import { User, Bot, Settings } from 'lucide-react';
 
 // Entity type for mention suggestions
@@ -185,20 +186,21 @@ function getEntityIcon(entityType: string) {
   }
 }
 
-function getEntityTypeLabel(entityType: string) {
+function getEntityTypeLabel(entityType: string, t: TFunction) {
   switch (entityType) {
     case 'agent':
-      return 'Agent';
+      return t('editor.entityAgent');
     case 'system':
-      return 'System';
+      return t('editor.entitySystem');
     case 'human':
     default:
-      return 'Human';
+      return t('editor.entityHuman');
   }
 }
 
 export const MentionMenu = forwardRef<MentionMenuRef, MentionMenuProps>(
   ({ items, command }, ref) => {
+    const { t } = useTranslation('smithy');
     const [selectedIndex, setSelectedIndex] = useState(0);
 
     // Reset selection when items change
@@ -249,7 +251,7 @@ export const MentionMenu = forwardRef<MentionMenuRef, MentionMenuProps>(
           className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-3 min-w-[200px]"
         >
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            No matching entities
+            {t('editor.noMatchingEntities')}
           </div>
         </div>
       );
@@ -296,7 +298,7 @@ export const MentionMenu = forwardRef<MentionMenuRef, MentionMenuProps>(
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">@{item.name}</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {getEntityTypeLabel(item.entityType)}
+                  {getEntityTypeLabel(item.entityType, t)}
                 </div>
               </div>
             </button>

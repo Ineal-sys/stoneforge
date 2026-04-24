@@ -5,6 +5,7 @@
 import { useRef, useMemo, useCallback, useState, useEffect, createContext, useContext } from 'react';
 import { Tree, NodeApi, NodeRendererProps } from 'react-arborist';
 import { useDroppable } from '@dnd-kit/core';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   Library,
   FileText,
@@ -63,6 +64,7 @@ function LibraryNode({
   dragHandle,
 }: NodeRendererProps<TreeNodeData>) {
   const { onDeleteLibrary } = useContext(LibraryTreeContext);
+  const { t } = useTranslation('smithy');
   const isSelected = node.isSelected;
   const isExpanded = node.isOpen;
   const hasChildren = !node.isLeaf;
@@ -105,7 +107,7 @@ function LibraryNode({
             node.toggle();
           }}
           className="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
-          aria-label={hasChildren ? (isExpanded ? `Collapse ${node.data.name}` : `Expand ${node.data.name}`) : 'No children'}
+          aria-label={hasChildren ? (isExpanded ? t('documents.collapse', { name: node.data.name }) : t('documents.expand', { name: node.data.name })) : t('documents.noChildren')}
           aria-expanded={hasChildren ? isExpanded : undefined}
         >
           {hasChildren ? (
@@ -143,8 +145,8 @@ function LibraryNode({
               onDeleteLibrary(node.id);
             }}
             className="p-1 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-all"
-            title="Delete Library"
-            aria-label={`Delete ${node.data.name}`}
+            title={t('documents.deleteLibrary')}
+            aria-label={t('documents.deleteLibraryName', { name: node.data.name })}
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -189,6 +191,7 @@ export function LibraryTree({
   isMobile = false,
   compact = false,
 }: LibraryTreeProps) {
+  const { t } = useTranslation('smithy');
   const treeRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [treeHeight, setTreeHeight] = useState(400);
@@ -342,7 +345,7 @@ export function LibraryTree({
         <div className="flex items-center justify-between mb-3">
           <h2 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold text-gray-900 dark:text-[var(--color-text)] flex items-center gap-2`}>
             <Library className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} text-blue-500`} />
-            Libraries
+            {t('documents.libraries')}
           </h2>
           {/* Hide action buttons on mobile - we have FABs instead */}
           {!isMobile && (
@@ -350,7 +353,7 @@ export function LibraryTree({
               <button
                 onClick={onNewLibrary}
                 className="p-1.5 text-gray-500 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-md transition-colors"
-                title="New Library"
+                title={t('documents.newLibrary')}
                 data-testid="new-library-button-sidebar"
               >
                 <FolderPlus className="w-4 h-4" />
@@ -358,7 +361,7 @@ export function LibraryTree({
               <button
                 onClick={onNewDocument}
                 className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md transition-colors"
-                title="Create Document"
+                title={t('documents.createDocument')}
                 data-testid="new-document-button-sidebar"
               >
                 <Plus className="w-4 h-4" />
@@ -386,9 +389,9 @@ export function LibraryTree({
             data-testid="all-documents-button"
           >
             <FileText className="w-4 h-4" />
-            All Documents
+            {t('documents.allDocuments')}
             {isOverAllDocs && showDragIndicator && (
-              <span className="ml-auto text-xs text-blue-500">Drop to remove from library</span>
+              <span className="ml-auto text-xs text-blue-500">{t('documents.dropToRemoveFromLibrary')}</span>
             )}
           </button>
         </div>
@@ -399,13 +402,13 @@ export function LibraryTree({
             className="text-center py-8 text-gray-500 dark:text-gray-400"
           >
             <Folder className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
-            <p className="text-sm">No libraries yet</p>
+            <p className="text-sm">{t('documents.noLibrariesYet')}</p>
             <button
               onClick={onNewLibrary}
               className="mt-2 text-sm text-purple-600 dark:text-purple-400 hover:underline"
               data-testid="new-library-button-empty"
             >
-              Create one
+              {t('documents.createOne')}
             </button>
           </div>
         ) : (
@@ -445,7 +448,7 @@ export function LibraryTree({
           data-testid="library-count"
           className="p-3 border-t border-gray-200 dark:border-[var(--color-border)] text-xs text-gray-500 dark:text-gray-400"
         >
-          {libraries.length} {libraries.length === 1 ? 'library' : 'libraries'}
+          {libraries.length} {libraries.length === 1 ? t('documents.library') : t('documents.libraries')}
         </div>
       )}
     </div>

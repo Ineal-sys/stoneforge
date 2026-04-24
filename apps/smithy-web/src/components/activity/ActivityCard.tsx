@@ -5,6 +5,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   Plus,
   Edit,
@@ -63,10 +64,11 @@ const ElementTypeLabels: Record<ElementType, string> = {
 
 export function ActivityCard({ event, onOpenInWorkspace }: ActivityCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { t } = useTranslation('smithy');
 
   const Icon = EventIcons[event.eventType] || Activity;
   const iconColor = getEventTypeColor(event.eventType);
-  const typeLabel = event.elementType ? ElementTypeLabels[event.elementType] || event.elementType : 'item';
+  const typeLabel = event.elementType ? t(`activity.elementType.${event.elementType}`, ElementTypeLabels[event.elementType] || event.elementType) : t('activity.elementType.item', 'item');
 
   // Check if there are details to show
   const hasDetails =
@@ -95,7 +97,7 @@ export function ActivityCard({ event, onOpenInWorkspace }: ActivityCardProps) {
             <div className="flex-1 min-w-0">
               {/* Summary */}
               <p className="text-sm text-[var(--color-text)]" data-testid="activity-summary">
-                {event.summary || `${event.eventType} on ${typeLabel}`}
+                {event.summary || t('activity.eventOnType', { eventType: event.eventType, type: typeLabel })}
               </p>
 
               {/* Meta info */}
@@ -127,7 +129,7 @@ export function ActivityCard({ event, onOpenInWorkspace }: ActivityCardProps) {
                 <button
                   onClick={() => onOpenInWorkspace(event)}
                   className="p-1 text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] rounded transition-colors duration-150"
-                  title="Open in Workspace"
+                  title={t('activity.openInWorkspace')}
                   data-testid="activity-open-workspace"
                 >
                   <ExternalLink className="w-4 h-4" />
@@ -137,7 +139,7 @@ export function ActivityCard({ event, onOpenInWorkspace }: ActivityCardProps) {
                 <button
                   onClick={() => setIsExpanded(!isExpanded)}
                   className="p-1 text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] rounded transition-colors duration-150"
-                  title={isExpanded ? 'Collapse' : 'Expand'}
+                  title={isExpanded ? t('activity.collapse') : t('activity.expand')}
                   data-testid="activity-expand"
                 >
                   {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -167,7 +169,7 @@ export function ActivityCard({ event, onOpenInWorkspace }: ActivityCardProps) {
               {event.newValue && Object.keys(event.newValue).length > 0 && (
                 <div>
                   <h4 className="text-xs font-medium text-[var(--color-text-secondary)] mb-1">
-                    {event.eventType === 'created' ? 'Initial Values' : 'New Values'}
+                    {event.eventType === 'created' ? t('activity.initialValues') : t('activity.newValues')}
                   </h4>
                   <pre className="text-xs bg-[var(--color-surface-hover)] p-2 rounded overflow-x-auto">
                     {JSON.stringify(event.newValue, null, 2)}
@@ -179,7 +181,7 @@ export function ActivityCard({ event, onOpenInWorkspace }: ActivityCardProps) {
                 event.eventType !== 'created' && (
                   <div>
                     <h4 className="text-xs font-medium text-[var(--color-text-secondary)] mb-1">
-                      Previous Values
+                      {t('activity.previousValues')}
                     </h4>
                     <pre className="text-xs bg-[var(--color-surface-hover)] p-2 rounded overflow-x-auto">
                       {JSON.stringify(event.oldValue, null, 2)}

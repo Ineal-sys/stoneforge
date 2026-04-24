@@ -16,6 +16,7 @@ import {
   EyeOff,
 } from 'lucide-react';
 import type { MergeRequestFilterStatus, MergeRequestCounts } from '../../api/hooks/useMergeRequests';
+import { useTranslation } from '@stoneforge/i18n';
 
 interface MergeRequestFilterBarProps {
   currentFilter: MergeRequestFilterStatus;
@@ -27,16 +28,16 @@ interface MergeRequestFilterBarProps {
 
 interface TabConfig {
   value: MergeRequestFilterStatus;
-  label: string;
+  labelKey: string;
   countKey: keyof MergeRequestCounts;
   icon: React.ComponentType<{ className?: string }>;
 }
 
 const TABS: TabConfig[] = [
-  { value: 'all', label: 'All', countKey: 'all', icon: CheckSquare },
-  { value: 'needs_review', label: 'Needs Review', countKey: 'needsReview', icon: AlertCircle },
-  { value: 'testing', label: 'Testing', countKey: 'testing', icon: FlaskConical },
-  { value: 'conflicts', label: 'Conflicts', countKey: 'conflicts', icon: AlertTriangle },
+  { value: 'all', labelKey: 'mergeRequest.filterAll', countKey: 'all', icon: CheckSquare },
+  { value: 'needs_review', labelKey: 'mergeRequest.filterNeedsReview', countKey: 'needsReview', icon: AlertCircle },
+  { value: 'testing', labelKey: 'mergeRequest.filterTesting', countKey: 'testing', icon: FlaskConical },
+  { value: 'conflicts', labelKey: 'mergeRequest.filterConflicts', countKey: 'conflicts', icon: AlertTriangle },
 ];
 
 export function MergeRequestFilterBar({
@@ -46,10 +47,11 @@ export function MergeRequestFilterBar({
   onFilterChange,
   onShowMergedChange,
 }: MergeRequestFilterBarProps) {
+const { t } = useTranslation('smithy');
   return (
     <div className="flex items-center justify-between border-b border-[var(--color-border)] overflow-x-auto">
       {/* Tabs */}
-      <nav className="flex gap-1 min-w-max" aria-label="Merge request filters" data-testid="merge-request-filters">
+      <nav className="flex gap-1 min-w-max" aria-label={t('mergeRequest.filters')} data-testid="merge-request-filters">
         {TABS.map((tab) => {
           const count = counts[tab.countKey];
           const isActive = currentFilter === tab.value;
@@ -68,7 +70,7 @@ export function MergeRequestFilterBar({
             >
               <span className="flex items-center gap-2">
                 <Icon className="w-4 h-4" />
-                {tab.label}
+                {t(tab.labelKey)}
                 <span className="px-1.5 py-0.5 text-xs rounded-full bg-[var(--color-surface-elevated)]">
                   {count}
                 </span>
@@ -96,7 +98,7 @@ export function MergeRequestFilterBar({
         ) : (
           <EyeOff className="w-4 h-4" />
         )}
-        <span>Merged ({counts.merged})</span>
+        <span>{t('mergeRequest.mergedWithCount', { count: counts.merged })}</span>
       </button>
     </div>
   );

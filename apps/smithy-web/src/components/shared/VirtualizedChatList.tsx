@@ -9,7 +9,8 @@
  * - Smooth virtualization with @tanstack/react-virtual
  */
 
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react'
+import { useTranslation } from '@stoneforge/i18n';
 import { useVirtualizer, type VirtualItem } from '@tanstack/react-virtual';
 import { ChevronDown } from 'lucide-react';
 
@@ -128,6 +129,7 @@ export function VirtualizedChatList<T>({
   latestMessageId,
   onNewMessageWhileScrolledUp,
 }: VirtualizedChatListProps<T>) {
+  const { t } = useTranslation('smithy');
   const parentRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [showJumpToLatest, setShowJumpToLatest] = useState(false);
@@ -289,7 +291,7 @@ export function VirtualizedChatList<T>({
         tabIndex={0}
         role="log"
         aria-live="polite"
-        aria-label="Messages"
+        aria-label={t('shared.messages')}
       >
         <div
           className={innerClassName}
@@ -323,16 +325,16 @@ export function VirtualizedChatList<T>({
         </div>
       </div>
 
-      {/* Jump to latest button */}
+      {/* t('shared.jumpToLatest') button */}
       {showJumpToLatest && (
         <button
           onClick={() => scrollToBottom('smooth')}
           className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-full shadow-lg hover:bg-blue-600 transition-all hover:shadow-xl"
           data-testid={`${testId}-jump-to-latest`}
-          aria-label="Jump to latest messages"
+          aria-label={t('shared.jumpToLatest')}
         >
           <ChevronDown className="w-4 h-4" />
-          Jump to latest
+          {t('shared.jumpToLatest')}
         </button>
       )}
     </div>

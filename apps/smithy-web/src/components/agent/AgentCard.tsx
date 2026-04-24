@@ -6,6 +6,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Play, Square, RefreshCw, Terminal, MoreVertical, Clock, GitBranch, Pencil, Inbox, Trash2, ArrowLeftRight, Settings, Zap } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { Agent, WorkerMetadata, StewardMetadata, SessionStatus } from '../../api/types';
 import { AgentStatusBadge } from './AgentStatusBadge';
 import { AgentRoleBadge } from './AgentRoleBadge';
@@ -42,6 +43,7 @@ export function AgentCard({
   isStarting,
   isStopping,
 }: AgentCardProps) {
+  const { t } = useTranslation('smithy');
   const [menuOpen, setMenuOpen] = useState(false);
   const [inboxOpen, setInboxOpen] = useState(false);
   const [changeProviderOpen, setChangeProviderOpen] = useState(false);
@@ -125,7 +127,7 @@ export function AgentCard({
               data-testid={`agent-executable-path-${agent.id}`}
               title={agentMeta.executablePath}
             >
-              Path: {agentMeta.executablePath}
+              {t('agent.path')}: {agentMeta.executablePath}
             </div>
           )}
         </div>
@@ -164,7 +166,7 @@ export function AgentCard({
                 data-testid={`agent-rename-${agent.id}`}
               >
                 <Pencil className="w-3.5 h-3.5" />
-                Rename agent
+                {t('agent.renameAgent')}
               </button>
               <button
                 onClick={() => {
@@ -181,7 +183,7 @@ export function AgentCard({
                 data-testid={`agent-change-provider-${agent.id}`}
               >
                 <ArrowLeftRight className="w-3.5 h-3.5" />
-                Change provider
+                {t('agent.changeProvider')}
               </button>
               <button
                 onClick={() => {
@@ -198,7 +200,7 @@ export function AgentCard({
                 data-testid={`agent-change-model-${agent.id}`}
               >
                 <Settings className="w-3.5 h-3.5" />
-                Change model
+                {t('agent.changeModel')}
               </button>
               {stewardMeta && (
                 <button
@@ -216,7 +218,7 @@ export function AgentCard({
                   data-testid={`agent-change-triggers-${agent.id}`}
                 >
                   <Zap className="w-3.5 h-3.5" />
-                  Change triggers
+                  {t('agent.changeTriggers')}
                 </button>
               )}
               <button
@@ -232,7 +234,7 @@ export function AgentCard({
                 data-testid={`agent-delete-${agent.id}`}
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                Delete agent
+                {t('agent.deleteAgent')}
               </button>
             </div>
           )}
@@ -251,14 +253,14 @@ export function AgentCard({
       {stewardMeta?.lastExecutedAt && (
         <div className="mt-3 flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)]">
           <Clock className="w-3.5 h-3.5" />
-          <span>Last run: {formatRelativeTime(stewardMeta.lastExecutedAt)}</span>
+          <span>{t('agent.lastRun')}: {formatRelativeTime(stewardMeta.lastExecutedAt)}</span>
         </div>
       )}
 
       {/* Action buttons */}
       <div className="mt-4 flex items-center gap-2">
         {canStart && onStart && (
-          <Tooltip content="Start agent">
+          <Tooltip content={t('agent.startAgent')}>
             <button
               onClick={onStart}
               disabled={isStarting}
@@ -266,12 +268,12 @@ export function AgentCard({
               data-testid={`agent-start-${agent.id}`}
             >
               <Play className="w-3.5 h-3.5" />
-              {isStarting ? 'Starting...' : 'Start'}
+              {isStarting ? t('agent.starting') : t('agent.start')}
             </button>
           </Tooltip>
         )}
         {canStop && onStop && (
-          <Tooltip content="Stop agent">
+          <Tooltip content={t('agent.stopAgent')}>
             <button
               onClick={onStop}
               disabled={isStopping}
@@ -279,25 +281,25 @@ export function AgentCard({
               data-testid={`agent-stop-${agent.id}`}
             >
               <Square className="w-3.5 h-3.5" />
-              {isStopping ? 'Stopping...' : 'Stop'}
+              {isStopping ? t('agent.stopping') : t('agent.stop')}
             </button>
           </Tooltip>
         )}
         {isRunning && onOpenTerminal && (
-          <Tooltip content="Open in Workspace">
+          <Tooltip content={t('agent.openInWorkspace')}>
             <button
               onClick={onOpenTerminal}
               className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface-elevated)] rounded-md hover:bg-[var(--color-surface-hover)] transition-colors"
               data-testid={`agent-terminal-${agent.id}`}
             >
               <Terminal className="w-3.5 h-3.5" />
-              Open
+              {t('agent.open')}
             </button>
           </Tooltip>
         )}
 
         {/* Inbox button */}
-        <Tooltip content={unreadCount > 0 ? `${unreadCount} unread messages` : 'View inbox'}>
+        <Tooltip content={unreadCount > 0 ? t('agent.unreadMessages', { count: unreadCount }) : t('agent.viewInbox')}>
           <button
             onClick={() => setInboxOpen(true)}
             className="relative p-1.5 text-[var(--color-text-tertiary)] hover:text-[var(--color-text)] rounded-md hover:bg-[var(--color-surface-hover)] transition-colors"
@@ -316,7 +318,7 @@ export function AgentCard({
         </Tooltip>
 
         {onRestart && (
-          <Tooltip content="Restart agent">
+          <Tooltip content={t('agent.restartAgent')}>
             <button
               onClick={onRestart}
               className="p-1.5 text-[var(--color-text-tertiary)] hover:text-[var(--color-text)] rounded-md hover:bg-[var(--color-surface-hover)] transition-colors"

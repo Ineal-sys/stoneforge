@@ -5,6 +5,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import { Filter, ChevronRight } from 'lucide-react';
 import { ActivityList } from './ActivityList.js';
 import { SessionActivityCard } from './SessionActivityCard.js';
@@ -21,6 +22,7 @@ const FILTER_CATEGORIES: { value: ActivityFilterCategory; label: string }[] = [
 export function CollapsibleActivityFeed() {
   const [isOpen, setIsOpen] = useState(false);
   const [filterCategory, setFilterCategory] = useState<ActivityFilterCategory>('all');
+  const { t } = useTranslation('smithy');
 
   const {
     data,
@@ -64,10 +66,10 @@ export function CollapsibleActivityFeed() {
         <ChevronRight
           className={`w-4 h-4 transition-transform duration-150 ${isOpen ? 'rotate-90' : ''}`}
         />
-        Activity Feed
+        {t('activity.activityFeed')}
         {(sessionEvents.length > 0 || events.length > 0) && (
           <span className="text-xs text-[var(--color-text-tertiary)]">
-            ({sessionEvents.length + events.length} events)
+            ({t('activity.eventCount', { count: sessionEvents.length + events.length })})
           </span>
         )}
       </button>
@@ -98,13 +100,13 @@ export function CollapsibleActivityFeed() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-medium text-[var(--color-text-secondary)]">
-                  Live Activity
+                  {t('activity.liveActivity')}
                 </h3>
                 <button
                   onClick={clearSessionEvents}
                   className="text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
                 >
-                  Clear
+                  {t('activity.clear')}
                 </button>
               </div>
               <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -128,8 +130,8 @@ export function CollapsibleActivityFeed() {
             onOpenInWorkspace={handleOpenInWorkspace}
             emptyMessage={
               filterCategory === 'all'
-                ? 'No activity yet. Activity will appear here when agents start working on tasks.'
-                : `No ${filterCategory} activity to show.`
+                ? t('activity.noActivityYet')
+                : t('activity.noFilteredActivity', { category: filterCategory })
             }
           />
         </div>

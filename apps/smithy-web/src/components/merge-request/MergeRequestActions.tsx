@@ -2,14 +2,15 @@
  * MergeRequestActions - Context-aware action buttons
  *
  * Actions vary based on merge status:
- * - pending: Merge, Run Tests, View MR
- * - testing/merging: (waiting), View MR
- * - merged: View MR, View Diff
- * - conflict/failed: Create Fix Task, View Conflicts, View MR
- * - test_failed: Create Fix Task, Re-run Tests, View Logs
+ * - pending: Merge, Run Tests, t('mergeRequest.viewMR')
+ * - testing/merging: (waiting), t('mergeRequest.viewMR')
+ * - merged: t('mergeRequest.viewMR'), t('mergeRequest.viewDiff')
+ * - conflict/failed: t('mergeRequest.createFixTask'), t('mergeRequest.viewConflicts'), t('mergeRequest.viewMR')
+ * - test_failed: t('mergeRequest.createFixTask'), Re-run Tests, t('mergeRequest.viewLogs')
  */
 
 import { useState } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   GitMerge,
   FlaskConical,
@@ -47,6 +48,7 @@ export function MergeRequestActions({
   onViewLogs,
   variant = 'default',
 }: MergeRequestActionsProps) {
+  const { t } = useTranslation('smithy');
   const mergeStatus = task.metadata?.orchestrator?.mergeStatus;
   const mergeMutation = useMergeMutation();
   const runTestsMutation = useRunTestsMutation();
@@ -119,7 +121,7 @@ export function MergeRequestActions({
           </button>
         )}
 
-        {/* Create Fix Task Button (conflict, test_failed, failed) */}
+        {/* t('mergeRequest.createFixTask') Button (conflict, test_failed, failed) */}
         {canCreateFixTask(task) && (
           <button
             onClick={() => setShowFixTaskDialog(true)}
@@ -132,7 +134,7 @@ export function MergeRequestActions({
             ) : (
               <Wrench className="w-4 h-4" />
             )}
-            <span>Create Fix Task</span>
+            <span>{t('mergeRequest.createFixTask')}</span>
           </button>
         )}
 
@@ -147,7 +149,7 @@ export function MergeRequestActions({
 
       {/* Secondary Actions */}
       <div className="flex flex-wrap items-center gap-2">
-        {/* View MR */}
+        {/* t('mergeRequest.viewMR') */}
         {onViewMergeRequest && (
           <button
             onClick={onViewMergeRequest}
@@ -155,11 +157,11 @@ export function MergeRequestActions({
             data-testid="view-mr-button"
           >
             <ExternalLink className="w-4 h-4" />
-            <span>View MR</span>
+            <span>{t('mergeRequest.viewMR')}</span>
           </button>
         )}
 
-        {/* View Diff (merged only) */}
+        {/* t('mergeRequest.viewDiff') (merged only) */}
         {mergeStatus === 'merged' && onViewDiff && (
           <button
             onClick={onViewDiff}
@@ -167,11 +169,11 @@ export function MergeRequestActions({
             data-testid="view-diff-button"
           >
             <FileCode className="w-4 h-4" />
-            <span>View Diff</span>
+            <span>{t('mergeRequest.viewDiff')}</span>
           </button>
         )}
 
-        {/* View Conflicts (conflict only) */}
+        {/* t('mergeRequest.viewConflicts') (conflict only) */}
         {mergeStatus === 'conflict' && onViewConflicts && (
           <button
             onClick={onViewConflicts}
@@ -179,11 +181,11 @@ export function MergeRequestActions({
             data-testid="view-conflicts-button"
           >
             <AlertCircle className="w-4 h-4" />
-            <span>View Conflicts</span>
+            <span>{t('mergeRequest.viewConflicts')}</span>
           </button>
         )}
 
-        {/* View Logs (test_failed only) */}
+        {/* t('mergeRequest.viewLogs') (test_failed only) */}
         {mergeStatus === 'test_failed' && onViewLogs && (
           <button
             onClick={onViewLogs}
@@ -191,7 +193,7 @@ export function MergeRequestActions({
             data-testid="view-logs-button"
           >
             <FileCode className="w-4 h-4" />
-            <span>View Logs</span>
+            <span>{t('mergeRequest.viewLogs')}</span>
           </button>
         )}
       </div>
@@ -210,7 +212,7 @@ export function MergeRequestActions({
         </div>
       )}
 
-      {/* Create Fix Task Dialog */}
+      {/* t('mergeRequest.createFixTask') Dialog */}
       {showFixTaskDialog && (
         <CreateFixTaskDialog
           task={task}
@@ -224,7 +226,7 @@ export function MergeRequestActions({
 }
 
 // ============================================================================
-// Create Fix Task Dialog
+// t('mergeRequest.createFixTask') Dialog
 // ============================================================================
 
 interface CreateFixTaskDialogProps {
@@ -240,6 +242,7 @@ function CreateFixTaskDialog({
   onCancel,
   isSubmitting,
 }: CreateFixTaskDialogProps) {
+  const { t } = useTranslation('smithy');
   const [reason, setReason] = useState(() => {
     const mergeStatus = task.metadata?.orchestrator?.mergeStatus;
     const testResult = task.metadata?.orchestrator?.lastTestResult;
@@ -265,7 +268,7 @@ function CreateFixTaskDialog({
       {/* Dialog */}
       <div className="relative bg-[var(--color-surface)] rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
         <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">
-          Create Fix Task
+          {t('mergeRequest.createFixTask')}
         </h3>
         <p className="text-sm text-[var(--color-text-secondary)] mb-4">
           Create a new task assigned to the same agent to fix the issues with this merge request.
@@ -284,7 +287,7 @@ function CreateFixTaskDialog({
             onChange={(e) => setReason(e.target.value)}
             rows={3}
             className="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-md bg-[var(--color-input-bg)] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent resize-none"
-            placeholder="Describe what needs to be fixed..."
+            placeholder={t('mergeRequest.describeFix')}
             data-testid="fix-reason-input"
           />
         </div>
@@ -312,7 +315,7 @@ function CreateFixTaskDialog({
             ) : (
               <>
                 <Wrench className="w-4 h-4" />
-                Create Fix Task
+                {t('mergeRequest.createFixTask')}
               </>
             )}
           </button>

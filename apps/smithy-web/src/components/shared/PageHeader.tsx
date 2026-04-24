@@ -12,6 +12,7 @@
 
 import { type LucideIcon } from 'lucide-react';
 import { useContainerIsMobile } from '../../hooks';
+import { useTranslation } from '@stoneforge/i18n';
 
 export interface PageHeaderAction {
   label: string;
@@ -61,6 +62,7 @@ export function PageHeader({
   bordered = false,
   className = '',
 }: PageHeaderProps) {
+const { t } = useTranslation('smithy');
   const isMobile = useContainerIsMobile();
 
   const renderCount = () => {
@@ -69,7 +71,7 @@ export function PageHeader({
     if (totalCount !== undefined && totalCount !== count) {
       return (
         <span className="text-sm text-[var(--color-text-secondary)]">
-          {count} of {totalCount}
+          {t('shared.countOf', { count, total: totalCount })}
         </span>
       );
     }

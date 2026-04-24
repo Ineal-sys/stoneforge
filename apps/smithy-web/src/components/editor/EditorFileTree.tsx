@@ -17,6 +17,7 @@ import {
   forwardRef,
   useImperativeHandle,
 } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import { Tree, NodeRendererProps, NodeApi } from 'react-arborist';
 import * as ContextMenu from '@radix-ui/react-context-menu';
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
@@ -254,6 +255,7 @@ interface FileTreeContextMenuProps {
 
 function FileTreeContextMenu({ node, children }: FileTreeContextMenuProps) {
   const ctx = useContext(FileTreeContextMenuContext);
+  const { t } = useTranslation('smithy');
   if (!ctx) return <>{children}</>;
 
   const { clipboard, onOpen, onCopy, onCut, onPaste, onCopyPath, onCopyRelativePath, onRename, onDelete } = ctx;
@@ -276,7 +278,7 @@ function FileTreeContextMenu({ node, children }: FileTreeContextMenuProps) {
             onSelect={() => onOpen(node)}
             data-testid="context-menu-open"
           >
-            <span>Open</span>
+            <span>{t('editor.open')}</span>
           </ContextMenu.Item>
 
           <ContextMenu.Separator className="h-px bg-[var(--color-border)] my-1" />
@@ -287,7 +289,7 @@ function FileTreeContextMenu({ node, children }: FileTreeContextMenuProps) {
             onSelect={() => onCopy(node)}
             data-testid="context-menu-copy"
           >
-            <span>Copy</span>
+            <span>{t('editor.copy')}</span>
           </ContextMenu.Item>
 
           {/* Cut */}
@@ -296,7 +298,7 @@ function FileTreeContextMenu({ node, children }: FileTreeContextMenuProps) {
             onSelect={() => onCut(node)}
             data-testid="context-menu-cut"
           >
-            <span>Cut</span>
+            <span>{t('editor.cut')}</span>
           </ContextMenu.Item>
 
           {/* Paste */}
@@ -321,7 +323,7 @@ function FileTreeContextMenu({ node, children }: FileTreeContextMenuProps) {
             }}
             data-testid="context-menu-paste"
           >
-            <span>Paste</span>
+            <span>{t('editor.paste')}</span>
           </ContextMenu.Item>
 
           <ContextMenu.Separator className="h-px bg-[var(--color-border)] my-1" />
@@ -332,7 +334,7 @@ function FileTreeContextMenu({ node, children }: FileTreeContextMenuProps) {
             onSelect={() => onCopyPath(node)}
             data-testid="context-menu-copy-path"
           >
-            <span>Copy Path</span>
+            <span>{t('editor.copyPath')}</span>
           </ContextMenu.Item>
 
           {/* Copy Relative Path */}
@@ -341,7 +343,7 @@ function FileTreeContextMenu({ node, children }: FileTreeContextMenuProps) {
             onSelect={() => onCopyRelativePath(node)}
             data-testid="context-menu-copy-relative-path"
           >
-            <span>Copy Relative Path</span>
+            <span>{t('editor.copyRelativePath')}</span>
           </ContextMenu.Item>
 
           <ContextMenu.Separator className="h-px bg-[var(--color-border)] my-1" />
@@ -352,7 +354,7 @@ function FileTreeContextMenu({ node, children }: FileTreeContextMenuProps) {
             onSelect={() => onRename(node)}
             data-testid="context-menu-rename"
           >
-            <span>Rename</span>
+            <span>{t('editor.rename')}</span>
             <span className="text-[var(--color-text-muted)] text-xs ml-4">F2</span>
           </ContextMenu.Item>
 
@@ -362,7 +364,7 @@ function FileTreeContextMenu({ node, children }: FileTreeContextMenuProps) {
             onSelect={() => onDelete(node)}
             data-testid="context-menu-delete"
           >
-            <span>Delete</span>
+            <span>{t('editor.delete')}</span>
             <span className="text-[var(--color-text-muted)] text-xs ml-4">Del</span>
           </ContextMenu.Item>
         </ContextMenu.Content>
@@ -613,6 +615,7 @@ function DeleteConfirmationDialog({
   onConfirm,
   onCancel,
 }: DeleteConfirmationDialogProps) {
+  const { t } = useTranslation('smithy');
   return (
     <AlertDialog.Root open={isOpen} onOpenChange={(open) => !open && onCancel()}>
       <AlertDialog.Portal>
@@ -622,10 +625,10 @@ function DeleteConfirmationDialog({
           data-testid="delete-confirmation-dialog"
         >
           <AlertDialog.Title className="text-lg font-semibold text-[var(--color-text)]">
-            Are you sure you want to delete {node?.name}?
+            {t('editor.confirmDelete', { name: node?.name })}
           </AlertDialog.Title>
           <AlertDialog.Description className="mt-2 text-sm text-[var(--color-text-muted)]">
-            This action cannot be undone.
+            {t('editor.cannotBeUndone')}
           </AlertDialog.Description>
 
           <div className="mt-6 flex justify-end gap-3">
@@ -634,7 +637,7 @@ function DeleteConfirmationDialog({
                 className="px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] rounded-md transition-colors"
                 data-testid="delete-cancel-button"
               >
-                Cancel
+                {t('editor.cancel')}
               </button>
             </AlertDialog.Cancel>
             <AlertDialog.Action asChild>
@@ -643,7 +646,7 @@ function DeleteConfirmationDialog({
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors"
                 data-testid="delete-confirm-button"
               >
-                Delete
+                {t('editor.delete')}
               </button>
             </AlertDialog.Action>
           </div>

@@ -3,6 +3,7 @@
  */
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   Send,
   X,
@@ -43,6 +44,7 @@ export function MessageAttachmentPicker({
   onSelect,
   selectedIds,
 }: MessageAttachmentPickerProps) {
+  const { t } = useTranslation('smithy');
   const [searchQuery, setSearchQuery] = useState('');
   const { data: documents, isLoading } = useDocuments(searchQuery);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -78,7 +80,7 @@ export function MessageAttachmentPicker({
       <div className="relative bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[60vh] flex flex-col">
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-gray-900">Attach Document</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{t('messages.attachDocument')}</h3>
             <button
               onClick={onClose}
               className="p-1 text-gray-400 hover:text-gray-600 rounded"
@@ -92,7 +94,7 @@ export function MessageAttachmentPicker({
             <input
               ref={inputRef}
               type="text"
-              placeholder="Search documents..."
+              placeholder={t('messages.searchDocuments')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -108,10 +110,10 @@ export function MessageAttachmentPicker({
           ) : availableDocs.length === 0 ? (
             <div className="text-center py-8 text-gray-500" data-testid="attachment-picker-empty">
               {documents?.length === 0
-                ? 'No documents available'
+                ? t('messages.noDocumentsAvailable')
                 : searchQuery
-                  ? 'No documents match your search'
-                  : 'All documents are already attached'}
+                  ? t('messages.noDocumentsMatchSearch')
+                  : t('messages.allDocumentsAttached')}
             </div>
           ) : (
             <div className="space-y-2">
@@ -125,7 +127,7 @@ export function MessageAttachmentPicker({
                   <FileText className="w-5 h-5 text-gray-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-gray-900 truncate">
-                      {doc.title || 'Untitled Document'}
+                      {doc.title || t('messages.untitledDocument')}
                     </div>
                     <div className="text-xs text-gray-500 flex items-center gap-2">
                       <span className="font-mono">{doc.id}</span>
@@ -156,6 +158,7 @@ interface MessageComposerProps {
 
 export function MessageComposer({ channelId, channel, isMobile = false }: MessageComposerProps) {
   const [content, setContent] = useState('');
+  const { t } = useTranslation('smithy');
   const [attachments, setAttachments] = useState<AttachedDocument[]>([]);
   const [imageAttachments, setImageAttachments] = useState<ImageAttachment[]>([]);
   const [showPicker, setShowPicker] = useState(false);
@@ -237,12 +240,12 @@ export function MessageComposer({ channelId, channel, isMobile = false }: Messag
   const uploadImageFile = async (file: File): Promise<string | null> => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-      toast.error(`Invalid file type: ${file.type}`);
+      toast.error(t('messages.invalidFileType', { type: file.type }));
       return null;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      toast.error('File too large (max 10MB)');
+      toast.error(t('messages.fileTooLarge'));
       return null;
     }
 
@@ -263,7 +266,7 @@ export function MessageComposer({ channelId, channel, isMobile = false }: Messag
       const result = await response.json();
       return result.url;
     } catch {
-      toast.error('Failed to upload image');
+      toast.error(t('messages.failedToUploadImage'));
       return null;
     } finally {
       setUploadingImage(false);
@@ -275,7 +278,7 @@ export function MessageComposer({ channelId, channel, isMobile = false }: Messag
     const url = await uploadImageFile(file);
     if (url) {
       handleAddImageAttachment(url);
-      toast.success('Image attached');
+      toast.success(t('messages.imageAttached'));
     }
   };
 
@@ -289,7 +292,7 @@ export function MessageComposer({ channelId, channel, isMobile = false }: Messag
       const url = await uploadImageFile(file);
       if (url) {
         handleAddImageAttachment(url);
-        toast.success('Image attached');
+        toast.success(t('messages.imageAttached'));
       }
     }
   };
@@ -391,7 +394,7 @@ export function MessageComposer({ channelId, channel, isMobile = false }: Messag
               >
                 <img
                   src={img.url}
-                  alt={img.filename || 'Attached image'}
+                  alt={img.filename || t('messages.attachedImage')}
                   className={`object-cover rounded-lg border border-[var(--color-border)] ${
                     isMobile ? 'w-14 h-14' : 'w-20 h-20'
                   }`}
@@ -427,7 +430,7 @@ export function MessageComposer({ channelId, channel, isMobile = false }: Messag
               >
                 <FileText className={`text-gray-400 ${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
                 <span className={`truncate ${isMobile ? 'max-w-[100px]' : 'max-w-[150px]'}`}>
-                  {doc.title || 'Untitled'}
+                  {doc.title || t('messages.untitled')}
                 </span>
                 <button
                   type="button"
@@ -452,7 +455,7 @@ export function MessageComposer({ channelId, channel, isMobile = false }: Messag
               isMobile ? 'p-2 touch-target' : 'p-2 mb-1'
             }`}
             data-testid="message-image-attach-button"
-            title="Attach image"
+            title={t('messages.attachImage')}
           >
             {uploadingImage ? (
               <Loader2 className={isMobile ? 'w-5 h-5 animate-spin' : 'w-5 h-5 animate-spin'} />
@@ -467,7 +470,7 @@ export function MessageComposer({ channelId, channel, isMobile = false }: Messag
               isMobile ? 'p-2 touch-target' : 'p-2 mb-1'
             }`}
             data-testid="message-attach-button"
-            title="Attach document"
+            title={t('messages.attachDocument')}
           >
             <Paperclip className={isMobile ? 'w-5 h-5' : 'w-5 h-5'} />
           </button>
@@ -495,7 +498,7 @@ export function MessageComposer({ channelId, channel, isMobile = false }: Messag
             }`}
           >
             <Send className={isMobile ? 'w-5 h-5' : 'w-4 h-4'} />
-            <span className="sr-only">Send</span>
+            <span className="sr-only">{t('messages.send')}</span>
           </button>
         </div>
         {sendMessage.isError && (
@@ -503,7 +506,7 @@ export function MessageComposer({ channelId, channel, isMobile = false }: Messag
             data-testid="message-send-error"
             className={`mt-2 text-red-500 ${isMobile ? 'text-xs' : 'text-sm'}`}
           >
-            {sendMessage.error?.message || 'Failed to send message. Please try again.'}
+            {sendMessage.error?.message || t('messages.failedToSend')}
           </p>
         )}
       </form>

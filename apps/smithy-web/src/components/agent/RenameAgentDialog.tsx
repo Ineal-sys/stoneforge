@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Loader2, AlertCircle, Pencil } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useRenameAgent } from '../../api/hooks/useAgents';
 
 export interface RenameAgentDialogProps {
@@ -21,6 +22,7 @@ export function RenameAgentDialog({
   currentName,
   onSuccess,
 }: RenameAgentDialogProps) {
+  const { t } = useTranslation('smithy');
   const [name, setName] = useState(currentName);
   const [error, setError] = useState<string | null>(null);
   const renameAgent = useRenameAgent();
@@ -46,7 +48,7 @@ export function RenameAgentDialog({
 
     const trimmedName = name.trim();
     if (!trimmedName) {
-      setError('Name is required');
+      setError(t('agent.nameRequired'));
       return;
     }
 
@@ -60,7 +62,7 @@ export function RenameAgentDialog({
       onSuccess?.();
       handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to rename agent');
+      setError(err instanceof Error ? err.message : t('agent.failedToRename'));
     }
   };
 
@@ -94,7 +96,7 @@ export function RenameAgentDialog({
               id="rename-agent-title"
               className="text-lg font-semibold text-[var(--color-text)]"
             >
-              Rename Agent
+              {t('agent.renameAgent')}
             </h2>
             <button
               onClick={handleClose}
@@ -105,7 +107,7 @@ export function RenameAgentDialog({
                 hover:bg-[var(--color-surface-hover)]
                 transition-colors
               "
-              aria-label="Close dialog"
+              aria-label={t('agent.closeDialog')}
               data-testid="rename-agent-close"
             >
               <X className="w-5 h-5" />
@@ -124,14 +126,14 @@ export function RenameAgentDialog({
             {/* Name input */}
             <div className="space-y-1">
               <label htmlFor="agent-new-name" className="text-sm font-medium text-[var(--color-text)]">
-                New Name
+                {t('agent.newName')}
               </label>
               <input
                 id="agent-new-name"
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
-                placeholder="Enter new name"
+                placeholder={t('agent.enterNewName')}
                 className="
                   w-full px-3 py-2
                   text-sm
@@ -162,7 +164,7 @@ export function RenameAgentDialog({
                 "
                 data-testid="rename-agent-cancel"
               >
-                Cancel
+                {t('agent.cancel')}
               </button>
               <button
                 type="submit"
@@ -183,12 +185,12 @@ export function RenameAgentDialog({
                 {renameAgent.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Renaming...
+                    {t('agent.renaming')}
                   </>
                 ) : (
                   <>
                     <Pencil className="w-4 h-4" />
-                    Rename
+                    {t('agent.rename')}
                   </>
                 )}
               </button>

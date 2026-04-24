@@ -19,6 +19,7 @@ import {
   ExternalLink,
   Unlink,
 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useDocumentLinks, useAddDocumentLink, useRemoveDocumentLink, useAllDocumentsForPicker } from '../hooks';
 import type { DocumentType } from '../types';
 
@@ -41,6 +42,7 @@ export function DocumentLinkPickerModal({
   existingLinkIds,
 }: DocumentLinkPickerModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const { t } = useTranslation('smithy');
   const { data: documents = [], isLoading } = useAllDocumentsForPicker();
 
   // Filter documents: exclude current document, existing links, and apply search
@@ -87,7 +89,7 @@ export function DocumentLinkPickerModal({
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <Link2 className="w-5 h-5 text-blue-500" />
-            Link Document
+            {t('documents.linkDocument')}
           </h3>
           <button
             onClick={onClose}
@@ -107,7 +109,7 @@ export function DocumentLinkPickerModal({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search documents by title or ID..."
+              placeholder={t('documents.searchDocumentsTitleOrId')}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               autoFocus
               data-testid="document-link-search"
@@ -118,10 +120,10 @@ export function DocumentLinkPickerModal({
         {/* Document list */}
         <div className="flex-1 overflow-y-auto p-4">
           {isLoading ? (
-            <div className="text-center py-8 text-gray-500">Loading documents...</div>
+            <div className="text-center py-8 text-gray-500">{t('documents.loadingDocuments')}</div>
           ) : filteredDocuments.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              {searchQuery.trim() ? 'No matching documents found' : 'No documents available to link'}
+              {searchQuery.trim() ? t('documents.noMatchingDocuments') : t('documents.noDocumentsAvailableToLink')}
             </div>
           ) : (
             <div className="space-y-2" data-testid="document-link-list">
@@ -135,7 +137,7 @@ export function DocumentLinkPickerModal({
                   <FileText className="w-5 h-5 text-blue-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-gray-900 truncate">
-                      {doc.title || `Document ${doc.id}`}
+                      {doc.title || t('documents.untitledDocument', { id: doc.id })}
                     </div>
                     <div className="text-xs text-gray-500 flex items-center gap-2">
                       <span className="font-mono">{doc.id}</span>
@@ -172,6 +174,7 @@ export function LinkedDocumentCard({
   onNavigate,
   isRemoving,
 }: LinkedDocumentCardProps) {
+  const { t } = useTranslation('smithy');
   return (
     <div
       className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors group"
@@ -182,7 +185,7 @@ export function LinkedDocumentCard({
         className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
           direction === 'outgoing' ? 'bg-blue-100' : 'bg-green-100'
         }`}
-        title={direction === 'outgoing' ? 'Links to' : 'Linked from'}
+        title={direction === 'outgoing' ? t('documents.linksTo') : t('documents.linkedFrom')}
       >
         {direction === 'outgoing' ? (
           <ArrowRight className="w-3 h-3 text-blue-600" />
@@ -198,7 +201,7 @@ export function LinkedDocumentCard({
           className="font-medium text-gray-900 hover:text-blue-600 truncate block text-left w-full"
           data-testid={`linked-document-title-${document.id}`}
         >
-          {document.title || `Document ${document.id}`}
+          {document.title || t('documents.untitledDocument', { id: document.id })}
         </button>
         <div className="text-xs text-gray-500 flex items-center gap-2">
           <span className="font-mono">{document.id}</span>
@@ -212,7 +215,7 @@ export function LinkedDocumentCard({
         <button
           onClick={onNavigate}
           className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
-          title="Open document"
+          title={t('documents.openDocument')}
           data-testid={`linked-document-open-${document.id}`}
         >
           <ExternalLink className="w-4 h-4" />
@@ -222,7 +225,7 @@ export function LinkedDocumentCard({
             onClick={onRemove}
             disabled={isRemoving}
             className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
-            title="Remove link"
+            title={t('documents.removeLink')}
             data-testid={`linked-document-remove-${document.id}`}
           >
             <Unlink className="w-4 h-4" />
@@ -247,6 +250,7 @@ export function LinkedDocumentsSection({
 }: LinkedDocumentsSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showPicker, setShowPicker] = useState(false);
+  const { t } = useTranslation('smithy');
 
   const { data: links, isLoading, isError } = useDocumentLinks(documentId);
   const addLink = useAddDocumentLink();
@@ -281,7 +285,7 @@ export function LinkedDocumentsSection({
           <ChevronRight className="w-3 h-3" />
         )}
         <Link2 className="w-3 h-3" />
-        <span>Linked Documents</span>
+        <span>{t('documents.linkedDocuments')}</span>
         {totalLinks > 0 && (
           <span className="text-gray-400 font-normal">({totalLinks})</span>
         )}
@@ -290,11 +294,11 @@ export function LinkedDocumentsSection({
       {isExpanded && (
         <div className="space-y-4">
           {isLoading && (
-            <div className="text-sm text-gray-500">Loading links...</div>
+            <div className="text-sm text-gray-500">{t('documents.loadingLinks')}</div>
           )}
 
           {isError && (
-            <div className="text-sm text-red-500">Failed to load links</div>
+            <div className="text-sm text-red-500">{t('documents.failedToLoadLinks')}</div>
           )}
 
           {!isLoading && !isError && (
@@ -304,7 +308,7 @@ export function LinkedDocumentsSection({
                 <div data-testid="outgoing-links-section">
                   <div className="text-xs text-gray-500 mb-2 flex items-center gap-1">
                     <ArrowRight className="w-3 h-3" />
-                    Links to ({outgoing.length})
+                    {t('documents.linksTo')} ({outgoing.length})
                   </div>
                   <div className="space-y-2">
                     {outgoing.map((doc) => (
@@ -326,7 +330,7 @@ export function LinkedDocumentsSection({
                 <div data-testid="incoming-links-section">
                   <div className="text-xs text-gray-500 mb-2 flex items-center gap-1">
                     <ArrowLeft className="w-3 h-3" />
-                    Linked from ({incoming.length})
+                    {t('documents.linkedFrom')} ({incoming.length})
                   </div>
                   <div className="space-y-2">
                     {incoming.map((doc) => (
@@ -346,7 +350,7 @@ export function LinkedDocumentsSection({
               {/* Empty state */}
               {totalLinks === 0 && (
                 <div className="text-sm text-gray-400 italic" data-testid="no-links-message">
-                  No linked documents
+                  {t('documents.noLinkedDocuments')}
                 </div>
               )}
 
@@ -358,18 +362,18 @@ export function LinkedDocumentsSection({
                 data-testid="add-document-link-button"
               >
                 <Plus className="w-4 h-4" />
-                Link Document
+                {t('documents.linkDocument')}
               </button>
 
               {/* Error message */}
               {addLink.isError && (
                 <div className="text-sm text-red-500 mt-2">
-                  {addLink.error?.message || 'Failed to add link'}
+                  {addLink.error?.message || t('documents.failedToAddLink')}
                 </div>
               )}
               {removeLink.isError && (
                 <div className="text-sm text-red-500 mt-2">
-                  {removeLink.error?.message || 'Failed to remove link'}
+                  {removeLink.error?.message || t('documents.failedToRemoveLink')}
                 </div>
               )}
             </>

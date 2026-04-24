@@ -10,6 +10,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { ArrowUp, ArrowDown, ArrowUpDown, ChevronDown, ChevronRight } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { SortField, SortDirection } from '../../lib/task-constants';
 import { SORT_OPTIONS } from '../../lib/task-constants';
 
@@ -30,6 +31,7 @@ export function SortByDropdown({
   onSortDirectionChange,
   onSecondarySortChange,
 }: SortByDropdownProps) {
+  const { t } = useTranslation('smithy');
   const [isOpen, setIsOpen] = useState(false);
   const [showSecondary, setShowSecondary] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -74,8 +76,8 @@ export function SortByDropdown({
           sortDirection === 'asc' ? 'text-[var(--color-primary)]' : ''
         }`}
         data-testid="sort-direction-toggle"
-        aria-label={sortDirection === 'asc' ? 'Sort ascending' : 'Sort descending'}
-        title={sortDirection === 'asc' ? 'Sort ascending' : 'Sort descending'}
+        aria-label={sortDirection === 'asc' ? t('tasks.sortAscending') : t('tasks.sortDescending')}
+        title={sortDirection === 'asc' ? t('tasks.sortAscending') : t('tasks.sortDescending')}
       >
         {sortDirection === 'asc' ? (
           <ArrowUp className="w-4 h-4" />
@@ -90,7 +92,7 @@ export function SortByDropdown({
           className="absolute z-20 mt-1 top-full left-0 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md shadow-lg py-1 min-w-48"
           data-testid="sort-by-options"
         >
-          <div className="px-3 py-1.5 text-xs font-medium text-[var(--color-text-tertiary)] uppercase">Primary Sort</div>
+          <div className="px-3 py-1.5 text-xs font-medium text-[var(--color-text-tertiary)] uppercase">{t('tasks.primarySort')}</div>
           {SORT_OPTIONS.map((option) => (
             <button
               key={option.value}
@@ -140,7 +142,7 @@ export function SortByDropdown({
             <span>Back</span>
           </button>
           <div className="border-t border-[var(--color-border)] my-1" />
-          <div className="px-3 py-1.5 text-xs font-medium text-[var(--color-text-tertiary)] uppercase">Secondary Sort</div>
+          <div className="px-3 py-1.5 text-xs font-medium text-[var(--color-text-tertiary)] uppercase">{t('tasks.secondarySort')}</div>
           <button
             onClick={() => {
               onSecondarySortChange(null);

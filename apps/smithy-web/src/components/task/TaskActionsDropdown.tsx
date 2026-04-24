@@ -8,6 +8,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { MoreHorizontal, Trash2, Loader2, AlertTriangle } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { Task } from '../../api/types';
 import { useDeleteTask } from '../../api/hooks/useTasks';
 
@@ -18,6 +19,7 @@ interface TaskActionsDropdownProps {
 }
 
 export function TaskActionsDropdown({ task, onDeleted }: TaskActionsDropdownProps) {
+  const { t } = useTranslation('smithy');
   const [isOpen, setIsOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
@@ -86,7 +88,7 @@ export function TaskActionsDropdown({ task, onDeleted }: TaskActionsDropdownProp
           }}
           className="p-1.5 text-[var(--color-text-tertiary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-elevated)] rounded transition-colors"
           data-testid="task-row-menu"
-          aria-label="Task actions"
+          aria-label={t('tasks.columnActions')}
         >
           <MoreHorizontal className="w-4 h-4" />
         </button>
@@ -103,7 +105,7 @@ export function TaskActionsDropdown({ task, onDeleted }: TaskActionsDropdownProp
               data-testid="task-action-delete"
             >
               <Trash2 className="w-4 h-4" />
-              Delete
+              {t('common:button.delete')}
             </button>
           </div>
         )}
@@ -132,9 +134,9 @@ export function TaskActionsDropdown({ task, onDeleted }: TaskActionsDropdownProp
                     <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-[var(--color-text)]">Delete Task</h2>
+                    <h2 className="text-lg font-semibold text-[var(--color-text)]">{t('taskDetail.deleteTitle')}</h2>
                     <p className="text-sm text-[var(--color-text-secondary)]">
-                      This action cannot be undone.
+                      {t('taskDetail.deleteAction')}
                     </p>
                   </div>
                 </div>
@@ -160,7 +162,7 @@ export function TaskActionsDropdown({ task, onDeleted }: TaskActionsDropdownProp
                   className="px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-surface-elevated)] hover:bg-[var(--color-surface-hover)] rounded-md transition-colors disabled:opacity-50"
                   data-testid="delete-cancel"
                 >
-                  Cancel
+                  {t('common:button.cancel')}
                 </button>
                 <button
                   onClick={handleConfirmDelete}
@@ -169,7 +171,7 @@ export function TaskActionsDropdown({ task, onDeleted }: TaskActionsDropdownProp
                   data-testid="delete-confirm"
                 >
                   {deleteTaskMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                  Delete
+                  {t('common:button.delete')}
                 </button>
               </div>
             </div>

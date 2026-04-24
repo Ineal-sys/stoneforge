@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Command } from 'cmdk';
 import { useRouter } from '@tanstack/react-router';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   Activity,
   CheckSquare,
@@ -59,18 +60,19 @@ interface CommandPaletteProps {
   onOpenChange: (open: boolean) => void;
 }
 
-// Category labels and icons
-const CATEGORY_CONFIG: Record<CommandCategory, { label: string; icon: React.ComponentType<{ className?: string }> }> = {
-  navigation: { label: 'Navigation', icon: ArrowRight },
-  tasks: { label: 'Tasks', icon: CheckSquare },
-  agents: { label: 'Agents', icon: Bot },
-  workflows: { label: 'Workflows', icon: Workflow },
-  actions: { label: 'Quick Actions', icon: Play },
-  settings: { label: 'Settings', icon: Settings },
+// Category icons and i18n keys
+const CATEGORY_CONFIG: Record<CommandCategory, { labelKey: string; icon: React.ComponentType<{ className?: string }> }> = {
+  navigation: { labelKey: 'commandPalette.categoryNavigation', icon: ArrowRight },
+  tasks: { labelKey: 'commandPalette.categoryTasks', icon: CheckSquare },
+  agents: { labelKey: 'commandPalette.categoryAgents', icon: Bot },
+  workflows: { labelKey: 'commandPalette.categoryWorkflows', icon: Workflow },
+  actions: { labelKey: 'commandPalette.categoryQuickActions', icon: Play },
+  settings: { labelKey: 'commandPalette.categorySettings', icon: Settings },
 };
 
 export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const router = useRouter();
+  const { t } = useTranslation('smithy');
   const [search, setSearch] = useState('');
 
   // Reset search when closing
@@ -108,8 +110,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     // Navigation commands
     {
       id: 'nav-activity',
-      label: 'Go to Activity',
-      description: 'View real-time activity feed',
+      label: t('commandPalette.navActivity'),
+      description: t('commandPalette.navActivityDesc'),
       category: 'navigation',
       icon: Activity,
       keywords: ['home', 'feed', 'events', 'activity'],
@@ -118,8 +120,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'nav-tasks',
-      label: 'Go to Tasks',
-      description: 'View and manage tasks',
+      label: t('commandPalette.navTasks'),
+      description: t('commandPalette.navTasksDesc'),
       category: 'navigation',
       icon: CheckSquare,
       keywords: ['tasks', 'todos', 'work', 'items'],
@@ -128,8 +130,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'nav-agents',
-      label: 'Go to Agents',
-      description: 'View and manage agents',
+      label: t('commandPalette.navAgents'),
+      description: t('commandPalette.navAgentsDesc'),
       category: 'navigation',
       icon: Users,
       keywords: ['agents', 'workers', 'director', 'steward'],
@@ -138,8 +140,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'nav-stewards',
-      label: 'Go to Stewards',
-      description: 'View steward agents',
+      label: t('commandPalette.navStewards'),
+      description: t('commandPalette.navStewardsDesc'),
       category: 'navigation',
       icon: Wrench,
       keywords: ['stewards', 'automation', 'merge', 'docs'],
@@ -147,8 +149,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'nav-workspaces',
-      label: 'Go to Workspaces',
-      description: 'Terminal multiplexer view',
+      label: t('commandPalette.navWorkspaces'),
+      description: t('commandPalette.navWorkspacesDesc'),
       category: 'navigation',
       icon: LayoutGrid,
       keywords: ['workspaces', 'terminal', 'multiplexer', 'panes'],
@@ -157,8 +159,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'nav-workflows',
-      label: 'Go to Workflows',
-      description: 'View workflow templates',
+      label: t('commandPalette.navWorkflows'),
+      description: t('commandPalette.navWorkflowsDesc'),
       category: 'navigation',
       icon: Workflow,
       keywords: ['workflows', 'templates', 'playbooks'],
@@ -167,8 +169,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'nav-metrics',
-      label: 'Go to Metrics',
-      description: 'View performance metrics',
+      label: t('commandPalette.navMetrics'),
+      description: t('commandPalette.navMetricsDesc'),
       category: 'navigation',
       icon: BarChart3,
       keywords: ['metrics', 'analytics', 'stats', 'performance', 'dashboard'],
@@ -177,8 +179,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'nav-settings',
-      label: 'Go to Settings',
-      description: 'App preferences and configuration',
+      label: t('commandPalette.navSettings'),
+      description: t('commandPalette.navSettingsDesc'),
       category: 'navigation',
       icon: Settings,
       keywords: ['settings', 'preferences', 'config', 'options'],
@@ -187,8 +189,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'nav-plans',
-      label: 'Go to Plans',
-      description: 'View and manage plans',
+      label: t('commandPalette.navPlans'),
+      description: t('commandPalette.navPlansDesc'),
       category: 'navigation',
       icon: ClipboardList,
       keywords: ['plans', 'roadmap', 'milestones', 'goals'],
@@ -197,8 +199,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'nav-merge-requests',
-      label: 'Go to Merge Requests',
-      description: 'Review and merge agent work',
+      label: t('commandPalette.navMergeRequests'),
+      description: t('commandPalette.navMergeRequestsDesc'),
       category: 'navigation',
       icon: GitMerge,
       keywords: ['merge', 'requests', 'pr', 'pull', 'review', 'git'],
@@ -209,8 +211,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     // Task commands
     {
       id: 'task-create',
-      label: 'Create Task',
-      description: 'Create a new task',
+      label: t('commandPalette.taskCreate'),
+      description: t('commandPalette.taskCreateDesc'),
       category: 'tasks',
       icon: Plus,
       keywords: ['create', 'new', 'task', 'add'],
@@ -219,8 +221,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'task-unassigned',
-      label: 'View Unassigned Tasks',
-      description: 'Tasks waiting for assignment',
+      label: t('commandPalette.taskUnassigned'),
+      description: t('commandPalette.taskUnassignedDesc'),
       category: 'tasks',
       icon: Clock,
       keywords: ['unassigned', 'pending', 'queue', 'backlog'],
@@ -228,8 +230,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'task-in-progress',
-      label: 'View In Progress Tasks',
-      description: 'Tasks currently being worked on',
+      label: t('commandPalette.taskInProgress'),
+      description: t('commandPalette.taskInProgressDesc'),
       category: 'tasks',
       icon: Play,
       keywords: ['progress', 'active', 'working', 'running'],
@@ -237,8 +239,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'task-awaiting-merge',
-      label: 'View Awaiting Merge',
-      description: 'Tasks ready for merge review',
+      label: t('commandPalette.taskAwaitingMerge'),
+      description: t('commandPalette.taskAwaitingMergeDesc'),
       category: 'tasks',
       icon: GitBranch,
       keywords: ['merge', 'review', 'pr', 'pull request', 'awaiting'],
@@ -248,8 +250,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     // Agent commands
     {
       id: 'agent-create',
-      label: 'Create Agent',
-      description: 'Register a new agent',
+      label: t('commandPalette.agentCreate'),
+      description: t('commandPalette.agentCreateDesc'),
       category: 'agents',
       icon: Plus,
       keywords: ['create', 'new', 'agent', 'worker', 'register'],
@@ -258,8 +260,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'agent-create-steward',
-      label: 'Create Steward',
-      description: 'Create a new steward agent',
+      label: t('commandPalette.agentCreateSteward'),
+      description: t('commandPalette.agentCreateStewardDesc'),
       category: 'agents',
       icon: Wrench,
       keywords: ['create', 'steward', 'automation', 'merge', 'docs'],
@@ -267,8 +269,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'agent-start-all',
-      label: 'Start All Agents',
-      description: 'Start all registered agents',
+      label: t('commandPalette.agentStartAll'),
+      description: t('commandPalette.agentStartAllDesc'),
       category: 'agents',
       icon: Play,
       keywords: ['start', 'all', 'agents', 'boot'],
@@ -279,8 +281,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'agent-stop-all',
-      label: 'Stop All Agents',
-      description: 'Stop all running agents',
+      label: t('commandPalette.agentStopAll'),
+      description: t('commandPalette.agentStopAllDesc'),
       category: 'agents',
       icon: Square,
       keywords: ['stop', 'all', 'agents', 'halt', 'shutdown'],
@@ -293,8 +295,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     // Workflow commands
     {
       id: 'workflow-templates',
-      label: 'View Templates',
-      description: 'Browse workflow templates',
+      label: t('commandPalette.workflowTemplates'),
+      description: t('commandPalette.workflowTemplatesDesc'),
       category: 'workflows',
       icon: FileText,
       keywords: ['templates', 'playbooks', 'workflows'],
@@ -302,8 +304,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'workflow-active',
-      label: 'View Active Workflows',
-      description: 'Running workflow instances',
+      label: t('commandPalette.workflowActive'),
+      description: t('commandPalette.workflowActiveDesc'),
       category: 'workflows',
       icon: RefreshCw,
       keywords: ['active', 'running', 'workflows', 'instances'],
@@ -313,8 +315,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     // Quick actions
     {
       id: 'action-refresh',
-      label: 'Refresh Data',
-      description: 'Refresh all data from server',
+      label: t('commandPalette.actionRefresh'),
+      description: t('commandPalette.actionRefreshDesc'),
       category: 'actions',
       icon: RefreshCw,
       keywords: ['refresh', 'reload', 'sync', 'update'],
@@ -325,8 +327,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'action-open-terminal',
-      label: 'Open Director Terminal',
-      description: 'Open the Director terminal panel',
+      label: t('commandPalette.actionOpenTerminal'),
+      description: t('commandPalette.actionOpenTerminalDesc'),
       category: 'actions',
       icon: Terminal,
       keywords: ['terminal', 'director', 'console', 'cli'],
@@ -339,8 +341,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'action-maximize-director',
-      label: 'Maximize Director Panel',
-      description: 'Toggle maximize/restore the Director panel',
+      label: t('commandPalette.actionMaximizeDirector'),
+      description: t('commandPalette.actionMaximizeDirectorDesc'),
       category: 'actions',
       icon: Maximize2,
       keywords: ['maximize', 'fullscreen', 'director', 'terminal', 'restore', 'minimize'],
@@ -353,8 +355,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     // Settings commands
     {
       id: 'settings-preferences',
-      label: 'Preferences',
-      description: 'User preferences',
+      label: t('commandPalette.settingsPreferences'),
+      description: t('commandPalette.settingsPreferencesDesc'),
       category: 'settings',
       icon: Settings,
       keywords: ['preferences', 'settings', 'options'],
@@ -362,8 +364,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'settings-workspace',
-      label: 'Workspace Settings',
-      description: 'Workspace configuration',
+      label: t('commandPalette.settingsWorkspace'),
+      description: t('commandPalette.settingsWorkspaceDesc'),
       category: 'settings',
       icon: LayoutGrid,
       keywords: ['workspace', 'config', 'settings'],
@@ -371,8 +373,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'theme-light',
-      label: 'Switch to Light Theme',
-      description: 'Use light color theme',
+      label: t('commandPalette.themeLight'),
+      description: t('commandPalette.themeLightDesc'),
       category: 'settings',
       icon: Sun,
       keywords: ['light', 'theme', 'bright', 'day'],
@@ -380,8 +382,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'theme-dark',
-      label: 'Switch to Dark Theme',
-      description: 'Use dark color theme',
+      label: t('commandPalette.themeDark'),
+      description: t('commandPalette.themeDarkDesc'),
       category: 'settings',
       icon: Moon,
       keywords: ['dark', 'theme', 'night'],
@@ -389,8 +391,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
     {
       id: 'theme-system',
-      label: 'Use System Theme',
-      description: 'Follow system color preference',
+      label: t('commandPalette.themeSystem'),
+      description: t('commandPalette.themeSystemDesc'),
       category: 'settings',
       icon: Monitor,
       keywords: ['system', 'theme', 'auto', 'automatic'],
@@ -424,7 +426,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     <Command.Dialog
       open={open}
       onOpenChange={onOpenChange}
-      label="Command Palette"
+      label={t('commandPalette.label')}
       className="fixed inset-0 z-[var(--z-index-modal)] flex items-start justify-center pt-[20vh]"
       data-testid="command-palette"
     >
@@ -446,7 +448,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           <Command.Input
             value={search}
             onValueChange={setSearch}
-            placeholder="Type a command or search..."
+            placeholder={t('commandPalette.placeholder')}
             className="flex-1 h-14 bg-transparent text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none text-base"
             data-testid="command-palette-input"
           />
@@ -462,7 +464,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           data-testid="command-palette-list"
         >
           <Command.Empty className="py-6 text-center text-sm text-[var(--color-text-muted)]">
-            No results found.
+            {t('commandPalette.noResults')}
           </Command.Empty>
 
           {categoryOrder.map((category) => {
@@ -474,12 +476,12 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             return (
               <Command.Group
                 key={category}
-                heading={config.label}
+                heading={t(config.labelKey)}
                 className="mb-2"
                 data-testid={`command-group-${category}`}
               >
                 <div className="px-2 py-1.5 text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                  {config.label}
+                  {t(config.labelKey)}
                 </div>
                 {items.map((cmd) => (
                   <CommandItemComponent
@@ -503,20 +505,20 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
               <kbd className="px-1.5 py-0.5 bg-[var(--color-bg)] border border-[var(--color-border)] rounded text-xs">
                 ↓
               </kbd>
-              <span>Navigate</span>
+              <span>{t('commandPalette.navigate')}</span>
             </span>
             <span className="flex items-center gap-1">
               <kbd className="px-1.5 py-0.5 bg-[var(--color-bg)] border border-[var(--color-border)] rounded text-xs">
                 ↵
               </kbd>
-              <span>Select</span>
+              <span>{t('commandPalette.select')}</span>
             </span>
           </div>
           <div className="text-xs text-[var(--color-text-muted)]">
             <kbd className="px-1.5 py-0.5 bg-[var(--color-bg)] border border-[var(--color-border)] rounded text-xs">
               ⌘K
             </kbd>
-            {' '}to open
+            {' '}{t('commandPalette.toOpen')}
           </div>
         </div>
       </div>

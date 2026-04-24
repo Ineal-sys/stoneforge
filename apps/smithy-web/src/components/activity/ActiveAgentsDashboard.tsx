@@ -4,6 +4,7 @@
  */
 
 import { useMemo, useState } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useAgentsByRole, useSessions } from '../../api/hooks/useAgents.js';
 import { useTasksByStatus } from '../../api/hooks/useTasks.js';
 import { useActiveAgentOutputs } from '../../api/hooks/useActiveAgentOutputs.js';
@@ -24,6 +25,7 @@ interface ActiveAgentsDashboardProps {
 const ROLE_ORDER: Record<string, number> = { director: 0, worker: 1, steward: 2 };
 
 export function ActiveAgentsDashboard({ onOpenTerminal, onOpenDirectorPanel, onStopAgent }: ActiveAgentsDashboardProps) {
+  const { t } = useTranslation('smithy');
   const { allAgents } = useAgentsByRole();
   const { data: sessionsData } = useSessions({ status: 'running' });
   const { inProgress, awaitingMerge } = useTasksByStatus();
@@ -110,12 +112,12 @@ export function ActiveAgentsDashboard({ onOpenTerminal, onOpenDirectorPanel, onS
         data-testid="active-agents-empty"
       >
         <p className="text-sm text-[var(--color-text-secondary)]">
-          No agents are currently active
+          {t('activity.noActiveAgents')}
         </p>
         <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
           {daemonStatus?.isRunning
-            ? 'The daemon is running and will start agents when tasks are available.'
-            : 'Start the daemon or launch agents manually from the Agents page.'}
+            ? t('activity.daemonRunningWillStart')
+            : t('activity.startDaemonOrLaunch')}
         </p>
       </div>
     );

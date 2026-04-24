@@ -10,6 +10,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import { Palette } from 'lucide-react';
 import { getRegisteredExtensions } from '../../lib/extensions/registry';
 
@@ -97,6 +98,7 @@ function isThemeAvailable(themeId: string, installedThemes: InstalledTheme[]): b
 // ============================================================================
 
 export function EditorSettingsPanel({ theme, onThemeChange }: EditorSettingsPanelProps) {
+  const { t } = useTranslation('smithy');
   // State for installed themes from extensions
   const [installedThemes, setInstalledThemes] = useState<InstalledTheme[]>([]);
 
@@ -173,7 +175,7 @@ export function EditorSettingsPanel({ theme, onThemeChange }: EditorSettingsPane
             data-testid="editor-theme-select"
           >
             {/* Built-in themes */}
-            <optgroup label="Built-in">
+            <optgroup label={t('editor.builtIn')}>
               {BUILTIN_THEMES.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
@@ -183,7 +185,7 @@ export function EditorSettingsPanel({ theme, onThemeChange }: EditorSettingsPane
 
             {/* Installed themes from extensions */}
             {installedThemes.length > 0 && (
-              <optgroup label="Installed">
+              <optgroup label={t('editor.installed')}>
                 {installedThemes.map((t) => (
                   <option key={`${t.publisher}.${t.id}`} value={t.id}>
                     {t.name} ({t.extensionName})
@@ -193,7 +195,7 @@ export function EditorSettingsPanel({ theme, onThemeChange }: EditorSettingsPane
             )}
           </select>
           <p className="text-xs text-[var(--color-text-tertiary)]">
-            Choose the color theme for the editor.
+            {t('editor.chooseColorTheme')}
           </p>
         </div>
       </div>

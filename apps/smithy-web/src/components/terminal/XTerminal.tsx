@@ -7,6 +7,7 @@
  */
 
 import { useEffect, useRef, useCallback, useState, useImperativeHandle, forwardRef } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
@@ -139,6 +140,7 @@ export const XTerminal = forwardRef<XTerminalHandle, XTerminalProps>(function XT
   enableFileDrop,
   'data-testid': testId = 'xterminal',
 }, ref) {
+  const { t } = useTranslation('smithy');
   const containerRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<Terminal | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
@@ -807,10 +809,10 @@ export const XTerminal = forwardRef<XTerminalHandle, XTerminalProps>(function XT
               />
             </svg>
             <span className="text-sm font-medium text-[var(--color-text)]">
-              Drop files to upload
+              {t('terminal.dropFilesToUpload')}
             </span>
             <span className="text-xs text-[var(--color-text-muted)]">
-              File paths will be inserted at cursor
+              {t('terminal.filePathsInsertedAtCursor')}
             </span>
           </div>
         </div>
@@ -842,7 +844,7 @@ export const XTerminal = forwardRef<XTerminalHandle, XTerminalProps>(function XT
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-            <span className="text-sm text-[var(--color-text)]">Uploading...</span>
+            <span className="text-sm text-[var(--color-text)]">{t('terminal.uploading')}</span>
           </div>
         </div>
       )}

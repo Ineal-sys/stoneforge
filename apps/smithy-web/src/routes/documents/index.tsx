@@ -24,6 +24,7 @@ import {
 } from '@dnd-kit/core';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from '@stoneforge/i18n';
 import { ElementNotFound } from '../../components/shared/ElementNotFound';
 import { MobileDetailSheet } from '../../components/shared/MobileDetailSheet';
 import { CreateDocumentModal } from '../../components/document/CreateDocumentModal';
@@ -51,6 +52,7 @@ import {
 } from './components';
 
 export function DocumentsPage() {
+  const { t } = useTranslation('smithy');
   const navigate = useNavigate();
   const search = useSearch({ from: '/documents' });
   const isMobile = useContainerIsMobile();
@@ -97,11 +99,11 @@ export function DocumentsPage() {
       }
       setDeleteTargetLibraryId(null);
       setDeleteError(null);
-      toast.success('Library deleted successfully');
+      toast.success(t('documents.libraryDeleted'));
     },
     onError: (err: Error) => {
       setDeleteError(err.message);
-      toast.error(err.message || 'Failed to delete library');
+      toast.error(err.message || t('documents.failedToDeleteLibrary'));
     },
   });
   // Expand state - initialized from localStorage
@@ -313,9 +315,9 @@ export function DocumentsPage() {
           parentId: newParentId,
           index,
         });
-        toast.success('Library moved successfully');
+        toast.success(t('documents.libraryMoved'));
       } catch (err) {
-        toast.error((err as Error).message || 'Failed to move library');
+        toast.error((err as Error).message || t('documents.failedToMoveLibrary'));
       }
     },
     [moveLibraryToParent]
@@ -331,7 +333,7 @@ export function DocumentsPage() {
         });
         // Silent success - reordering is a subtle UI operation
       } catch (err) {
-        toast.error((err as Error).message || 'Failed to reorder library');
+        toast.error((err as Error).message || t('documents.failedToReorderLibrary'));
       }
     },
     [reorderLibrary]
@@ -377,9 +379,9 @@ export function DocumentsPage() {
             documentId,
             libraryId: targetLibraryId,
           });
-          toast.success(`Moved "${dragData.name}" to "${dropData.name}"`);
+          toast.success(t('documents.documentMovedTo', { name: dragData.name, library: dropData.name }));
         } catch (err) {
-          toast.error((err as Error).message || 'Failed to move document');
+          toast.error((err as Error).message || t('documents.failedToMoveDocument'));
         }
       }
 
@@ -387,7 +389,7 @@ export function DocumentsPage() {
       if (dropData.type === 'all-documents') {
         // Only show confirmation if document is currently in a library
         if (!sourceLibraryId) {
-          toast.info('Document is already at top-level');
+          toast.info(t('documents.documentAlreadyTopLevel'));
           return;
         }
 
@@ -395,7 +397,7 @@ export function DocumentsPage() {
         setPendingTopLevelMove({
           documentId,
           documentName: dragData.name,
-          libraryName: sourceLibrary?.name || 'Unknown Library',
+          libraryName: sourceLibrary?.name || t('documents.unknownLibrary'),
         });
       }
     },
@@ -410,9 +412,9 @@ export function DocumentsPage() {
       await removeDocumentFromLibrary.mutateAsync({
         documentId: pendingTopLevelMove.documentId,
       });
-      toast.success(`"${pendingTopLevelMove.documentName}" moved to All Documents`);
+      toast.success(t('documents.documentMovedToAllDocuments', { name: pendingTopLevelMove.documentName }));
     } catch (err) {
-      toast.error((err as Error).message || 'Failed to move document');
+      toast.error((err as Error).message || t('documents.failedToMoveDocument'));
     } finally {
       setPendingTopLevelMove(null);
     }
@@ -429,7 +431,7 @@ export function DocumentsPage() {
         className="flex items-center justify-center h-full px-4"
       >
         <div className="text-center">
-          <p className="text-red-500 mb-2">Failed to load libraries</p>
+          <p className="text-red-500 mb-2">{t('documents.failedToLoadLibraries')}</p>
           <p className="text-sm text-gray-500 dark:text-gray-400">{(error as Error).message}</p>
         </div>
       </div>
@@ -480,7 +482,7 @@ export function DocumentsPage() {
                   data-testid="libraries-loading"
                   className="flex-1 flex items-center justify-center"
                 >
-                  <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+                  <div className="text-gray-500 dark:text-gray-400">{t('documents.loading')}</div>
                 </div>
               ) : (
                 <div className="flex-1 min-h-0 overflow-hidden">
@@ -493,7 +495,7 @@ export function DocumentsPage() {
                 onClick={handleOpenCreateModal}
                 className="fixed bottom-20 right-4 w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center transition-colors z-30 touch-target"
                 data-testid="mobile-create-document-fab"
-                aria-label="Create new document"
+                aria-label={t('documents.createNewDocument')}
               >
                 <Plus className="w-6 h-6" />
               </button>
@@ -505,15 +507,15 @@ export function DocumentsPage() {
             <MobileDetailSheet
               open={true}
               onClose={handleMobileBack}
-              title="Document"
+              title={t('documents.document')}
               data-testid="mobile-document-sheet"
             >
               {deepLink.notFound ? (
                 <ElementNotFound
-                  elementType="Document"
+                  elementType={t('documents.document')}
                   elementId={selectedDocumentId}
                   backRoute="/documents"
-                  backLabel="Back to Documents"
+                  backLabel={t('documents.backToDocuments')}
                   onDismiss={handleMobileBack}
                 />
               ) : (
@@ -625,7 +627,7 @@ export function DocumentsPage() {
                 data-testid="libraries-loading"
                 className="w-48 @3xl/docs:w-64 shrink-0 border-r border-gray-200 dark:border-[var(--color-border)] flex items-center justify-center"
               >
-                <div className="text-gray-500 dark:text-gray-400">Loading libraries...</div>
+                <div className="text-gray-500 dark:text-gray-400">{t('documents.loadingLibraries')}</div>
               </div>
             ) : (
               <div data-testid="library-tree-sidebar" className="shrink-0">
@@ -664,10 +666,10 @@ export function DocumentsPage() {
               <div className={`${isDocumentExpanded ? 'flex-1' : 'flex-1'} min-w-0 flex-shrink-0 overflow-hidden`}>
                 {deepLink.notFound ? (
                   <ElementNotFound
-                    elementType="Document"
+                    elementType={t('documents.document')}
                     elementId={selectedDocumentId}
                     backRoute="/documents"
-                    backLabel="Back to Documents"
+                    backLabel={t('documents.backToDocuments')}
                     onDismiss={handleCloseDocument}
                   />
                 ) : (

@@ -12,6 +12,7 @@
  */
 
 import { useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useVirtualizer, type VirtualItem } from '@tanstack/react-virtual';
 
 // Storage for scroll positions keyed by route/listId
@@ -103,6 +104,7 @@ export function VirtualizedList<T>({
   onScroll,
   gap = 0,
 }: VirtualizedListProps<T>) {
+  const { t } = useTranslation('smithy');
   const parentRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -201,7 +203,7 @@ export function VirtualizedList<T>({
       onScroll={handleScroll}
       tabIndex={0}
       role="region"
-      aria-label="Scrollable list"
+      aria-label={t('shared.scrollableList')}
     >
       <div
         className={innerClassName}

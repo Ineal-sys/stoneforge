@@ -5,6 +5,7 @@
  */
 
 import { Crown, Wrench, Bot, Shield, Zap } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { AgentRole, WorkerMode, StewardFocus } from '../../api/types';
 
 interface AgentRoleBadgeProps {
@@ -69,6 +70,7 @@ const stewardFocusConfig: Record<StewardFocus, { label: string; icon: React.Comp
 };
 
 export function AgentRoleBadge({ role, workerMode, stewardFocus, size = 'md' }: AgentRoleBadgeProps) {
+  const { t } = useTranslation('smithy');
   const config = roleConfig[role];
   let Icon = config.icon;
   let sublabel: string | null = null;
@@ -77,13 +79,13 @@ export function AgentRoleBadge({ role, workerMode, stewardFocus, size = 'md' }: 
   if (role === 'worker' && workerMode) {
     const modeConfig = workerModeConfig[workerMode];
     Icon = modeConfig.icon;
-    sublabel = modeConfig.label;
+    sublabel = t(`agent.workerMode.${workerMode}`, modeConfig.label);
   }
 
   // Add sublabel for stewards with focus
   if (role === 'steward' && stewardFocus) {
     const focusConfig = stewardFocusConfig[stewardFocus];
-    sublabel = focusConfig.label;
+    sublabel = t(`agent.stewardFocus.${stewardFocus}`, focusConfig.label);
   }
 
   const iconSize = size === 'sm' ? 'w-3 h-3' : 'w-4 h-4';
@@ -96,7 +98,7 @@ export function AgentRoleBadge({ role, workerMode, stewardFocus, size = 'md' }: 
       data-testid={`agent-role-${role}`}
     >
       <Icon className={iconSize} />
-      <span>{config.label}</span>
+      <span>{t(`agent.role.${role}`, config.label)}</span>
       {sublabel && (
         <span className="text-[var(--color-text-tertiary)]">({sublabel})</span>
       )}

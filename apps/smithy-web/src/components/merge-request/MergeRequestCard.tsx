@@ -14,6 +14,7 @@ import type { Task } from '../../api/types';
 import { MergeStatusBadge } from '../task';
 import { getMergeStatusColor } from '../../api/hooks/useMergeRequests';
 import { MergeRequestManageDropdown } from './MergeRequestManageDropdown';
+import { useTranslation, type TFunction } from '@stoneforge/i18n';
 
 interface MergeRequestCardProps {
   task: Task;
@@ -30,6 +31,7 @@ export function MergeRequestCard({
   isSelected,
   onDeleted,
 }: MergeRequestCardProps) {
+  const { t } = useTranslation('smithy');
   const orchestratorMeta = task.metadata?.orchestrator;
   const mergeStatus = orchestratorMeta?.mergeStatus;
   const testResult = orchestratorMeta?.lastTestResult;
@@ -67,7 +69,7 @@ export function MergeRequestCard({
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <span className="text-xs text-[var(--color-text-tertiary)] whitespace-nowrap">
-            {formatRelativeTime(task.updatedAt)}
+            {formatRelativeTime(task.updatedAt, t)}
           </span>
           <MergeRequestManageDropdown task={task} onDeleted={onDeleted} />
         </div>
@@ -100,7 +102,7 @@ export function MergeRequestCard({
               onClick={(e) => e.stopPropagation()}
             >
               <ExternalLink className="w-3 h-3" />
-              <span>View MR</span>
+              <span>{t('mergeRequest.viewMR')}</span>
             </a>
           </>
         )}
@@ -111,7 +113,7 @@ export function MergeRequestCard({
         {/* Agent */}
         <div className="flex items-center gap-1.5 text-[var(--color-text-secondary)]">
           <Bot className="w-3.5 h-3.5 text-purple-500" />
-          <span>{assigneeName || task.assignee || 'Unassigned'}</span>
+          <span>{assigneeName || task.assignee || t('mergeRequest.unassigned')}</span>
         </div>
 
         {/* Test Summary */}
@@ -125,10 +127,10 @@ export function MergeRequestCard({
             <span className={testResult.passed ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
               {testResult.totalTests !== undefined ? (
                 <>
-                  {testResult.passedTests ?? 0}/{testResult.totalTests} tests passed
+                  {t('mergeRequest.testSummary', { passed: testResult.passedTests ?? 0, total: testResult.totalTests })}
                 </>
               ) : (
-                testResult.passed ? 'Tests passed' : 'Tests failed'
+                testResult.passed ? t('mergeRequest.testsPassed') : t('mergeRequest.testsFailed')
               )}
             </span>
           </div>
@@ -138,7 +140,7 @@ export function MergeRequestCard({
         {!testResult && mergeStatus === 'pending' && (
           <div className="flex items-center gap-1.5 text-[var(--color-text-tertiary)]">
             <Clock className="w-3.5 h-3.5" />
-            <span>Awaiting review</span>
+            <span>{t('mergeRequest.awaitingReview')}</span>
           </div>
         )}
 
@@ -146,7 +148,7 @@ export function MergeRequestCard({
         {mergeStatus === 'testing' && (
           <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
             <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            <span>Running tests...</span>
+            <span>{t('mergeRequest.runningTests')}</span>
           </div>
         )}
 
@@ -154,7 +156,7 @@ export function MergeRequestCard({
         {mergeStatus === 'merging' && (
           <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
             <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            <span>Merging...</span>
+            <span>{t('mergeRequest.merging')}</span>
           </div>
         )}
       </div>
@@ -162,7 +164,7 @@ export function MergeRequestCard({
   );
 }
 
-function formatRelativeTime(dateStr: string): string {
+function formatRelativeTime(dateStr: string, t: TFunction): string {
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -170,10 +172,10 @@ function formatRelativeTime(dateStr: string): string {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffMins < 1) return t('mergeRequest.justNow');
+  if (diffMins < 60) return t('mergeRequest.minutesAgo', { count: diffMins });
+  if (diffHours < 24) return t('mergeRequest.hoursAgo', { count: diffHours });
+  if (diffDays < 7) return t('mergeRequest.daysAgo', { count: diffDays });
 
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }

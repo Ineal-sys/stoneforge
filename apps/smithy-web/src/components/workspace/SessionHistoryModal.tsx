@@ -4,7 +4,8 @@
  * Shows a list of past sessions that can be selected to view their transcript.
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react'
+import { useTranslation } from '@stoneforge/i18n';;
 import { X, History, Clock, ChevronRight, MessageSquare, Trash2, Eye } from 'lucide-react';
 import type { SessionRecord } from '../../api/types';
 import type { StreamEvent } from './types';
@@ -227,6 +228,7 @@ interface SessionItemProps {
 }
 
 function SessionItem({ session, transcript, isSelected, onClick, onDelete, onOpen }: SessionItemProps) {
+  const { t } = useTranslation('smithy');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const sessionName = extractSessionName(session, transcript);
   const formattedDate = formatSessionDate(session.startedAt || session.createdAt);
@@ -312,7 +314,7 @@ function SessionItem({ session, transcript, isSelected, onClick, onDelete, onOpe
                   onOpen();
                 }}
                 className="p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity text-[var(--color-text-muted)] hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                title="Open session"
+                title={t('workspaces.openSession')}
               >
                 <Eye className="w-3.5 h-3.5" />
               </button>
@@ -320,7 +322,7 @@ function SessionItem({ session, transcript, isSelected, onClick, onDelete, onOpe
             <button
               onClick={handleDeleteClick}
               className="p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity text-[var(--color-text-muted)] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-              title="Delete transcript"
+              title={t('workspaces.deleteTranscript')}
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -339,6 +341,7 @@ export function SessionHistoryModal({
   sessions,
   onViewSession,
 }: SessionHistoryModalProps) {
+  const { t } = useTranslation('smithy');
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [transcriptCache, setTranscriptCache] = useState<Record<string, StreamEvent[]>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -478,8 +481,8 @@ export function SessionHistoryModal({
           ) : sessionsWithTranscripts.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center text-[var(--color-text-muted)] p-6">
               <History className="w-12 h-12 mb-3 opacity-50" />
-              <p className="text-sm">No session history available</p>
-              <p className="text-xs mt-1">Sessions will appear here after you start using this agent</p>
+              <p className="text-sm">{t('workspaces.noSessionHistory')}</p>
+              <p className="text-xs mt-1">{t('workspaces.sessionsWillAppear')}</p>
             </div>
           ) : (
             <>
@@ -516,7 +519,7 @@ export function SessionHistoryModal({
                               onClose();
                             }}
                             className="flex items-center gap-1.5 px-2.5 py-1 rounded text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors"
-                            title="Open this session (send a message to resume)"
+                            title={t('workspaces.openSessionResume')}
                           >
                             <Eye className="w-3.5 h-3.5" />
                             Open
@@ -525,7 +528,7 @@ export function SessionHistoryModal({
                         <button
                           onClick={() => setSelectedSessionId(null)}
                           className="p-1 rounded text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors"
-                          title="Close transcript"
+                          title={t('workspaces.closeTranscript')}
                         >
                           <X className="w-4 h-4" />
                         </button>

@@ -3,6 +3,7 @@
  */
 
 import { History, X, Eye, RotateCcw } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useDocumentVersions, useRestoreDocumentVersion } from '../hooks';
 import { formatRelativeTime } from '../utils';
 
@@ -21,11 +22,12 @@ export function VersionHistorySidebar({
   previewingVersion,
   onClose,
 }: VersionHistorySidebarProps) {
+  const { t } = useTranslation('smithy');
   const { data: versions = [], isLoading, error } = useDocumentVersions(documentId);
   const restoreVersion = useRestoreDocumentVersion();
 
   const handleRestore = async (version: number) => {
-    if (confirm(`Restore to version ${version}? This will create a new version with the restored content.`)) {
+    if (confirm(t('documents.restoreVersionConfirm', { version }))) {
       try {
         await restoreVersion.mutateAsync({ id: documentId, version });
         onPreviewVersion(null);
@@ -44,12 +46,12 @@ export function VersionHistorySidebar({
       <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-white">
         <div className="flex items-center gap-2">
           <History className="w-4 h-4 text-gray-500" />
-          <h3 className="font-medium text-gray-900 text-sm">Version History</h3>
+          <h3 className="font-medium text-gray-900 text-sm">{t('documents.versionHistory')}</h3>
         </div>
         <button
           onClick={onClose}
           className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
-          aria-label="Close version history"
+          aria-label={t('documents.closeVersionHistory')}
           data-testid="version-history-close"
         >
           <X className="w-4 h-4" />
@@ -60,19 +62,19 @@ export function VersionHistorySidebar({
       <div className="flex-1 overflow-y-auto p-2">
         {isLoading && (
           <div data-testid="version-history-loading" className="text-center text-gray-500 text-sm py-4">
-            Loading versions...
+            {t('documents.loadingVersions')}
           </div>
         )}
 
         {error && (
           <div data-testid="version-history-error" className="text-center text-red-500 text-sm py-4">
-            Failed to load versions
+            {t('documents.failedToLoadVersions')}
           </div>
         )}
 
         {!isLoading && !error && versions.length === 0 && (
           <div data-testid="version-history-empty" className="text-center text-gray-500 text-sm py-4">
-            No version history available
+            {t('documents.noVersionHistory')}
           </div>
         )}
 
@@ -101,12 +103,12 @@ export function VersionHistorySidebar({
                       </span>
                       {isCurrentVersion && (
                         <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
-                          Current
+                          {t('documents.current')}
                         </span>
                       )}
                       {isPreviewing && (
                         <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
-                          Previewing
+                          {t('documents.previewing')}
                         </span>
                       )}
                     </div>
@@ -130,7 +132,7 @@ export function VersionHistorySidebar({
                           }`}
                         >
                           <Eye className="w-3 h-3" />
-                          {isPreviewing ? 'Exit Preview' : 'Preview'}
+                          {isPreviewing ? t('documents.exitPreview') : t('documents.preview')}
                         </button>
                         <button
                           onClick={() => handleRestore(version.version!)}
@@ -139,7 +141,7 @@ export function VersionHistorySidebar({
                           className="flex items-center gap-1 px-2 py-1 text-xs rounded bg-orange-100 text-orange-700 hover:bg-orange-200 disabled:opacity-50"
                         >
                           <RotateCcw className="w-3 h-3" />
-                          Restore
+                          {t('documents.restore')}
                         </button>
                       </>
                     )}
@@ -154,7 +156,7 @@ export function VersionHistorySidebar({
       {/* Restore Error */}
       {restoreVersion.isError && (
         <div className="p-2 m-2 bg-red-50 text-red-700 text-xs rounded">
-          {restoreVersion.error?.message || 'Failed to restore version'}
+          {restoreVersion.error?.message || t('documents.failedToRestoreVersion')}
         </div>
       )}
     </div>

@@ -20,6 +20,7 @@ import {
   Search,
   CheckCircle2,
 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   useMergeRequests,
   useMergeRequestCounts,
@@ -33,6 +34,7 @@ import {
 } from '../../components/merge-request';
 
 export function MergeRequestsPage() {
+  const { t } = useTranslation('smithy');
   const search = useSearch({ from: '/merge-requests' }) as {
     selected?: string;
     status?: MergeRequestFilterStatus;
@@ -213,9 +215,9 @@ export function MergeRequestsPage() {
             <GitMerge className="w-5 h-5 text-[var(--color-primary)]" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-[var(--color-text)]">Merge Requests</h1>
+            <h1 className="text-xl font-semibold text-[var(--color-text)]">{t('mergeRequest.title')}</h1>
             <p className="text-sm text-[var(--color-text-secondary)]">
-              Review and merge completed agent work
+              {t('mergeRequest.subtitle')}
             </p>
           </div>
         </div>
@@ -226,7 +228,7 @@ export function MergeRequestsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
             <input
               type="text"
-              placeholder="Search merge requests..."
+              placeholder={t('mergeRequest.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 pr-3 py-2 text-sm border border-[var(--color-border)] rounded-md bg-[var(--color-input-bg)] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent w-48 @md:w-64"
@@ -259,12 +261,12 @@ export function MergeRequestsPage() {
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-16">
           <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin mb-4" />
-          <p className="text-sm text-[var(--color-text-secondary)]">Loading merge requests...</p>
+          <p className="text-sm text-[var(--color-text-secondary)]">{t('mergeRequest.loading')}</p>
         </div>
       ) : error ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-[var(--color-danger)] rounded-lg bg-[var(--color-danger-muted)]">
           <AlertCircle className="w-12 h-12 text-[var(--color-danger)] mb-4" />
-          <h3 className="text-lg font-medium text-[var(--color-text)]">Failed to load merge requests</h3>
+          <h3 className="text-lg font-medium text-[var(--color-text)]">{t('mergeRequest.failedToLoad')}</h3>
           <p className="mt-1 text-sm text-[var(--color-text-secondary)] text-center max-w-md">
             {error.message}
           </p>
@@ -274,7 +276,7 @@ export function MergeRequestsPage() {
             data-testid="merge-requests-retry"
           >
             <RefreshCw className="w-4 h-4" />
-            Retry
+            {t('mergeRequest.retry')}
           </button>
         </div>
       ) : filteredRequests.length === 0 ? (
@@ -306,11 +308,11 @@ export function MergeRequestsPage() {
 
       {/* Keyboard Shortcuts Help */}
       <div className="fixed bottom-4 right-4 text-xs text-[var(--color-text-tertiary)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg px-3 py-2 shadow-sm hidden @md:block">
-        <span className="font-medium">Shortcuts:</span>{' '}
-        <kbd className="px-1.5 py-0.5 bg-[var(--color-surface-elevated)] rounded">j</kbd>/<kbd className="px-1.5 py-0.5 bg-[var(--color-surface-elevated)] rounded">k</kbd> navigate{' '}
-        <kbd className="px-1.5 py-0.5 bg-[var(--color-surface-elevated)] rounded">Enter</kbd> open{' '}
-        <kbd className="px-1.5 py-0.5 bg-[var(--color-surface-elevated)] rounded">Esc</kbd> close{' '}
-        <kbd className="px-1.5 py-0.5 bg-[var(--color-surface-elevated)] rounded">r</kbd> refresh
+        <span className="font-medium">{t('mergeRequest.shortcuts')}</span>{' '}
+        <kbd className="px-1.5 py-0.5 bg-[var(--color-surface-elevated)] rounded">j</kbd>/<kbd className="px-1.5 py-0.5 bg-[var(--color-surface-elevated)] rounded">k</kbd> {t('mergeRequest.shortcutsNavigate')}{' '}
+        <kbd className="px-1.5 py-0.5 bg-[var(--color-surface-elevated)] rounded">Enter</kbd> {t('mergeRequest.shortcutsOpen')}{' '}
+        <kbd className="px-1.5 py-0.5 bg-[var(--color-surface-elevated)] rounded">Esc</kbd> {t('mergeRequest.shortcutsClose')}{' '}
+        <kbd className="px-1.5 py-0.5 bg-[var(--color-surface-elevated)] rounded">r</kbd> {t('mergeRequest.shortcutsRefresh')}
       </div>
     </div>
   );
@@ -326,13 +328,14 @@ interface EmptyStateProps {
 }
 
 function EmptyState({ searchQuery, currentFilter }: EmptyStateProps) {
+  const { t } = useTranslation('smithy');
   if (searchQuery) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-[var(--color-border)] rounded-lg">
         <Search className="w-12 h-12 text-[var(--color-text-tertiary)] mb-4" />
-        <h3 className="text-lg font-medium text-[var(--color-text)]">No matching merge requests</h3>
+        <h3 className="text-lg font-medium text-[var(--color-text)]">{t('mergeRequest.noMatching')}</h3>
         <p className="mt-1 text-sm text-[var(--color-text-secondary)] text-center max-w-md">
-          No merge requests found matching &quot;{searchQuery}&quot;. Try a different search term.
+          {t('mergeRequest.noMatchingDescription', { query: searchQuery })}
         </p>
       </div>
     );
@@ -340,28 +343,28 @@ function EmptyState({ searchQuery, currentFilter }: EmptyStateProps) {
 
   const emptyMessages: Record<MergeRequestFilterStatus, { title: string; description: string; icon: React.ReactNode }> = {
     all: {
-      title: 'No merge requests',
-      description: 'When agents complete tasks, their work will appear here for review and merging.',
+      title: t('mergeRequest.emptyAllTitle'),
+      description: t('mergeRequest.emptyAllDescription'),
       icon: <GitMerge className="w-12 h-12 text-[var(--color-text-tertiary)]" />,
     },
     needs_review: {
-      title: 'No requests need review',
-      description: 'All merge requests have been reviewed. Nice work!',
+      title: t('mergeRequest.emptyNeedsReviewTitle'),
+      description: t('mergeRequest.emptyNeedsReviewDescription'),
       icon: <CheckCircle2 className="w-12 h-12 text-green-500" />,
     },
     testing: {
-      title: 'No tests running',
-      description: 'No merge requests are currently running tests.',
+      title: t('mergeRequest.emptyTestingTitle'),
+      description: t('mergeRequest.emptyTestingDescription'),
       icon: <Loader2 className="w-12 h-12 text-blue-500" />,
     },
     conflicts: {
-      title: 'No conflicts',
-      description: 'No merge requests have conflicts. All clear!',
+      title: t('mergeRequest.emptyConflictsTitle'),
+      description: t('mergeRequest.emptyConflictsDescription'),
       icon: <CheckCircle2 className="w-12 h-12 text-green-500" />,
     },
     merged: {
-      title: 'No merged requests',
-      description: 'No merge requests have been merged yet.',
+      title: t('mergeRequest.emptyMergedTitle'),
+      description: t('mergeRequest.emptyMergedDescription'),
       icon: <GitMerge className="w-12 h-12 text-[var(--color-text-tertiary)]" />,
     },
   };

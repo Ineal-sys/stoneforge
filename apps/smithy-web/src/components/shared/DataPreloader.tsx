@@ -6,6 +6,7 @@
  */
 
 import { ReactNode } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useAllElements, useInPlaceCacheUpdates } from '../../api/hooks/useAllElements';
 import { useRealtimeEvents } from '../../api/hooks/useRealtimeEvents';
 import type { WebSocketEvent } from '@stoneforge/ui';
@@ -22,6 +23,7 @@ interface DataPreloaderProps {
  * Loading indicator with progress
  */
 function LoadingIndicator({ totalElements, showProgress }: { totalElements: number; showProgress: boolean }) {
+  const { t } = useTranslation('smithy');
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center bg-gray-50"
@@ -38,7 +40,7 @@ function LoadingIndicator({ totalElements, showProgress }: { totalElements: numb
         </div>
 
         {/* Loading text */}
-        <h2 className="text-lg font-medium text-gray-900 mb-2">Loading Stoneforge</h2>
+        <h2 className="text-lg font-medium text-gray-900 mb-2">{t('shared.loadingStoneforge')}</h2>
 
         {showProgress && (
           <p className="text-sm text-gray-500">
@@ -56,6 +58,7 @@ function LoadingIndicator({ totalElements, showProgress }: { totalElements: numb
  * Error indicator
  */
 function ErrorIndicator({ error, onRetry }: { error: Error | null; onRetry: () => void }) {
+  const { t } = useTranslation('smithy');
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center bg-gray-50"
@@ -79,7 +82,7 @@ function ErrorIndicator({ error, onRetry }: { error: Error | null; onRetry: () =
           </svg>
         </div>
 
-        <h2 className="text-lg font-medium text-gray-900 mb-2">Failed to Load Data</h2>
+        <h2 className="text-lg font-medium text-gray-900 mb-2">{t('shared.failedToLoadData')}</h2>
         <p className="text-sm text-gray-500 mb-4">
           {error?.message || 'An error occurred while loading the application data.'}
         </p>

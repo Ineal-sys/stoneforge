@@ -5,7 +5,8 @@
  * or a stream viewer for ephemeral workers.
  */
 
-import { useState, useCallback, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useState, useCallback, useRef, useEffect, forwardRef, useImperativeHandle } from 'react'
+import { useTranslation } from '@stoneforge/i18n';
 import { X, Maximize2, Minimize2, MoreVertical, Terminal, Radio, Play, Square, RefreshCw, CirclePause, AlertCircle, ArrowLeftRight, RotateCw, MessageSquare, MessageSquareOff, History } from 'lucide-react';
 import type { WorkspacePane as WorkspacePaneType, PaneStatus } from './types';
 import { XTerminal, type XTerminalHandle } from '../terminal/XTerminal';
@@ -77,6 +78,7 @@ export const WorkspacePane = forwardRef<WorkspacePaneHandle, WorkspacePaneProps>
   onDragStart,
   onDragEnd,
 }, ref) {
+  const { t } = useTranslation('smithy');
   const [showMenu, setShowMenu] = useState(false);
   const [showTextbox, setShowTextbox] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -331,7 +333,7 @@ export const WorkspacePane = forwardRef<WorkspacePaneHandle, WorkspacePaneProps>
           {pane.agentRole !== 'director' && (
             <>
               {!hasActiveSession ? (
-                <Tooltip content="Start Session" side="bottom">
+                <Tooltip content={t('workspaces.startSession')} side="bottom">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -345,7 +347,7 @@ export const WorkspacePane = forwardRef<WorkspacePaneHandle, WorkspacePaneProps>
                       transition-colors
                       disabled:opacity-50
                     "
-                    title="Start Session"
+                    title={t('workspaces.startSession')}
                     data-testid="pane-start-session"
                   >
                     {startSession.isPending ? (
@@ -356,7 +358,7 @@ export const WorkspacePane = forwardRef<WorkspacePaneHandle, WorkspacePaneProps>
                   </button>
                 </Tooltip>
               ) : (
-                <Tooltip content="Stop Session" side="bottom">
+                <Tooltip content={t('workspaces.stopSession')} side="bottom">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -370,7 +372,7 @@ export const WorkspacePane = forwardRef<WorkspacePaneHandle, WorkspacePaneProps>
                       transition-colors
                       disabled:opacity-50
                     "
-                    title="Stop Session"
+                    title={t('workspaces.stopSession')}
                     data-testid="pane-stop-session"
                   >
                     {stopSession.isPending ? (
@@ -423,7 +425,7 @@ export const WorkspacePane = forwardRef<WorkspacePaneHandle, WorkspacePaneProps>
                 hover:bg-[var(--color-surface-hover)]
                 transition-colors
               "
-              title="More options"
+              title={t('workspaces.moreOptions')}
               data-testid="pane-menu-btn"
             >
               <MoreVertical className="w-3.5 h-3.5" />
@@ -557,7 +559,7 @@ export const WorkspacePane = forwardRef<WorkspacePaneHandle, WorkspacePaneProps>
               hover:bg-red-50 dark:hover:bg-red-900/20
               transition-colors
             "
-            title="Close pane"
+            title={t('workspaces.closePane')}
             data-testid="pane-close-btn"
           >
             <X className="w-3.5 h-3.5" />
@@ -597,7 +599,7 @@ export const WorkspacePane = forwardRef<WorkspacePaneHandle, WorkspacePaneProps>
                 isConnected={pane.status === 'connected' && hasActiveSession}
                 onSend={handleSendTerminalInput}
                 connectedPlaceholder="Type a command..."
-                disconnectedPlaceholder="Start session to send commands"
+                disconnectedPlaceholder={t('workspaces.startSessionToSend')}
                 data-testid={`textbox-${pane.id}`}
               />
             )}
@@ -717,7 +719,7 @@ export const WorkspacePane = forwardRef<WorkspacePaneHandle, WorkspacePaneProps>
                   ) : (
                     <>
                       <Play className="w-3.5 h-3.5" />
-                      Start Session
+                      {t('workspaces.startSession')}
                     </>
                   )}
                 </button>

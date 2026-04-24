@@ -7,6 +7,7 @@
 
 import { AlertCircle, ArrowLeft } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
+import { useTranslation } from '@stoneforge/i18n';
 
 export interface ElementNotFoundProps {
   /** Type of element (task, plan, document, etc.) */
@@ -28,6 +29,7 @@ export function ElementNotFound({
   backLabel,
   onDismiss,
 }: ElementNotFoundProps) {
+const { t } = useTranslation('smithy');
   const navigate = useNavigate();
 
   const handleBack = () => {
@@ -45,15 +47,15 @@ export function ElementNotFound({
       </div>
 
       <h3 className="text-lg font-semibold text-gray-900 mb-2" data-testid="not-found-title">
-        {elementType} Not Found
+        {t('shared.elementNotFound', { type: elementType })}
       </h3>
 
       <p className="text-gray-600 mb-1" data-testid="not-found-message">
-        The {elementType.toLowerCase()} you're looking for doesn't exist or has been deleted.
+        {t('shared.elementNotFoundDescription', { type: elementType.toLowerCase() })}
       </p>
 
       <p className="text-sm text-gray-500 font-mono mb-6" data-testid="not-found-id">
-        ID: {elementId}
+        {t('shared.idLabel', { id: elementId })}
       </p>
 
       <button

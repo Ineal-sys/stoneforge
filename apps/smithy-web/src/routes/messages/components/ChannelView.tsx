@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   MessageSquare,
   Search,
@@ -49,6 +50,7 @@ interface ChannelViewProps {
 
 export function ChannelView({ channelId, isMobile = false, onBack, onChannelDeleted }: ChannelViewProps) {
   const { data: channel } = useChannel(channelId);
+  const { t } = useTranslation('smithy');
   const { data: messages = [], isLoading, error } = useChannelMessages(channelId);
   const { currentUser } = useCurrentUser();
   const deleteChannel = useDeleteChannel();
@@ -176,7 +178,7 @@ export function ChannelView({ channelId, isMobile = false, onBack, onChannelDele
               searchInputRef.current?.blur();
             }
           }}
-          placeholder="Search messages..."
+          placeholder={t('messages.searchMessages')}
           className="w-48 pl-8 pr-8 py-1.5 text-sm border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-[var(--color-surface)] text-[var(--color-text)]"
           data-testid="message-search-input"
         />
@@ -217,8 +219,8 @@ export function ChannelView({ channelId, isMobile = false, onBack, onChannelDele
           mobile ? 'p-2 touch-target' : 'p-1.5 ml-2'
         }`}
         data-testid="delete-channel-header-button"
-        aria-label="Delete channel"
-        title="Delete channel"
+        aria-label={t('messages.deleteChannel')}
+        title={t('messages.deleteChannel')}
       >
         {deleteChannel.isPending ? (
           <Loader2 className={`animate-spin ${mobile ? 'w-5 h-5' : 'w-4 h-4'}`} />
@@ -240,7 +242,7 @@ export function ChannelView({ channelId, isMobile = false, onBack, onChannelDele
             onClick={() => setShowMobileSearch(!showMobileSearch)}
             className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors touch-target"
             data-testid="mobile-search-toggle"
-            aria-label="Search messages"
+            aria-label={t('messages.searchMessages')}
           >
             <Search className="w-5 h-5" />
           </button>
@@ -298,7 +300,7 @@ export function ChannelView({ channelId, isMobile = false, onBack, onChannelDele
                         setShowMobileSearch(false);
                       }
                     }}
-                    placeholder="Search..."
+                    placeholder={t('messages.search')}
                     className="w-full pl-10 pr-10 py-2.5 text-base border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-[var(--color-surface)] text-[var(--color-text)]"
                     data-testid="mobile-message-search-input"
                     autoFocus
@@ -392,7 +394,7 @@ export function ChannelView({ channelId, isMobile = false, onBack, onChannelDele
                       isMobile ? 'w-10 h-10' : 'w-12 h-12'
                     }`}
                   />
-                  <p className={isMobile ? 'text-base' : 'text-sm'}>No messages yet</p>
+                  <p className={isMobile ? 'text-base' : 'text-sm'}>{t('messages.noMessagesYet')}</p>
                   <p
                     className={`text-gray-400 dark:text-gray-500 mt-1 ${
                       isMobile ? 'text-sm' : 'text-xs'
@@ -473,7 +475,7 @@ export function ChannelView({ channelId, isMobile = false, onBack, onChannelDele
                     <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-[var(--color-text)]">Delete Channel</h2>
+                    <h2 className="text-lg font-semibold text-[var(--color-text)]">{t('messages.deleteChannel')}</h2>
                     <p className="text-sm text-[var(--color-text-secondary)]">
                       This action cannot be undone.
                     </p>
@@ -545,6 +547,7 @@ interface MobileThreadPanelProps {
 }
 
 function MobileThreadPanel({ selectedThread, channel, onClose }: MobileThreadPanelProps) {
+  const { t } = useTranslation('smithy');
   return (
     <div
       className="fixed inset-0 z-50 bg-[var(--color-bg)] flex flex-col"
@@ -555,11 +558,11 @@ function MobileThreadPanel({ selectedThread, channel, onClose }: MobileThreadPan
           onClick={onClose}
           className="p-2 -ml-2 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors touch-target"
           data-testid="mobile-thread-back"
-          aria-label="Close thread"
+          aria-label={t('messages.closeThread')}
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
-        <span className="font-medium text-[var(--color-text)]">Thread</span>
+        <span className="font-medium text-[var(--color-text)]">{t('messages.thread')}</span>
       </div>
       <div className="flex-1 overflow-hidden">
         <ThreadPanel parentMessage={selectedThread} channel={channel} onClose={onClose} />

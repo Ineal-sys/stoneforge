@@ -8,6 +8,7 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   MoreVertical,
   CheckCircle2,
@@ -38,6 +39,7 @@ export function MergeRequestManageDropdown({
   task,
   onDeleted,
 }: MergeRequestManageDropdownProps) {
+  const { t } = useTranslation('smithy');
   const [isOpen, setIsOpen] = useState(false);
   const [showStatusSubmenu, setShowStatusSubmenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -158,7 +160,7 @@ export function MergeRequestManageDropdown({
             setIsOpen(!isOpen);
           }}
           className="p-1.5 text-[var(--color-text-tertiary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] rounded transition-colors"
-          aria-label="Manage merge request"
+          aria-label={t('mergeRequest.manage')}
           data-testid="merge-request-manage-btn"
         >
           <MoreVertical className="w-4 h-4" />
@@ -170,7 +172,7 @@ export function MergeRequestManageDropdown({
             className="absolute right-0 top-full mt-1 w-48 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg shadow-lg z-50 py-1"
             data-testid="merge-request-manage-menu"
           >
-            {/* Change Status */}
+            {/* t('mergeRequest.changeStatus') */}
             <div
               className="relative"
               onMouseEnter={handleSubmenuMouseEnter}
@@ -184,7 +186,7 @@ export function MergeRequestManageDropdown({
                 }}
                 data-testid="change-status-btn"
               >
-                <span>Change Status</span>
+                <span>{t('mergeRequest.changeStatus')}</span>
                 <ChevronRight className="w-4 h-4 text-[var(--color-text-tertiary)]" />
               </button>
 
@@ -241,7 +243,7 @@ export function MergeRequestManageDropdown({
               data-testid="delete-merge-request-btn"
             >
               <Trash2 className="w-4 h-4" />
-              <span>Delete</span>
+              <span>{t('mergeRequest.delete')}</span>
             </button>
           </div>
         )}
@@ -277,6 +279,7 @@ function DeleteMergeRequestDialog({
   onConfirm,
   onCancel,
 }: DeleteMergeRequestDialogProps) {
+  const { t } = useTranslation('smithy');
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !isDeleting) onCancel();
@@ -297,7 +300,7 @@ function DeleteMergeRequestDialog({
             <Trash2 className="w-5 h-5 text-[var(--color-danger)]" />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-[var(--color-text)]">Delete Merge Request</h3>
+            <h3 className="text-lg font-semibold text-[var(--color-text)]">{t('mergeRequest.deleteMergeRequest')}</h3>
             <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
               Are you sure you want to delete the merge request for{' '}
               <span className="font-medium text-[var(--color-text)]">"{task.title}"</span>? This

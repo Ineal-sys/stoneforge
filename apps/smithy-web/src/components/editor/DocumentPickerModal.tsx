@@ -12,6 +12,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useQuery } from '@tanstack/react-query';
 import {
   Search,
@@ -83,6 +84,7 @@ export function DocumentPickerModal({
   onSelect,
   excludeIds = [],
 }: DocumentPickerModalProps) {
+  const { t } = useTranslation('smithy');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -181,7 +183,7 @@ export function DocumentPickerModal({
           Navigate
         </span>
         <span>↵ Select</span>
-        <span>Esc Close</span>
+        <span>{t('editor.escClose')}</span>
       </div>
       {filteredDocs.length > 0 && (
         <span>

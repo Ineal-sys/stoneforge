@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Search, X, Loader2, FileText } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useDocumentSearch } from '../hooks';
 import { highlightMatches } from '../utils';
 
@@ -12,6 +13,7 @@ interface DocumentSearchBarProps {
 }
 
 export function DocumentSearchBar({ onSelectDocument }: DocumentSearchBarProps) {
+  const { t } = useTranslation('smithy');
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -89,14 +91,14 @@ export function DocumentSearchBar({ onSelectDocument }: DocumentSearchBarProps) 
           placeholder="Search docs... (/)"
           className="w-full pl-9 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           data-testid="document-search-input"
-          aria-label="Search documents"
+          aria-label={t('documents.searchDocuments')}
         />
         {query && (
           <button
             onClick={handleClear}
             className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded"
             data-testid="document-search-clear"
-            aria-label="Clear search"
+            aria-label={t('documents.clearSearch')}
           >
             <X className="w-3 h-3" />
           </button>
@@ -112,13 +114,13 @@ export function DocumentSearchBar({ onSelectDocument }: DocumentSearchBarProps) 
           {showLoading && (
             <div className="flex items-center gap-2 px-3 py-2 text-sm text-gray-500">
               <Loader2 className="w-4 h-4 animate-spin" />
-              Searching...
+              {t('documents.searching')}
             </div>
           )}
 
           {!showLoading && results.length === 0 && (
             <div className="px-3 py-4 text-sm text-gray-500 text-center" data-testid="document-search-no-results">
-              No documents found for "{query}"
+              {t('documents.noDocumentsFoundFor', { query })}
             </div>
           )}
 
@@ -151,8 +153,8 @@ export function DocumentSearchBar({ onSelectDocument }: DocumentSearchBarProps) 
                       result.matchType === 'both' ? 'bg-green-100 text-green-700' :
                       'bg-blue-100 text-blue-700'
                     }`}>
-                      {result.matchType === 'title' ? 'Title match' :
-                       result.matchType === 'content' ? 'Content match' : 'Title & content'}
+                      {result.matchType === 'title' ? t('documents.titleMatch') :
+                       result.matchType === 'content' ? t('documents.contentMatch') : t('documents.titleAndContentMatch')}
                     </span>
                     <span>{result.contentType}</span>
                   </div>

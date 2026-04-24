@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   X,
   Loader2,
@@ -48,6 +49,7 @@ export function StartAgentDialog({
   onStartAndOpen,
   isStarting = false,
 }: StartAgentDialogProps) {
+  const { t } = useTranslation('smithy');
   const [selectedTaskId, setSelectedTaskId] = useState<string>('');
   const [initialMessage, setInitialMessage] = useState('');
   const [showNewTaskForm, setShowNewTaskForm] = useState(false);
@@ -99,7 +101,7 @@ export function StartAgentDialog({
     if (showNewTaskForm) {
       const trimmedTitle = newTaskForm.title.trim();
       if (!trimmedTitle) {
-        setError('Task title is required');
+        setError(t('agent.taskTitleRequired'));
         setStartMode(null);
         return;
       }
@@ -111,14 +113,14 @@ export function StartAgentDialog({
         });
         taskId = result.task.id;
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to create task');
+        setError(err instanceof Error ? err.message : t('agent.failedToCreateTask'));
         setStartMode(null);
         return;
       }
     }
 
     if (!taskId) {
-      setError('Please select or create a task');
+      setError(t('agent.selectOrCreateTask'));
       setStartMode(null);
       return;
     }
@@ -128,7 +130,7 @@ export function StartAgentDialog({
       await handler(agent.id, taskId, initialMessage.trim() || undefined);
       handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to start agent');
+      setError(err instanceof Error ? err.message : t('agent.failedToStartAgent'));
       setStartMode(null);
     }
   };
@@ -177,7 +179,7 @@ export function StartAgentDialog({
               id="start-agent-title"
               className="text-lg font-semibold text-[var(--color-text)]"
             >
-              Start Agent: {agent.name}
+              {t('agent.startAgentTitle', { name: agent.name })}
             </h2>
             <button
               onClick={handleClose}
@@ -188,7 +190,7 @@ export function StartAgentDialog({
                 hover:bg-[var(--color-surface-hover)]
                 transition-colors
               "
-              aria-label="Close dialog"
+              aria-label={t('agent.closeDialog')}
               data-testid="start-agent-close"
             >
               <X className="w-5 h-5" />
@@ -207,10 +209,10 @@ export function StartAgentDialog({
             {/* Task selection */}
             <div className="space-y-2">
               <label htmlFor="task-select" className="text-sm font-medium text-[var(--color-text)]">
-                Task <span className="text-red-500">*</span>
+                {t('agent.task')} <span className="text-red-500">*</span>
               </label>
               <p className="text-xs text-[var(--color-text-tertiary)]">
-                Select an unassigned task or create a new one for this agent to work on.
+                {t('agent.taskSelectHint')}
               </p>
               <div className="relative">
                 <select
@@ -231,14 +233,14 @@ export function StartAgentDialog({
                   data-testid="task-select"
                 >
                   <option value="">
-                    {tasksLoading ? 'Loading tasks...' : 'Select a task...'}
+                    {tasksLoading ? t('agent.loadingTasks') : t('agent.selectTask')}
                   </option>
                   {availableTasks.map((task: Task) => (
                     <option key={task.id} value={task.id}>
                       {task.title}
                     </option>
                   ))}
-                  <option value="__new__">+ Create new task</option>
+                  <option value="__new__">{t('agent.createNewTask')}</option>
                 </select>
                 <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)] pointer-events-none" />
               </div>
@@ -249,18 +251,18 @@ export function StartAgentDialog({
               <div className="space-y-3 p-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg">
                 <div className="flex items-center gap-2 text-sm font-medium text-[var(--color-text)]">
                   <Plus className="w-4 h-4" />
-                  New Task
+                  {t('agent.newTask')}
                 </div>
                 <div className="space-y-1">
                   <label htmlFor="new-task-title" className="text-xs font-medium text-[var(--color-text-secondary)]">
-                    Title <span className="text-red-500">*</span>
+                    {t('agent.title')} <span className="text-red-500">*</span>
                   </label>
                   <input
                     id="new-task-title"
                     type="text"
                     value={newTaskForm.title}
                     onChange={e => setNewTaskForm(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder="Enter task title"
+                    placeholder={t('agent.enterTaskTitle')}
                     className="
                       w-full px-3 py-2
                       text-sm
@@ -276,7 +278,7 @@ export function StartAgentDialog({
                 </div>
                 <div className="space-y-1">
                   <label htmlFor="new-task-priority" className="text-xs font-medium text-[var(--color-text-secondary)]">
-                    Priority
+                    {t('agent.priority')}
                   </label>
                   <div className="relative">
                     <select
@@ -294,11 +296,11 @@ export function StartAgentDialog({
                       "
                       data-testid="new-task-priority"
                     >
-                      <option value={1}>Critical (P1)</option>
-                      <option value={2}>High (P2)</option>
-                      <option value={3}>Medium (P3)</option>
-                      <option value={4}>Low (P4)</option>
-                      <option value={5}>Minimal (P5)</option>
+                      <option value={1}>{t('agent.priorityCritical')}</option>
+                      <option value={2}>{t('agent.priorityHigh')}</option>
+                      <option value={3}>{t('agent.priorityMedium')}</option>
+                      <option value={4}>{t('agent.priorityLow')}</option>
+                      <option value={5}>{t('agent.priorityMinimal')}</option>
                     </select>
                     <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)] pointer-events-none" />
                   </div>
@@ -309,16 +311,16 @@ export function StartAgentDialog({
             {/* Initial message (optional) */}
             <div className="space-y-1">
               <label htmlFor="initial-message" className="text-sm font-medium text-[var(--color-text)]">
-                Initial Message <span className="text-[var(--color-text-tertiary)]">(optional)</span>
+                {t('agent.initialMessage')} <span className="text-[var(--color-text-tertiary)]">({t('agent.optional')})</span>
               </label>
               <p className="text-xs text-[var(--color-text-tertiary)]">
-                Additional context or instructions for the agent.
+                {t('agent.initialMessageHint')}
               </p>
               <textarea
                 id="initial-message"
                 value={initialMessage}
                 onChange={e => setInitialMessage(e.target.value)}
-                placeholder="e.g., Focus on the API endpoints first..."
+                placeholder={t('agent.initialMessagePlaceholder')}
                 rows={3}
                 className="
                   w-full px-3 py-2
@@ -339,7 +341,7 @@ export function StartAgentDialog({
               <div className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <ListTodo className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                 <span className="text-blue-700 dark:text-blue-300 truncate">
-                  {availableTasks.find((t: Task) => t.id === selectedTaskId)?.title ?? 'Selected task'}
+                  {availableTasks.find((t: Task) => t.id === selectedTaskId)?.title ?? t('agent.selectedTask')}
                 </span>
               </div>
             )}
@@ -360,7 +362,7 @@ export function StartAgentDialog({
                 "
                 data-testid="start-agent-cancel"
               >
-                Cancel
+                {t('agent.cancel')}
               </button>
               <button
                 type="submit"
@@ -381,12 +383,12 @@ export function StartAgentDialog({
                 {isSubmitting && startMode === 'start' ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    {createTask.isPending ? 'Creating task...' : 'Starting...'}
+                    {createTask.isPending ? t('agent.creatingTask') : t('agent.starting')}
                   </>
                 ) : (
                   <>
                     <Play className="w-4 h-4" />
-                    Start
+                    {t('agent.start')}
                   </>
                 )}
               </button>
@@ -411,12 +413,12 @@ export function StartAgentDialog({
                   {isSubmitting && startMode === 'startAndOpen' ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      {createTask.isPending ? 'Creating task...' : 'Starting...'}
+                      {createTask.isPending ? t('agent.creatingTask') : t('agent.starting')}
                     </>
                   ) : (
                     <>
                       <ExternalLink className="w-4 h-4" />
-                      Start & Open
+                      {t('agent.startAndOpen')}
                     </>
                   )}
                 </button>

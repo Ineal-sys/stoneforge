@@ -8,6 +8,7 @@
 
 import { useState, useEffect } from 'react';
 import { Terminal, Square, Crown, Wrench, Shield, ChevronDown } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { Agent, SessionRecord, Task } from '../../api/types.js';
 import type { AgentOutput } from '../../api/hooks/useActiveAgentOutputs.js';
 import { useAgentTokens, formatTokenCount, formatCost } from '../../api/hooks/useAgentTokens.js';
@@ -82,10 +83,11 @@ function RoleBadge({ role }: { role: string }) {
 }
 
 function TaskInfo({ currentTask }: { currentTask?: Task }) {
+  const { t } = useTranslation('smithy');
   if (!currentTask) {
     return (
       <span className="text-xs text-[var(--color-text-tertiary)] italic">
-        Idle — no task assigned
+        {t('activity.idleNoTask')}
       </span>
     );
   }
@@ -102,6 +104,7 @@ function TaskInfo({ currentTask }: { currentTask?: Task }) {
 }
 
 function ElapsedAndTokens({ session, agentId }: { session: SessionRecord; agentId: string }) {
+  const { t } = useTranslation('smithy');
   const [elapsed, setElapsed] = useState('');
   const startTime = session.startedAt || session.createdAt;
   const { tokens: agentTokens } = useAgentTokens(agentId, session.id);
@@ -119,17 +122,17 @@ function ElapsedAndTokens({ session, agentId }: { session: SessionRecord; agentI
       </span>
       {agentTokens && agentTokens.totalTokens > 0 && (() => {
         const tooltipParts = [
-          `Input: ${agentTokens.inputTokens.toLocaleString()}`,
-          `Output: ${agentTokens.outputTokens.toLocaleString()}`,
+          t('activity.tokenInput', { count: agentTokens.inputTokens as number }),
+          t('activity.tokenOutput', { count: agentTokens.outputTokens as number }),
         ];
         if (agentTokens.cacheReadTokens > 0) {
-          tooltipParts.push(`Cache Read: ${agentTokens.cacheReadTokens.toLocaleString()}`);
+          tooltipParts.push(t('activity.tokenCacheRead', { count: agentTokens.cacheReadTokens as number }));
         }
         if (agentTokens.cacheCreationTokens > 0) {
-          tooltipParts.push(`Cache Creation: ${agentTokens.cacheCreationTokens.toLocaleString()}`);
+          tooltipParts.push(t('activity.tokenCacheCreation', { count: agentTokens.cacheCreationTokens as number }));
         }
         if (agentTokens.estimatedCost != null && agentTokens.estimatedCost > 0) {
-          tooltipParts.push(`Est. Cost: ${formatCost(agentTokens.estimatedCost)}`);
+          tooltipParts.push(t('activity.tokenEstCost', { cost: formatCost(agentTokens.estimatedCost) }));
         }
         const hasCacheIndicator = agentTokens.inputTokens > 0
           && agentTokens.cacheReadTokens / agentTokens.inputTokens > 0.1;
@@ -139,9 +142,9 @@ function ElapsedAndTokens({ session, agentId }: { session: SessionRecord; agentI
             title={tooltipParts.join(' | ')}
             data-testid="agent-card-token-usage"
           >
-            {formatTokenCount(agentTokens.inputTokens)} in / {formatTokenCount(agentTokens.outputTokens)} out
+            {formatTokenCount(agentTokens.inputTokens)} {t('activity.tokenIn')} / {formatTokenCount(agentTokens.outputTokens)} {t('activity.tokenOut')}
             {hasCacheIndicator && (
-              <span className="ml-1 text-[var(--color-success)]" title="High cache hit rate">⚡</span>
+              <span className="ml-1 text-[var(--color-success)]" title={t('activity.highCacheHitRate')}>⚡</span>
             )}
           </span>
         );
@@ -163,6 +166,7 @@ function ActionButtons({
   onStop: (agentId: string) => void;
   isStopping: boolean;
 }) {
+  const { t } = useTranslation('smithy');
   return (
     <div className="flex items-center gap-2 flex-shrink-0">
       <button
@@ -170,7 +174,7 @@ function ActionButtons({
         className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] transition-colors duration-150"
       >
         <Terminal className="w-3 h-3" />
-        {role === 'director' ? 'Open Panel' : 'Open Terminal'}
+        {role === 'director' ? t('activity.openPanel') : t('activity.openTerminal')}
       </button>
       <button
         onClick={() => onStop(agent.id)}
@@ -178,7 +182,7 @@ function ActionButtons({
         className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded border border-[var(--color-border)] text-[var(--color-error)] hover:bg-[var(--color-error-muted)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
       >
         <Square className="w-3 h-3" />
-        {isStopping ? 'Stopping...' : 'Stop'}
+        {isStopping ? t('activity.stopping') : t('activity.stop')}
       </button>
     </div>
   );
@@ -251,6 +255,7 @@ export function HeadlessAgentCard({
   isStopping,
 }: ActiveAgentCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const { t } = useTranslation('smithy');
   const role = session.agentRole || agent.metadata?.agent?.agentRole || 'worker';
   const roleConfig = ROLE_CONFIG[role] || ROLE_CONFIG.worker;
   const isRunning = session.status === 'running';
@@ -259,10 +264,10 @@ export function HeadlessAgentCard({
   const outputContent = lastOutput?.content
     ? lastOutput.content
     : isStarting
-      ? 'starting...'
+      ? t('activity.starting')
       : isRunning
-        ? 'working...'
-        : 'idle...';
+        ? t('activity.working')
+        : t('activity.idle');
 
   return (
     <div
@@ -298,7 +303,7 @@ export function HeadlessAgentCard({
           <button
             onClick={() => setExpanded((e) => !e)}
             className="flex items-center justify-center w-8 h-8 rounded border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] transition-colors duration-150"
-            aria-label={expanded ? 'Collapse output' : 'Expand output'}
+            aria-label={expanded ? t('activity.collapseOutput') : t('activity.expandOutput')}
           >
             <ChevronDown
               className={`w-4 h-4 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
@@ -326,7 +331,7 @@ export function HeadlessAgentCard({
               </span>
               {lastOutput?.content && lastOutput.content.length > 120 && (
                 <span className="text-[10px] text-[var(--color-text-tertiary)] mt-1 block">
-                  Click to show more
+                  {t('activity.clickToShowMore')}
                 </span>
               )}
             </div>

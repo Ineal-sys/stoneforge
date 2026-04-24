@@ -4,6 +4,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { FileText, Search, Plus, Filter } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useShortcutVersion } from '../../../hooks';
 import { getCurrentBinding } from '../../../lib/keyboard';
 import { VirtualizedList } from '../../../components/shared/VirtualizedList';
@@ -40,6 +41,7 @@ export function AllDocumentsView({
   onNewDocument,
   isMobile = false,
 }: AllDocumentsViewProps) {
+  const { t } = useTranslation('smithy');
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
@@ -134,10 +136,10 @@ export function AllDocumentsView({
           <div className={`flex items-center ${isMobile ? 'gap-2' : 'gap-3'} min-w-0`}>
             <FileText className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} text-blue-400 flex-shrink-0`} />
             <h3 className={`font-semibold text-gray-900 dark:text-[var(--color-text)] ${isMobile ? 'text-base' : 'text-lg'}`}>
-              All Documents
+              {t('documents.allDocuments')}
             </h3>
             <span className={`text-gray-500 dark:text-gray-400 ${isMobile ? 'text-xs' : 'text-sm'}`} data-testid="all-documents-count">
-              {totalItems} {totalItems === 1 ? 'doc' : 'docs'}
+              {totalItems} {totalItems === 1 ? t('documents.doc') : t('documents.docs')}
             </span>
           </div>
           {/* Hide button on mobile - use FAB instead */}
@@ -148,7 +150,7 @@ export function AllDocumentsView({
               data-testid="new-document-button-all"
             >
               <Plus className="w-4 h-4" />
-              Create Document
+              {t('documents.createDocument')}
               <kbd className="ml-1 text-xs bg-[var(--color-primary-700)]/50 text-white px-1 py-0.5 rounded">{getCurrentBinding('action.createDocument')}</kbd>
             </button>
           )}
@@ -161,7 +163,7 @@ export function AllDocumentsView({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search documents..."
+            placeholder={t('documents.searchDocuments')}
             className={`w-full pl-9 pr-4 ${isMobile ? 'py-3' : 'py-2'} text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
             data-testid="documents-search-input"
           />
@@ -188,7 +190,7 @@ export function AllDocumentsView({
                 data-testid="mobile-filter-button"
               >
                 <Filter className="w-4 h-4" />
-                Filters
+                {t('documents.filters')}
                 {activeFilterCount > 0 && (
                   <span className="px-1.5 py-0.5 text-xs font-semibold bg-blue-600 text-white rounded-full">
                     {activeFilterCount}
@@ -228,7 +230,7 @@ export function AllDocumentsView({
             data-testid="all-documents-loading"
             className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400"
           >
-            Loading documents...
+            {t('documents.loadingDocuments')}
           </div>
         ) : filteredDocuments.length === 0 ? (
           <div
@@ -238,13 +240,13 @@ export function AllDocumentsView({
             <FileText className="w-12 h-12 mb-3 text-gray-300 dark:text-gray-600" />
             <p className="text-sm text-center">
               {searchQuery || hasActiveFilters(filters)
-                ? 'No documents match your search or filters'
-                : 'No documents yet'}
+                ? t('documents.noDocumentsMatchFilters')
+                : t('documents.noDocumentsYet')}
             </p>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 text-center">
               {searchQuery || hasActiveFilters(filters)
-                ? 'Try adjusting your search or filters'
-                : 'Create documents to build your knowledge base'}
+                ? t('documents.tryAdjustingFilters')
+                : t('documents.createDocumentsKnowledgeBase')}
             </p>
           </div>
         ) : (

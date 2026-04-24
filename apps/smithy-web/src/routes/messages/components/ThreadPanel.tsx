@@ -9,6 +9,7 @@ import {
   MessageRichComposer,
   type MessageRichComposerRef,
 } from '@stoneforge/ui';
+import { useTranslation } from '@stoneforge/i18n';
 import { useCurrentUser } from '../../../contexts';
 import { useThreadReplies, useSendMessage, useEntities } from '../../../api/hooks/useMessages';
 import { MessageBubble } from './MessageBubble';
@@ -25,6 +26,7 @@ interface ThreadPanelProps {
 }
 
 export function ThreadPanel({ parentMessage, channel, onClose }: ThreadPanelProps) {
+  const { t } = useTranslation('smithy');
   const { data: replies = [], isLoading } = useThreadReplies(parentMessage.id);
 
   // TB131: Use VirtualizedChatList for thread replies
@@ -38,7 +40,7 @@ export function ThreadPanel({ parentMessage, channel, onClose }: ThreadPanelProp
         data-testid="thread-header"
         className="p-4 border-b border-gray-200 flex items-center justify-between"
       >
-        <h3 className="font-medium text-gray-900">Thread</h3>
+        <h3 className="font-medium text-gray-900">{t('messages.thread')}</h3>
         <button
           data-testid="thread-close-button"
           onClick={onClose}
@@ -56,7 +58,7 @@ export function ThreadPanel({ parentMessage, channel, onClose }: ThreadPanelProp
       {/* Thread Replies - TB131: Virtualized */}
       <div data-testid="thread-replies" className="flex-1 overflow-hidden p-2">
         {isLoading ? (
-          <div className="text-center py-4 text-gray-500 text-sm">Loading replies...</div>
+          <div className="text-center py-4 text-gray-500 text-sm">{t('messages.loadingReplies')}</div>
         ) : (
           <VirtualizedChatList
             items={replies}
@@ -76,7 +78,7 @@ export function ThreadPanel({ parentMessage, channel, onClose }: ThreadPanelProp
             latestMessageId={replies[replies.length - 1]?.id}
             renderEmpty={() => (
               <div data-testid="thread-empty" className="text-center py-4 text-gray-500 text-sm">
-                No replies yet
+                {t('messages.noRepliesYet')}
               </div>
             )}
             renderItem={(reply) => <MessageBubble message={reply} isThreaded />}
@@ -100,6 +102,7 @@ interface ThreadComposerProps {
 }
 
 function ThreadComposer({ parentMessage, channel }: ThreadComposerProps) {
+  const { t } = useTranslation('smithy');
   const [content, setContent] = useState('');
   const sendMessage = useSendMessage();
   const editorRef = useRef<MessageRichComposerRef>(null);
@@ -144,7 +147,7 @@ function ThreadComposer({ parentMessage, channel }: ThreadComposerProps) {
             content={content}
             onChange={setContent}
             onSubmit={handleSubmit}
-            placeholder="Reply in thread..."
+            placeholder={t('messages.replyInThread')}
             disabled={sendMessage.isPending}
             maxHeight={120}
             minHeight={48}

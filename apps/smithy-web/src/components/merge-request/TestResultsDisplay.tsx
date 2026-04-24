@@ -10,6 +10,7 @@
 
 import { CheckCircle2, XCircle, AlertTriangle, Clock, SkipForward } from 'lucide-react';
 import type { TestResult } from '../../api/types';
+import { useTranslation } from '@stoneforge/i18n';
 
 interface TestResultsDisplayProps {
   result: TestResult;
@@ -17,6 +18,7 @@ interface TestResultsDisplayProps {
 }
 
 export function TestResultsDisplay({ result, compact = false }: TestResultsDisplayProps) {
+  const { t } = useTranslation('smithy');
   const {
     passed,
     totalTests,
@@ -59,12 +61,12 @@ export function TestResultsDisplay({ result, compact = false }: TestResultsDispl
           {passed ? (
             <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
               <CheckCircle2 className="w-5 h-5" />
-              <span className="font-medium">Tests Passed</span>
+              <span className="font-medium">{t('mergeRequest.testsPassed')}</span>
             </div>
           ) : (
             <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
               <XCircle className="w-5 h-5" />
-              <span className="font-medium">Tests Failed</span>
+              <span className="font-medium">{t('mergeRequest.testsFailed')}</span>
             </div>
           )}
         </div>

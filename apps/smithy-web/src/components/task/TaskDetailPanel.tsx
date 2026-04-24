@@ -10,6 +10,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { useTranslation, i18n } from '@stoneforge/i18n';
 import {
   X,
   Calendar,
@@ -70,33 +71,35 @@ interface TaskDetailPanelProps {
   onNavigateToTask?: (taskId: string) => void;
 }
 
-const PRIORITY_OPTIONS: { value: Priority; label: string }[] = [
-  { value: 1, label: 'Critical' },
-  { value: 2, label: 'High' },
-  { value: 3, label: 'Medium' },
-  { value: 4, label: 'Low' },
-  { value: 5, label: 'Minimal' },
+// Priority/Status/Complexity labels are resolved via t() in components
+const PRIORITY_KEYS: { value: Priority; key: string }[] = [
+  { value: 1, key: 'taskDetail.priorityCritical' },
+  { value: 2, key: 'taskDetail.priorityHigh' },
+  { value: 3, key: 'taskDetail.priorityMedium' },
+  { value: 4, key: 'taskDetail.priorityLow' },
+  { value: 5, key: 'taskDetail.priorityMinimal' },
 ];
 
-const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
-  { value: 'backlog', label: 'Backlog' },
-  { value: 'open', label: 'Open' },
-  { value: 'in_progress', label: 'In Progress' },
-  { value: 'blocked', label: 'Blocked' },
-  { value: 'review', label: 'Review' },
-  { value: 'deferred', label: 'Deferred' },
-  { value: 'closed', label: 'Closed' },
+const STATUS_KEYS: { value: TaskStatus; key: string }[] = [
+  { value: 'backlog', key: 'taskDetail.statusBacklog' },
+  { value: 'open', key: 'taskDetail.statusOpen' },
+  { value: 'in_progress', key: 'taskDetail.statusInProgress' },
+  { value: 'blocked', key: 'taskDetail.statusBlocked' },
+  { value: 'review', key: 'taskDetail.statusReview' },
+  { value: 'deferred', key: 'taskDetail.statusDeferred' },
+  { value: 'closed', key: 'taskDetail.statusClosed' },
 ];
 
-const COMPLEXITY_OPTIONS: { value: number; label: string }[] = [
-  { value: 1, label: 'Trivial' },
-  { value: 2, label: 'Simple' },
-  { value: 3, label: 'Moderate' },
-  { value: 4, label: 'Complex' },
-  { value: 5, label: 'Very Complex' },
+const COMPLEXITY_KEYS: { value: number; key: string }[] = [
+  { value: 1, key: 'taskDetail.complexityTrivial' },
+  { value: 2, key: 'taskDetail.complexitySimple' },
+  { value: 3, key: 'taskDetail.complexityModerate' },
+  { value: 4, key: 'taskDetail.complexityComplex' },
+  { value: 5, key: 'taskDetail.complexityVeryComplex' },
 ];
 
 export function TaskDetailPanel({ taskId, onClose, onNavigateToTask }: TaskDetailPanelProps) {
+  const { t } = useTranslation('smithy');
   const { data, isLoading, error } = useTask(taskId);
   const { data: agentsData } = useAgents('worker');
   const { data: operatorsData } = useOperators();
@@ -192,7 +195,7 @@ export function TaskDetailPanel({ taskId, onClose, onNavigateToTask }: TaskDetai
       >
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="w-6 h-6 animate-spin text-[var(--color-primary)]" />
-          <span className="text-sm text-[var(--color-text-secondary)]">Loading task...</span>
+          <span className="text-sm text-[var(--color-text-secondary)]">{t('taskDetail.loading')}</span>
         </div>
       </div>
     );
@@ -206,13 +209,13 @@ export function TaskDetailPanel({ taskId, onClose, onNavigateToTask }: TaskDetai
       >
         <AlertCircle className="w-8 h-8 text-[var(--color-danger)] mb-2" />
         <span className="text-sm text-[var(--color-text-secondary)]">
-          {error?.message || 'Task not found'}
+          {error?.message || t('taskDetail.notFound')}
         </span>
         <button
           onClick={onClose}
           className="mt-4 px-4 py-2 text-sm text-[var(--color-primary)] hover:bg-[var(--color-surface-hover)] rounded-md"
         >
-          Close
+          {t('taskDetail.close')}
         </button>
       </div>
     );
@@ -256,9 +259,9 @@ export function TaskDetailPanel({ taskId, onClose, onNavigateToTask }: TaskDetai
           <div className="flex items-center gap-2 mb-2">
             <TaskStatusBadge status={task.status} mergeStatus={orchestratorMeta?.mergeStatus} />
             {task.status === 'review' && (orchestratorMeta?.mergeStatus === 'testing' || orchestratorMeta?.mergeStatus === 'merging') && (
-              <span className="inline-flex items-center gap-0.5 text-xs text-blue-600 dark:text-blue-400" title="Steward reviewing">
+              <span className="inline-flex items-center gap-0.5 text-xs text-blue-600 dark:text-blue-400" title={t('taskDetail.stewardReviewing')}>
                 <Bot className="w-3.5 h-3.5 animate-pulse" />
-                Reviewing
+                {t('taskDetail.reviewing')}
               </span>
             )}
             <TaskPriorityBadge priority={task.priority} />
@@ -274,7 +277,7 @@ export function TaskDetailPanel({ taskId, onClose, onNavigateToTask }: TaskDetai
             <span data-testid="task-detail-id">{task.id}</span>
             {task.ephemeral && (
               <span className="px-1.5 py-0.5 bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 rounded text-[10px]">
-                Ephemeral
+                {t('taskDetail.ephemeral')}
               </span>
             )}
           </div>
@@ -284,8 +287,8 @@ export function TaskDetailPanel({ taskId, onClose, onNavigateToTask }: TaskDetai
             <button
               onClick={() => setShowResetDialog(true)}
               className="p-1.5 text-[var(--color-text-tertiary)] hover:text-amber-600 hover:bg-amber-100 dark:hover:text-amber-400 dark:hover:bg-amber-900/30 rounded transition-colors"
-              aria-label="Reset task"
-              title="Reset task to open, clearing assignee and work data"
+              aria-label={t('taskDetail.resetTask')}
+              title={t('taskDetail.resetTaskTitle')}
               data-testid="task-reset-btn"
             >
               <RefreshCcw className="w-5 h-5" />
@@ -294,7 +297,7 @@ export function TaskDetailPanel({ taskId, onClose, onNavigateToTask }: TaskDetai
           <button
             onClick={() => setShowDeleteConfirm(true)}
             className="p-1.5 text-[var(--color-text-tertiary)] hover:text-[var(--color-danger)] hover:bg-[var(--color-danger-muted)] rounded transition-colors"
-            aria-label="Delete task"
+            aria-label={t('taskDetail.deleteTask')}
             data-testid="task-delete-btn"
           >
             <Trash2 className="w-5 h-5" />
@@ -302,7 +305,7 @@ export function TaskDetailPanel({ taskId, onClose, onNavigateToTask }: TaskDetai
           <button
             onClick={onClose}
             className="p-1.5 text-[var(--color-text-tertiary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] rounded transition-colors"
-            aria-label="Close panel"
+            aria-label={t('taskDetail.closePanel')}
             data-testid="task-detail-close"
           >
             <X className="w-5 h-5" />
@@ -321,7 +324,7 @@ export function TaskDetailPanel({ taskId, onClose, onNavigateToTask }: TaskDetai
               data-testid="task-start-btn"
             >
               <Play className="w-4 h-4" />
-              {startTask.isPending ? 'Starting...' : 'Start Task'}
+              {startTask.isPending ? t('taskDetail.starting') : t('taskDetail.startTask')}
             </button>
           )}
           {canComplete && (
@@ -332,7 +335,7 @@ export function TaskDetailPanel({ taskId, onClose, onNavigateToTask }: TaskDetai
               data-testid="task-complete-btn"
             >
               <CheckCircle2 className="w-4 h-4" />
-              {completeTask.isPending ? 'Completing...' : 'Complete Task'}
+              {completeTask.isPending ? t('taskDetail.completing') : t('taskDetail.completeTask')}
             </button>
           )}
           {canReopen && (
@@ -343,7 +346,7 @@ export function TaskDetailPanel({ taskId, onClose, onNavigateToTask }: TaskDetai
               data-testid="task-reopen-btn"
             >
               <RotateCcw className="w-4 h-4" />
-              {reopenTask.isPending ? 'Reopening...' : 'Reopen Task'}
+              {reopenTask.isPending ? t('taskDetail.reopening') : t('taskDetail.reopenTask')}
             </button>
           )}
         </div>
@@ -354,7 +357,7 @@ export function TaskDetailPanel({ taskId, onClose, onNavigateToTask }: TaskDetai
         {/* Metadata Grid */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           {/* Status */}
-          <MetadataField label="Status" icon={<CheckCircle2 className="w-3 h-3" />}>
+          <MetadataField label={t('taskDetail.status')} icon={<CheckCircle2 className="w-3 h-3" />}>
             <StatusDropdown
               value={task.status}
               onSave={(status) => handleUpdate({ status })}
@@ -363,7 +366,7 @@ export function TaskDetailPanel({ taskId, onClose, onNavigateToTask }: TaskDetai
           </MetadataField>
 
           {/* Priority */}
-          <MetadataField label="Priority">
+          <MetadataField label={t('taskDetail.priority')}>
             <PriorityDropdown
               value={task.priority}
               onSave={(priority) => handleUpdate({ priority })}
@@ -372,7 +375,7 @@ export function TaskDetailPanel({ taskId, onClose, onNavigateToTask }: TaskDetai
           </MetadataField>
 
           {/* Assignee */}
-          <MetadataField label="Assigned To" icon={<User className="w-3 h-3" />}>
+          <MetadataField label={t('taskDetail.assignedTo')} icon={<User className="w-3 h-3" />}>
             <AssigneeDropdown
               value={task.assignee}
               entityNameMap={entityNameMap}
@@ -384,7 +387,7 @@ export function TaskDetailPanel({ taskId, onClose, onNavigateToTask }: TaskDetai
           </MetadataField>
 
           {/* Complexity */}
-          <MetadataField label="Complexity">
+          <MetadataField label={t('taskDetail.complexity')}>
             <ComplexityDropdown
               value={task.complexity}
               onSave={(complexity) => handleUpdate({ complexity: complexity as Complexity })}
@@ -393,7 +396,7 @@ export function TaskDetailPanel({ taskId, onClose, onNavigateToTask }: TaskDetai
           </MetadataField>
 
           {/* Deadline */}
-          <MetadataField label="Deadline" icon={<Calendar className="w-3 h-3" />}>
+          <MetadataField label={t('taskDetail.deadline')} icon={<Calendar className="w-3 h-3" />}>
             <DeadlineInput
               value={task.deadline}
               onSave={(deadline) => handleUpdate({ deadline: deadline ?? null })}
@@ -448,16 +451,16 @@ export function TaskDetailPanel({ taskId, onClose, onNavigateToTask }: TaskDetai
         <div className="mt-6 pt-4 border-t border-[var(--color-border)]">
           <div className="grid grid-cols-2 gap-4 text-xs text-[var(--color-text-tertiary)]">
             <div>
-              <span className="font-medium">Created:</span>{' '}
+              <span className="font-medium">{t('taskDetail.created')}</span>{' '}
               <span title={formatDateTime(task.createdAt)}>{formatRelativeTime(task.createdAt)}</span>
             </div>
             <div>
-              <span className="font-medium">Updated:</span>{' '}
+              <span className="font-medium">{t('taskDetail.updated')}</span>{' '}
               <span title={formatDateTime(task.updatedAt)}>{formatRelativeTime(task.updatedAt)}</span>
             </div>
             {task.closedAt && (
               <div>
-                <span className="font-medium">Closed:</span>{' '}
+                <span className="font-medium">{t('taskDetail.closed')}</span>{' '}
                 <span title={formatDateTime(task.closedAt)}>{formatRelativeTime(task.closedAt)}</span>
               </div>
             )}
@@ -467,7 +470,7 @@ export function TaskDetailPanel({ taskId, onClose, onNavigateToTask }: TaskDetai
         {/* Error display */}
         {updateTask.isError && (
           <div className="mt-4 p-3 bg-[var(--color-danger-muted)] border border-[var(--color-danger)] rounded-lg text-sm text-[var(--color-danger)]">
-            Failed to update: {updateTask.error?.message}
+            {t('taskDetail.failedUpdate', { message: updateTask.error?.message })}
           </div>
         )}
       </div>
@@ -486,12 +489,14 @@ interface OrchestratorMetadataSectionProps {
 }
 
 function OrchestratorMetadataSection({ meta, onUpdateMergeStatus, isUpdatingMergeStatus }: OrchestratorMetadataSectionProps) {
+  const { t } = useTranslation('smithy');
+
   if (!meta) return null;
 
   return (
     <div className="mb-6 p-4 bg-[var(--color-surface-elevated)] rounded-lg border border-[var(--color-border)]">
       <h3 className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wide mb-3">
-        Orchestrator Info
+        {t('taskDetail.orchestratorInfo')}
       </h3>
 
       <div className="space-y-3">
@@ -537,22 +542,22 @@ function OrchestratorMetadataSection({ meta, onUpdateMergeStatus, isUpdatingMerg
                       : 'text-[var(--color-danger)]'
                   }`}
                 >
-                  Tests: {meta.lastTestResult.passed ? 'Passed' : 'Failed'}
+                  {meta.lastTestResult.passed ? t('taskDetail.testPassed') : t('taskDetail.testFailed')}
                 </span>
                 {meta.testRunCount && meta.testRunCount > 1 && (
                   <span className="text-xs text-[var(--color-text-tertiary)]">
-                    (Run #{meta.testRunCount})
+                    ({t('taskDetail.run', { count: meta.testRunCount })})
                   </span>
                 )}
               </div>
               {meta.lastTestResult.totalTests !== undefined && (
                 <div className="text-xs text-[var(--color-text-tertiary)]">
-                  {meta.lastTestResult.passedTests ?? 0}/{meta.lastTestResult.totalTests} passed
+                  {meta.lastTestResult.passedTests ?? 0}/{meta.lastTestResult.totalTests} {t('taskDetail.passed')}
                   {meta.lastTestResult.failedTests
-                    ? `, ${meta.lastTestResult.failedTests} failed`
+                    ? `, ${meta.lastTestResult.failedTests} ${t('taskDetail.failed')}`
                     : ''}
                   {meta.lastTestResult.skippedTests
-                    ? `, ${meta.lastTestResult.skippedTests} skipped`
+                    ? `, ${meta.lastTestResult.skippedTests} ${t('taskDetail.skipped')}`
                     : ''}
                 </div>
               )}
@@ -567,9 +572,9 @@ function OrchestratorMetadataSection({ meta, onUpdateMergeStatus, isUpdatingMerg
 
         {/* Timestamps */}
         <div className="text-xs text-[var(--color-text-tertiary)] pt-2 border-t border-[var(--color-border)]">
-          {meta.startedAt && <div>Started: {formatRelativeTime(meta.startedAt)}</div>}
-          {meta.completedAt && <div>Completed: {formatRelativeTime(meta.completedAt)}</div>}
-          {meta.mergedAt && <div>Merged: {formatRelativeTime(meta.mergedAt)}</div>}
+          {meta.startedAt && <div>{t('taskDetail.started')} {formatRelativeTime(meta.startedAt)}</div>}
+          {meta.completedAt && <div>{t('taskDetail.completed')} {formatRelativeTime(meta.completedAt)}</div>}
+          {meta.mergedAt && <div>{t('taskDetail.merged')} {formatRelativeTime(meta.mergedAt)}</div>}
         </div>
       </div>
     </div>
@@ -610,6 +615,7 @@ function EditableTitle({
   isUpdating: boolean;
   onEdit: () => void;
 }) {
+  const { t } = useTranslation('smithy');
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -671,7 +677,7 @@ function EditableTitle({
       <button
         onClick={() => setIsEditing(true)}
         className="p-1 opacity-0 group-hover:opacity-100 hover:bg-[var(--color-surface-hover)] rounded transition-opacity"
-        aria-label="Edit title"
+        aria-label={t('taskDetail.editTitle')}
       >
         <Pencil className="w-3.5 h-3.5 text-[var(--color-text-tertiary)]" />
       </button>
@@ -702,12 +708,13 @@ function StatusDropdown({
   onSave: (value: TaskStatus) => void;
   isUpdating: boolean;
 }) {
+  const { t } = useTranslation('smithy');
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Filter options to only show valid transitions from current status
   const validTransitions = VALID_STATUS_TRANSITIONS[value] || [];
-  const availableOptions = STATUS_OPTIONS.filter(
+  const availableOptions = STATUS_KEYS.filter(
     (opt) => opt.value === value || validTransitions.includes(opt.value)
   );
 
@@ -746,6 +753,7 @@ function StatusDropdown({
               }`}
             >
               <TaskStatusBadge status={opt.value} />
+              <span>{t(opt.key)}</span>
               {opt.value === value && <Check className="w-3 h-3 text-[var(--color-primary)] ml-auto" />}
             </button>
           ))}
@@ -765,6 +773,7 @@ function PriorityDropdown({
   onSave: (value: Priority) => void;
   isUpdating: boolean;
 }) {
+  const { t } = useTranslation('smithy');
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -791,7 +800,7 @@ function PriorityDropdown({
       </button>
       {isOpen && (
         <div className="absolute z-10 mt-1 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md shadow-lg py-1 min-w-[120px]">
-          {PRIORITY_OPTIONS.map((opt) => (
+          {PRIORITY_KEYS.map((opt) => (
             <button
               key={opt.value}
               onClick={() => {
@@ -803,6 +812,7 @@ function PriorityDropdown({
               }`}
             >
               <TaskPriorityBadge priority={opt.value} showIcon={false} />
+              <span>{t(opt.key)}</span>
               {opt.value === value && <Check className="w-3 h-3 text-[var(--color-primary)] ml-auto" />}
             </button>
           ))}
@@ -828,6 +838,7 @@ function AssigneeDropdown({
   onSave: (value: string | null) => void;
   isUpdating: boolean;
 }) {
+  const { t } = useTranslation('smithy');
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -861,7 +872,7 @@ function AssigneeDropdown({
           <User className="w-3.5 h-3.5 text-[var(--color-text-tertiary)]" />
         )}
         <span className={currentName ? 'text-[var(--color-text)]' : 'text-[var(--color-text-tertiary)] italic'}>
-          {currentName || 'Unassigned'}
+          {currentName || t('taskDetail.unassigned')}
         </span>
         {isUpdating && <Loader2 className="w-3 h-3 animate-spin" />}
       </button>
@@ -878,7 +889,7 @@ function AssigneeDropdown({
             }`}
           >
             <User className="w-3.5 h-3.5 text-[var(--color-text-tertiary)]" />
-            <span className="text-[var(--color-text-tertiary)] italic">Unassigned</span>
+            <span className="text-[var(--color-text-tertiary)] italic">{t('taskDetail.unassigned')}</span>
             {!value && <Check className="w-3 h-3 text-[var(--color-primary)] ml-auto" />}
           </button>
 
@@ -887,7 +898,7 @@ function AssigneeDropdown({
             <>
               <div className="border-t border-[var(--color-border)] my-1" />
               <div className="px-3 py-1 text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider">
-                Operators
+                {t('taskDetail.operators')}
               </div>
               {operators.map((operator) => (
                 <button
@@ -911,11 +922,11 @@ function AssigneeDropdown({
           {/* Workers section */}
           <div className="border-t border-[var(--color-border)] my-1" />
           <div className="px-3 py-1 text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider">
-            Worker Agents
+            {t('taskDetail.workerAgents')}
           </div>
           {workers.length === 0 ? (
             <div className="px-3 py-2 text-xs text-[var(--color-text-tertiary)]">
-              No worker agents available
+              {t('taskDetail.noWorkerAgents')}
             </div>
           ) : (
             workers.map((agent) => (
@@ -951,6 +962,7 @@ function ComplexityDropdown({
   onSave: (value: number) => void;
   isUpdating: boolean;
 }) {
+  const { t } = useTranslation('smithy');
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -964,7 +976,8 @@ function ComplexityDropdown({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const currentLabel = COMPLEXITY_OPTIONS.find((opt) => opt.value === value)?.label ?? 'Unknown';
+  const currentOpt = COMPLEXITY_KEYS.find((opt) => opt.value === value);
+  const currentLabel = currentOpt ? t(currentOpt.key) : t('taskDetail.unknown');
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -979,7 +992,7 @@ function ComplexityDropdown({
       </button>
       {isOpen && (
         <div className="absolute z-10 mt-1 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md shadow-lg py-1 min-w-[120px]">
-          {COMPLEXITY_OPTIONS.map((opt) => (
+          {COMPLEXITY_KEYS.map((opt) => (
             <button
               key={opt.value}
               onClick={() => {
@@ -990,7 +1003,7 @@ function ComplexityDropdown({
                 opt.value === value ? 'bg-[var(--color-surface-elevated)]' : ''
               }`}
             >
-              <span className="text-[var(--color-text)]">{opt.label}</span>
+              <span className="text-[var(--color-text)]">{t(opt.key)}</span>
               {opt.value === value && <Check className="w-3 h-3 text-[var(--color-primary)] ml-auto" />}
             </button>
           ))}
@@ -1001,15 +1014,15 @@ function ComplexityDropdown({
 }
 
 // Merge Status Options
-const MERGE_STATUS_OPTIONS: { value: MergeStatus; label: string }[] = [
-  { value: 'pending', label: 'Pending' },
-  { value: 'testing', label: 'Testing' },
-  { value: 'merging', label: 'Merging' },
-  { value: 'merged', label: 'Merged' },
-  { value: 'conflict', label: 'Conflict' },
-  { value: 'test_failed', label: 'Test Failed' },
-  { value: 'failed', label: 'Failed' },
-  { value: 'not_applicable', label: 'N/A' },
+const MERGE_STATUS_KEYS: { value: MergeStatus; key: string }[] = [
+  { value: 'pending', key: 'taskDetail.mergePending' },
+  { value: 'testing', key: 'taskDetail.mergeTesting' },
+  { value: 'merging', key: 'taskDetail.mergeMerging' },
+  { value: 'merged', key: 'taskDetail.mergeMerged' },
+  { value: 'conflict', key: 'taskDetail.mergeConflict' },
+  { value: 'test_failed', key: 'taskDetail.mergeTestFailed' },
+  { value: 'failed', key: 'taskDetail.mergeFailed' },
+  { value: 'not_applicable', key: 'taskDetail.mergeNA' },
 ];
 
 // Merge Status Dropdown
@@ -1022,6 +1035,7 @@ function MergeStatusDropdown({
   onSave: (value: MergeStatus) => void;
   isUpdating: boolean;
 }) {
+  const { t } = useTranslation('smithy');
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -1048,7 +1062,7 @@ function MergeStatusDropdown({
       </button>
       {isOpen && (
         <div className="absolute z-10 mt-1 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md shadow-lg py-1 min-w-[140px]">
-          {MERGE_STATUS_OPTIONS.map((opt) => (
+          {MERGE_STATUS_KEYS.map((opt) => (
             <button
               key={opt.value}
               onClick={() => {
@@ -1060,6 +1074,7 @@ function MergeStatusDropdown({
               }`}
             >
               <MergeStatusBadge status={opt.value} />
+              <span>{t(opt.key)}</span>
               {opt.value === value && <Check className="w-3 h-3 text-[var(--color-primary)] ml-auto" />}
             </button>
           ))}
@@ -1079,6 +1094,7 @@ function DeadlineInput({
   onSave: (value: string | null) => void;
   isUpdating: boolean;
 }) {
+  const { t } = useTranslation('smithy');
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value ? value.split('T')[0] : '');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -1133,7 +1149,7 @@ function DeadlineInput({
           <button
             onClick={handleClear}
             className="p-1 text-[var(--color-text-tertiary)] hover:text-[var(--color-danger)] rounded"
-            aria-label="Clear deadline"
+            aria-label={t('taskDetail.clearDeadline')}
           >
             <X className="w-4 h-4" />
           </button>
@@ -1152,12 +1168,12 @@ function DeadlineInput({
         onClick={() => setIsEditing(true)}
         data-testid="task-deadline-display"
       >
-        {value ? formatDate(value) : 'No deadline'}
+        {value ? formatDate(value) : t('taskDetail.noDeadline')}
       </span>
       <button
         onClick={() => setIsEditing(true)}
         className="p-1 opacity-0 group-hover:opacity-100 hover:bg-[var(--color-surface-hover)] rounded transition-opacity"
-        aria-label="Edit deadline"
+        aria-label={t('taskDetail.editDeadline')}
       >
         <Pencil className="w-3.5 h-3.5 text-[var(--color-text-tertiary)]" />
       </button>
@@ -1178,6 +1194,7 @@ function EditableTags({
   isUpdating: boolean;
   onEdit: () => void;
 }) {
+  const { t } = useTranslation('smithy');
   const [isEditing, setIsEditing] = useState(false);
   const [editTags, setEditTags] = useState<string[]>(tags);
   const [inputValue, setInputValue] = useState('');
@@ -1234,10 +1251,10 @@ function EditableTags({
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1 text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wide">
             <Tag className="w-3 h-3" />
-            Tags
+            {t('taskDetail.tags')}
           </div>
           <span className="text-[10px] text-[var(--color-text-tertiary)]">
-            Enter to add, Esc to cancel
+            {t('taskDetail.tagsHint')}
           </span>
         </div>
         <div className="p-2 border border-[var(--color-primary)] rounded-lg bg-[var(--color-input-bg)] focus-within:ring-2 focus-within:ring-[var(--color-primary)]">
@@ -1252,7 +1269,7 @@ function EditableTags({
                   type="button"
                   onClick={() => handleRemoveTag(tag)}
                   className="hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                  aria-label={`Remove ${tag}`}
+                  aria-label={t('taskDetail.removeTag', { tag })}
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -1268,7 +1285,7 @@ function EditableTags({
             onBlur={() => {
               if (inputValue.trim()) handleAddTag();
             }}
-            placeholder="Type tag and press Enter..."
+            placeholder={t('taskDetail.tagPlaceholder')}
             className="w-full text-sm bg-transparent text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none"
             data-testid="tags-input"
           />
@@ -1283,13 +1300,13 @@ function EditableTags({
             }}
             className="px-3 py-1.5 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] rounded transition-colors"
           >
-            Cancel
+            {t('common:button.cancel')}
           </button>
           <button
             onClick={handleSave}
             className="px-3 py-1.5 text-sm font-medium text-white bg-[var(--color-primary)] hover:opacity-90 rounded transition-colors"
           >
-            Save
+            {t('common:button.save')}
           </button>
         </div>
       </div>
@@ -1301,12 +1318,12 @@ function EditableTags({
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1 text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wide">
           <Tag className="w-3 h-3" />
-          Tags
+          {t('taskDetail.tags')}
         </div>
         <button
           onClick={() => setIsEditing(true)}
           className="p-1 opacity-0 group-hover:opacity-100 hover:bg-[var(--color-surface-hover)] rounded transition-opacity"
-          aria-label="Edit tags"
+          aria-label={t('taskDetail.editTags')}
         >
           <Pencil className="w-3.5 h-3.5 text-[var(--color-text-tertiary)]" />
         </button>
@@ -1331,13 +1348,13 @@ function EditableTags({
           className="w-full p-2 text-sm text-[var(--color-text-tertiary)] italic bg-[var(--color-surface-elevated)] rounded-lg border border-dashed border-[var(--color-border)] hover:border-[var(--color-primary)] hover:text-[var(--color-text-secondary)] transition-colors text-left"
           data-testid="add-tags-btn"
         >
-          Add tags...
+          {t('taskDetail.addTags')}
         </button>
       )}
       {isUpdating && (
         <div className="flex items-center gap-2 mt-2 text-xs text-[var(--color-text-tertiary)]">
           <Loader2 className="w-3 h-3 animate-spin" />
-          Saving...
+          {t('taskDetail.saving')}
         </div>
       )}
     </div>
@@ -1356,6 +1373,7 @@ function EditableDescription({
   isUpdating: boolean;
   onEdit: () => void;
 }) {
+  const { t } = useTranslation('smithy');
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value ?? '');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -1432,10 +1450,10 @@ function EditableDescription({
       <div className="mb-6" data-testid="description-editor">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wide">
-            Description
+            {t('taskDetail.description')}
           </h3>
           <span className="text-[10px] text-[var(--color-text-tertiary)]">
-            Ctrl+Enter to save, Esc to cancel
+            {t('taskDetail.descriptionHint')}
           </span>
         </div>
         <div
@@ -1451,7 +1469,7 @@ function EditableDescription({
             onKeyDown={handleKeyDown}
             onPaste={dropHandlers.onPaste}
             rows={8}
-            placeholder="Add a description (supports markdown)..."
+            placeholder={t('taskDetail.descriptionPlaceholder')}
             className="w-full p-3 text-sm border border-[var(--color-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-input-bg)] text-[var(--color-text)] resize-y min-h-[120px]"
             data-testid="task-description-input"
           />
@@ -1462,7 +1480,7 @@ function EditableDescription({
               data-testid="description-drop-overlay"
             >
               <span className="text-sm font-medium text-[var(--color-primary)]">
-                Drop image to upload
+                {t('taskDetail.dropImage')}
               </span>
             </div>
           )}
@@ -1474,7 +1492,7 @@ function EditableDescription({
             >
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--color-bg)] shadow border border-[var(--color-border)]">
                 <Loader2 className="w-4 h-4 animate-spin text-[var(--color-primary)]" />
-                <span className="text-sm text-[var(--color-text-secondary)]">Uploading image...</span>
+                <span className="text-sm text-[var(--color-text-secondary)]">{t('taskDetail.uploadingImage')}</span>
               </div>
             </div>
           )}
@@ -1488,13 +1506,13 @@ function EditableDescription({
             }}
             className="px-3 py-1.5 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] rounded transition-colors"
           >
-            Cancel
+            {t('common:button.cancel')}
           </button>
           <button
             onClick={handleSave}
             className="px-3 py-1.5 text-sm font-medium text-white bg-[var(--color-primary)] hover:opacity-90 rounded transition-colors"
           >
-            Save
+            {t('common:button.save')}
           </button>
         </div>
       </div>
@@ -1505,12 +1523,12 @@ function EditableDescription({
     <div className="mb-6 group" data-testid="description-section">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wide">
-          Description
+          {t('taskDetail.description')}
         </h3>
         <button
           onClick={() => setIsEditing(true)}
           className="p-1 opacity-0 group-hover:opacity-100 hover:bg-[var(--color-surface-hover)] rounded transition-opacity"
-          aria-label="Edit description"
+          aria-label={t('taskDetail.editDescription')}
         >
           <Pencil className="w-3.5 h-3.5 text-[var(--color-text-tertiary)]" />
         </button>
@@ -1532,13 +1550,13 @@ function EditableDescription({
           className="w-full p-3 text-sm text-[var(--color-text-tertiary)] italic bg-[var(--color-surface-elevated)] rounded-lg border border-dashed border-[var(--color-border)] hover:border-[var(--color-primary)] hover:text-[var(--color-text-secondary)] transition-colors text-left"
           data-testid="add-description-btn"
         >
-          Add a description...
+          {t('taskDetail.addDescription')}
         </button>
       )}
       {isUpdating && (
         <div className="flex items-center gap-2 mt-2 text-xs text-[var(--color-text-tertiary)]">
           <Loader2 className="w-3 h-3 animate-spin" />
-          Saving...
+          {t('taskDetail.saving')}
         </div>
       )}
     </div>
@@ -1557,6 +1575,7 @@ function DeleteConfirmDialog({
   onCancel: () => void;
   isDeleting: boolean;
 }) {
+  const { t } = useTranslation('smithy');
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !isDeleting) onCancel();
@@ -1574,11 +1593,9 @@ function DeleteConfirmDialog({
             <Trash2 className="w-5 h-5 text-[var(--color-danger)]" />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-[var(--color-text)]">Delete Task</h3>
+            <h3 className="text-lg font-semibold text-[var(--color-text)]">{t('taskDetail.deleteTitle')}</h3>
             <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-              Are you sure you want to delete{' '}
-              <span className="font-medium text-[var(--color-text)]">"{taskTitle}"</span>? This action
-              cannot be undone.
+              {t('taskDetail.deleteDescription', { title: taskTitle })}
             </p>
           </div>
         </div>
@@ -1589,7 +1606,7 @@ function DeleteConfirmDialog({
             className="px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-hover)] disabled:opacity-50"
             data-testid="delete-cancel-btn"
           >
-            Cancel
+            {t('common:button.cancel')}
           </button>
           <button
             onClick={onConfirm}
@@ -1600,12 +1617,12 @@ function DeleteConfirmDialog({
             {isDeleting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Deleting...
+                {t('taskDetail.deleting')}
               </>
             ) : (
               <>
                 <Trash2 className="w-4 h-4" />
-                Delete
+                {t('common:button.delete')}
               </>
             )}
           </button>
@@ -1627,6 +1644,7 @@ export function ReopenDialog({
   onCancel: () => void;
   isReopening: boolean;
 }) {
+  const { t } = useTranslation('smithy');
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -1682,16 +1700,15 @@ export function ReopenDialog({
             <RotateCcw className="w-5 h-5 text-amber-600 dark:text-amber-400" />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-[var(--color-text)]">Reopen Task</h3>
+            <h3 className="text-lg font-semibold text-[var(--color-text)]">{t('taskDetail.reopenTitle')}</h3>
             <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-              Reopen <span className="font-medium text-[var(--color-text)]">"{taskTitle}"</span>?
-              This will clear the assignee and merge metadata.
+              {t('taskDetail.reopenDescription', { title: taskTitle })}
             </p>
           </div>
         </div>
         <div className="mt-4">
           <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-            Message (optional)
+            {t('taskDetail.reopenMessageLabel')}
           </label>
           <div
             className="relative"
@@ -1704,7 +1721,7 @@ export function ReopenDialog({
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onPaste={dropHandlers.onPaste}
-              placeholder="Why is this task being reopened?"
+              placeholder={t('taskDetail.reopenMessagePlaceholder')}
               rows={3}
               className="w-full p-3 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 bg-[var(--color-input-bg)] text-[var(--color-text)] resize-y"
               data-testid="reopen-message-input"
@@ -1716,7 +1733,7 @@ export function ReopenDialog({
                 data-testid="reopen-drop-overlay"
               >
                 <span className="text-sm font-medium text-amber-600 dark:text-amber-400">
-                  Drop image to upload
+                  {t('taskDetail.dropImage')}
                 </span>
               </div>
             )}
@@ -1728,7 +1745,7 @@ export function ReopenDialog({
               >
                 <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--color-bg)] shadow border border-[var(--color-border)]">
                   <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
-                  <span className="text-sm text-[var(--color-text-secondary)]">Uploading image...</span>
+                  <span className="text-sm text-[var(--color-text-secondary)]">{t('taskDetail.uploadingImage')}</span>
                 </div>
               </div>
             )}
@@ -1741,7 +1758,7 @@ export function ReopenDialog({
             className="px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-hover)] disabled:opacity-50"
             data-testid="reopen-cancel-btn"
           >
-            Cancel
+            {t('common:button.cancel')}
           </button>
           <button
             onClick={() => onConfirm(message.trim() || undefined)}
@@ -1752,12 +1769,12 @@ export function ReopenDialog({
             {isReopening ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Reopening...
+                {t('taskDetail.reopening')}
               </>
             ) : (
               <>
                 <RotateCcw className="w-4 h-4" />
-                Reopen
+                {t('taskDetail.reopenTask')}
               </>
             )}
           </button>
@@ -1779,6 +1796,7 @@ function ResetDialog({
   onCancel: () => void;
   isResetting: boolean;
 }) {
+  const { t } = useTranslation('smithy');
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !isResetting) onCancel();
@@ -1796,17 +1814,16 @@ function ResetDialog({
             <RefreshCcw className="w-5 h-5 text-amber-600 dark:text-amber-400" />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-[var(--color-text)]">Reset Task</h3>
+            <h3 className="text-lg font-semibold text-[var(--color-text)]">{t('taskDetail.resetTitle')}</h3>
             <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-              Reset <span className="font-medium text-[var(--color-text)]">"{taskTitle}"</span>?
-              This will:
+              {t('taskDetail.resetDescription', { title: taskTitle })}
             </p>
             <ul className="mt-2 text-sm text-[var(--color-text-secondary)] list-disc list-inside space-y-1">
-              <li>Set status back to open</li>
-              <li>Remove the assignee</li>
-              <li>Clear merge status</li>
-              <li>Remove branch/worktree metadata</li>
-              <li>Remove session ID</li>
+              <li>{t('taskDetail.resetAction1')}</li>
+              <li>{t('taskDetail.resetAction2')}</li>
+              <li>{t('taskDetail.resetAction3')}</li>
+              <li>{t('taskDetail.resetAction4')}</li>
+              <li>{t('taskDetail.resetAction5')}</li>
             </ul>
           </div>
         </div>
@@ -1817,7 +1834,7 @@ function ResetDialog({
             className="px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-hover)] disabled:opacity-50"
             data-testid="reset-cancel-btn"
           >
-            Cancel
+            {t('common:button.cancel')}
           </button>
           <button
             onClick={onConfirm}
@@ -1828,12 +1845,12 @@ function ResetDialog({
             {isResetting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Resetting...
+                {t('taskDetail.resetting')}
               </>
             ) : (
               <>
                 <RefreshCcw className="w-4 h-4" />
-                Reset Task
+                {t('taskDetail.resetTaskButton')}
               </>
             )}
           </button>
@@ -1864,6 +1881,7 @@ function formatDateTime(dateStr: string): string {
 }
 
 function formatRelativeTime(dateStr: string): string {
+  // Use imported i18n instance directly (utility function, not a component)
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -1871,10 +1889,10 @@ function formatRelativeTime(dateStr: string): string {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffMins < 1) return i18n.t('smithy:taskDetail.justNow');
+  if (diffMins < 60) return i18n.t('smithy:taskDetail.minutesAgo', { count: diffMins });
+  if (diffHours < 24) return i18n.t('smithy:taskDetail.hoursAgo', { count: diffHours });
+  if (diffDays < 7) return i18n.t('smithy:taskDetail.daysAgo', { count: diffDays });
   return formatDate(dateStr);
 }
 
@@ -1883,6 +1901,7 @@ function formatRelativeTime(dateStr: string): string {
 // ============================================================================
 
 function AttachmentsSection({ taskId }: { taskId: string }) {
+  const { t } = useTranslation('smithy');
   const [isExpanded, setIsExpanded] = useState(true);
   const [showPicker, setShowPicker] = useState(false);
   const { data: attachments, isLoading } = useTaskAttachments(taskId);
@@ -1916,7 +1935,7 @@ function AttachmentsSection({ taskId }: { taskId: string }) {
       >
         {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
         <Paperclip className="w-3 h-3" />
-        Attachments ({attachments?.length || 0})
+        {t('taskDetail.attachments')} ({attachments?.length || 0})
       </button>
 
       {isExpanded && (
@@ -1924,7 +1943,7 @@ function AttachmentsSection({ taskId }: { taskId: string }) {
           {isLoading ? (
             <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
               <Loader2 className="w-4 h-4 animate-spin" />
-              Loading attachments...
+              {t('taskDetail.loadingAttachments')}
             </div>
           ) : attachments && attachments.length > 0 ? (
             attachments.map((doc) => (
@@ -1937,7 +1956,7 @@ function AttachmentsSection({ taskId }: { taskId: string }) {
             ))
           ) : (
             <div className="text-sm text-[var(--color-text-tertiary)]" data-testid="attachments-empty">
-              No documents attached
+              {t('taskDetail.noDocumentsAttached')}
             </div>
           )}
 
@@ -1947,7 +1966,7 @@ function AttachmentsSection({ taskId }: { taskId: string }) {
             data-testid="attach-document-btn"
           >
             <Plus className="w-4 h-4" />
-            Attach Document
+            {t('taskDetail.attachDocument')}
           </button>
         </div>
       )}
@@ -2016,6 +2035,7 @@ function ExpandableDocumentCard({
   onRemove: () => void;
   isRemoving: boolean;
 }) {
+  const { t } = useTranslation('smithy');
   const [isExpanded, setIsExpanded] = useState(false);
   const preview = getContentPreview(doc.content);
 
@@ -2031,7 +2051,7 @@ function ExpandableDocumentCard({
           onClick={() => setIsExpanded(!isExpanded)}
           className="p-1 hover:bg-[var(--color-surface-hover)] rounded flex-shrink-0"
           data-testid={`attachment-expand-${doc.id}`}
-          aria-label={isExpanded ? 'Collapse' : 'Expand'}
+          aria-label={isExpanded ? t('taskDetail.collapse') : t('taskDetail.expand')}
         >
           {isExpanded ? (
             <ChevronDown className="w-4 h-4 text-[var(--color-text-tertiary)]" />
@@ -2043,7 +2063,7 @@ function ExpandableDocumentCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-[var(--color-primary)] truncate">
-              {doc.title || 'Untitled Document'}
+              {doc.title || t('taskDetail.untitledDocument')}
             </span>
             <span className="px-1.5 py-0.5 bg-[var(--color-surface)] text-[var(--color-text-tertiary)] rounded text-[10px] flex-shrink-0">
               {doc.contentType}
@@ -2062,7 +2082,7 @@ function ExpandableDocumentCard({
           onClick={onRemove}
           disabled={isRemoving}
           className="p-1 text-[var(--color-text-tertiary)] hover:text-[var(--color-danger)] hover:bg-[var(--color-danger-muted)] rounded opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
-          aria-label="Remove attachment"
+          aria-label={t('taskDetail.removeAttachment')}
           data-testid={`attachment-remove-${doc.id}`}
         >
           {isRemoving ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
@@ -2085,7 +2105,7 @@ function ExpandableDocumentCard({
           className="p-3 border-t border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text-tertiary)] italic"
           data-testid={`attachment-content-${doc.id}`}
         >
-          No content available
+          {t('taskDetail.noContentAvailable')}
         </div>
       )}
     </div>
@@ -2109,6 +2129,7 @@ function DocumentPickerModal({
   alreadyAttachedIds: string[];
   isAttaching: boolean;
 }) {
+  const { t } = useTranslation('smithy');
   const [searchQuery, setSearchQuery] = useState('');
   const { data: documents, isLoading } = useDocumentsForAttachment(searchQuery);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -2143,7 +2164,7 @@ function DocumentPickerModal({
       <div className="relative bg-[var(--color-surface)] rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[80vh] flex flex-col border border-[var(--color-border)]">
         <div className="p-4 border-b border-[var(--color-border)]">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-[var(--color-text)]">Attach Document</h3>
+            <h3 className="text-lg font-semibold text-[var(--color-text)]">{t('taskDetail.attachDocument')}</h3>
             <button
               onClick={onClose}
               disabled={isAttaching}
@@ -2158,7 +2179,7 @@ function DocumentPickerModal({
             <input
               ref={inputRef}
               type="text"
-              placeholder="Search documents..."
+              placeholder={t('taskDetail.searchDocuments')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 text-sm border border-[var(--color-border)] rounded-md bg-[var(--color-input-bg)] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
@@ -2174,10 +2195,10 @@ function DocumentPickerModal({
           ) : availableDocs.length === 0 ? (
             <div className="text-center py-8 text-[var(--color-text-tertiary)]" data-testid="document-picker-empty">
               {documents?.length === 0
-                ? 'No documents available'
+                ? t('taskDetail.noDocumentsAvailable')
                 : searchQuery
-                  ? 'No documents match your search'
-                  : 'All documents are already attached'}
+                  ? t('taskDetail.noDocumentsMatch')
+                  : t('taskDetail.allDocumentsAttached')}
             </div>
           ) : (
             <div className="space-y-2">
@@ -2192,7 +2213,7 @@ function DocumentPickerModal({
                   <FileText className="w-5 h-5 text-[var(--color-text-tertiary)] flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-[var(--color-text)] truncate">
-                      {doc.title || 'Untitled Document'}
+                      {doc.title || t('taskDetail.untitledDocument')}
                     </div>
                     <div className="text-xs text-[var(--color-text-tertiary)] flex items-center gap-2">
                       <span className="font-mono">{doc.id}</span>
@@ -2222,6 +2243,7 @@ interface TaskSessionsSectionProps {
 }
 
 function TaskSessionsSection({ sessionHistory, entityNameMap }: TaskSessionsSectionProps) {
+  const { t } = useTranslation('smithy');
   const [isExpanded, setIsExpanded] = useState(true);
   const [viewingSession, setViewingSession] = useState<TaskSessionHistoryEntry | null>(null);
   const [resumingSession, setResumingSession] = useState<TaskSessionHistoryEntry | null>(null);
@@ -2240,7 +2262,7 @@ function TaskSessionsSection({ sessionHistory, entityNameMap }: TaskSessionsSect
       >
         {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
         <History className="w-3 h-3" />
-        Sessions ({sessionHistory.length})
+        {t('taskDetail.sessions')} ({sessionHistory.length})
       </button>
 
       {isExpanded && (
@@ -2257,7 +2279,7 @@ function TaskSessionsSection({ sessionHistory, entityNameMap }: TaskSessionsSect
             ))
           ) : (
             <div className="text-sm text-[var(--color-text-tertiary)]" data-testid="sessions-empty">
-              No sessions recorded
+              {t('taskDetail.noSessionsRecorded')}
             </div>
           )}
         </div>
@@ -2295,6 +2317,7 @@ interface SessionEntryCardProps {
 }
 
 function SessionEntryCard({ entry, onView, onResume }: SessionEntryCardProps) {
+  const { t } = useTranslation('smithy');
   const isWorker = entry.agentRole === 'worker';
   const truncatedSessionId = entry.providerSessionId?.substring(0, 8);
 
@@ -2351,8 +2374,8 @@ function SessionEntryCard({ entry, onView, onResume }: SessionEntryCardProps) {
         <button
           onClick={onView}
           className="p-1.5 text-[var(--color-text-tertiary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] rounded transition-colors"
-          aria-label="View transcript"
-          title="View transcript"
+          aria-label={t('taskDetail.viewTranscript')}
+          title={t('taskDetail.viewTranscript')}
           data-testid={`session-view-${entry.sessionId}`}
         >
           <Eye className="w-4 h-4" />
@@ -2361,8 +2384,8 @@ function SessionEntryCard({ entry, onView, onResume }: SessionEntryCardProps) {
           <button
             onClick={onResume}
             className="p-1.5 text-[var(--color-text-tertiary)] hover:text-green-600 dark:hover:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 rounded transition-colors"
-            aria-label="Resume session"
-            title="Resume session"
+            aria-label={t('taskDetail.resumeSession')}
+            title={t('taskDetail.resumeSession')}
             data-testid={`session-resume-${entry.sessionId}`}
           >
             <Play className="w-4 h-4" />
@@ -2384,6 +2407,7 @@ interface SessionTranscriptModalProps {
 }
 
 function SessionTranscriptModal({ entry, onClose, onResume }: SessionTranscriptModalProps) {
+  const { t } = useTranslation('smithy');
   const [messages, setMessages] = useState<StreamEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -2396,7 +2420,7 @@ function SessionTranscriptModal({ entry, onClose, onResume }: SessionTranscriptM
       const events = response.messages.map(messageToStreamEvent);
       setMessages(events);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load messages');
+      setError(err instanceof Error ? err.message : t('taskDetail.failedLoadMessages'));
     } finally {
       setIsLoading(false);
     }
@@ -2449,11 +2473,11 @@ function SessionTranscriptModal({ entry, onClose, onResume }: SessionTranscriptM
                   <span className="font-mono">{truncatedSessionId}</span>
                 )}
                 <span title={formatDateTime(entry.startedAt)}>
-                  Started: {formatRelativeTime(entry.startedAt)}
+                  {t('taskDetail.started')} {formatRelativeTime(entry.startedAt)}
                 </span>
                 {entry.endedAt && (
                   <span title={formatDateTime(entry.endedAt)}>
-                    • Ended: {formatRelativeTime(entry.endedAt)}
+                    • {t('taskDetail.endedLabel')} {formatRelativeTime(entry.endedAt)}
                   </span>
                 )}
               </div>
@@ -2467,13 +2491,13 @@ function SessionTranscriptModal({ entry, onClose, onResume }: SessionTranscriptM
                 data-testid="transcript-resume-btn"
               >
                 <Play className="w-4 h-4" />
-                Resume
+                {t('taskDetail.resume')}
               </button>
             )}
             <button
               onClick={onClose}
               className="p-1.5 text-[var(--color-text-tertiary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] rounded"
-              aria-label="Close"
+              aria-label={t('taskDetail.closeAriaLabel')}
               data-testid="transcript-close-btn"
             >
               <X className="w-5 h-5" />
@@ -2486,7 +2510,7 @@ function SessionTranscriptModal({ entry, onClose, onResume }: SessionTranscriptM
           {isLoading ? (
             <div className="flex flex-col items-center justify-center h-full py-12">
               <Loader2 className="w-6 h-6 animate-spin text-[var(--color-primary)] mb-2" />
-              <span className="text-sm text-[var(--color-text-secondary)]">Loading transcript...</span>
+              <span className="text-sm text-[var(--color-text-secondary)]">{t('taskDetail.loadingTranscript')}</span>
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center h-full py-12">
@@ -2496,7 +2520,7 @@ function SessionTranscriptModal({ entry, onClose, onResume }: SessionTranscriptM
                 onClick={loadMessages}
                 className="mt-3 px-3 py-1.5 text-sm text-[var(--color-primary)] hover:bg-[var(--color-surface-hover)] rounded-md"
               >
-                Retry
+                {t('common:button.retry')}
               </button>
             </div>
           ) : (
@@ -2518,6 +2542,7 @@ interface SessionResumeDialogProps {
 }
 
 function SessionResumeDialog({ entry, onClose }: SessionResumeDialogProps) {
+  const { t } = useTranslation('smithy');
   const [resumePrompt, setResumePrompt] = useState('');
   const navigate = useNavigate();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -2569,23 +2594,22 @@ function SessionResumeDialog({ entry, onClose }: SessionResumeDialogProps) {
             )}
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-[var(--color-text)]">Resume Session</h3>
+            <h3 className="text-lg font-semibold text-[var(--color-text)]">{t('taskDetail.resumeSessionTitle')}</h3>
             <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-              You'll be taken to the workspace to resume the session with{' '}
-              <span className="font-medium text-[var(--color-text)]">{entry.agentName}</span>.
+              {t('taskDetail.resumeSessionDescription', { agentName: entry.agentName })}
             </p>
           </div>
         </div>
 
         <div className="mt-4">
           <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-            Resume message (optional)
+            {t('taskDetail.resumeMessageLabel')}
           </label>
           <textarea
             ref={textareaRef}
             value={resumePrompt}
             onChange={(e) => setResumePrompt(e.target.value)}
-            placeholder="Enter a message to send when resuming..."
+            placeholder={t('taskDetail.resumeMessagePlaceholder')}
             rows={3}
             className="w-full p-3 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-input-bg)] text-[var(--color-text)] resize-y"
             data-testid="resume-prompt-input"
@@ -2598,7 +2622,7 @@ function SessionResumeDialog({ entry, onClose }: SessionResumeDialogProps) {
             className="px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-hover)]"
             data-testid="resume-cancel-btn"
           >
-            Cancel
+            {t('common:button.cancel')}
           </button>
           <button
             onClick={handleResume}
@@ -2606,7 +2630,7 @@ function SessionResumeDialog({ entry, onClose }: SessionResumeDialogProps) {
             data-testid="resume-confirm-btn"
           >
             <Play className="w-4 h-4" />
-            Resume
+            {t('taskDetail.resume')}
           </button>
         </div>
       </div>

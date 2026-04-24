@@ -5,6 +5,7 @@
  */
 
 import { Circle, Loader2, Pause, Square, AlertCircle } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { SessionStatus } from '../../api/types';
 
 interface AgentStatusBadgeProps {
@@ -56,6 +57,7 @@ const statusConfig: Record<
 };
 
 export function AgentStatusBadge({ status, size = 'md', showLabel = true }: AgentStatusBadgeProps) {
+  const { t } = useTranslation('smithy');
   const config = statusConfig[status ?? 'unknown'] ?? statusConfig.unknown;
   const Icon = config.icon;
   const isAnimated = status === 'running' || status === 'starting';
@@ -71,7 +73,7 @@ export function AgentStatusBadge({ status, size = 'md', showLabel = true }: Agen
       <Icon
         className={`${iconSize} ${isAnimated ? (status === 'running' ? 'fill-current' : 'animate-spin') : ''}`}
       />
-      {showLabel && <span>{config.label}</span>}
+      {showLabel && <span>{t(`agent.status.${status ?? 'unknown'}`, config.label)}</span>}
     </span>
   );
 }

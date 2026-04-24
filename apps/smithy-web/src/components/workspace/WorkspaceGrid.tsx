@@ -6,7 +6,8 @@
  * Single mode displays tabs like a browser/code editor.
  */
 
-import React, { useState, useCallback, useMemo, Fragment, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, Fragment, useRef, useEffect } from 'react'
+import { useTranslation } from '@stoneforge/i18n';;
 import { Group, Panel, Separator } from 'react-resizable-panels';
 import { X, Terminal, Radio, ArrowLeftRight, ArrowUpDown } from 'lucide-react';
 import type {
@@ -60,6 +61,7 @@ function CustomResizeHandle({
   swapTestId?: string;
   testId?: string;
 }) {
+  const { t } = useTranslation('smithy');
   const isHorizontal = orientation === 'horizontal';
   const SwapIcon = isHorizontal ? ArrowLeftRight : ArrowUpDown;
   const buttonRef = React.useRef<HTMLDivElement>(null);
@@ -194,7 +196,7 @@ function CustomResizeHandle({
             [&.is-hovered]:border-[var(--color-primary)]
             [&.is-hovered]:scale-110
           `}
-          title="Swap sections"
+          title={t('workspaces.swapSections')}
           data-testid={swapTestId}
         >
           <SwapIcon className="w-3.5 h-3.5" />
@@ -362,6 +364,7 @@ export function WorkspaceGrid({
   onSwapPanes,
   onSwap2x2Rows,
 }: WorkspaceGridProps) {
+  const { t } = useTranslation('smithy');
   // Note: onEndDrag is kept in interface for backward compatibility but not used.
   // We use onCancelDrag instead to avoid triggering reorderPanes after swaps.
   void _onEndDrag;
@@ -619,7 +622,7 @@ export function WorkspaceGrid({
                     opacity-0 group-hover:opacity-100
                     transition-all duration-150
                   "
-                  title="Close tab"
+                  title={t('workspaces.closeTab')}
                 >
                   <X className="w-3 h-3" />
                 </button>

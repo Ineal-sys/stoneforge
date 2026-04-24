@@ -44,6 +44,7 @@ import { useAllPlans } from '../../api/hooks/useAllElements';
 import { useMergeRequestCounts } from '../../api/hooks/useMergeRequests';
 import { useProviderMetrics } from '../../api/hooks/useProviderMetrics';
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { Task } from '../../api/types';
 
 // ============================================================================
@@ -70,9 +71,9 @@ const PRIORITY_COLORS: Record<number, string> = {
 };
 
 const TIME_RANGES = [
-  { label: 'Last 7 days', days: 7 },
-  { label: 'Last 14 days', days: 14 },
-  { label: 'Last 30 days', days: 30 },
+  { labelKey: 'metrics.last7days', days: 7 },
+  { labelKey: 'metrics.last14days', days: 14 },
+  { labelKey: 'metrics.last30days', days: 30 },
 ] as const;
 
 type TimeRange = (typeof TIME_RANGES)[number];
@@ -236,6 +237,7 @@ function TimeRangeSelector({
   selected: TimeRange;
   onSelect: (range: TimeRange) => void;
 }) {
+  const { t } = useTranslation('smithy');
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -257,7 +259,7 @@ function TimeRangeSelector({
         data-testid="metrics-timerange"
       >
         <Calendar className="w-4 h-4" />
-        {selected.label}
+        {t(selected.labelKey)}
         <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-150 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       {isOpen && (
@@ -275,7 +277,7 @@ function TimeRangeSelector({
                   : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]'
               }`}
             >
-              {range.label}
+              {t(range.labelKey)}
             </button>
           ))}
         </div>
@@ -304,6 +306,7 @@ function PlanProgressSection({
   allTasks: Task[];
   isLoading: boolean;
 }) {
+  const { t } = useTranslation('smithy');
   const planProgress = useMemo(() => {
     if (!plans || plans.length === 0) return [];
 
@@ -341,7 +344,7 @@ function PlanProgressSection({
   if (isLoading) {
     return (
       <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-card-bg)] p-4 @sm:p-5">
-        <h3 className="text-sm font-semibold text-[var(--color-text)] mb-4">Plan Progress</h3>
+        <h3 className="text-sm font-semibold text-[var(--color-text)] mb-4">{t('metrics.planProgress')}</h3>
         <div className="space-y-3">
           {[1, 2, 3].map(i => (
             <div key={i} className="animate-pulse">
@@ -357,10 +360,10 @@ function PlanProgressSection({
   if (planProgress.length === 0) {
     return (
       <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-card-bg)] p-4 @sm:p-5">
-        <h3 className="text-sm font-semibold text-[var(--color-text)] mb-4">Plan Progress</h3>
+        <h3 className="text-sm font-semibold text-[var(--color-text)] mb-4">{t('metrics.planProgress')}</h3>
         <div className="flex flex-col items-center justify-center py-8 text-[var(--color-text-tertiary)]">
           <Target className="w-8 h-8 mb-2 opacity-50" />
-          <p className="text-sm">No active plans with tasks</p>
+          <p className="text-sm">{t('metrics.noActivePlans')}</p>
         </div>
       </div>
     );
@@ -368,7 +371,7 @@ function PlanProgressSection({
 
   return (
     <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-card-bg)] p-4 @sm:p-5">
-      <h3 className="text-sm font-semibold text-[var(--color-text)] mb-4">Plan Progress</h3>
+      <h3 className="text-sm font-semibold text-[var(--color-text)] mb-4">{t('metrics.planProgress')}</h3>
       <div className="space-y-4">
         {planProgress.map(plan => (
           <div key={plan.id}>
@@ -413,11 +416,11 @@ function PlanProgressSection({
             {(plan.inProgress > 0 || plan.blocked > 0) && (
               <div className="flex gap-3 mt-1">
                 {plan.inProgress > 0 && (
-                  <span className="text-[10px] text-[#eab308]">{plan.inProgress} in progress</span>
+                  <span className="text-[10px] text-[#eab308]">{t('metrics.inProgressCount', { count: plan.inProgress })}</span>
                 )}
                 {plan.blocked > 0 && (
                   <span className="text-[10px] text-[var(--color-error)]">
-                    {plan.blocked} blocked
+                    {t('metrics.blockedCount', { count: plan.blocked })}
                   </span>
                 )}
               </div>
@@ -436,16 +439,17 @@ function MergePipelineCard({
   counts: { needsReview: number; testing: number; conflicts: number; merged: number };
   isLoading: boolean;
 }) {
+  const { t } = useTranslation('smithy');
   const stages = [
-    { label: 'Needs Review', value: counts.needsReview, color: '#eab308' },
-    { label: 'Testing', value: counts.testing, color: '#3b82f6' },
-    { label: 'Conflicts', value: counts.conflicts, color: '#ef4444' },
-    { label: 'Merged', value: counts.merged, color: '#22c55e' },
+    { label: t('metrics.pipelineNeedsReview'), value: counts.needsReview, color: '#eab308' },
+    { label: t('metrics.pipelineTesting'), value: counts.testing, color: '#3b82f6' },
+    { label: t('metrics.pipelineConflicts'), value: counts.conflicts, color: '#ef4444' },
+    { label: t('metrics.pipelineMerged'), value: counts.merged, color: '#22c55e' },
   ];
 
   return (
     <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-card-bg)] p-4 @sm:p-5">
-      <h3 className="text-sm font-semibold text-[var(--color-text)] mb-4">Merge Pipeline</h3>
+      <h3 className="text-sm font-semibold text-[var(--color-text)] mb-4">{t('metrics.mergePipeline')}</h3>
       {isLoading ? (
         <div className="space-y-3 animate-pulse">
           {[1, 2, 3, 4].map(i => (
@@ -488,6 +492,7 @@ function QueueHealthCard({
   allTasks: Task[];
   isLoading: boolean;
 }) {
+  const { t } = useTranslation('smithy');
   const oldestUnassigned = useMemo(() => {
     if (unassigned.length === 0) return null;
     const oldest = unassigned.reduce((prev, curr) =>
@@ -519,15 +524,15 @@ function QueueHealthCard({
         : 'text-[var(--color-error)]';
 
   const indicators = [
-    { label: 'Unassigned', value: unassigned.length, warn: unassigned.length > 3 },
-    { label: 'Blocked', value: blocked.length, warn: blocked.length > 0 },
-    { label: 'In Progress', value: inProgress.length, warn: false },
+    { label: t('metrics.queueUnassigned'), value: unassigned.length, warn: unassigned.length > 3 },
+    { label: t('metrics.queueBlocked'), value: blocked.length, warn: blocked.length > 0 },
+    { label: t('metrics.queueInProgress'), value: inProgress.length, warn: false },
   ];
 
   return (
     <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-card-bg)] p-4 @sm:p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-[var(--color-text)]">Queue Health</h3>
+        <h3 className="text-sm font-semibold text-[var(--color-text)]">{t('metrics.queueHealth')}</h3>
         <span className={`text-lg font-bold tabular-nums ${healthColor}`}>{healthScore}%</span>
       </div>
       {isLoading ? (
@@ -556,9 +561,9 @@ function QueueHealthCard({
           {oldestUnassigned && (
             <div className="mt-3 pt-3 border-t border-[var(--color-border)]">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-[var(--color-text-tertiary)]">Oldest unassigned</span>
+                <span className="text-[var(--color-text-tertiary)]">{t('metrics.oldestUnassigned')}</span>
                 <span className="text-[var(--color-text-secondary)] font-medium tabular-nums">
-                  {oldestUnassigned} ago
+                  {t('metrics.ago', { time: oldestUnassigned })}
                 </span>
               </div>
             </div>
@@ -574,6 +579,7 @@ function QueueHealthCard({
 // ============================================================================
 
 export function MetricsPage() {
+  const { t } = useTranslation('smithy');
   const [timeRange, setTimeRange] = useState<TimeRange>(TIME_RANGES[0]);
 
   // Data sources
@@ -650,8 +656,8 @@ export function MetricsPage() {
     const currentCount = completedInRange.length;
     const previousRange = getTasksCompletedInRange(closed, timeRange.days * 2).length - currentCount;
     const diff = currentCount - previousRange;
-    return { value: diff, label: 'vs prev' };
-  }, [completedInRange, closed, timeRange.days]);
+    return { value: diff, label: t('metrics.vsPrev') };
+  }, [completedInRange, closed, timeRange.days, t]);
 
   const avgCompletionTime = useMemo(() => computeAvgCompletionTime(completedInRange), [completedInRange]);
 
@@ -662,19 +668,19 @@ export function MetricsPage() {
   // Task Status Distribution (pie)
   const taskStatusData = useMemo((): PieChartDataPoint[] => {
     return [
-      { name: 'Open', value: assigned.length, key: 'open', color: STATUS_COLORS.open },
+      { name: t('metrics.statusOpen'), value: assigned.length, key: 'open', color: STATUS_COLORS.open },
       {
-        name: 'In Progress',
+        name: t('metrics.statusInProgress'),
         value: inProgress.length,
         key: 'in_progress',
         color: STATUS_COLORS.in_progress,
       },
-      { name: 'Blocked', value: blocked.length, key: 'blocked', color: STATUS_COLORS.blocked },
-      { name: 'Completed', value: closed.length, key: 'closed', color: STATUS_COLORS.closed },
-      { name: 'Review', value: awaitingMerge.length, key: 'review', color: STATUS_COLORS.review },
-      { name: 'Backlog', value: backlog.length, key: 'backlog', color: STATUS_COLORS.backlog },
+      { name: t('metrics.statusBlocked'), value: blocked.length, key: 'blocked', color: STATUS_COLORS.blocked },
+      { name: t('metrics.statusCompleted'), value: closed.length, key: 'closed', color: STATUS_COLORS.closed },
+      { name: t('metrics.statusReview'), value: awaitingMerge.length, key: 'review', color: STATUS_COLORS.review },
+      { name: t('metrics.statusBacklog'), value: backlog.length, key: 'backlog', color: STATUS_COLORS.backlog },
     ].filter(d => d.value > 0);
-  }, [assigned.length, inProgress.length, blocked.length, closed.length, awaitingMerge.length, backlog.length]);
+  }, [assigned.length, inProgress.length, blocked.length, closed.length, awaitingMerge.length, backlog.length, t]);
 
   // Completion trend over time (line chart)
   const completionTrendData = useMemo((): LineChartDataPoint[] => {
@@ -692,7 +698,7 @@ export function MetricsPage() {
 
       const dayLabel =
         i === 0
-          ? 'Today'
+          ? t('metrics.today')
           : numDays <= 7
             ? date.toLocaleDateString('en-US', { weekday: 'short' })
             : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -711,7 +717,7 @@ export function MetricsPage() {
     }
 
     return days;
-  }, [closed, timeRange.days]);
+  }, [closed, timeRange.days, t]);
 
   // Workload by agent (bar chart - active tasks)
   const workloadByAgentData = useMemo((): BarChartDataPoint[] => {
@@ -780,11 +786,11 @@ export function MetricsPage() {
     );
 
     const priorityNames: Record<number, string> = {
-      1: 'Critical',
-      2: 'High',
-      3: 'Medium',
-      4: 'Low',
-      5: 'Minimal',
+      1: t('metrics.priorityCritical'),
+      2: t('metrics.priorityHigh'),
+      3: t('metrics.priorityMedium'),
+      4: t('metrics.priorityLow'),
+      5: t('metrics.priorityMinimal'),
     };
 
     const counts: Record<number, number> = {};
@@ -801,15 +807,15 @@ export function MetricsPage() {
       }))
       .filter(d => d.value > 0)
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [allTasks]);
+  }, [allTasks, t]);
 
   // Task type distribution (pie)
   const taskTypeData = useMemo((): PieChartDataPoint[] => {
     const typeNames: Record<string, string> = {
-      task: 'Task',
-      feature: 'Feature',
-      bug: 'Bug',
-      chore: 'Chore',
+      task: t('metrics.typeTask'),
+      feature: t('metrics.typeFeature'),
+      bug: t('metrics.typeBug'),
+      chore: t('metrics.typeChore'),
     };
 
     const typeColors: Record<string, string> = {
@@ -835,7 +841,7 @@ export function MetricsPage() {
       }))
       .filter(d => d.value > 0)
       .sort((a, b) => b.value - a.value);
-  }, [allTasks]);
+  }, [allTasks, t]);
 
   // ========================================================================
   // Provider & Model Analytics — computed data
@@ -929,9 +935,9 @@ export function MetricsPage() {
             <BarChart3 className="w-5 h-5 text-[var(--color-primary)]" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-[var(--color-text)]">Metrics</h1>
+            <h1 className="text-xl font-semibold text-[var(--color-text)]">{t('metrics.title')}</h1>
             <p className="text-sm text-[var(--color-text-secondary)]">
-              Performance analytics and workspace health
+              {t('metrics.subtitle')}
             </p>
           </div>
         </div>
@@ -946,51 +952,51 @@ export function MetricsPage() {
         data-testid="stats-cards"
       >
         <StatCard
-          label="Completed"
+          label={t('metrics.completed')}
           value={completedInRange.length}
-          subtitle={`${completedToday} today`}
+          subtitle={t('metrics.completedToday', { count: completedToday })}
           icon={CheckCircle2}
           iconColor="bg-[color-mix(in_srgb,var(--color-success)_15%,transparent)] text-[var(--color-success)]"
           trend={completionTrend}
           testId="stat-tasks-completed"
         />
         <StatCard
-          label="Active Agents"
+          label={t('metrics.activeAgents')}
           value={`${activeAgents}/${totalAgents}`}
-          subtitle={`${workers.length} workers, ${stewards.length} stewards`}
+          subtitle={t('metrics.activeAgentsSubtitle', { workers: workers.length, stewards: stewards.length })}
           icon={Users}
           iconColor="bg-[color-mix(in_srgb,var(--color-primary)_15%,transparent)] text-[var(--color-primary)]"
           testId="stat-active-agents"
         />
         <StatCard
-          label="In Progress"
+          label={t('metrics.inProgress')}
           value={inProgress.length}
-          subtitle={`${assigned.length} assigned total`}
+          subtitle={t('metrics.inProgressSubtitle', { count: assigned.length })}
           icon={Activity}
           iconColor="bg-[color-mix(in_srgb,#eab308_15%,transparent)] text-[#eab308]"
           testId="stat-in-progress"
         />
         <StatCard
-          label="Blocked"
+          label={t('metrics.blocked')}
           value={blocked.length}
-          subtitle={`${unassigned.length} unassigned`}
+          subtitle={t('metrics.blockedSubtitle', { count: unassigned.length })}
           icon={AlertTriangle}
           iconColor="bg-[color-mix(in_srgb,var(--color-error)_15%,transparent)] text-[var(--color-error)]"
           warning={blocked.length > 0}
           testId="stat-blocked"
         />
         <StatCard
-          label="Avg Completion"
+          label={t('metrics.avgCompletion')}
           value={avgCompletionTime}
-          subtitle={`${completedInRange.length} tasks measured`}
+          subtitle={t('metrics.avgCompletionSubtitle', { count: completedInRange.length })}
           icon={Clock}
           iconColor="bg-[color-mix(in_srgb,var(--color-accent)_15%,transparent)] text-[var(--color-accent)]"
           testId="stat-avg-time"
         />
         <StatCard
-          label="Merge Queue"
+          label={t('metrics.mergeQueue')}
           value={awaitingMerge.length}
-          subtitle={`${mergeCounts.merged} merged total`}
+          subtitle={t('metrics.mergeQueueSubtitle', { count: mergeCounts.merged })}
           icon={GitMerge}
           iconColor="bg-[color-mix(in_srgb,#8b5cf6_15%,transparent)] text-[#8b5cf6]"
           testId="stat-merge-queue"
@@ -1001,42 +1007,42 @@ export function MetricsPage() {
       {/* Activity & Performance Charts */}
       {/* ================================================================ */}
       <div>
-        <SectionHeader title="Activity & Distribution" icon={TrendingUp} />
+        <SectionHeader title={t('metrics.sectionActivity')} icon={TrendingUp} />
         <div
           className="grid grid-cols-1 @lg:grid-cols-2 @xl:grid-cols-3 gap-4"
           data-testid="charts-grid-activity"
         >
           <TrendLineChart
             data={completionTrendData}
-            title={`Task Completions (${timeRange.label})`}
+            title={t('metrics.chartTaskCompletions', { range: t(timeRange.labelKey) })}
             testId="tasks-completed-chart"
             isLoading={isLoading}
             isError={isError}
-            errorMessage="Failed to load completion data"
-            emptyMessage="No completions in this period"
+            errorMessage={t('metrics.errorCompletionData')}
+            emptyMessage={t('metrics.errorNoCompletions')}
             total={completedInRange.length}
             height={220}
           />
 
           <StatusPieChart
             data={taskStatusData}
-            title="Task Status Distribution"
+            title={t('metrics.chartTaskStatus')}
             testId="task-distribution-chart"
             isLoading={isLoading}
             isError={isError}
-            errorMessage="Failed to load task data"
-            emptyMessage="No tasks to display"
+            errorMessage={t('metrics.errorTaskData')}
+            emptyMessage={t('metrics.errorNoTasks')}
             height={220}
           />
 
           <StatusPieChart
             data={taskTypeData}
-            title="Tasks by Type"
+            title={t('metrics.chartTasksByType')}
             testId="task-type-chart"
             isLoading={isLoading}
             isError={isError}
-            errorMessage="Failed to load type data"
-            emptyMessage="No tasks to display"
+            errorMessage={t('metrics.errorTypeData')}
+            emptyMessage={t('metrics.errorNoTasks')}
             height={220}
           />
         </div>
@@ -1046,19 +1052,19 @@ export function MetricsPage() {
       {/* Agent Performance & Workload */}
       {/* ================================================================ */}
       <div>
-        <SectionHeader title="Agent Performance" icon={Zap} />
+        <SectionHeader title={t('metrics.sectionAgentPerformance')} icon={Zap} />
         <div
           className="grid grid-cols-1 @lg:grid-cols-2 gap-4"
           data-testid="charts-grid-agents"
         >
           <HorizontalBarChart
             data={agentPerformanceData}
-            title={`Tasks Completed by Agent (${timeRange.label})`}
+            title={t('metrics.chartAgentCompleted', { range: t(timeRange.labelKey) })}
             testId="agent-performance-chart"
             isLoading={isLoading}
             isError={isError}
-            errorMessage="Failed to load performance data"
-            emptyMessage="No completed tasks in this period"
+            errorMessage={t('metrics.errorPerformanceData')}
+            emptyMessage={t('metrics.errorNoCompletedTasks')}
             barColor="#22c55e"
             height={240}
             maxBars={8}
@@ -1066,12 +1072,12 @@ export function MetricsPage() {
 
           <HorizontalBarChart
             data={workloadByAgentData}
-            title="Current Workload by Agent"
+            title={t('metrics.chartAgentWorkload')}
             testId="workload-by-agent-chart"
             isLoading={isLoading}
             isError={isError}
-            errorMessage="Failed to load workload data"
-            emptyMessage="No assigned tasks"
+            errorMessage={t('metrics.errorWorkloadData')}
+            emptyMessage={t('metrics.errorNoAssignedTasks')}
             barColor="#3b82f6"
             height={240}
             maxBars={8}
@@ -1083,7 +1089,7 @@ export function MetricsPage() {
       {/* Plans, Queue Health & Merge Pipeline */}
       {/* ================================================================ */}
       <div>
-        <SectionHeader title="Plans & Pipeline" icon={Target} />
+        <SectionHeader title={t('metrics.sectionPlansPipeline')} icon={Target} />
         <div
           className="grid grid-cols-1 @md:grid-cols-2 @xl:grid-cols-3 gap-4"
           data-testid="charts-grid-health"
@@ -1110,19 +1116,19 @@ export function MetricsPage() {
       {/* Priority Distribution */}
       {/* ================================================================ */}
       <div>
-        <SectionHeader title="Priority Analysis" icon={AlertTriangle} />
+        <SectionHeader title={t('metrics.sectionPriority')} icon={AlertTriangle} />
         <div
           className="grid grid-cols-1 @lg:grid-cols-2 @xl:grid-cols-3 gap-4"
           data-testid="charts-grid-priority"
         >
           <StatusPieChart
             data={priorityDistributionData}
-            title="Open Tasks by Priority"
+            title={t('metrics.chartPriorityDistribution')}
             testId="priority-distribution-chart"
             isLoading={isLoading}
             isError={isError}
-            errorMessage="Failed to load priority data"
-            emptyMessage="No open tasks"
+            errorMessage={t('metrics.errorPriorityData')}
+            emptyMessage={t('metrics.errorNoOpenTasks')}
             height={220}
           />
         </div>
@@ -1132,7 +1138,7 @@ export function MetricsPage() {
       {/* Provider and Model Analytics */}
       {/* ================================================================ */}
       <div>
-        <SectionHeader title="Provider and Model Analytics" icon={Cpu} />
+        <SectionHeader title={t('metrics.sectionProviderAnalytics')} icon={Cpu} />
 
         {/* Summary cards row */}
         <div
@@ -1140,33 +1146,33 @@ export function MetricsPage() {
           data-testid="provider-stats-cards"
         >
           <StatCard
-            label="Total Tokens"
+            label={t('metrics.totalTokens')}
             value={formatTokenCount(providerSummary.totalTokens)}
-            subtitle={`${formatTokenCount(providerSummary.totalInputTokens)} in / ${formatTokenCount(providerSummary.totalOutputTokens)} out`}
+            subtitle={t('metrics.totalTokensSubtitle', { input: formatTokenCount(providerSummary.totalInputTokens), output: formatTokenCount(providerSummary.totalOutputTokens) })}
             icon={Hash}
             iconColor="bg-[color-mix(in_srgb,var(--color-primary)_15%,transparent)] text-[var(--color-primary)]"
             testId="stat-total-tokens"
           />
           <StatCard
-            label="Cache Hit Rate"
+            label={t('metrics.cacheHitRate')}
             value={`${providerSummary.cacheHitRate}%`}
-            subtitle={`${formatTokenCount(providerSummary.totalCacheReadTokens)} cache read tokens`}
+            subtitle={t('metrics.cacheHitRateSubtitle', { value: formatTokenCount(providerSummary.totalCacheReadTokens) })}
             icon={Zap}
             iconColor="bg-[color-mix(in_srgb,#8b5cf6_15%,transparent)] text-[#8b5cf6]"
             testId="stat-cache-hit-rate"
           />
           <StatCard
-            label="Total Sessions"
+            label={t('metrics.totalSessions')}
             value={providerSummary.totalSessions}
-            subtitle={`across ${providerMetrics.length} provider${providerMetrics.length !== 1 ? 's' : ''}`}
+            subtitle={t('metrics.totalSessionsSubtitle', { count: providerMetrics.length })}
             icon={Activity}
             iconColor="bg-[color-mix(in_srgb,#22c55e_15%,transparent)] text-[#22c55e]"
             testId="stat-total-sessions"
           />
           <StatCard
-            label="Estimated Cost"
+            label={t('metrics.estimatedCost')}
             value={formatCost(providerSummary.estimatedCost)}
-            subtitle="per-model pricing"
+            subtitle={t('metrics.estimatedCostSubtitle')}
             icon={DollarSign}
             iconColor="bg-[color-mix(in_srgb,#eab308_15%,transparent)] text-[#eab308]"
             testId="stat-estimated-cost"
@@ -1180,35 +1186,35 @@ export function MetricsPage() {
         >
           <TrendLineChart
             data={tokenTrendData}
-            title={`Token Usage (${timeRange.label})`}
+            title={t('metrics.chartTokenUsage', { range: t(timeRange.labelKey) })}
             testId="token-usage-trend-chart"
             isLoading={isProviderMetricsLoading}
             isError={isProviderMetricsError}
-            errorMessage="Failed to load token usage data"
-            emptyMessage="No token usage recorded"
+            errorMessage={t('metrics.errorTokenUsage')}
+            emptyMessage={t('metrics.errorNoTokenUsage')}
             total={providerSummary.totalTokens}
             height={220}
           />
 
           <StatusPieChart
             data={providerDistributionData}
-            title="Sessions by Provider"
+            title={t('metrics.chartSessionsByProvider')}
             testId="provider-distribution-chart"
             isLoading={isProviderMetricsLoading}
             isError={isProviderMetricsError}
-            errorMessage="Failed to load provider data"
-            emptyMessage="No provider data available"
+            errorMessage={t('metrics.errorProviderData')}
+            emptyMessage={t('metrics.errorNoProviderData')}
             height={220}
           />
 
           <HorizontalBarChart
             data={errorRateByProviderData}
-            title="Error Rate by Provider (%)"
+            title={t('metrics.chartErrorRateByProvider')}
             testId="error-rate-by-provider-chart"
             isLoading={isProviderMetricsLoading}
             isError={isProviderMetricsError}
-            errorMessage="Failed to load error rate data"
-            emptyMessage="No error data available"
+            errorMessage={t('metrics.errorErrorRateData')}
+            emptyMessage={t('metrics.errorNoErrorData')}
             barColor="#ef4444"
             height={220}
             maxBars={8}
@@ -1219,19 +1225,19 @@ export function MetricsPage() {
         {modelMetrics.length > 0 && (
           <div className="mt-4" data-testid="model-cost-breakdown">
             <h3 className="text-sm font-semibold text-[var(--color-text)] mb-2">
-              Token &amp; Cost Breakdown by Model
+              {t('metrics.chartModelBreakdown')}
             </h3>
             <div className="overflow-x-auto rounded-lg border border-[var(--color-border)]">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)]">
-                    <th className="text-left px-3 py-2 font-medium">Model</th>
-                    <th className="text-right px-3 py-2 font-medium">Input</th>
-                    <th className="text-right px-3 py-2 font-medium">Output</th>
-                    <th className="text-right px-3 py-2 font-medium">Cache Read</th>
-                    <th className="text-right px-3 py-2 font-medium">Cache Create</th>
-                    <th className="text-right px-3 py-2 font-medium">Cache %</th>
-                    <th className="text-right px-3 py-2 font-medium">Cost</th>
+                    <th className="text-left px-3 py-2 font-medium">{t('metrics.tableModel')}</th>
+                    <th className="text-right px-3 py-2 font-medium">{t('metrics.tableInput')}</th>
+                    <th className="text-right px-3 py-2 font-medium">{t('metrics.tableOutput')}</th>
+                    <th className="text-right px-3 py-2 font-medium">{t('metrics.tableCacheRead')}</th>
+                    <th className="text-right px-3 py-2 font-medium">{t('metrics.tableCacheCreate')}</th>
+                    <th className="text-right px-3 py-2 font-medium">{t('metrics.tableCachePercent')}</th>
+                    <th className="text-right px-3 py-2 font-medium">{t('metrics.tableCost')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--color-border)]">
@@ -1258,7 +1264,7 @@ export function MetricsPage() {
                 </tbody>
                 <tfoot>
                   <tr className="bg-[var(--color-surface-hover)] font-medium text-[var(--color-text)]">
-                    <td className="px-3 py-2">Total</td>
+                    <td className="px-3 py-2">{t('metrics.tableTotal')}</td>
                     <td className="text-right px-3 py-2 font-mono">{formatTokenCount(providerSummary.totalInputTokens)}</td>
                     <td className="text-right px-3 py-2 font-mono">{formatTokenCount(providerSummary.totalOutputTokens)}</td>
                     <td className="text-right px-3 py-2 font-mono">{formatTokenCount(providerSummary.totalCacheReadTokens)}</td>

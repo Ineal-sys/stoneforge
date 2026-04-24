@@ -5,6 +5,7 @@
  */
 
 import { useRef, useCallback, useEffect } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import { Loader2 } from 'lucide-react';
 import type { ActivityEvent } from '../../api/types.js';
 import { ActivityCard } from './ActivityCard.js';
@@ -24,8 +25,10 @@ export function ActivityList({
   hasMore,
   onLoadMore,
   onOpenInWorkspace,
-  emptyMessage = 'No activity to show',
+  emptyMessage,
 }: ActivityListProps) {
+  const { t } = useTranslation('smithy');
+  const resolvedEmptyMessage = emptyMessage ?? t('activity.noActivity');
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -68,7 +71,7 @@ export function ActivityList({
         className="flex flex-col items-center justify-center py-12 text-center"
         data-testid="activity-empty"
       >
-        <p className="text-sm text-[var(--color-text-secondary)]">{emptyMessage}</p>
+        <p className="text-sm text-[var(--color-text-secondary)]">{resolvedEmptyMessage}</p>
       </div>
     );
   }
@@ -93,7 +96,7 @@ export function ActivityList({
           {isLoading && (
             <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
               <Loader2 className="w-4 h-4 animate-spin" />
-              Loading more...
+              {t('activity.loadingMore')}
             </div>
           )}
         </div>

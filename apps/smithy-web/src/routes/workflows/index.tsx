@@ -9,6 +9,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useSearch, useNavigate } from '@tanstack/react-router';
+import { useTranslation } from '@stoneforge/i18n';
 import { getCurrentBinding, formatKeyBinding } from '../../lib/keyboard';
 import {
   Workflow,
@@ -42,6 +43,7 @@ type TabValue = 'templates' | 'active';
 
 export function WorkflowsPage() {
   const search = useSearch({ from: '/workflows' });
+  const { t } = useTranslation('smithy');
   const navigate = useNavigate();
 
   const currentTab = (search.tab as TabValue) || 'templates';
@@ -198,7 +200,7 @@ export function WorkflowsPage() {
             data-testid="workflow-back-button"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Workflows
+            {t('workflows.backToWorkflows')}
           </button>
         </div>
 
@@ -207,7 +209,7 @@ export function WorkflowsPage() {
           <div className="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
             <AlertCircle className="w-5 h-5 text-red-500" />
             <div>
-              <p className="text-sm font-medium text-red-800 dark:text-red-200">Error loading workflow</p>
+              <p className="text-sm font-medium text-red-800 dark:text-red-200">{t('workflows.errorLoadingWorkflow')}</p>
               <p className="text-sm text-red-600 dark:text-red-400">{workflowDetailError.message}</p>
             </div>
           </div>
@@ -243,9 +245,9 @@ export function WorkflowsPage() {
             <Workflow className="w-5 h-5 text-[var(--color-primary)]" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-[var(--color-text)]">Workflows</h1>
+            <h1 className="text-xl font-semibold text-[var(--color-text)]">{t('workflows.title')}</h1>
             <p className="text-sm text-[var(--color-text-secondary)]">
-              Manage workflow templates and active workflows
+              {t('workflows.subtitle')}
             </p>
           </div>
         </div>
@@ -253,7 +255,7 @@ export function WorkflowsPage() {
           <button
             onClick={() => refetch()}
             className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--color-text-secondary)] rounded-md hover:bg-[var(--color-surface-hover)] transition-colors duration-150"
-            title="Refresh"
+            title={t('workflows.refresh')}
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
@@ -264,7 +266,7 @@ export function WorkflowsPage() {
               data-testid="workflows-create"
             >
               <Plus className="w-4 h-4" />
-              Create Template
+              {t('workflows.createTemplate')}
               <kbd className="ml-1 text-xs bg-[var(--color-primary-700)]/50 text-white px-1 py-0.5 rounded">
                 {formatKeyBinding(getCurrentBinding('action.createWorkflow'))}
               </kbd>
@@ -278,7 +280,7 @@ export function WorkflowsPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
         <input
           type="text"
-          placeholder={currentTab === 'templates' ? 'Search templates...' : 'Search workflows...'}
+          placeholder={currentTab === 'templates' ? t('workflows.searchTemplates') : t('workflows.searchWorkflows')}
           value={searchQuery}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
           className="w-full pl-10 pr-4 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
@@ -298,7 +300,7 @@ export function WorkflowsPage() {
             }`}
             data-testid="workflows-tab-templates"
           >
-            Templates
+            {t('workflows.tabTemplates')}
             {playbooks.length > 0 && (
               <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-[var(--color-primary-muted)] text-[var(--color-primary)]">
                 {playbooks.length}
@@ -314,7 +316,7 @@ export function WorkflowsPage() {
             }`}
             data-testid="workflows-tab-active"
           >
-            Active
+            {t('workflows.tabActive')}
             {activeWorkflows.length > 0 && (
               <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                 {activeWorkflows.length}
@@ -329,7 +331,7 @@ export function WorkflowsPage() {
         <div className="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
           <AlertCircle className="w-5 h-5 text-red-500" />
           <div>
-            <p className="text-sm font-medium text-red-800 dark:text-red-200">Error loading data</p>
+            <p className="text-sm font-medium text-red-800 dark:text-red-200">{t('workflows.errorLoadingData')}</p>
             <p className="text-sm text-red-600 dark:text-red-400">{error.message}</p>
           </div>
           <button
@@ -355,12 +357,12 @@ export function WorkflowsPage() {
             <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-[var(--color-border)] rounded-lg">
               <BookOpen className="w-12 h-12 text-[var(--color-text-tertiary)] mb-4" />
               <h3 className="text-lg font-medium text-[var(--color-text)]">
-                {searchQuery ? 'No matching templates' : 'No workflow templates'}
+                {searchQuery ? t('workflows.noMatchingTemplates') : t('workflows.noWorkflowTemplates')}
               </h3>
               <p className="mt-1 text-sm text-[var(--color-text-secondary)] text-center max-w-md">
                 {searchQuery
-                  ? 'Try adjusting your search query.'
-                  : 'Create workflow templates to define reusable sequences of tasks. Templates can be used to create active workflows.'}
+                  ? t('workflows.tryAdjusting')
+                  : t('workflows.createTemplatesDescription')}
               </p>
               {!searchQuery && (
                 <div className="mt-4">
@@ -370,7 +372,7 @@ export function WorkflowsPage() {
                     data-testid="workflows-create-empty"
                   >
                     <Plus className="w-4 h-4" />
-                    Create Template
+                    {t('workflows.createTemplate')}
                   </button>
                 </div>
               )}
@@ -397,12 +399,12 @@ export function WorkflowsPage() {
             <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-[var(--color-border)] rounded-lg">
               <Workflow className="w-12 h-12 text-[var(--color-text-tertiary)] mb-4" />
               <h3 className="text-lg font-medium text-[var(--color-text)]">
-                {searchQuery ? 'No matching workflows' : 'No workflows'}
+                {searchQuery ? t('workflows.noMatchingWorkflows') : t('workflows.noWorkflows')}
               </h3>
               <p className="mt-1 text-sm text-[var(--color-text-secondary)] text-center max-w-md">
                 {searchQuery
-                  ? 'Try adjusting your search query.'
-                  : 'Use a template to create a new workflow, or create an ad-hoc workflow.'}
+                  ? t('workflows.tryAdjusting')
+                  : t('workflows.useTemplateDescription')}
               </p>
               {!searchQuery && (
                 <div className="mt-4">
@@ -411,7 +413,7 @@ export function WorkflowsPage() {
                     className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[var(--color-primary)] rounded-md hover:bg-[var(--color-primary-hover)] transition-colors duration-150"
                   >
                     <BookOpen className="w-4 h-4" />
-                    View Templates
+                    {t('workflows.viewTemplates')}
                   </button>
                 </div>
               )}
@@ -422,7 +424,7 @@ export function WorkflowsPage() {
               {filteredActiveWorkflows.length > 0 && (
                 <div>
                   <h2 className="text-sm font-medium text-[var(--color-text-secondary)] mb-3">
-                    Active ({filteredActiveWorkflows.length})
+                    {t('workflows.active')} ({filteredActiveWorkflows.length})
                   </h2>
                   <div className="grid grid-cols-1 @md:grid-cols-2 @lg:grid-cols-3 gap-4" data-testid="active-workflows-grid">
                     {filteredActiveWorkflows.map((workflow: WorkflowType) => (
@@ -442,7 +444,7 @@ export function WorkflowsPage() {
               {filteredTerminalWorkflows.length > 0 && (
                 <div>
                   <h2 className="text-sm font-medium text-[var(--color-text-secondary)] mb-3">
-                    Recent ({filteredTerminalWorkflows.length})
+                    {t('workflows.recent')} ({filteredTerminalWorkflows.length})
                   </h2>
                   <div className="grid grid-cols-1 @md:grid-cols-2 @lg:grid-cols-3 gap-4" data-testid="terminal-workflows-grid">
                     {filteredTerminalWorkflows.slice(0, 9).map((workflow: WorkflowType) => (
@@ -457,7 +459,7 @@ export function WorkflowsPage() {
                   </div>
                   {filteredTerminalWorkflows.length > 9 && (
                     <p className="mt-4 text-sm text-[var(--color-text-secondary)] text-center">
-                      Showing 9 of {filteredTerminalWorkflows.length} completed workflows
+                      {t('workflows.showingCompleted', { count: 9, total: filteredTerminalWorkflows.length })}
                     </p>
                   )}
                 </div>

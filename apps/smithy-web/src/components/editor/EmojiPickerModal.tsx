@@ -16,6 +16,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import EmojiPicker, {
   EmojiClickData,
   Theme,
@@ -31,6 +32,7 @@ interface EmojiPickerModalProps {
 }
 
 export function EmojiPickerModal({ isOpen, onClose, onSelect }: EmojiPickerModalProps) {
+  const { t } = useTranslation('smithy');
   // Track recent emojis for persistence - the value is used in setRecentEmojis callback
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setRecentEmojis] = useState<string[]>([]);
@@ -97,7 +99,7 @@ export function EmojiPickerModal({ isOpen, onClose, onSelect }: EmojiPickerModal
   // Footer with tips (hidden on mobile to save space)
   const footerContent = !isMobile ? (
     <p className="text-xs text-gray-500 dark:text-gray-400">
-      Tip: Type <kbd className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs font-mono">:emoji:</kbd> in the editor to quickly insert emojis
+      {t('editor.emojiTip')}
     </p>
   ) : null;
 
@@ -105,7 +107,7 @@ export function EmojiPickerModal({ isOpen, onClose, onSelect }: EmojiPickerModal
     <ResponsiveModal
       open={isOpen}
       onClose={onClose}
-      title="Insert Emoji"
+      title={t('editor.insertEmoji')}
       size="sm"
       data-testid="emoji-picker-modal"
       footer={footerContent}
@@ -115,44 +117,44 @@ export function EmojiPickerModal({ isOpen, onClose, onSelect }: EmojiPickerModal
         <EmojiPicker
           onEmojiClick={handleEmojiClick}
           theme={theme}
-          searchPlaceholder="Search emojis..."
+          searchPlaceholder={t('editor.searchEmojis')}
           suggestedEmojisMode={SuggestionMode.RECENT}
           categories={[
             {
               category: Categories.SUGGESTED,
-              name: 'Recently Used',
+              name: t('editor.emojiRecentlyUsed'),
             },
             {
               category: Categories.SMILEYS_PEOPLE,
-              name: 'Smileys & People',
+              name: t('editor.emojiSmileysPeople'),
             },
             {
               category: Categories.ANIMALS_NATURE,
-              name: 'Animals & Nature',
+              name: t('editor.emojiAnimalsNature'),
             },
             {
               category: Categories.FOOD_DRINK,
-              name: 'Food & Drink',
+              name: t('editor.emojiFoodDrink'),
             },
             {
               category: Categories.TRAVEL_PLACES,
-              name: 'Travel & Places',
+              name: t('editor.emojiTravelPlaces'),
             },
             {
               category: Categories.ACTIVITIES,
-              name: 'Activities',
+              name: t('editor.emojiActivities'),
             },
             {
               category: Categories.OBJECTS,
-              name: 'Objects',
+              name: t('editor.emojiObjects'),
             },
             {
               category: Categories.SYMBOLS,
-              name: 'Symbols',
+              name: t('editor.emojiSymbols'),
             },
             {
               category: Categories.FLAGS,
-              name: 'Flags',
+              name: t('editor.emojiFlags'),
             },
           ]}
           width={isMobile ? '100%' : 350}

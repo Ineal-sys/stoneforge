@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Loader2, AlertCircle, Clock, Zap, Trash2 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { StewardTrigger } from '../../api/types';
 import { useChangeAgentTriggers } from '../../api/hooks/useAgents';
 import { CronScheduleBuilder } from './CronScheduleBuilder';
@@ -26,6 +27,7 @@ export function ChangeTriggerDialog({
   currentTriggers,
   onSuccess,
 }: ChangeTriggerDialogProps) {
+  const { t } = useTranslation('smithy');
   const [triggers, setTriggers] = useState<StewardTrigger[]>(currentTriggers);
   const [error, setError] = useState<string | null>(null);
   const changeTriggers = useChangeAgentTriggers();
@@ -70,11 +72,11 @@ export function ChangeTriggerDialog({
     // Validate triggers
     for (const trigger of triggers) {
       if (trigger.type === 'cron' && !trigger.schedule.trim()) {
-        setError('Cron trigger requires a schedule');
+        setError(t('agent.cronTriggerRequiresSchedule'));
         return;
       }
       if (trigger.type === 'event' && !trigger.event.trim()) {
-        setError('Event trigger requires an event name');
+        setError(t('agent.eventTriggerRequiresName'));
         return;
       }
     }
@@ -89,7 +91,7 @@ export function ChangeTriggerDialog({
       onSuccess?.();
       handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update triggers');
+      setError(err instanceof Error ? err.message : t('agent.failedToUpdateTriggers'));
     }
   };
 
@@ -124,7 +126,7 @@ export function ChangeTriggerDialog({
               id="change-triggers-title"
               className="text-lg font-semibold text-[var(--color-text)]"
             >
-              Change Triggers
+              {t('agent.changeTriggers')}
             </h2>
             <button
               onClick={handleClose}
@@ -135,7 +137,7 @@ export function ChangeTriggerDialog({
                 hover:bg-[var(--color-surface-hover)]
                 transition-colors
               "
-              aria-label="Close dialog"
+              aria-label={t('agent.closeDialog')}
               data-testid="change-triggers-close"
             >
               <X className="w-5 h-5" />
@@ -155,7 +157,7 @@ export function ChangeTriggerDialog({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium text-[var(--color-text)]">
-                  Triggers
+                  {t('agent.triggers')}
                 </label>
                 <div className="flex gap-1">
                   <button
@@ -165,7 +167,7 @@ export function ChangeTriggerDialog({
                     data-testid="change-triggers-add-cron"
                   >
                     <Clock className="w-3 h-3" />
-                    Cron
+                    {t('agent.cron')}
                   </button>
                   <button
                     type="button"
@@ -174,14 +176,14 @@ export function ChangeTriggerDialog({
                     data-testid="change-triggers-add-event"
                   >
                     <Zap className="w-3 h-3" />
-                    Event
+                    {t('agent.event')}
                   </button>
                 </div>
               </div>
 
               {triggers.length === 0 ? (
                 <p className="text-xs text-[var(--color-text-tertiary)] italic">
-                  No triggers configured. Steward will only run manually.
+                  {t('agent.noTriggersConfigured')}
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -195,7 +197,7 @@ export function ChangeTriggerDialog({
                         <div className="flex-1 space-y-1">
                           <div className="flex items-center gap-2">
                             <Clock className="w-4 h-4 text-[var(--color-text-secondary)]" />
-                            <span className="text-xs font-medium text-[var(--color-text-secondary)]">Cron Schedule</span>
+                            <span className="text-xs font-medium text-[var(--color-text-secondary)]">{t('agent.cronSchedule')}</span>
                           </div>
                           <CronScheduleBuilder
                             value={trigger.schedule}
@@ -207,7 +209,7 @@ export function ChangeTriggerDialog({
                         <div className="flex-1 space-y-1">
                           <div className="flex items-center gap-2">
                             <Zap className="w-4 h-4 text-[var(--color-text-secondary)]" />
-                            <span className="text-xs font-medium text-[var(--color-text-secondary)]">Event</span>
+                            <span className="text-xs font-medium text-[var(--color-text-secondary)]">{t('agent.event')}</span>
                           </div>
                           <input
                             type="text"
@@ -228,7 +230,7 @@ export function ChangeTriggerDialog({
                             type="text"
                             value={trigger.condition ?? ''}
                             onChange={e => updateTrigger(index, { ...trigger, condition: e.target.value || undefined })}
-                            placeholder="Condition (optional)"
+                            placeholder={t('agent.conditionOptional')}
                             className="
                               w-full px-2 py-1
                               text-xs
@@ -245,7 +247,7 @@ export function ChangeTriggerDialog({
                         type="button"
                         onClick={() => removeTrigger(index)}
                         className="p-1 text-[var(--color-text-tertiary)] hover:text-red-500 transition-colors"
-                        aria-label="Remove trigger"
+                        aria-label={t('agent.removeTrigger')}
                         data-testid={`change-triggers-trigger-${index}-remove`}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -272,7 +274,7 @@ export function ChangeTriggerDialog({
                 "
                 data-testid="change-triggers-cancel"
               >
-                Cancel
+                {t('agent.cancel')}
               </button>
               <button
                 type="submit"
@@ -293,12 +295,12 @@ export function ChangeTriggerDialog({
                 {changeTriggers.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Saving...
+                    {t('agent.saving')}
                   </>
                 ) : (
                   <>
                     <Clock className="w-4 h-4" />
-                    Save
+                    {t('agent.save')}
                   </>
                 )}
               </button>

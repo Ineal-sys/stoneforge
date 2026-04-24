@@ -18,6 +18,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import { X, ChevronRight, ChevronLeft, Sparkles, Loader2 } from 'lucide-react';
 import type { TourSection } from '../../hooks/useOnboardingTour';
 
@@ -245,6 +246,7 @@ function SpotlightOverlay({ targetRect }: { targetRect: DOMRect | null }) {
 // ============================================================================
 
 function NavigatingOverlay() {
+  const { t } = useTranslation('smithy');
   return (
     <>
       <div
@@ -257,7 +259,7 @@ function NavigatingOverlay() {
       >
         <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border)] shadow-lg">
           <Loader2 className="w-4 h-4 text-[var(--color-primary)] animate-spin" />
-          <span className="text-sm text-[var(--color-text-secondary)]">Navigating…</span>
+          <span className="text-sm text-[var(--color-text-secondary)]">{t('onboardingComponent.navigating')}</span>
         </div>
       </div>
     </>
@@ -279,6 +281,7 @@ function SectionedProgressBar({
   currentStepIndex,
   totalSteps,
 }: SectionedProgressBarProps) {
+  const { t } = useTranslation('smithy');
   // Find current section
   let currentSectionIdx = 0;
   for (let i = sections.length - 1; i >= 0; i--) {
@@ -334,7 +337,7 @@ function SectionedProgressBar({
           <span />
         )}
         <span className="text-xs text-[var(--color-text-tertiary)]">
-          Step {stepWithinSection} of {currentSectionData.count}
+          {t('onboardingComponent.stepOf', { current: stepWithinSection, total: currentSectionData.count })}
         </span>
       </div>
     </div>
@@ -372,6 +375,7 @@ function TourTooltip({
   isFirstStep,
   isLastStep,
 }: TourTooltipProps) {
+  const { t } = useTranslation('smithy');
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [coords, setCoords] = useState<TooltipCoords | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -426,7 +430,7 @@ function TourTooltip({
         left: coords?.left ?? -9999,
       }}
       role="dialog"
-      aria-label={`Onboarding step ${stepIndex + 1} of ${totalSteps}: ${step.title}`}
+      aria-label={t('onboardingComponent.ariaStepOf', { current: stepIndex + 1, total: totalSteps, title: step.title })}
       data-testid="onboarding-tooltip"
     >
       {/* Arrow */}
@@ -448,13 +452,13 @@ function TourTooltip({
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[var(--color-primary)]" />
             <span className="text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wider">
-              Getting Started
+              {t('onboardingComponent.gettingStarted')}
             </span>
           </div>
           <button
             onClick={onSkip}
             className="p-1 rounded-md text-[var(--color-text-tertiary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors"
-            aria-label="Skip tour"
+            aria-label={t('onboardingComponent.skipTour')}
             data-testid="onboarding-skip"
           >
             <X className="w-4 h-4" />
@@ -495,7 +499,7 @@ function TourTooltip({
                 />
               ))}
               <span className="ml-2 text-xs text-[var(--color-text-tertiary)]">
-                {stepIndex + 1} of {totalSteps}
+                {t('onboardingComponent.stepOf', { current: stepIndex + 1, total: totalSteps })}
               </span>
             </div>
           )}
@@ -510,7 +514,7 @@ function TourTooltip({
                   data-testid="onboarding-prev"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
-                  Back
+                  {t('onboardingComponent.back')}
                 </button>
               )}
               {onSkipSection && hasSections && !isLastSection && (
@@ -519,7 +523,7 @@ function TourTooltip({
                   className="px-2 py-1.5 text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] transition-colors"
                   data-testid="onboarding-skip-section"
                 >
-                  Skip section
+                  {t('onboardingComponent.skipSection')}
                 </button>
               )}
             </div>
@@ -528,7 +532,7 @@ function TourTooltip({
               className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-[var(--color-primary)] hover:opacity-90 rounded-md transition-opacity"
               data-testid="onboarding-next"
             >
-              {isLastStep ? 'Finish' : 'Next'}
+              {isLastStep ? t('onboardingComponent.finish') : t('onboardingComponent.next')}
               {!isLastStep && <ChevronRight className="w-3.5 h-3.5" />}
             </button>
           </div>

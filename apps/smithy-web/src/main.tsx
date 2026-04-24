@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
@@ -7,6 +7,7 @@ import { router } from './router';
 import { TooltipProvider } from '@stoneforge/ui';
 import { DataPreloader } from './components/shared/DataPreloader';
 import { CurrentUserProvider, WorkspaceProvider } from './contexts';
+import './i18n'; // Initialize i18next with smithy namespace
 import './index.css';
 
 // Initialize theme before React renders to prevent flash of wrong theme
@@ -47,7 +48,9 @@ createRoot(document.getElementById('root')!).render(
         <WorkspaceProvider>
           <TooltipProvider>
             <DataPreloader>
-              <RouterProvider router={router} />
+              <Suspense fallback={null}>
+                <RouterProvider router={router} />
+              </Suspense>
             </DataPreloader>
             <Toaster
               position="bottom-right"

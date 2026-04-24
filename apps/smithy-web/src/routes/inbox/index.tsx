@@ -6,6 +6,7 @@
  */
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { toast } from 'sonner';
@@ -37,7 +38,7 @@ import { useContainerIsMobile } from '../../hooks';
 import { useCurrentUser } from '../../contexts';
 import { useRealtimeEvents } from '../../api/hooks/useRealtimeEvents';
 import type { WebSocketEvent } from '@stoneforge/ui';
-import { groupByTimePeriod, TIME_PERIOD_LABELS, type TimePeriod, formatCompactTime } from '../../lib';
+import { groupByTimePeriod, type TimePeriod, formatCompactTime } from '../../lib';
 
 // Types
 interface Entity {
@@ -296,6 +297,13 @@ function useThreadReplies(messageId: string | null) {
 
 // Components
 function InboxTimePeriodHeader({ period }: { period: TimePeriod }) {
+  const { t } = useTranslation('smithy');
+  const periodKeyMap: Record<TimePeriod, string> = {
+    today: 'inbox.periodToday',
+    yesterday: 'inbox.periodYesterday',
+    'this-week': 'inbox.periodThisWeek',
+    earlier: 'inbox.periodEarlier',
+  };
   return (
     <div
       className="sticky top-0 z-10 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2"
@@ -303,7 +311,7 @@ function InboxTimePeriodHeader({ period }: { period: TimePeriod }) {
     >
       <Calendar className="w-3 h-3 text-gray-500" />
       <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
-        {TIME_PERIOD_LABELS[period]}
+        {t(periodKeyMap[period])}
       </span>
     </div>
   );
@@ -320,15 +328,16 @@ function InboxMessageListItem({
   onSelect: () => void;
   formattedTime?: string;
 }) {
+  const { t } = useTranslation('smithy');
   const isUnread = item.status === 'unread';
   const displayTime = formattedTime ?? formatCompactTime(item.createdAt);
 
-  const senderName = item.sender?.name ?? 'Unknown';
+  const senderName = item.sender?.name ?? t('inbox.unknown');
   const senderType = item.sender?.entityType ?? 'agent';
   const messagePreview = item.message?.contentPreview ?? '';
   const firstLine = messagePreview.split('\n')[0]?.slice(0, 50) || '';
   const hasThreadParent = item.threadParent !== null && item.threadParent !== undefined;
-  const threadParentSenderName = item.threadParent?.sender?.name ?? 'Unknown';
+  const threadParentSenderName = item.threadParent?.sender?.name ?? t('inbox.unknown');
 
   const getAvatarIcon = () => {
     switch (senderType) {
@@ -379,13 +388,13 @@ function InboxMessageListItem({
         {hasThreadParent && (
           <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mt-0.5" data-testid={`inbox-page-list-item-thread-${item.id}`}>
             <CornerUpLeft className="w-3 h-3" />
-            <span>Reply to {threadParentSenderName}</span>
+            <span>{t('inbox.replyToSender', { name: threadParentSenderName })}</span>
           </div>
         )}
         {/* Show recipient badge for global inbox */}
         {item.recipient && (
           <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            <span>To:</span>
+            <span>{t('inbox.to')}</span>
             <span className="font-medium">{item.recipient.name}</span>
           </div>
         )}
@@ -426,12 +435,13 @@ function InboxMessageContent({
   threadRepliesLoading?: boolean;
   currentUserId?: string;
 }) {
+  const { t } = useTranslation('smithy');
   const isUnread = item.status === 'unread';
   const isArchived = item.status === 'archived';
 
   const formatFullTime = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleString('en-US', {
+    return date.toLocaleString('fr-FR', {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
@@ -443,7 +453,7 @@ function InboxMessageContent({
 
   const formatAbsoluteTime = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleString('en-US', {
+    return date.toLocaleString('fr-FR', {
       weekday: 'long',
       month: 'long',
       day: 'numeric',
@@ -462,14 +472,14 @@ function InboxMessageContent({
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return 'just now';
-    if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
-    if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
-    if (days < 7) return `${days} day${days === 1 ? '' : 's'} ago`;
+    if (minutes < 1) return t('inbox.justNow');
+    if (minutes < 60) return t('inbox.minutesAgo', { count: minutes });
+    if (hours < 24) return t('inbox.hoursAgo', { count: hours });
+    if (days < 7) return t('inbox.daysAgo', { count: days });
     return '';
   };
 
-  const senderName = item.sender?.name ?? 'Unknown';
+  const senderName = item.sender?.name ?? t('inbox.unknown');
   const senderType = item.sender?.entityType ?? 'agent';
   const senderId = item.sender?.id ?? item.message?.sender;
   const channelName = item.channel?.name ?? item.channelId;
@@ -538,12 +548,12 @@ function InboxMessageContent({
                   {item.sourceType === 'mention' ? (
                     <>
                       <AtSign className="w-3 h-3" />
-                      Mention
+                      {t('inbox.mentionBadge')}
                     </>
                   ) : (
                     <>
                       <MessageSquare className="w-3 h-3" />
-                      Direct
+                      {t('inbox.directBadge')}
                     </>
                   )}
                 </span>
@@ -561,7 +571,7 @@ function InboxMessageContent({
                   <button
                     onClick={onReply}
                     className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-colors"
-                    title="Reply"
+                    title={t('inbox.reply')}
                     data-testid={`inbox-page-content-reply-${item.id}`}
                   >
                     <Reply className="w-4 h-4" />
@@ -571,7 +581,7 @@ function InboxMessageContent({
                   <button
                     onClick={onRestore}
                     className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded transition-colors"
-                    title="Restore"
+                    title={t('inbox.restore')}
                     data-testid={`inbox-page-content-restore-${item.id}`}
                   >
                     <RefreshCw className="w-4 h-4" />
@@ -582,7 +592,7 @@ function InboxMessageContent({
                       <button
                         onClick={onMarkRead}
                         className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-colors"
-                        title="Mark as read"
+                        title={t('inbox.markAsRead')}
                         data-testid={`inbox-page-content-mark-read-${item.id}`}
                       >
                         <CheckCheck className="w-4 h-4" />
@@ -591,7 +601,7 @@ function InboxMessageContent({
                       <button
                         onClick={onMarkUnread}
                         className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-colors"
-                        title="Mark as unread"
+                        title={t('inbox.markAsUnread')}
                         data-testid={`inbox-page-content-mark-unread-${item.id}`}
                       >
                         <Mail className="w-4 h-4" />
@@ -600,7 +610,7 @@ function InboxMessageContent({
                     <button
                       onClick={onArchive}
                       className="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded transition-colors"
-                      title="Archive"
+                      title={t('inbox.archive')}
                       data-testid={`inbox-page-content-archive-${item.id}`}
                     >
                       <Archive className="w-4 h-4" />
@@ -633,7 +643,7 @@ function InboxMessageContent({
           >
             <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-1">
               <CornerUpLeft className="w-3 h-3" />
-              <span>Reply to</span>
+              <span>{t('inbox.replyTo')}</span>
             </div>
             <div className="flex items-start gap-2">
               <button
@@ -647,10 +657,10 @@ function InboxMessageContent({
                   onClick={() => item.threadParent?.sender?.id && onNavigateToEntity(item.threadParent.sender.id)}
                   className="text-xs font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 hover:underline"
                 >
-                  {item.threadParent.sender?.name ?? 'Unknown'}
+                  {item.threadParent.sender?.name ?? t('inbox.unknown')}
                 </button>
                 <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
-                  {item.threadParent.contentPreview || 'No content'}
+                  {item.threadParent.contentPreview || t('inbox.noContent')}
                 </p>
               </div>
             </div>
@@ -665,7 +675,7 @@ function InboxMessageContent({
             }`}
             data-testid={`inbox-page-content-body-${item.id}`}
           >
-            {messageContent || <span className="text-gray-400 italic">No content</span>}
+            {messageContent || <span className="text-gray-400 italic">{t('inbox.noContent')}</span>}
           </div>
         </div>
 
@@ -677,7 +687,7 @@ function InboxMessageContent({
           >
             <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-2">
               <Paperclip className="w-3 h-3" />
-              <span>{item.attachments!.length} attachment{item.attachments!.length !== 1 ? 's' : ''}</span>
+              <span>{t('inbox.attachmentCount', { count: item.attachments!.length })}</span>
             </div>
             <div className="space-y-2">
               {item.attachments!.map((attachment) => (
@@ -719,13 +729,13 @@ function InboxMessageContent({
           >
             <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-3">
               <MessageSquare className="w-3 h-3" />
-              <span className="font-medium">{threadReplies.length} {threadReplies.length === 1 ? 'reply' : 'replies'} in thread</span>
+              <span className="font-medium">{t('inbox.threadReplyCount', { count: threadReplies.length })}</span>
             </div>
             <div className="space-y-3">
               {threadReplies.map((reply) => {
                 const isOwnReply = reply.sender === currentUserId;
                 const replySender = reply._senderEntity;
-                const replySenderName = replySender?.name ?? 'Unknown';
+                const replySenderName = replySender?.name ?? t('inbox.unknown');
                 const replySenderType = replySender?.entityType ?? 'agent';
 
                 const getReplyAvatarIcon = () => {
@@ -756,10 +766,10 @@ function InboxMessageContent({
                   const minutes = Math.floor(diff / 60000);
                   const hours = Math.floor(diff / 3600000);
 
-                  if (minutes < 1) return 'just now';
-                  if (minutes < 60) return `${minutes}m ago`;
-                  if (hours < 24) return `${hours}h ago`;
-                  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                  if (minutes < 1) return t('inbox.justNow');
+                  if (minutes < 60) return t('inbox.minutesAgo', { count: minutes });
+                  if (hours < 24) return t('inbox.hoursAgo', { count: hours });
+                  return date.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' });
                 };
 
                 return (
@@ -793,7 +803,7 @@ function InboxMessageContent({
                           </button>
                           {isOwnReply && (
                             <span className="text-xs px-1.5 py-0.5 bg-green-200 dark:bg-green-800 text-green-700 dark:text-green-300 rounded font-medium">
-                              You
+                              {t('inbox.you')}
                             </span>
                           )}
                         </div>
@@ -817,7 +827,7 @@ function InboxMessageContent({
           <div className="px-4 pb-4 border-t border-gray-200 dark:border-gray-700 mt-4 pt-4">
             <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
               <Loader2 className="w-3 h-3 animate-spin" />
-              <span>Loading thread...</span>
+              <span>{t('inbox.loadingThread')}</span>
             </div>
           </div>
         )}
@@ -830,7 +840,7 @@ function InboxMessageContent({
           className="text-sm text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
           data-testid={`inbox-page-content-view-in-channel-${item.id}`}
         >
-          View in channel
+          {t('inbox.viewInChannel')}
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
@@ -839,18 +849,20 @@ function InboxMessageContent({
 }
 
 function InboxMessageEmptyState() {
+  const { t } = useTranslation('smithy');
   return (
     <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500" data-testid="inbox-page-content-empty">
       <Inbox className="w-12 h-12 mb-3" />
-      <p className="text-sm font-medium">Select a message</p>
-      <p className="text-xs mt-1">Choose a message from the list to view its content</p>
-      <p className="text-xs mt-3 text-gray-300 dark:text-gray-600">Tip: Use J/K keys to navigate</p>
+      <p className="text-sm font-medium">{t('inbox.selectMessage')}</p>
+      <p className="text-xs mt-1">{t('inbox.selectMessageDesc')}</p>
+      <p className="text-xs mt-3 text-gray-300 dark:text-gray-600">{t('inbox.tipNavigate')}</p>
     </div>
   );
 }
 
 // Main Page Component
 export function InboxPage() {
+  const { t } = useTranslation('smithy');
   const navigate = useNavigate();
   const search = useSearch({ strict: false }) as { message?: string };
   const { currentUser, isLoading: userLoading } = useCurrentUser();
@@ -877,12 +889,12 @@ export function InboxPage() {
         // Show toast notification for new inbox item
         const sourceType = event.newValue?.sourceType as string;
         const message = sourceType === 'mention'
-          ? 'You were mentioned in a message'
-          : 'You have a new direct message';
+          ? t('inbox.mentionedToast')
+          : t('inbox.directToast');
         toast.info(message, {
-          description: 'Click to view in inbox',
+          description: t('inbox.clickToView'),
           action: {
-            label: 'View',
+            label: t('inbox.view'),
             onClick: () => {
               // Clear selection to show the new item at top
               setSelectedInboxItemId(null);
@@ -1109,18 +1121,18 @@ export function InboxPage() {
     return (
       <div className="h-full flex flex-col bg-[var(--color-bg)]" data-testid="inbox-page">
         <PageHeader
-          title="Inbox"
+          title={t('inbox.title')}
           icon={Inbox}
           iconColor="text-blue-500"
-          subtitle="No user selected"
+          subtitle={t('inbox.noUserSelected')}
           bordered
           testId="inbox-header"
         />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center text-gray-500 dark:text-gray-400">
             <User className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p className="text-lg font-medium">No user selected</p>
-            <p className="text-sm mt-1">Select a user from the header dropdown to view their inbox</p>
+            <p className="text-lg font-medium">{t('inbox.noUserSelected')}</p>
+            <p className="text-sm mt-1">{t('inbox.noUserDesc')}</p>
           </div>
         </div>
       </div>
@@ -1131,12 +1143,12 @@ export function InboxPage() {
     <div className="h-full flex flex-col bg-[var(--color-bg)]" data-testid="inbox-page">
       {/* Header */}
       <PageHeader
-        title={currentUser ? `${currentUser.name}'s Inbox` : 'Inbox'}
+        title={currentUser ? t('inbox.userInbox', { name: currentUser.name }) : t('inbox.title')}
         icon={Inbox}
         iconColor="text-blue-500"
         subtitle={inboxCount?.count !== undefined && inboxCount.count > 0
-          ? `${inboxCount.count} unread`
-          : 'No unread messages'}
+          ? t('inbox.unreadCount', { count: inboxCount.count })
+          : t('inbox.noUnread')}
         bordered
         testId="inbox-header"
       >
@@ -1151,7 +1163,7 @@ export function InboxPage() {
             }`}
             data-testid="inbox-page-tab-unread"
           >
-            Unread
+            {t('inbox.tabUnread')}
             {inboxCount?.count !== undefined && inboxCount.count > 0 && (
               <span className="ml-1.5 px-1.5 py-0.5 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full">
                 {inboxCount.count}
@@ -1167,7 +1179,7 @@ export function InboxPage() {
             }`}
             data-testid="inbox-page-tab-all"
           >
-            All
+            {t('inbox.tabAll')}
           </button>
           <button
             onClick={() => handleViewChange('archived')}
@@ -1178,7 +1190,7 @@ export function InboxPage() {
             }`}
             data-testid="inbox-page-tab-archived"
           >
-            Archived
+            {t('inbox.tabArchived')}
           </button>
         </div>
       </PageHeader>
@@ -1194,9 +1206,9 @@ export function InboxPage() {
             className="text-sm bg-transparent border-none text-gray-600 dark:text-gray-400 cursor-pointer focus:outline-none"
             data-testid="inbox-page-source-filter"
           >
-            <option value="all">All sources</option>
-            <option value="direct">Direct messages</option>
-            <option value="mention">Mentions</option>
+            <option value="all">{t('inbox.filterAllSources')}</option>
+            <option value="direct">{t('inbox.filterDirect')}</option>
+            <option value="mention">{t('inbox.filterMentions')}</option>
           </select>
         </div>
 
@@ -1209,9 +1221,9 @@ export function InboxPage() {
             className="text-sm bg-transparent border-none text-gray-600 dark:text-gray-400 cursor-pointer focus:outline-none"
             data-testid="inbox-page-sort-order"
           >
-            <option value="newest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-            <option value="sender">By sender</option>
+            <option value="newest">{t('inbox.sortNewest')}</option>
+            <option value="oldest">{t('inbox.sortOldest')}</option>
+            <option value="sender">{t('inbox.sortBySender')}</option>
           </select>
         </div>
       </div>
@@ -1226,14 +1238,14 @@ export function InboxPage() {
           {inboxLoading ? (
             <div className="flex items-center justify-center p-8">
               <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-              <span className="ml-2 text-gray-500">Loading inbox...</span>
+              <span className="ml-2 text-gray-500">{t('inbox.loading')}</span>
             </div>
           ) : inboxError ? (
             <div className="text-center py-8 px-4" data-testid="inbox-page-error">
               <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-700 dark:text-gray-300">Failed to load inbox</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300">{t('inbox.errorTitle')}</p>
               <p className="text-xs text-gray-500 mt-1 mb-3">
-                There was an error loading your messages
+                {t('inbox.errorDesc')}
               </p>
               <button
                 onClick={() => refetchInbox()}
@@ -1241,7 +1253,7 @@ export function InboxPage() {
                 data-testid="inbox-page-retry"
               >
                 <RefreshCw className="w-3 h-3" />
-                Retry
+                {t('inbox.retry')}
               </button>
             </div>
           ) : !inboxData || inboxData.items.length === 0 ? (
@@ -1249,34 +1261,34 @@ export function InboxPage() {
               <Inbox className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
               <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 {inboxView === 'unread'
-                  ? 'No unread messages'
+                  ? t('inbox.noUnreadMessages')
                   : inboxView === 'archived'
-                  ? 'No archived messages'
-                  : 'Your inbox is empty'}
+                  ? t('inbox.noArchivedMessages')
+                  : t('inbox.inboxEmpty')}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-xs mx-auto">
                 {inboxView === 'archived'
-                  ? 'Archived messages will appear here'
-                  : 'Direct messages and @mentions will appear here when other entities message you'}
+                  ? t('inbox.archivedWillAppear')
+                  : t('inbox.messagesWillAppear')}
               </p>
               {inboxView === 'unread' && (
                 <button
                   onClick={() => handleViewChange('all')}
                   className="mt-3 text-sm text-blue-600 hover:text-blue-700 font-medium"
                 >
-                  View all messages
+                  {t('inbox.viewAllMessages')}
                 </button>
               )}
             </div>
           ) : filteredAndSortedInboxItems.length === 0 ? (
             <div className="text-center py-8 px-4" data-testid="inbox-page-filtered-empty">
               <Filter className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-              <p className="text-sm text-gray-500 dark:text-gray-400">No messages match your filters</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('inbox.noMatchFilters')}</p>
               <button
                 onClick={() => handleSourceFilterChange('all')}
                 className="mt-2 text-xs font-medium text-blue-600 hover:text-blue-700"
               >
-                Clear filters
+                {t('inbox.clearFilters')}
               </button>
             </div>
           ) : (
@@ -1313,11 +1325,11 @@ export function InboxPage() {
           {inboxData && inboxData.items.length > 0 && (
             <div className="text-center text-xs text-gray-500 dark:text-gray-400 py-2 border-t border-gray-100 dark:border-gray-800">
               {inboxSourceFilter !== 'all' ? (
-                <>Showing {filteredAndSortedInboxItems.length} of {inboxData.items.length} (filtered)</>
+                <>{t('inbox.showingFiltered', { shown: filteredAndSortedInboxItems.length, total: inboxData.items.length })}</>
               ) : inboxData.hasMore ? (
-                <>Showing {inboxData.items.length} of {inboxData.total} items</>
+                <>{t('inbox.showingTotal', { shown: inboxData.items.length, total: inboxData.total })}</>
               ) : (
-                <>{inboxData.items.length} {inboxData.items.length === 1 ? 'item' : 'items'}</>
+                <>{t('inbox.itemCount', { count: inboxData.items.length })}</>
               )}
             </div>
           )}
@@ -1349,14 +1361,14 @@ export function InboxPage() {
                   <div className="flex items-center gap-2 mb-2 text-xs text-gray-500 dark:text-gray-400">
                     <Reply className="w-3 h-3" />
                     <span>
-                      Replying as <span className="font-medium text-gray-700 dark:text-gray-300">{currentUser?.name}</span> to {selectedInboxItem.sender?.name ?? 'Unknown'}
+                      {t('inbox.replyingAs', { sender: currentUser?.name, recipient: selectedInboxItem.sender?.name ?? t('inbox.unknown') })}
                     </span>
                   </div>
                   <div className="flex gap-2">
                     <textarea
                       value={replyContent}
                       onChange={(e) => setReplyContent(e.target.value)}
-                      placeholder="Write your reply..."
+                      placeholder={t('inbox.replyPlaceholder')}
                       className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                       rows={3}
                       data-testid="inbox-reply-textarea"
@@ -1378,7 +1390,7 @@ export function InboxPage() {
                         ) : (
                           <Reply className="w-4 h-4" />
                         )}
-                        Send
+                        {t('inbox.send')}
                       </button>
                       <button
                         onClick={() => {
@@ -1388,7 +1400,7 @@ export function InboxPage() {
                         className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-lg transition-colors"
                         data-testid="inbox-reply-cancel"
                       >
-                        Cancel
+                        {t('inbox.cancel')}
                       </button>
                     </div>
                   </div>
@@ -1396,11 +1408,11 @@ export function InboxPage() {
                     <p className="mt-2 text-xs text-red-500" data-testid="inbox-reply-error">
                       {sendReplyMutation.error instanceof Error
                         ? sendReplyMutation.error.message
-                        : 'Failed to send reply. Please try again.'}
+                        : t('inbox.failedReply')}
                     </p>
                   )}
                   <p className="mt-2 text-xs text-gray-400">
-                    Press {navigator.platform.includes('Mac') ? 'Cmd' : 'Ctrl'}+Enter to send
+                    {t('inbox.sendHint', { key: navigator.platform.includes('Mac') ? 'Cmd+' : 'Ctrl+' })}
                   </p>
                 </div>
               )}

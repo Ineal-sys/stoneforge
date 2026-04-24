@@ -4,6 +4,7 @@
 
 import { useEffect } from 'react';
 import { Trash2, Loader2 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 
 export interface DeleteAgentDialogProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export function DeleteAgentDialog({
   onConfirm,
   isDeleting,
 }: DeleteAgentDialogProps) {
+  const { t } = useTranslation('smithy');
   useEffect(() => {
     if (!isOpen) return;
 
@@ -41,11 +43,9 @@ export function DeleteAgentDialog({
             <Trash2 className="w-5 h-5 text-[var(--color-danger)]" />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-[var(--color-text)]">Delete Agent</h3>
+            <h3 className="text-lg font-semibold text-[var(--color-text)]">{t('agent.deleteAgent')}</h3>
             <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
-              Are you sure you want to delete{' '}
-              <span className="font-medium text-[var(--color-text)]">"{agentName}"</span>? This action
-              cannot be undone.
+              {t('agent.deleteConfirm', { name: agentName })}
             </p>
           </div>
         </div>
@@ -56,7 +56,7 @@ export function DeleteAgentDialog({
             className="px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-hover)] disabled:opacity-50"
             data-testid="delete-agent-cancel-btn"
           >
-            Cancel
+            {t('agent.cancel')}
           </button>
           <button
             onClick={onConfirm}
@@ -67,12 +67,12 @@ export function DeleteAgentDialog({
             {isDeleting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Deleting...
+                {t('agent.deleting')}
               </>
             ) : (
               <>
                 <Trash2 className="w-4 h-4" />
-                Delete
+                {t('agent.delete')}
               </>
             )}
           </button>

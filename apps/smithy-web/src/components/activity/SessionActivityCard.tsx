@@ -5,6 +5,7 @@
  */
 
 import { Bot, Terminal, Wrench, AlertCircle, Info, CheckCircle } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { SessionEvent, SessionEventType, AgentRole } from '../../api/types.js';
 
 interface SessionActivityCardProps {
@@ -41,6 +42,7 @@ const _roleLabels: Record<AgentRole, string> = {
 void _roleLabels; // Suppress unused warning
 
 export function SessionActivityCard({ event, onOpenInWorkspace }: SessionActivityCardProps) {
+  const { t } = useTranslation('smithy');
   const Icon = SessionEventIcons[event.type] || Bot;
   const iconColor = eventTypeColors[event.type] || 'var(--color-text-secondary)';
 
@@ -94,7 +96,7 @@ export function SessionActivityCard({ event, onOpenInWorkspace }: SessionActivit
               <button
                 onClick={() => onOpenInWorkspace(event.sessionId)}
                 className="p-1 text-[var(--color-text-tertiary)] hover:text-[var(--color-text)] opacity-0 group-hover:opacity-100 transition-all duration-150"
-                title="Open in Workspace"
+                title={t('activity.openInWorkspace')}
                 data-testid="session-open-workspace"
               >
                 <Terminal className="w-3.5 h-3.5" />

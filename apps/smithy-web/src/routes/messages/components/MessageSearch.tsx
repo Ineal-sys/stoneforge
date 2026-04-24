@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Loader2, Search, XCircle } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { EntityLink } from '@stoneforge/ui/domain';
 import { useMessageSearch } from '../../../api/hooks/useMessages';
 import { highlightSearchMatch } from '../../../lib/message-content';
@@ -21,6 +22,7 @@ interface MessageSearchProps {
 
 export function MessageSearch({ channelId, onResultClick, isMobile = false }: MessageSearchProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const { t } = useTranslation('smithy');
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -73,7 +75,7 @@ export function MessageSearch({ channelId, onResultClick, isMobile = false }: Me
           value={searchQuery}
           onChange={handleInputChange}
           onFocus={() => setIsOpen(searchQuery.trim().length > 0)}
-          placeholder="Search messages..."
+          placeholder={t('messages.searchMessages')}
           className={`w-full pl-9 pr-8 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
             isMobile ? 'touch-target' : ''
           }`}
@@ -118,6 +120,7 @@ export function MessageSearchDropdown({
   onSelectResult,
   onClose,
 }: MessageSearchDropdownProps) {
+  const { t } = useTranslation('smithy');
   const { data: searchResponse, isLoading } = useMessageSearch(searchQuery, channelId);
   const results = searchResponse?.results || [];
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -185,18 +188,18 @@ export function MessageSearchDropdown({
       {isLoading ? (
         <div className="flex items-center justify-center py-6" data-testid="message-search-loading">
           <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-          <span className="ml-2 text-sm text-gray-500">Searching...</span>
+          <span className="ml-2 text-sm text-gray-500">{t('messages.searching')}</span>
         </div>
       ) : results.length === 0 ? (
         <div className="py-6 text-center" data-testid="message-search-empty">
           <Search className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-          <p className="text-sm text-gray-500">No messages found</p>
-          <p className="text-xs text-gray-400 mt-1">Try a different search term</p>
+          <p className="text-sm text-gray-500">{t('messages.noMessagesFound')}</p>
+          <p className="text-xs text-gray-400 mt-1">{t('messages.tryDifferentSearch')}</p>
         </div>
       ) : (
         <>
           <div className="px-3 py-2 text-xs text-gray-500 border-b border-gray-100">
-            {results.length} result{results.length !== 1 ? 's' : ''} found
+            {results.length} {results.length !== 1 ? t('messages.results') : t('messages.result')} {t('messages.found')}
           </div>
           <div
             ref={resultsRef}
@@ -238,9 +241,9 @@ export function MessageSearchDropdown({
           </div>
           <div className="px-3 py-2 text-xs text-gray-400 border-t border-gray-100">
             <kbd className="px-1 py-0.5 bg-gray-100 rounded text-[10px]">↑</kbd>{' '}
-            <kbd className="px-1 py-0.5 bg-gray-100 rounded text-[10px]">↓</kbd> navigate{' '}
-            <kbd className="px-1 py-0.5 bg-gray-100 rounded text-[10px]">Enter</kbd> select{' '}
-            <kbd className="px-1 py-0.5 bg-gray-100 rounded text-[10px]">Esc</kbd> close
+            <kbd className="px-1 py-0.5 bg-gray-100 rounded text-[10px]">↓</kbd> {t('messages.navigate')}{' '}
+            <kbd className="px-1 py-0.5 bg-gray-100 rounded text-[10px]">Enter</kbd> {t('messages.select')}{' '}
+            <kbd className="px-1 py-0.5 bg-gray-100 rounded text-[10px]">Esc</kbd> {t('messages.close')}
           </div>
         </>
       )}

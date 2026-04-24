@@ -11,6 +11,7 @@ import { XTerminal } from '../../components/terminal/XTerminal';
 import { StreamViewer } from '../../components/workspace/StreamViewer';
 import { useAgent, useAgentStatus, useStartAgentSession, useStopAgentSession } from '../../api/hooks/useAgents';
 import { Terminal, Radio, Play, Square, RefreshCw, AlertCircle, LogIn } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { WORKSPACE_CHANNEL_NAME, type WorkspaceChannelMessage } from '../../components/workspace/types';
 import type { AgentRole, WorkerMode } from '../../api/types';
 
@@ -30,6 +31,7 @@ const roleBadgeStyles: Record<string, { bg: string; text: string; icon: typeof T
 };
 
 export function PopoutTerminalPage() {
+  const { t } = useTranslation('smithy');
   const search = useSearch({ from: '/popout/terminal' });
   const agentId = search.agent as string | undefined;
   const paneType = (search.type as 'terminal' | 'stream') || 'terminal';
@@ -49,12 +51,12 @@ export function PopoutTerminalPage() {
   const hasActiveSession = statusData?.hasActiveSession ?? false;
   // Use URL params as fallback if agent data not loaded yet
   const agentRole = agent?.metadata?.agent?.agentRole || urlAgentRole || 'worker';
-  const agentName = agent?.name || urlAgentName || 'Unknown Agent';
+  const agentName = agent?.name || urlAgentName || t('popout.unknownAgent');
   const workerMode = (agent?.metadata?.agent as { workerMode?: string })?.workerMode || urlWorkerMode;
 
   // Set window title based on agent
   useEffect(() => {
-    if (agentName && agentName !== 'Unknown Agent') {
+    if (agentName && agentName !== t('popout.unknownAgent')) {
       document.title = `Stoneforge | ${agentName} - Terminal`;
     }
     return () => {
@@ -113,7 +115,7 @@ export function PopoutTerminalPage() {
       <div className="h-screen w-screen flex items-center justify-center bg-[#1a1a1a]">
         <div className="flex items-center gap-3 text-[var(--color-text-muted)]">
           <RefreshCw className="w-5 h-5 animate-spin" />
-          <span>Loading agent...</span>
+          <span>{t('popout.loadingAgent')}</span>
         </div>
       </div>
     );
@@ -124,9 +126,9 @@ export function PopoutTerminalPage() {
     return (
       <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#1a1a1a] p-6">
         <AlertCircle className="w-12 h-12 text-red-400 mb-4" />
-        <h1 className="text-lg font-medium text-white mb-2">Agent Not Found</h1>
+        <h1 className="text-lg font-medium text-white mb-2">{t('popout.agentNotFound')}</h1>
         <p className="text-sm text-[var(--color-text-muted)] text-center max-w-md mb-6">
-          {!agentId ? 'No agent ID provided.' : 'The specified agent could not be found.'}
+          {!agentId ? t('popout.noAgentIdProvided') : t('popout.agentCouldNotBeFound')}
         </p>
         <button
           onClick={() => window.close()}
@@ -139,7 +141,7 @@ export function PopoutTerminalPage() {
             transition-colors
           "
         >
-          Close Window
+          {t('popout.closeWindow')}
         </button>
       </div>
     );
@@ -164,7 +166,7 @@ export function PopoutTerminalPage() {
             className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
               hasActiveSession ? statusColors[connectionStatus] : 'bg-gray-400'
             }`}
-            title={hasActiveSession ? connectionStatus : 'Session not running'}
+            title={hasActiveSession ? connectionStatus : t('popout.sessionNotRunning')}
           />
 
           {/* Role badge */}
@@ -206,10 +208,10 @@ export function PopoutTerminalPage() {
               transition-colors
               border border-[var(--color-border)]
             "
-            title="Return to Workspaces"
+            title={t('popout.returnToWorkspaces')}
           >
             <LogIn className="w-3.5 h-3.5" />
-            Pop back in
+            {t('popout.popBackIn')}
           </button>
 
           {/* Session controls */}
@@ -229,12 +231,12 @@ export function PopoutTerminalPage() {
               {startSession.isPending ? (
                 <>
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  Starting...
+                  {t('popout.starting')}
                 </>
               ) : (
                 <>
                   <Play className="w-3.5 h-3.5" />
-                  Start
+                  {t('popout.start')}
                 </>
               )}
             </button>
@@ -254,12 +256,12 @@ export function PopoutTerminalPage() {
               {stopSession.isPending ? (
                 <>
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  Stopping...
+                  {t('popout.stopping')}
                 </>
               ) : (
                 <>
                   <Square className="w-3.5 h-3.5" />
-                  Stop
+                  {t('popout.stop')}
                 </>
               )}
             </button>
@@ -308,10 +310,10 @@ export function PopoutTerminalPage() {
 
             <div className="text-center mb-6">
               <h3 className="text-lg font-medium text-[var(--color-text)] mb-1">
-                Session Idle
+                {t('popout.sessionIdle')}
               </h3>
               <p className="text-sm text-[var(--color-text-muted)] max-w-xs px-4">
-                Start a session to interact with {agentName}.
+                {t('popout.startSessionToInteract', { name: agentName })}
               </p>
             </div>
 
@@ -334,12 +336,12 @@ export function PopoutTerminalPage() {
               {startSession.isPending ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  Starting...
+                  {t('popout.starting')}
                 </>
               ) : (
                 <>
                   <Play className="w-4 h-4" />
-                  Start Session
+                  {t('popout.startSession')}
                 </>
               )}
             </button>

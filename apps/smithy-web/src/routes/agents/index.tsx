@@ -7,6 +7,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useSearch, useNavigate } from '@tanstack/react-router';
+import { useTranslation } from '@stoneforge/i18n';
 import { Users, Plus, Search, Crown, Wrench, Shield, Loader2, AlertCircle, RefreshCw, Network, Layers } from 'lucide-react';
 import { getCurrentBinding, formatKeyBinding } from '../../lib/keyboard';
 import { useAgentsByRole, useStartAgentSession, useStopAgentSession, useDeleteAgent, useDirectors, useSessions } from '../../api/hooks/useAgents';
@@ -21,6 +22,7 @@ import type { Agent, SessionStatus, AgentRole, StewardFocus } from '../../api/ty
 type TabValue = 'agents' | 'stewards' | 'pools' | 'graph';
 
 export function AgentsPage() {
+  const { t } = useTranslation('smithy');
   const search = useSearch({ from: '/agents' }) as { tab?: string; selected?: string; role?: string; action?: string };
   const navigate = useNavigate();
 
@@ -309,9 +311,9 @@ export function AgentsPage() {
             <Users className="w-5 h-5 text-[var(--color-primary)]" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-[var(--color-text)]" data-testid="agents-page-title">Agents</h1>
+            <h1 className="text-xl font-semibold text-[var(--color-text)]" data-testid="agents-page-title">{t('agents.title')}</h1>
             <p className="text-sm text-[var(--color-text-secondary)]">
-              Manage your AI agents and stewards
+              {t('agents.subtitle')}
             </p>
           </div>
         </div>
@@ -320,7 +322,7 @@ export function AgentsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
             <input
               type="text"
-              placeholder="Search agents..."
+              placeholder={t('agents.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 pr-3 py-2 text-sm border border-[var(--color-border)] rounded-md bg-[var(--color-input-bg)] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent w-48 @md:w-64"
@@ -334,7 +336,7 @@ export function AgentsPage() {
               data-testid="pools-create"
             >
               <Plus className="w-4 h-4" />
-              <span className="hidden @sm:inline">Create Pool</span>
+              <span className="hidden @sm:inline">{t('agents.createPool')}</span>
             </button>
           ) : (
             <button
@@ -343,7 +345,7 @@ export function AgentsPage() {
               data-testid="agents-create"
             >
               <Plus className="w-4 h-4" />
-              <span className="hidden @sm:inline">{currentTab === 'stewards' ? 'Create Steward' : 'Create Agent'}</span>
+              <span className="hidden @sm:inline">{currentTab === 'stewards' ? t('agents.createSteward') : t('agents.createAgent')}</span>
               <kbd className="hidden @sm:inline ml-1 text-xs bg-[var(--color-primary-700)]/50 text-white px-1 py-0.5 rounded">
                 {formatKeyBinding(getCurrentBinding('action.createAgent'))}
               </kbd>
@@ -366,7 +368,7 @@ export function AgentsPage() {
           >
             <span className="flex items-center gap-2">
               <Users className="w-4 h-4" />
-              Agents
+              {t('agents.tab.agents')}
               {agentCount > 0 && (
                 <span className="px-1.5 py-0.5 text-xs rounded-full bg-[var(--color-surface-elevated)]">
                   {agentCount}
@@ -385,7 +387,7 @@ export function AgentsPage() {
           >
             <span className="flex items-center gap-2">
               <Shield className="w-4 h-4" />
-              Stewards
+              {t('agents.tab.stewards')}
               {stewardCount > 0 && (
                 <span className="px-1.5 py-0.5 text-xs rounded-full bg-[var(--color-surface-elevated)]">
                   {stewardCount}
@@ -404,7 +406,7 @@ export function AgentsPage() {
           >
             <span className="flex items-center gap-2">
               <Layers className="w-4 h-4" />
-              Pools
+              {t('agents.tab.pools')}
               {pools.length > 0 && (
                 <span className="px-1.5 py-0.5 text-xs rounded-full bg-[var(--color-surface-elevated)]">
                   {pools.length}
@@ -423,7 +425,7 @@ export function AgentsPage() {
           >
             <span className="flex items-center gap-2">
               <Network className="w-4 h-4" />
-              Graph
+              {t('agents.tab.graph')}
             </span>
           </button>
         </nav>
@@ -447,12 +449,12 @@ export function AgentsPage() {
       ) : isLoading ? (
         <div className="flex flex-col items-center justify-center py-16">
           <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin mb-4" />
-          <p className="text-sm text-[var(--color-text-secondary)]">Loading agents...</p>
+          <p className="text-sm text-[var(--color-text-secondary)]">{t('agents.loading')}</p>
         </div>
       ) : error ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-[var(--color-danger)] rounded-lg bg-[var(--color-danger-muted)]">
           <AlertCircle className="w-12 h-12 text-[var(--color-danger)] mb-4" />
-          <h3 className="text-lg font-medium text-[var(--color-text)]">Failed to load agents</h3>
+          <h3 className="text-lg font-medium text-[var(--color-text)]">{t('agents.errorTitle')}</h3>
           <p className="mt-1 text-sm text-[var(--color-text-secondary)] text-center max-w-md">
             {error.message}
           </p>
@@ -461,7 +463,7 @@ export function AgentsPage() {
             className="mt-4 flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--color-primary)] bg-[var(--color-surface)] rounded-md hover:bg-[var(--color-surface-hover)] transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
-            Retry
+            {t('agents.retry')}
           </button>
         </div>
       ) : currentTab === 'agents' ? (
@@ -607,15 +609,16 @@ function AgentsTab({
   onCreateAgent,
   getActiveSessionStatus,
 }: AgentsTabProps) {
+  const { t } = useTranslation('smithy');
   const hasAgents = directors.length > 0 || ephemeralWorkers.length > 0 || persistentWorkers.length > 0;
 
   if (!hasAgents) {
     return (
       <EmptyState
         icon={Users}
-        title="No agents yet"
-        description="Create your first agent to start orchestrating AI work. Agents can work on tasks autonomously in isolated git worktrees."
-        actionLabel="Create Agent"
+        title={t('agents.noAgents')}
+        description={t('agents.noAgentsDescription')}
+        actionLabel={t('agents.createAgent')}
         actionTestId="agents-create-empty"
         onAction={onCreateAgent}
       />
@@ -627,9 +630,9 @@ function AgentsTab({
       {/* Directors */}
       {directors.length > 0 && (
         <AgentSection
-          title="Directors"
+          title={t('agents.directors')}
           icon={Crown}
-          description="Strategic agents that create and assign tasks"
+          description={t('agents.directorsDescription')}
           count={directors.length}
         >
           <div className="grid grid-cols-1 @md:grid-cols-2 @xl:grid-cols-3 gap-4">
@@ -654,9 +657,9 @@ function AgentsTab({
       {/* Persistent Workers */}
       {persistentWorkers.length > 0 && (
         <AgentSection
-          title="Persistent Workers"
+          title={t('agents.persistentWorkers')}
           icon={Wrench}
-          description="Long-lived workers that handle multiple tasks"
+          description={t('agents.persistentWorkersDescription')}
           count={persistentWorkers.length}
         >
           <div className="grid grid-cols-1 @md:grid-cols-2 @xl:grid-cols-3 gap-4">
@@ -681,9 +684,9 @@ function AgentsTab({
       {/* Ephemeral Workers */}
       {ephemeralWorkers.length > 0 && (
         <AgentSection
-          title="Ephemeral Workers"
+          title={t('agents.ephemeralWorkers')}
           icon={Wrench}
-          description="Short-lived workers spawned per task"
+          description={t('agents.ephemeralWorkersDescription')}
           count={ephemeralWorkers.length}
         >
           <div className="grid grid-cols-1 @md:grid-cols-2 @xl:grid-cols-3 gap-4">
@@ -726,13 +729,14 @@ interface StewardsTabProps {
 }
 
 function StewardsTab({ stewards, onStart, onStop, onOpenTerminal, onRename, onDelete, pendingStart, pendingStop, onCreateSteward, getActiveSessionStatus }: StewardsTabProps) {
+  const { t } = useTranslation('smithy');
   if (stewards.length === 0) {
     return (
       <EmptyState
         icon={Shield}
-        title="No stewards yet"
-        description="Create stewards to automate maintenance tasks like merging branches and scanning documentation."
-        actionLabel="Create Steward"
+        title={t('agents.noStewards')}
+        description={t('agents.noStewardsDescription')}
+        actionLabel={t('agents.createSteward')}
         actionTestId="stewards-create-empty"
         onAction={onCreateSteward}
       />
@@ -752,9 +756,9 @@ function StewardsTab({ stewards, onStart, onStop, onOpenTerminal, onRename, onDe
   );
 
   const focusLabels: Record<string, string> = {
-    merge: 'Merge Stewards',
-    docs: 'Docs Stewards',
-    custom: 'Custom Stewards',
+    merge: t('agents.mergeStewards'),
+    docs: t('agents.docsStewards'),
+    custom: t('agents.customStewards'),
   };
 
   return (
@@ -803,11 +807,12 @@ interface PoolsTabProps {
 }
 
 function PoolsTab({ pools, isLoading, onCreatePool, onEditPool, onToggleEnabled, onDeletePool, isUpdating }: PoolsTabProps) {
+  const { t } = useTranslation('smithy');
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin mb-4" />
-        <p className="text-sm text-[var(--color-text-secondary)]">Loading pools...</p>
+        <p className="text-sm text-[var(--color-text-secondary)]">{t('agents.loadingPools')}</p>
       </div>
     );
   }
@@ -816,9 +821,9 @@ function PoolsTab({ pools, isLoading, onCreatePool, onEditPool, onToggleEnabled,
     return (
       <EmptyState
         icon={Layers}
-        title="No pools yet"
-        description="Create agent pools to control the maximum number of agents running concurrently. Pools help manage resource usage and agent scheduling."
-        actionLabel="Create Pool"
+        title={t('agents.noPools')}
+        description={t('agents.noPoolsDescription')}
+        actionLabel={t('agents.createPool')}
         actionTestId="pools-create-empty"
         onAction={onCreatePool}
       />
@@ -828,9 +833,9 @@ function PoolsTab({ pools, isLoading, onCreatePool, onEditPool, onToggleEnabled,
   return (
     <div className="space-y-8">
       <AgentSection
-        title="Agent Pools"
+        title={t('agents.agentPools')}
         icon={Layers}
-        description="Pools control how many agents can run concurrently"
+        description={t('agents.agentPoolsDescription')}
         count={pools.length}
       >
         <div className="grid grid-cols-1 @md:grid-cols-2 @xl:grid-cols-3 gap-4">

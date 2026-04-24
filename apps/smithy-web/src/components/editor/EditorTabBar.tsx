@@ -13,6 +13,7 @@
  */
 
 import { useCallback, useRef, useState } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   DndContext,
   DragOverlay,
@@ -152,6 +153,7 @@ function getIconColor(name: string): string {
 // ============================================================================
 
 function SaveConfirmDialog({ isOpen, fileName, onSave, onDiscard, onCancel }: SaveConfirmDialogProps) {
+  const { t } = useTranslation('smithy');
   if (!isOpen) return null;
 
   return (
@@ -159,11 +161,10 @@ function SaveConfirmDialog({ isOpen, fileName, onSave, onDiscard, onCancel }: Sa
       <div className="absolute inset-0 bg-black/50" onClick={onCancel} />
       <div className="relative bg-[var(--color-surface)] rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
         <h3 className="text-lg font-semibold text-[var(--color-text)] mb-2">
-          Unsaved Changes
+          {t('editor.unsavedChanges')}
         </h3>
         <p className="text-sm text-[var(--color-text-secondary)] mb-6">
-          Do you want to save the changes you made to{' '}
-          <span className="font-medium text-[var(--color-text)]">"{fileName}"</span>?
+          {t('editor.saveChangesTo', { name: fileName })}
         </p>
         <div className="flex justify-end gap-3">
           <button
@@ -171,21 +172,21 @@ function SaveConfirmDialog({ isOpen, fileName, onSave, onDiscard, onCancel }: Sa
             className="px-4 py-2 text-sm font-medium text-[var(--color-danger)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-hover)]"
             data-testid="save-confirm-discard"
           >
-            Close Without Saving
+            {t('editor.closeWithoutSaving')}
           </button>
           <button
             onClick={onCancel}
             className="px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md hover:bg-[var(--color-surface-hover)]"
             data-testid="save-confirm-cancel"
           >
-            Cancel
+            {t('editor.cancel')}
           </button>
           <button
             onClick={onSave}
             className="px-4 py-2 text-sm font-medium text-white bg-[var(--color-primary)] rounded-md hover:bg-[var(--color-primary-hover)]"
             data-testid="save-confirm-save"
           >
-            Save & Close
+            {t('editor.saveAndClose')}
           </button>
         </div>
       </div>
@@ -206,6 +207,7 @@ interface TabItemProps {
 }
 
 function TabItem({ tab, isActive, onSelect, onClose, isDragging = false }: TabItemProps) {
+  const { t } = useTranslation('smithy');
   // Use Puzzle icon for extension tabs, otherwise use file icon
   const Icon = tab.source === 'extension' ? Puzzle : getFileIcon(tab.name);
   const iconColor = tab.source === 'extension' ? 'text-purple-500' : getIconColor(tab.name);
@@ -256,7 +258,7 @@ function TabItem({ tab, isActive, onSelect, onClose, isDragging = false }: TabIt
           }
           hover:bg-[var(--color-surface-hover)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]
         `}
-        title="Close (Ctrl+W)"
+        title={t('editor.closeTabShortcut')}
         data-testid={`editor-tab-close-${tab.id}`}
       >
         <X className="w-3.5 h-3.5" />
@@ -287,6 +289,7 @@ function TabContextMenu({
   onCloseSaved,
   onCloseAll,
 }: TabContextMenuProps) {
+  const { t } = useTranslation('smithy');
   const menuItemClassName =
     'flex items-center px-3 py-1.5 text-sm text-[var(--color-text)] data-[highlighted]:bg-[var(--color-surface-active)] cursor-pointer outline-none';
 
@@ -305,21 +308,21 @@ function TabContextMenu({
             onSelect={onClose}
             data-testid="tab-context-menu-close"
           >
-            Close
+            {t('editor.close')}
           </ContextMenu.Item>
           <ContextMenu.Item
             className={menuItemClassName}
             onSelect={onCloseOthers}
             data-testid="tab-context-menu-close-others"
           >
-            Close Others
+            {t('editor.closeOthers')}
           </ContextMenu.Item>
           <ContextMenu.Item
             className={menuItemClassName}
             onSelect={onCloseToRight}
             data-testid="tab-context-menu-close-to-right"
           >
-            Close to the Right
+            {t('editor.closeToTheRight')}
           </ContextMenu.Item>
           <ContextMenu.Separator className="h-px bg-[var(--color-border)] my-1" />
           <ContextMenu.Item
@@ -327,14 +330,14 @@ function TabContextMenu({
             onSelect={onCloseSaved}
             data-testid="tab-context-menu-close-saved"
           >
-            Close Saved
+            {t('editor.closeSaved')}
           </ContextMenu.Item>
           <ContextMenu.Item
             className={menuItemClassName}
             onSelect={onCloseAll}
             data-testid="tab-context-menu-close-all"
           >
-            Close All
+            {t('editor.closeAll')}
           </ContextMenu.Item>
         </ContextMenu.Content>
       </ContextMenu.Portal>

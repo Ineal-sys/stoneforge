@@ -11,6 +11,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   X,
   Plus,
@@ -47,6 +48,7 @@ export interface CreatePoolDialogProps {
 // ============================================================================
 
 export function CreatePoolDialog({ isOpen, onClose, onSuccess }: CreatePoolDialogProps) {
+  const { t } = useTranslation('smithy');
   const [form, setForm] = useState<FormState>({ ...defaultFormState });
   const [error, setError] = useState<string | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -214,7 +216,7 @@ export function CreatePoolDialog({ isOpen, onClose, onSuccess }: CreatePoolDialo
                   type="text"
                   value={form.name}
                   onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="e.g., worker-pool, build-agents"
+                  placeholder={t('pool.poolNamePlaceholder')}
                   className="
                     w-full px-3 py-2
                     text-sm
@@ -243,7 +245,7 @@ export function CreatePoolDialog({ isOpen, onClose, onSuccess }: CreatePoolDialo
                   type="text"
                   value={form.description}
                   onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="e.g., Pool for ephemeral build workers"
+                  placeholder={t('pool.poolDescriptionPlaceholder')}
                   className="
                     w-full px-3 py-2
                     text-sm
@@ -343,7 +345,7 @@ export function CreatePoolDialog({ isOpen, onClose, onSuccess }: CreatePoolDialo
                         className="rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
                         data-testid="pool-enabled"
                       />
-                      <span className="text-sm text-[var(--color-text)]">Pool enabled</span>
+                      <span className="text-sm text-[var(--color-text)]">{t('pool.poolEnabled')}</span>
                     </label>
 
                     {/* Tags */}

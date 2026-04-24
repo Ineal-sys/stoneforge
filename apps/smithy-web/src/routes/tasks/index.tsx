@@ -12,6 +12,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useSearch, useNavigate } from '@tanstack/react-router';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   CheckSquare,
   Plus,
@@ -87,6 +88,7 @@ import { getCurrentBinding, formatKeyBinding } from '../../lib/keyboard';
 type TabValue = 'all' | 'backlog' | 'unassigned' | 'assigned' | 'in_progress' | 'closed' | 'awaiting_merge';
 
 export function TasksPage() {
+  const { t } = useTranslation('smithy');
   const search = useSearch({ from: '/tasks' }) as {
     selected?: string;
     page?: number;
@@ -656,9 +658,9 @@ export function TasksPage() {
               <CheckSquare className="w-5 h-5 text-[var(--color-primary)]" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-xl font-semibold text-[var(--color-text)]">Tasks</h1>
+              <h1 className="text-xl font-semibold text-[var(--color-text)]">{t('tasks.title')}</h1>
               <p className="text-sm text-[var(--color-text-secondary)] truncate">
-                Manage and track agent task assignments
+                {t('tasks.subtitle')}
               </p>
             </div>
           </div>
@@ -669,7 +671,7 @@ export function TasksPage() {
             data-testid="tasks-create"
           >
             <Plus className="w-4 h-4" />
-            <span className="hidden @sm:inline">Create Task</span>
+            <span className="hidden @sm:inline">{t('tasks.createTask')}</span>
             <kbd className="hidden @sm:inline ml-1 text-xs bg-[var(--color-primary-700)]/50 text-white px-1 py-0.5 rounded">
               {formatKeyBinding(getCurrentBinding('action.createTask'))}
             </kbd>
@@ -682,7 +684,7 @@ export function TasksPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)]" />
             <input
               type="text"
-              placeholder="Search tasks..."
+              placeholder={t('tasks.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-3 py-2 text-sm border border-[var(--color-border)] rounded-md bg-[var(--color-input-bg)] text-[var(--color-text)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
@@ -728,7 +730,7 @@ export function TasksPage() {
         <div className="flex items-center justify-between border-b border-[var(--color-border)] overflow-x-auto">
           <nav className="flex gap-1 min-w-max" aria-label="Tabs">
             <TabButton
-              label="All"
+              label={t('tasks.tabAll')}
               value="all"
               current={currentTab}
               count={counts.all}
@@ -736,7 +738,7 @@ export function TasksPage() {
               onClick={() => setTab('all')}
             />
             <TabButton
-              label="Backlog"
+              label={t('tasks.tabBacklog')}
               value="backlog"
               current={currentTab}
               count={counts.backlog}
@@ -744,7 +746,7 @@ export function TasksPage() {
               onClick={() => setTab('backlog')}
             />
             <TabButton
-              label="Unassigned"
+              label={t('tasks.tabUnassigned')}
               value="unassigned"
               current={currentTab}
               count={counts.unassigned}
@@ -752,7 +754,7 @@ export function TasksPage() {
               onClick={() => setTab('unassigned')}
             />
             <TabButton
-              label="Assigned"
+              label={t('tasks.tabAssigned')}
               value="assigned"
               current={currentTab}
               count={counts.assigned}
@@ -760,7 +762,7 @@ export function TasksPage() {
               onClick={() => setTab('assigned')}
             />
             <TabButton
-              label="In Progress"
+              label={t('tasks.tabInProgress')}
               value="in_progress"
               current={currentTab}
               count={counts.in_progress}
@@ -768,7 +770,7 @@ export function TasksPage() {
               onClick={() => setTab('in_progress')}
             />
             <TabButton
-              label="Awaiting Merge"
+              label={t('tasks.tabAwaitingMerge')}
               value="awaiting_merge"
               current={currentTab}
               count={counts.awaiting_merge}
@@ -776,7 +778,7 @@ export function TasksPage() {
               onClick={() => setTab('awaiting_merge')}
             />
             <TabButton
-              label="Closed"
+              label={t('tasks.tabClosed')}
               value="closed"
               current={currentTab}
               count={counts.closed}
@@ -803,7 +805,7 @@ export function TasksPage() {
             ) : (
               <EyeOff className="w-4 h-4" />
             )}
-            <span>Closed ({closedCount})</span>
+            <span>{t('tasks.closedCount', { count: closedCount })}</span>
           </button>
         </div>
       )}
@@ -825,12 +827,12 @@ export function TasksPage() {
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-16">
           <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin mb-4" />
-          <p className="text-sm text-[var(--color-text-secondary)]">Loading tasks...</p>
+          <p className="text-sm text-[var(--color-text-secondary)]">{t('tasks.loading')}</p>
         </div>
       ) : error ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-[var(--color-danger)] rounded-lg bg-[var(--color-danger-muted)]">
           <AlertCircle className="w-12 h-12 text-[var(--color-danger)] mb-4" />
-          <h3 className="text-lg font-medium text-[var(--color-text)]">Failed to load tasks</h3>
+          <h3 className="text-lg font-medium text-[var(--color-text)]">{t('tasks.failedLoad')}</h3>
           <p className="mt-1 text-sm text-[var(--color-text-secondary)] text-center max-w-md">
             {error.message}
           </p>
@@ -840,7 +842,7 @@ export function TasksPage() {
             data-testid="tasks-retry"
           >
             <RefreshCw className="w-4 h-4" />
-            Retry
+            {t('tasks.retry')}
           </button>
         </div>
       ) : filteredTasks.length === 0 ? (
@@ -999,6 +1001,7 @@ interface ResizeHandleProps {
 }
 
 function ResizeHandle({ columnId, onResizeStart }: ResizeHandleProps) {
+  const { t } = useTranslation('smithy');
   return (
     <div
       className="absolute top-0 right-0 w-2 h-full cursor-col-resize group/resize z-10 select-none"
@@ -1006,7 +1009,7 @@ function ResizeHandle({ columnId, onResizeStart }: ResizeHandleProps) {
       onClick={(e) => e.stopPropagation()}
       role="separator"
       aria-orientation="vertical"
-      aria-label={`Resize ${columnId} column`}
+      aria-label={t('tasks.resizeColumn', { column: columnId })}
       data-testid={`column-resize-handle-${columnId}`}
     >
       <div className="absolute right-0 top-0 w-[2px] h-full bg-transparent group-hover/resize:bg-[var(--color-primary)] transition-colors" />
@@ -1067,6 +1070,7 @@ function TaskListView({
   columnWidths,
   onColumnResizeStart,
 }: TaskListViewProps) {
+  const { t } = useTranslation('smithy');
   const showGroups = groups.length > 1 || (groups.length === 1 && groups[0].key !== 'all');
 
   // Build colgroup for fixed column widths
@@ -1101,11 +1105,11 @@ function TaskListView({
                   onChange={onToggleSelectAll}
                   className="w-4 h-4 rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)] cursor-pointer"
                   data-testid="task-select-all-checkbox"
-                  aria-label="Select all tasks"
+                  aria-label={t('tasks.selectAll')}
                 />
               </th>
               <SortableHeader
-                label="Task"
+                label={t('tasks.columnTask')}
                 field="title"
                 currentSortField={sortField}
                 currentSortDirection={sortDirection}
@@ -1116,7 +1120,7 @@ function TaskListView({
                 onResizeStart={onColumnResizeStart}
               />
               <SortableHeader
-                label="Status"
+                label={t('tasks.columnStatus')}
                 field="status"
                 currentSortField={sortField}
                 currentSortDirection={sortDirection}
@@ -1127,7 +1131,7 @@ function TaskListView({
                 onResizeStart={onColumnResizeStart}
               />
               <SortableHeader
-                label="Priority"
+                label={t('tasks.columnPriority')}
                 field="priority"
                 currentSortField={sortField}
                 currentSortDirection={sortDirection}
@@ -1138,7 +1142,7 @@ function TaskListView({
                 onResizeStart={onColumnResizeStart}
               />
               <SortableHeader
-                label="Type"
+                label={t('tasks.columnType')}
                 field="taskType"
                 currentSortField={sortField}
                 currentSortDirection={sortDirection}
@@ -1149,7 +1153,7 @@ function TaskListView({
                 onResizeStart={onColumnResizeStart}
               />
               <SortableHeader
-                label="Assignee"
+                label={t('tasks.columnAssignee')}
                 field="assignee"
                 currentSortField={sortField}
                 currentSortDirection={sortDirection}
@@ -1163,11 +1167,11 @@ function TaskListView({
                 className="px-4 py-3 text-left text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider relative"
                 style={{ width: `${columnWidths.branch ?? 160}px` }}
               >
-                Branch
+                {t('tasks.columnBranch')}
                 <ResizeHandle columnId="branch" onResizeStart={onColumnResizeStart} />
               </th>
               <SortableHeader
-                label="Updated"
+                label={t('tasks.columnUpdated')}
                 field="updated_at"
                 currentSortField={sortField}
                 currentSortDirection={sortDirection}
@@ -1181,7 +1185,7 @@ function TaskListView({
                 className="px-4 py-3 text-right text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider"
                 style={{ width: `${columnWidths.actions ?? 100}px` }}
               >
-                Actions
+                {t('tasks.columnActions')}
               </th>
             </tr>
           </thead>
@@ -1308,13 +1312,14 @@ interface EmptyStateProps {
 }
 
 function EmptyState({ searchQuery, currentTab, onCreateClick }: EmptyStateProps) {
+  const { t } = useTranslation('smithy');
   if (searchQuery) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-[var(--color-border)] rounded-lg">
         <Search className="w-12 h-12 text-[var(--color-text-tertiary)] mb-4" />
-        <h3 className="text-lg font-medium text-[var(--color-text)]">No matching tasks</h3>
+        <h3 className="text-lg font-medium text-[var(--color-text)]">{t('tasks.noMatchingTasks')}</h3>
         <p className="mt-1 text-sm text-[var(--color-text-secondary)] text-center max-w-md">
-          No tasks found matching &quot;{searchQuery}&quot;. Try a different search term.
+          {t('tasks.noMatchingDesc', { query: searchQuery })}
         </p>
       </div>
     );
@@ -1322,32 +1327,32 @@ function EmptyState({ searchQuery, currentTab, onCreateClick }: EmptyStateProps)
 
   const emptyMessages: Record<TabValue, { title: string; description: string }> = {
     all: {
-      title: 'No tasks yet',
-      description: 'Create your first task to get started. Tasks can be assigned to agents and tracked through completion.',
+      title: t('tasks.emptyAllTitle'),
+      description: t('tasks.emptyAllDesc'),
     },
     backlog: {
-      title: 'No backlog tasks',
-      description: 'No tasks are currently in the backlog. Create a task with backlog status to see it here.',
+      title: t('tasks.emptyBacklogTitle'),
+      description: t('tasks.emptyBacklogDesc'),
     },
     unassigned: {
-      title: 'No unassigned tasks',
-      description: 'All tasks have been assigned to agents. Create a new task or unassign an existing one.',
+      title: t('tasks.emptyUnassignedTitle'),
+      description: t('tasks.emptyUnassignedDesc'),
     },
     assigned: {
-      title: 'No assigned tasks',
-      description: 'No tasks are currently assigned and waiting to start. Assign a task to an agent to see it here.',
+      title: t('tasks.emptyAssignedTitle'),
+      description: t('tasks.emptyAssignedDesc'),
     },
     in_progress: {
-      title: 'No tasks in progress',
-      description: 'No agents are currently working on tasks. Start a task to see it here.',
+      title: t('tasks.emptyInProgressTitle'),
+      description: t('tasks.emptyInProgressDesc'),
     },
     closed: {
-      title: 'No completed tasks',
-      description: 'No tasks have been completed yet. Keep working on those tasks!',
+      title: t('tasks.emptyClosedTitle'),
+      description: t('tasks.emptyClosedDesc'),
     },
     awaiting_merge: {
-      title: 'No tasks awaiting merge',
-      description: 'No completed tasks are waiting to be merged. Completed task branches will appear here.',
+      title: t('tasks.emptyAwaitingMergeTitle'),
+      description: t('tasks.emptyAwaitingMergeDesc'),
     },
   };
 
@@ -1367,7 +1372,7 @@ function EmptyState({ searchQuery, currentTab, onCreateClick }: EmptyStateProps)
           data-testid="tasks-create-empty"
         >
           <Plus className="w-4 h-4" />
-          Create Task
+          {t('tasks.createTask')}
         </button>
       )}
     </div>

@@ -4,6 +4,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { FolderOpen, Folder, FileText, Plus, Search, Filter, Trash2 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useShortcutVersion } from '../../../hooks';
 import { getCurrentBinding } from '../../../lib/keyboard';
 import { VirtualizedList } from '../../../components/shared/VirtualizedList';
@@ -46,6 +47,7 @@ export function LibraryView({
   onDeleteLibrary,
   isMobile = false,
 }: LibraryViewProps) {
+  const { t } = useTranslation('smithy');
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
@@ -157,7 +159,7 @@ export function LibraryView({
                   data-testid="library-doc-count"
                   className={`text-gray-400 dark:text-gray-500 flex-shrink-0 ${isMobile ? 'text-xs' : 'text-sm'}`}
                 >
-                  {filteredDocuments.length} {filteredDocuments.length === 1 ? 'doc' : 'docs'}
+                  {filteredDocuments.length} {filteredDocuments.length === 1 ? t('documents.doc') : t('documents.docs')}
                 </span>
               </>
             ) : (
@@ -171,7 +173,7 @@ export function LibraryView({
                 <button
                   onClick={onDeleteLibrary}
                   className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors"
-                  title="Delete Library"
+                  title={t('documents.deleteLibrary')}
                   data-testid="delete-library-button"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -183,7 +185,7 @@ export function LibraryView({
                 data-testid="new-document-button-library"
               >
                 <Plus className="w-4 h-4" />
-                Create Document
+                {t('documents.createDocument')}
                 <kbd className="ml-1 text-xs bg-[var(--color-primary-700)]/50 text-white px-1 py-0.5 rounded">{getCurrentBinding('action.createDocument')}</kbd>
               </button>
             </div>
@@ -207,7 +209,7 @@ export function LibraryView({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search documents..."
+            placeholder={t('documents.searchDocuments')}
             className={`w-full pl-9 pr-4 ${isMobile ? 'py-3' : 'py-2'} text-sm border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
             data-testid="library-search-input"
           />
@@ -234,7 +236,7 @@ export function LibraryView({
                 data-testid="mobile-filter-button"
               >
                 <Filter className="w-4 h-4" />
-                Filters
+                {t('documents.filters')}
                 {activeFilterCount > 0 && (
                   <span className="px-1.5 py-0.5 text-xs font-semibold bg-blue-600 text-white rounded-full">
                     {activeFilterCount}
@@ -268,7 +270,7 @@ export function LibraryView({
       {library?._subLibraries && library._subLibraries.length > 0 && (
         <div data-testid="sub-libraries" className={`flex-shrink-0 ${isMobile ? 'p-3' : 'p-4'} border-b border-gray-100 dark:border-gray-800`}>
           <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-            Sub-libraries
+            {t('documents.subLibraries')}
           </h4>
           <div className="flex flex-wrap gap-2">
             {library._subLibraries.map((subLib) => (
@@ -296,14 +298,14 @@ export function LibraryView({
             data-testid="documents-loading"
             className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400"
           >
-            Loading documents...
+            {t('documents.loadingDocuments')}
           </div>
         ) : error ? (
           <div
             data-testid="documents-error"
             className="flex items-center justify-center h-full text-red-500 dark:text-red-400"
           >
-            Failed to load documents
+            {t('documents.failedToLoadDocuments')}
           </div>
         ) : filteredDocuments.length === 0 ? (
           <div
@@ -313,13 +315,13 @@ export function LibraryView({
             <FileText className="w-12 h-12 mb-3 text-gray-300 dark:text-gray-600" />
             <p className="text-sm">
               {searchQuery || hasActiveFilters(filters)
-                ? 'No documents match your search or filters'
-                : 'No documents in this library'}
+                ? t('documents.noDocumentsMatchFilters')
+                : t('documents.noDocumentsInThisLibrary')}
             </p>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
               {searchQuery || hasActiveFilters(filters)
-                ? 'Try adjusting your search or filters'
-                : 'Add documents to organize your knowledge'}
+                ? t('documents.tryAdjustingFilters')
+                : t('documents.addDocumentsToOrganize')}
             </p>
           </div>
         ) : (

@@ -5,7 +5,8 @@
  * to provide a consistent input experience for sending messages to agents.
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react'
+import { useTranslation } from '@stoneforge/i18n';;
 import { Send } from 'lucide-react';
 
 export interface TerminalInputProps {
@@ -28,6 +29,7 @@ export function TerminalInput({
   disconnectedPlaceholder = 'Connect to send messages',
   'data-testid': testId = 'terminal-input',
 }: TerminalInputProps) {
+  const { t } = useTranslation('smithy');
   const [input, setInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -117,7 +119,7 @@ export function TerminalInput({
           transition-colors
           flex-shrink-0
         "
-        title="Send message (Enter)"
+        title={t('workspaces.sendMessage')}
         data-testid={`${testId}-send-btn`}
       >
         <Send className="w-4 h-4" />

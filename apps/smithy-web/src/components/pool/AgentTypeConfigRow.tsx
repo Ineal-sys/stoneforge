@@ -10,6 +10,7 @@
  */
 
 import { useMemo } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import { Trash2, ChevronDown, Loader2 } from 'lucide-react';
 import { useProviders, useProviderModels } from '../../api/hooks/useAgents';
 import { getProviderLabel } from '../../lib/providers';
@@ -123,6 +124,7 @@ interface AgentTypeConfigRowProps {
 }
 
 export function AgentTypeConfigRow({ index, agentType, onUpdate, onRemove }: AgentTypeConfigRowProps) {
+  const { t } = useTranslation('smithy');
   // Fetch providers and models for the selected provider
   const { data: providersData } = useProviders();
   const providers = useMemo(() => providersData?.providers ?? [], [providersData?.providers]);
@@ -150,7 +152,7 @@ export function AgentTypeConfigRow({ index, agentType, onUpdate, onRemove }: Age
           type="button"
           onClick={onRemove}
           className="p-1 text-[var(--color-text-tertiary)] hover:text-red-500 transition-colors"
-          aria-label="Remove agent type"
+          aria-label={t('pool.removeAgentType')}
           data-testid={`agent-type-${index}-remove`}
         >
           <Trash2 className="w-4 h-4" />
@@ -161,7 +163,7 @@ export function AgentTypeConfigRow({ index, agentType, onUpdate, onRemove }: Age
       <div className="grid grid-cols-2 gap-2">
         {/* Role */}
         <div className="space-y-1">
-          <label className="text-xs text-[var(--color-text-tertiary)]">Role</label>
+          <label className="text-xs text-[var(--color-text-tertiary)]">{t('pool.role')}</label>
           <div className="relative">
             <select
               value={agentType.role}
@@ -184,8 +186,8 @@ export function AgentTypeConfigRow({ index, agentType, onUpdate, onRemove }: Age
               "
               data-testid={`agent-type-${index}-role`}
             >
-              <option value="worker">Worker</option>
-              <option value="steward">Steward</option>
+              <option value="worker">{t('pool.worker')}</option>
+              <option value="steward">{t('pool.steward')}</option>
             </select>
             <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-[var(--color-text-tertiary)] pointer-events-none" />
           </div>
@@ -195,7 +197,7 @@ export function AgentTypeConfigRow({ index, agentType, onUpdate, onRemove }: Age
         <div className="space-y-1">
           {agentType.role === 'worker' ? (
             <>
-              <label className="text-xs text-[var(--color-text-tertiary)]">Mode</label>
+              <label className="text-xs text-[var(--color-text-tertiary)]">{t('pool.mode')}</label>
               <div className="relative">
                 <select
                   value={agentType.workerMode}
@@ -211,7 +213,7 @@ export function AgentTypeConfigRow({ index, agentType, onUpdate, onRemove }: Age
                   "
                   data-testid={`agent-type-${index}-worker-mode`}
                 >
-                  <option value="">Any</option>
+                  <option value="">{t('pool.any')}</option>
                   {Object.entries(workerModeLabels).map(([key, label]) => (
                     <option key={key} value={key}>{label}</option>
                   ))}
@@ -221,7 +223,7 @@ export function AgentTypeConfigRow({ index, agentType, onUpdate, onRemove }: Age
             </>
           ) : (
             <>
-              <label className="text-xs text-[var(--color-text-tertiary)]">Focus</label>
+              <label className="text-xs text-[var(--color-text-tertiary)]">{t('pool.focus')}</label>
               <div className="relative">
                 <select
                   value={agentType.stewardFocus}
@@ -237,7 +239,7 @@ export function AgentTypeConfigRow({ index, agentType, onUpdate, onRemove }: Age
                   "
                   data-testid={`agent-type-${index}-steward-focus`}
                 >
-                  <option value="">Any</option>
+                  <option value="">{t('pool.any')}</option>
                   {Object.entries(stewardFocusLabels).map(([key, label]) => (
                     <option key={key} value={key}>{label}</option>
                   ))}
@@ -252,7 +254,7 @@ export function AgentTypeConfigRow({ index, agentType, onUpdate, onRemove }: Age
       {/* Priority + Max Slots row */}
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
-          <label className="text-xs text-[var(--color-text-tertiary)]">Priority</label>
+          <label className="text-xs text-[var(--color-text-tertiary)]">{t('pool.priority')}</label>
           <input
             type="number"
             value={agentType.priority}
@@ -270,7 +272,7 @@ export function AgentTypeConfigRow({ index, agentType, onUpdate, onRemove }: Age
           />
         </div>
         <div className="space-y-1">
-          <label className="text-xs text-[var(--color-text-tertiary)]">Max Slots</label>
+          <label className="text-xs text-[var(--color-text-tertiary)]">{t('pool.maxSlots')}</label>
           <input
             type="number"
             min="1"
@@ -293,7 +295,7 @@ export function AgentTypeConfigRow({ index, agentType, onUpdate, onRemove }: Age
       {/* Provider + Model row */}
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
-          <label className="text-xs text-[var(--color-text-tertiary)]">Provider</label>
+          <label className="text-xs text-[var(--color-text-tertiary)]">{t('pool.provider')}</label>
           <div className="relative">
             <select
               value={agentType.provider}
@@ -309,7 +311,7 @@ export function AgentTypeConfigRow({ index, agentType, onUpdate, onRemove }: Age
               "
               data-testid={`agent-type-${index}-provider`}
             >
-              <option value="">Any</option>
+              <option value="">{t('pool.any')}</option>
               {providers.map(p => (
                 <option key={p.name} value={p.name} disabled={!p.available}>
                   {getProviderLabel(p.name)}{!p.available ? ' (not installed)' : ''}
@@ -320,7 +322,7 @@ export function AgentTypeConfigRow({ index, agentType, onUpdate, onRemove }: Age
           </div>
         </div>
         <div className="space-y-1">
-          <label className="text-xs text-[var(--color-text-tertiary)]">Model</label>
+          <label className="text-xs text-[var(--color-text-tertiary)]">{t('pool.model')}</label>
           <div className="relative">
             {modelsLoading && agentType.provider ? (
               <div className="flex items-center gap-1.5 py-1.5 text-xs text-[var(--color-text-tertiary)]">

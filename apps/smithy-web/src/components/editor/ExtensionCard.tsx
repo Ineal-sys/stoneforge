@@ -6,6 +6,7 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import { Loader2, Download, Trash2, AlertTriangle, Package } from 'lucide-react';
 import { Tooltip } from '@stoneforge/ui';
 import type { OpenVSXExtensionSummary } from '../../lib/openvsx/client';
@@ -68,12 +69,13 @@ export function ExtensionCard({
   onUninstall,
   onClick,
 }: ExtensionCardProps) {
+  const { t } = useTranslation('smithy');
   const [actionError, setActionError] = useState<string | null>(null);
 
   // Determine display values
   const displayName = extension.displayName || extension.name;
   const publisher = extension.namespace;
-  const description = extension.description || 'No description available';
+  const description = extension.description || t('editor.noDescriptionAvailable');
   const version = installedInfo?.version || extension.version;
   const iconUrl = extension.files.icon;
   const extensionId = `${extension.namespace}.${extension.name}`;
@@ -195,7 +197,7 @@ export function ExtensionCard({
       {/* Action button */}
       <div className="flex-shrink-0 flex items-center">
         {isInstalled ? (
-          <Tooltip content="Uninstall extension">
+          <Tooltip content={t('editor.uninstallExtension')}>
             <button
               onClick={handleUninstall}
               disabled={isLoading}
@@ -220,8 +222,8 @@ export function ExtensionCard({
           <Tooltip
             content={
               isIncompatible
-                ? incompatibilityTooltip || 'Cannot install - incompatible extension'
-                : 'Install extension'
+                ? incompatibilityTooltip || t('editor.cannotInstallIncompatible')
+                : t('editor.installExtension')
             }
           >
             <button

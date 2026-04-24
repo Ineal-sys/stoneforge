@@ -31,6 +31,7 @@ import { MergeStatusBadge, TaskStatusBadge, TaskPriorityBadge } from '../task';
 import { TestResultsDisplay } from './TestResultsDisplay';
 import { getMergeStatusColor } from '../../api/hooks/useMergeRequests';
 import { MergeRequestManageDropdown } from './MergeRequestManageDropdown';
+import { useTranslation } from '@stoneforge/i18n';
 
 interface MergeRequestDetailPanelProps {
   taskId: string;
@@ -45,6 +46,7 @@ export function MergeRequestDetailPanel({
   onBack,
   onDeleted,
 }: MergeRequestDetailPanelProps) {
+const { t } = useTranslation('smithy');
   const { data: task, isLoading, error } = useMergeRequest(taskId);
   const { data: entities } = useAllEntities();
 
@@ -57,7 +59,7 @@ export function MergeRequestDetailPanel({
       <div className="h-full flex items-center justify-center bg-[var(--color-surface)]">
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="w-6 h-6 animate-spin text-[var(--color-primary)]" />
-          <span className="text-sm text-[var(--color-text-secondary)]">Loading...</span>
+          <span className="text-sm text-[var(--color-text-secondary)]">{t('mergeRequest.loading')}</span>
         </div>
       </div>
     );
@@ -100,7 +102,7 @@ export function MergeRequestDetailPanel({
               <ArrowLeft className="w-5 h-5" />
             </button>
           )}
-          <h2 className="text-lg font-semibold text-[var(--color-text)]">Merge Request</h2>
+          <h2 className="text-lg font-semibold text-[var(--color-text)]">{t('mergeRequest.mergeRequest')}</h2>
         </div>
         <div className="flex items-center gap-1">
           {task && (
@@ -146,20 +148,20 @@ export function MergeRequestDetailPanel({
           <div className="space-y-3">
             {/* Title */}
             <div>
-              <span className="text-xs text-[var(--color-text-tertiary)]">Title</span>
+              <span className="text-xs text-[var(--color-text-tertiary)]">{t('mergeRequest.title')}</span>
               <p className="text-sm font-medium text-[var(--color-text)] mt-0.5">{task.title}</p>
             </div>
 
             {/* Status & Priority row */}
             <div className="flex items-center gap-4">
               <div>
-                <span className="text-xs text-[var(--color-text-tertiary)]">Status</span>
+                <span className="text-xs text-[var(--color-text-tertiary)]">{t('mergeRequest.status')}</span>
                 <div className="mt-0.5">
                   <TaskStatusBadge status={task.status} />
                 </div>
               </div>
               <div>
-                <span className="text-xs text-[var(--color-text-tertiary)]">Priority</span>
+                <span className="text-xs text-[var(--color-text-tertiary)]">{t('mergeRequest.priority')}</span>
                 <div className="mt-0.5">
                   <TaskPriorityBadge priority={task.priority} />
                 </div>
@@ -169,7 +171,7 @@ export function MergeRequestDetailPanel({
             {/* Description */}
             {task.description && (
               <div>
-                <span className="text-xs text-[var(--color-text-tertiary)]">Description</span>
+                <span className="text-xs text-[var(--color-text-tertiary)]">{t('mergeRequest.description')}</span>
                 <p className="text-sm text-[var(--color-text)] mt-0.5 whitespace-pre-wrap line-clamp-4">
                   {task.description}
                 </p>

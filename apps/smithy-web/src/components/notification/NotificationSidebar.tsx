@@ -8,6 +8,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   Bell,
   Check,
@@ -80,6 +81,7 @@ function NotificationItem({
   onDismiss,
   onNavigate,
 }: NotificationItemProps) {
+  const { t } = useTranslation('smithy');
   return (
     <div
       className={`
@@ -126,8 +128,8 @@ function NotificationItem({
                 onNavigate();
               }}
               className="p-1 rounded text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-active)] transition-colors"
-              title="View details"
-              aria-label="View details"
+              title={t('notifications.viewDetails')}
+              aria-label={t('notifications.viewDetails')}
             >
               <ExternalLink className="w-3.5 h-3.5" />
             </button>
@@ -139,8 +141,8 @@ function NotificationItem({
                 onMarkAsRead();
               }}
               className="p-1 rounded text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-active)] transition-colors"
-              title="Mark as read"
-              aria-label="Mark as read"
+              title={t('notifications.markAsRead')}
+              aria-label={t('notifications.markAsRead')}
             >
               <Check className="w-3.5 h-3.5" />
             </button>
@@ -151,8 +153,8 @@ function NotificationItem({
               onDismiss();
             }}
             className="p-1 rounded text-[var(--color-text-secondary)] hover:text-[var(--color-danger)] hover:bg-[var(--color-surface-active)] transition-colors"
-            title="Dismiss"
-            aria-label="Dismiss notification"
+            title={t('notifications.dismiss')}
+            aria-label={t('notifications.dismissNotification')}
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -177,6 +179,7 @@ function TabButton({
   count?: number;
   onClick: () => void;
 }) {
+  const { t } = useTranslation('smithy');
   return (
     <button
       onClick={onClick}
@@ -195,7 +198,7 @@ function TabButton({
           min-w-[18px] h-[18px] flex items-center justify-center text-xs font-bold rounded-full px-1
           ${active ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-surface-hover)] text-[var(--color-text-secondary)]'}
         `}>
-          {count > 99 ? '99+' : count}
+          {count > 99 ? t('notifications.overflow') : count}
         </span>
       )}
     </button>
@@ -218,6 +221,7 @@ export function NotificationSidebar({
   onClearAll,
   onOpenSettings,
 }: NotificationSidebarProps) {
+  const { t } = useTranslation('smithy');
   const navigate = useNavigate();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<SidebarTab>('all');
@@ -305,7 +309,7 @@ export function NotificationSidebar({
           ${isOpen ? 'translate-x-0' : 'translate-x-full'}
         `}
         role="dialog"
-        aria-label="Notification sidebar"
+        aria-label={t('notifications.sidebarLabel')}
         aria-hidden={!isOpen}
         data-testid="notification-sidebar"
       >
@@ -313,10 +317,10 @@ export function NotificationSidebar({
         <div className="flex items-center justify-between px-4 py-3 bg-[var(--color-surface-elevated)] border-b border-[var(--color-border)] flex-shrink-0">
           <div className="flex items-center gap-2">
             <Bell className="w-5 h-5 text-[var(--color-text)]" />
-            <h2 className="text-base font-semibold text-[var(--color-text)]">Notifications</h2>
+            <h2 className="text-base font-semibold text-[var(--color-text)]">{t('notifications.title')}</h2>
             {!isConnected && (
               <span className="text-xs text-[var(--color-warning-text)] bg-[var(--color-warning-muted)] px-1.5 py-0.5 rounded">
-                Offline
+                {t('notifications.offline')}
               </span>
             )}
           </div>
@@ -326,8 +330,8 @@ export function NotificationSidebar({
               <button
                 onClick={onMarkAllAsRead}
                 className="p-1.5 rounded text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors"
-                title="Mark all as read"
-                aria-label="Mark all as read"
+                title={t('notifications.markAllAsRead')}
+                aria-label={t('notifications.markAllAsRead')}
               >
                 <CheckCheck className="w-4 h-4" />
               </button>
@@ -336,8 +340,8 @@ export function NotificationSidebar({
               <button
                 onClick={onClearAll}
                 className="p-1.5 rounded text-[var(--color-text-secondary)] hover:text-[var(--color-danger)] hover:bg-[var(--color-surface-hover)] transition-colors"
-                title="Clear all notifications"
-                aria-label="Clear all notifications"
+                title={t('notifications.clearAll')}
+                aria-label={t('notifications.clearAll')}
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -349,8 +353,8 @@ export function NotificationSidebar({
                   onOpenSettings();
                 }}
                 className="p-1.5 rounded text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors"
-                title="Notification settings"
-                aria-label="Notification settings"
+                title={t('notifications.notificationSettings')}
+                aria-label={t('notifications.notificationSettings')}
               >
                 <Settings className="w-4 h-4" />
               </button>
@@ -358,7 +362,7 @@ export function NotificationSidebar({
             <button
               onClick={onClose}
               className="p-1.5 rounded text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors ml-1"
-              aria-label="Close notification sidebar"
+              aria-label={t('notifications.closeSidebar')}
               data-testid="notification-sidebar-close"
             >
               <X className="w-4 h-4" />
@@ -369,18 +373,18 @@ export function NotificationSidebar({
         {/* Tabs */}
         <div className="flex items-center gap-1 px-4 py-2 border-b border-[var(--color-border)] bg-[var(--color-surface-elevated)] flex-shrink-0">
           <TabButton
-            label="All"
+            label={t('notifications.tabAll')}
             active={activeTab === 'all'}
             onClick={() => setActiveTab('all')}
           />
           <TabButton
-            label="Approvals"
+            label={t('notifications.tabApprovals')}
             active={activeTab === 'approvals'}
             count={pendingApprovals.length}
             onClick={() => setActiveTab('approvals')}
           />
           <TabButton
-            label="Notifications"
+            label={t('notifications.tabNotifications')}
             active={activeTab === 'notifications'}
             count={unreadCount}
             onClick={() => setActiveTab('notifications')}
@@ -395,7 +399,7 @@ export function NotificationSidebar({
               <div className="flex items-center gap-2 mb-3">
                 <ShieldAlert className="w-4 h-4 text-[var(--color-warning)]" />
                 <h3 className="text-sm font-semibold text-[var(--color-text)]">
-                  Pending Approvals
+                  {t('notifications.pendingApprovals')}
                 </h3>
                 <span className="min-w-[18px] h-[18px] flex items-center justify-center text-xs font-bold rounded-full px-1 bg-[var(--color-warning)] text-white">
                   {pendingApprovals.length}
@@ -419,7 +423,7 @@ export function NotificationSidebar({
           {activeTab === 'approvals' && resolvedApprovals.length > 0 && (
             <div className="px-4 py-3 border-t border-[var(--color-border)]">
               <h3 className="text-sm font-medium text-[var(--color-text-secondary)] mb-3">
-                Recently Resolved
+                {t('notifications.recentlyResolved')}
               </h3>
               <div className="space-y-2">
                 {resolvedApprovals.slice(0, 20).map((request) => (
@@ -445,8 +449,8 @@ export function NotificationSidebar({
               {notifications.length === 0 && (activeTab === 'notifications' || (activeTab === 'all' && pendingApprovals.length === 0)) ? (
                 <div className="px-4 py-12 text-center text-[var(--color-text-secondary)]">
                   <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No notifications</p>
-                  <p className="text-xs mt-1">You're all caught up!</p>
+                  <p className="text-sm">{t('notifications.noNotifications')}</p>
+                  <p className="text-xs mt-1">{t('notifications.allCaughtUp')}</p>
                 </div>
               ) : (
                 notifications.map((notification) => (
@@ -468,8 +472,8 @@ export function NotificationSidebar({
           {activeTab === 'approvals' && pendingApprovals.length === 0 && resolvedApprovals.length === 0 && (
             <div className="px-4 py-12 text-center text-[var(--color-text-secondary)]">
               <ShieldAlert className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No approval requests</p>
-              <p className="text-xs mt-1">Requests will appear here when agents need permission.</p>
+              <p className="text-sm">{t('notifications.noApprovals')}</p>
+              <p className="text-xs mt-1">{t('notifications.noApprovalsDesc')}</p>
             </div>
           )}
         </div>

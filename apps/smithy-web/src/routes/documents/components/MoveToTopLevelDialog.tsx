@@ -4,6 +4,7 @@
 
 import * as Dialog from '@radix-ui/react-dialog';
 import { AlertTriangle, X } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 
 interface MoveToTopLevelDialogProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export function MoveToTopLevelDialog({
   onConfirm,
   onCancel,
 }: MoveToTopLevelDialogProps) {
+  const { t } = useTranslation('smithy');
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onCancel()}>
       <Dialog.Portal>
@@ -36,23 +38,23 @@ export function MoveToTopLevelDialog({
             </div>
             <div className="flex-1">
               <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-white">
-                Move to All Documents?
+                {t('documents.moveToAllDocuments')}
               </Dialog.Title>
               <Dialog.Description className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                 <span className="font-medium text-gray-900 dark:text-white">
-                  "{documentName}"
+                  &quot;{documentName}&quot;
                 </span>{' '}
-                will be removed from{' '}
+                {t('documents.willBeRemovedFrom')}{' '}
                 <span className="font-medium text-gray-900 dark:text-white">
-                  "{libraryName}"
+                  &quot;{libraryName}&quot;
                 </span>{' '}
-                and moved to the top-level documents list.
+                {t('documents.andMovedToTopLevel')}
               </Dialog.Description>
             </div>
             <Dialog.Close asChild>
               <button
                 className="flex-shrink-0 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-                aria-label="Close"
+                aria-label={t('documents.close')}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -66,7 +68,7 @@ export function MoveToTopLevelDialog({
               className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50"
               data-testid="cancel-move-button"
             >
-              Cancel
+              {t('documents.cancel')}
             </button>
             <button
               onClick={onConfirm}
@@ -77,10 +79,10 @@ export function MoveToTopLevelDialog({
               {isLoading ? (
                 <>
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Moving...
+                  {t('documents.moving')}
                 </>
               ) : (
-                'Move to All Documents'
+                t('documents.moveToAllDocuments')
               )}
             </button>
           </div>

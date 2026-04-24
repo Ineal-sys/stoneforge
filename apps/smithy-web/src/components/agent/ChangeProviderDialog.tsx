@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Loader2, AlertCircle, ArrowLeftRight } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useChangeAgentProvider, useProviders } from '../../api/hooks/useAgents';
 import { getProviderLabel } from '../../lib/providers';
 
@@ -31,6 +32,7 @@ export function ChangeProviderDialog({
   currentExecutablePath,
   onSuccess,
 }: ChangeProviderDialogProps) {
+  const { t } = useTranslation('smithy');
   const [provider, setProvider] = useState(currentProvider);
   const [executablePath, setExecutablePath] = useState(currentExecutablePath ?? '');
   const [error, setError] = useState<string | null>(null);
@@ -90,7 +92,7 @@ export function ChangeProviderDialog({
       onSuccess?.();
       handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to change provider');
+      setError(err instanceof Error ? err.message : t('agent.failedToChangeProvider'));
     }
   };
 
@@ -127,7 +129,7 @@ export function ChangeProviderDialog({
               id="change-provider-title"
               className="text-lg font-semibold text-[var(--color-text)]"
             >
-              Change Provider
+              {t('agent.changeProvider')}
             </h2>
             <button
               onClick={handleClose}
@@ -138,7 +140,7 @@ export function ChangeProviderDialog({
                 hover:bg-[var(--color-surface-hover)]
                 transition-colors
               "
-              aria-label="Close dialog"
+              aria-label={t('agent.closeDialog')}
               data-testid="change-provider-close"
             >
               <X className="w-5 h-5" />
@@ -157,12 +159,12 @@ export function ChangeProviderDialog({
             {/* Provider select */}
             <div className="space-y-1">
               <label htmlFor="agent-provider" className="text-sm font-medium text-[var(--color-text)]">
-                Provider
+                {t('agent.provider')}
               </label>
               {providersLoading ? (
                 <div className="flex items-center gap-2 py-2 text-sm text-[var(--color-text-tertiary)]">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Loading providers...
+                  {t('agent.loadingProviders')}
                 </div>
               ) : (
                 <select
@@ -181,7 +183,7 @@ export function ChangeProviderDialog({
                 >
                   {providers.map(p => (
                     <option key={p.name} value={p.name} disabled={!p.available}>
-                      {getProviderLabel(p.name)}{!p.available ? ' (not installed)' : ''}
+                      {getProviderLabel(p.name)}{!p.available ? ` (${t('agent.notInstalled')})` : ''}
                     </option>
                   ))}
                 </select>
@@ -191,7 +193,7 @@ export function ChangeProviderDialog({
             {/* Executable path */}
             <div className="space-y-1">
               <label htmlFor="change-provider-executable-path" className="text-sm font-medium text-[var(--color-text)]">
-                Executable Path (optional)
+                {t('agent.executablePathOptional')}
               </label>
               <input
                 id="change-provider-executable-path"
@@ -211,7 +213,7 @@ export function ChangeProviderDialog({
                 data-testid="change-provider-executable-path"
               />
               <p className="text-xs text-[var(--color-text-tertiary)]">
-                Custom path to the provider CLI executable. Leave empty to use the default.
+                {t('agent.executablePathHint')}
               </p>
             </div>
 
@@ -231,7 +233,7 @@ export function ChangeProviderDialog({
                 "
                 data-testid="change-provider-cancel"
               >
-                Cancel
+                {t('agent.cancel')}
               </button>
               <button
                 type="submit"
@@ -252,12 +254,12 @@ export function ChangeProviderDialog({
                 {changeProvider.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Changing...
+                    {t('agent.changing')}
                   </>
                 ) : (
                   <>
                     <ArrowLeftRight className="w-4 h-4" />
-                    Change
+                    {t('agent.change')}
                   </>
                 )}
               </button>

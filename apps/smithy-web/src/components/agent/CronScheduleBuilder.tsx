@@ -8,6 +8,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Clock, Code, Calendar } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 
 // ============================================================================
 // Types
@@ -273,6 +274,7 @@ export function CronScheduleBuilder({
   onChange,
   testIdPrefix = 'cron-builder',
 }: CronScheduleBuilderProps) {
+  const { t } = useTranslation('smithy');
   // Mode: 'builder' or 'raw'
   const [mode, setMode] = useState<'builder' | 'raw'>('builder');
   const [builder, setBuilder] = useState<BuilderState>(defaultBuilderState);
@@ -329,7 +331,7 @@ export function CronScheduleBuilder({
         setRawError(null);
         onChange(newValue);
       } else if (newValue.trim()) {
-        setRawError('Invalid cron expression. Expected format: * * * * * (minute hour day month weekday)');
+        setRawError(t('agent.invalidCronExpression'));
       } else {
         setRawError(null);
       }
@@ -400,12 +402,12 @@ export function CronScheduleBuilder({
           {mode === 'builder' ? (
             <>
               <Code className="w-3 h-3" />
-              Use cron syntax
+              {t('agent.useCronSyntax')}
             </>
           ) : (
             <>
               <Calendar className="w-3 h-3" />
-              Use schedule builder
+              {t('agent.useScheduleBuilder')}
             </>
           )}
         </button>
@@ -687,7 +689,7 @@ export function CronScheduleBuilder({
             type="text"
             value={rawValue}
             onChange={e => handleRawChange(e.target.value)}
-            placeholder="0 * * * * (every hour)"
+            placeholder={t('agent.cronPlaceholder')}
             className={`
               w-full px-2 py-1
               text-xs font-mono
@@ -719,7 +721,7 @@ export function CronScheduleBuilder({
 
           {/* Syntax help */}
           <p className="text-xs text-[var(--color-text-tertiary)]">
-            Format: minute (0-59) hour (0-23) day (1-31) month (1-12) weekday (0-6, Sun=0)
+            {t('agent.cronFormatHint')}
           </p>
         </div>
       )}

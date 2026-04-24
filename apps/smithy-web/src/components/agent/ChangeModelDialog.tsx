@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Loader2, AlertCircle, Settings } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useChangeAgentModel, useProviderModels } from '../../api/hooks/useAgents';
 
 export interface ChangeModelDialogProps {
@@ -23,6 +24,7 @@ export function ChangeModelDialog({
   currentProvider,
   onSuccess,
 }: ChangeModelDialogProps) {
+  const { t } = useTranslation('smithy');
   // Use empty string for "default" model
   const [model, setModel] = useState(currentModel ?? '');
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +63,7 @@ export function ChangeModelDialog({
       onSuccess?.();
       handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to change model');
+      setError(err instanceof Error ? err.message : t('agent.failedToChangeModel'));
     }
   };
 
@@ -102,7 +104,7 @@ export function ChangeModelDialog({
               id="change-model-title"
               className="text-lg font-semibold text-[var(--color-text)]"
             >
-              Change Model
+              {t('agent.changeModel')}
             </h2>
             <button
               onClick={handleClose}
@@ -113,7 +115,7 @@ export function ChangeModelDialog({
                 hover:bg-[var(--color-surface-hover)]
                 transition-colors
               "
-              aria-label="Close dialog"
+              aria-label={t('agent.closeDialog')}
               data-testid="change-model-close"
             >
               <X className="w-5 h-5" />
@@ -133,19 +135,19 @@ export function ChangeModelDialog({
             {modelsError && (
               <div className="flex items-center gap-2 px-3 py-2 text-sm text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                Failed to load models. Try again later.
+                {t('agent.failedToLoadModels')}
               </div>
             )}
 
             {/* Model select */}
             <div className="space-y-1">
               <label htmlFor="agent-model" className="text-sm font-medium text-[var(--color-text)]">
-                Model
+                {t('agent.model')}
               </label>
               {modelsLoading ? (
                 <div className="flex items-center gap-2 py-2 text-sm text-[var(--color-text-tertiary)]">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Loading models...
+                  {t('agent.loadingModels')}
                 </div>
               ) : (
                 <select
@@ -163,7 +165,7 @@ export function ChangeModelDialog({
                   data-testid="change-model-select"
                 >
                   <option value="">
-                    {defaultModel ? `Default (${defaultModel.displayName})` : '(Default)'}
+                    {defaultModel ? t('agent.defaultModel', { name: defaultModel.displayName }) : t('agent.defaultParen')}
                   </option>
                   {models.map(m => (
                     <option key={m.id} value={m.id}>
@@ -173,7 +175,7 @@ export function ChangeModelDialog({
                 </select>
               )}
               <p className="text-xs text-[var(--color-text-tertiary)]">
-                Select a model or use the provider's default.
+                {t('agent.selectModelHint')}
               </p>
             </div>
 
@@ -193,7 +195,7 @@ export function ChangeModelDialog({
                 "
                 data-testid="change-model-cancel"
               >
-                Cancel
+                {t('agent.cancel')}
               </button>
               <button
                 type="submit"
@@ -214,12 +216,12 @@ export function ChangeModelDialog({
                 {changeModel.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Changing...
+                    {t('agent.changing')}
                   </>
                 ) : (
                   <>
                     <Settings className="w-4 h-4" />
-                    Change
+                    {t('agent.change')}
                   </>
                 )}
               </button>

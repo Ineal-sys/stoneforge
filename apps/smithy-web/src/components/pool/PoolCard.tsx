@@ -4,6 +4,7 @@
 
 import { MoreHorizontal, Play, Pause, Trash2, Settings, Users } from 'lucide-react';
 import type { AgentPool } from '../../api/hooks/usePools';
+import { useTranslation } from '@stoneforge/i18n';
 
 interface PoolCardProps {
   pool: AgentPool;
@@ -14,6 +15,7 @@ interface PoolCardProps {
 }
 
 export function PoolCard({ pool, onToggleEnabled, onEdit, onDelete, isUpdating }: PoolCardProps) {
+  const { t } = useTranslation('smithy');
   const { config, status } = pool;
   const utilizationPercent = config.maxSize > 0 ? Math.round((status.activeCount / config.maxSize) * 100) : 0;
 
@@ -90,10 +92,10 @@ export function PoolCard({ pool, onToggleEnabled, onEdit, onDelete, isUpdating }
         </div>
       </div>
 
-      {/* Capacity bar */}
+      {/* t('pool.capacity') bar */}
       <div className="mb-3">
         <div className="flex justify-between text-xs text-[var(--color-text-secondary)] mb-1">
-          <span>Capacity</span>
+          <span>{t('pool.capacity')}</span>
           <span>{status.activeCount} / {config.maxSize} ({utilizationPercent}%)</span>
         </div>
         <div className="h-2 bg-[var(--color-surface-elevated)] rounded-full overflow-hidden">
@@ -108,10 +110,10 @@ export function PoolCard({ pool, onToggleEnabled, onEdit, onDelete, isUpdating }
         </div>
       </div>
 
-      {/* Agent Types */}
+      {/* t('pool.agentTypes') */}
       {config.agentTypes.length > 0 && (
         <div className="mb-3">
-          <p className="text-xs text-[var(--color-text-tertiary)] mb-1">Agent Types</p>
+          <p className="text-xs text-[var(--color-text-tertiary)] mb-1">{t('pool.agentTypes')}</p>
           <div className="flex flex-wrap gap-1">
             {config.agentTypes.map((typeConfig, i) => {
               let label = typeConfig.role === 'worker'

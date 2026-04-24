@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import { ChevronDown, ChevronRight, Bot, Wrench, AlertCircle, User, Info, CheckCircle, Loader2 } from 'lucide-react';
 import type { StreamEvent } from './types';
 import type { PaneStatus } from './types';
@@ -101,6 +102,7 @@ function StreamEventCard({
   event: StreamEvent;
   isLast: boolean;
 }) {
+  const { t } = useTranslation('smithy');
   // Tool events are minimized by default, other events are expanded
   const isToolEvent = event.type === 'tool_use' || event.type === 'tool_result';
   const [isExpanded, setIsExpanded] = useState(!isToolEvent);
@@ -180,7 +182,7 @@ function StreamEventCard({
           {event.toolInput != null && (
             <div className="mt-1.5">
               <div className="text-[10px] font-medium text-[var(--color-text-secondary)] mb-0.5">
-                Input:
+                {t('workspaces.inputLabel')}
               </div>
               <pre className="
                 text-[10px] font-mono p-1.5 rounded
@@ -199,7 +201,7 @@ function StreamEventCard({
           {event.toolOutput && (
             <div className="mt-1.5">
               <div className="text-[10px] font-medium text-[var(--color-text-secondary)] mb-0.5">
-                Output:
+                {t('workspaces.outputLabel')}
               </div>
               <pre className="
                 text-[10px] font-mono p-1.5 rounded
@@ -261,6 +263,7 @@ function ToolCallGroupCard({
   events: StreamEvent[];
   isLast: boolean;
 }) {
+  const { t } = useTranslation('smithy');
   const [isExpanded, setIsExpanded] = useState(false);
   const colors = eventColors.tool_use;
 
@@ -300,7 +303,7 @@ function ToolCallGroupCard({
         <Wrench className="w-3.5 h-3.5 flex-shrink-0" />
 
         <span className="text-[10px] font-semibold uppercase tracking-wide flex-shrink-0">
-          {toolUseCount} tool call{toolUseCount !== 1 ? 's' : ''}
+          {t('workspaces.toolCallCount', { count: toolUseCount })}
         </span>
 
         {toolNameSummary && (
@@ -311,7 +314,7 @@ function ToolCallGroupCard({
 
         {toolResultCount > 0 && (
           <span className="text-[10px] opacity-60 flex-shrink-0">
-            • {toolResultCount} result{toolResultCount !== 1 ? 's' : ''}
+            • {t('workspaces.resultCount', { count: toolResultCount })}
           </span>
         )}
       </div>
@@ -344,6 +347,7 @@ export function StreamViewer({
   enableFileDrop = true,
   'data-testid': testId = 'stream-viewer',
 }: StreamViewerProps) {
+const { t } = useTranslation('smithy');
   const [events, setEvents] = useState<StreamEvent[]>([]);
   const [status, setStatus] = useState<PaneStatus>('disconnected');
   const [isDragOver, setIsDragOver] = useState(false);
@@ -1156,10 +1160,10 @@ export function StreamViewer({
               />
             </svg>
             <span className="text-sm font-medium text-[var(--color-text)]">
-              Drop files to upload
+              {t('workspaces.dropFilesToUpload')}
             </span>
             <span className="text-xs text-[var(--color-text-muted)]">
-              File paths will be added to input
+              {t('workspaces.filePathsAddedToInput')}
             </span>
           </div>
         </div>
@@ -1191,7 +1195,7 @@ export function StreamViewer({
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-            <span className="text-sm text-[var(--color-text)]">Uploading...</span>
+            <span className="text-sm text-[var(--color-text)]">{t('workspaces.uploading')}</span>
           </div>
         </div>
       )}
@@ -1214,10 +1218,10 @@ export function StreamViewer({
             <Bot className="w-8 h-8 mb-2 opacity-50" />
             <p className="text-sm">
               {status === 'connected'
-                ? `Waiting for output from ${agentName}...`
+                ? t('workspaces.waitingForOutput', { name: agentName })
                 : status === 'connecting'
-                ? 'Connecting...'
-                : 'Not connected'}
+                ? t('workspaces.connecting')
+                : t('workspaces.notConnected')}
             </p>
           </div>
         ) : (
@@ -1248,7 +1252,7 @@ export function StreamViewer({
                 data-testid="working-indicator"
               >
                 <Loader2 className="w-4 h-4 animate-spin text-[var(--color-primary)]" />
-                <span className="text-sm">Agent is working...</span>
+                <span className="text-sm">{t('workspaces.agentWorking')}</span>
               </div>
             )}
           </>
@@ -1259,7 +1263,7 @@ export function StreamViewer({
       <TerminalInput
         isConnected={status === 'connected' || (!hasActiveSession && !!providerSessionId && !!onResumeWithMessage)}
         onSend={sendInput}
-        connectedPlaceholder={hasActiveSession ? undefined : 'Send a message to resume this session...'}
+        connectedPlaceholder={hasActiveSession ? undefined : t('workspaces.sendMessageToResume')}
         data-testid="stream-input"
       />
     </div>

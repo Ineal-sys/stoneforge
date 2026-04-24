@@ -10,6 +10,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   X,
   Bot,
@@ -50,51 +51,51 @@ export interface CreateAgentDialogProps {
   onSuccess?: (agent: { id: string; name: string }) => void;
 }
 
-const roleDescriptions: Record<AgentRole, { icon: typeof Bot; color: string; description: string }> = {
+const roleDescriptions: Record<AgentRole, { icon: typeof Bot; color: string; descriptionKey: string }> = {
   director: {
     icon: Bot,
     color: 'purple',
-    description: 'Strategic agent that creates and assigns tasks. One per workspace.',
+    descriptionKey: 'createAgent.directorDesc',
   },
   worker: {
     icon: Terminal,
     color: 'blue',
-    description: 'Execution agent that produces code and completes tasks.',
+    descriptionKey: 'createAgent.workerDesc',
   },
   steward: {
     icon: Radio,
     color: 'amber',
-    description: 'Support agent that performs automated maintenance tasks.',
+    descriptionKey: 'createAgent.stewardDesc',
   },
 };
 
-const stewardFocusOptions: Record<StewardFocus, { label: string; description: string }> = {
+const stewardFocusOptions: Record<StewardFocus, { labelKey: string; descriptionKey: string }> = {
   merge: {
-    label: 'Merge Steward',
-    description: 'Handles merging completed branches, running tests, and cleanup.',
+    labelKey: 'createAgent.mergeSteward',
+    descriptionKey: 'createAgent.mergeStewardDesc',
   },
   docs: {
-    label: 'Documentation Steward',
-    description: 'Reviews, updates, and maintains workspace documents.',
+    labelKey: 'createAgent.docsSteward',
+    descriptionKey: 'createAgent.docsStewardDesc',
   },
   recovery: {
-    label: 'Recovery Steward',
-    description: 'Diagnoses and recovers tasks left in broken state by workers.',
+    labelKey: 'createAgent.recoverySteward',
+    descriptionKey: 'createAgent.recoveryStewardDesc',
   },
   custom: {
-    label: 'Custom Steward',
-    description: 'User-defined steward with a workflow template executed when triggers fire.',
+    labelKey: 'createAgent.customSteward',
+    descriptionKey: 'createAgent.customStewardDesc',
   },
 };
 
-const workerModeOptions: Record<WorkerMode, { label: string; description: string }> = {
+const workerModeOptions: Record<WorkerMode, { labelKey: string; descriptionKey: string }> = {
   ephemeral: {
-    label: 'Ephemeral',
-    description: 'Short-lived worker spawned per task, reports to Director.',
+    labelKey: 'createAgent.ephemeralMode',
+    descriptionKey: 'createAgent.ephemeralDesc',
   },
   persistent: {
-    label: 'Persistent',
-    description: 'Long-lived worker that handles multiple tasks, human-supervised.',
+    labelKey: 'createAgent.persistentMode',
+    descriptionKey: 'createAgent.persistentDesc',
   },
 };
 
@@ -200,6 +201,7 @@ export function CreateAgentDialog({
   hasDirector = false,
   onSuccess,
 }: CreateAgentDialogProps) {
+  const { t } = useTranslation('smithy');
   // Fetch existing agents to determine sequential naming
   const { data: agentsData } = useAgents();
   const existingAgents = useMemo(() => agentsData?.agents ?? [], [agentsData?.agents]);
@@ -303,12 +305,12 @@ export function CreateAgentDialog({
 
     // Validate
     if (!form.name.trim()) {
-      setError('Name is required');
+      setError(t('createAgent.nameRequired'));
       return;
     }
 
     if (form.role === 'steward' && form.stewardFocus === 'custom' && !form.playbookId) {
-      setError('A workflow template is required for custom stewards');
+      setError(t('createAgent.workflowRequired'));
       return;
     }
 
@@ -345,7 +347,7 @@ export function CreateAgentDialog({
       onSuccess?.({ id: result.agent.id, name: result.agent.name });
       handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create agent');
+      setError(err instanceof Error ? err.message : t('createAgent.failedCreate'));
     }
   };
 
@@ -410,7 +412,7 @@ export function CreateAgentDialog({
               id="create-agent-title"
               className="text-lg font-semibold text-[var(--color-text)]"
             >
-              Create {form.role === 'steward' ? 'Steward' : form.role === 'worker' ? 'Worker' : 'Agent'}
+              {t('createAgent.createTitle', { role: form.role === 'steward' ? 'Steward' : form.role === 'worker' ? 'Worker' : 'Agent' })}
             </h2>
             <button
               onClick={handleClose}
@@ -421,7 +423,7 @@ export function CreateAgentDialog({
                 hover:bg-[var(--color-surface-hover)]
                 transition-colors
               "
-              aria-label="Close dialog"
+              aria-label={t('createAgent.closeDialog')}
               data-testid="create-agent-close"
             >
               <X className="w-5 h-5" />
@@ -441,7 +443,7 @@ export function CreateAgentDialog({
             {!initialRole && (
               <div className="space-y-2">
                 <label className="text-sm font-medium text-[var(--color-text)]">
-                  Agent Type
+                  {t('createAgent.agentType')}
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {(Object.keys(roleDescriptions) as AgentRole[]).map(role => {
@@ -464,7 +466,7 @@ export function CreateAgentDialog({
                               : 'border-[var(--color-border)] hover:border-[var(--color-border-hover)]'
                           }
                         `}
-                        title={isDisabled ? 'A Director already exists. Use the menu on the existing Director card to rename it.' : undefined}
+                        title={isDisabled ? t('createAgent.directorExists') : undefined}
                         data-testid={`role-${role}`}
                       >
                         <Icon className={`w-6 h-6 ${isDisabled ? 'text-[var(--color-text-tertiary)]' : isSelected ? `text-${config.color}-600 dark:text-${config.color}-400` : 'text-[var(--color-text-secondary)]'}`} />
@@ -472,14 +474,14 @@ export function CreateAgentDialog({
                           {role}
                         </span>
                         {isDisabled && (
-                          <span className="text-xs text-[var(--color-text-tertiary)]">(exists)</span>
+                          <span className="text-xs text-[var(--color-text-tertiary)]">{t('createAgent.exists')}</span>
                         )}
                       </button>
                     );
                   })}
                 </div>
                 <p className="text-xs text-[var(--color-text-tertiary)]">
-                  {roleConfig.description}
+                  {t(roleConfig.descriptionKey)}
                 </p>
               </div>
             )}
@@ -487,7 +489,7 @@ export function CreateAgentDialog({
             {/* Name */}
             <div className="space-y-1">
               <label htmlFor="agent-name" className="text-sm font-medium text-[var(--color-text)]">
-                Name
+                {t('createAgent.nameLabel')}
               </label>
               <input
                 id="agent-name"
@@ -497,7 +499,7 @@ export function CreateAgentDialog({
                   setNameManuallyEdited(true);
                   setForm(prev => ({ ...prev, name: e.target.value }));
                 }}
-                placeholder={`e.g., ${form.role === 'steward' ? 'Merge Bot' : form.role === 'worker' ? 'Alice' : 'Director'}`}
+                placeholder={t('createAgent.namePlaceholder', { example: form.role === 'steward' ? 'Merge Bot' : form.role === 'worker' ? 'Alice' : 'Director' })}
                 className="
                   w-full px-3 py-2
                   text-sm
@@ -516,7 +518,7 @@ export function CreateAgentDialog({
             {form.role === 'worker' && (
               <div className="space-y-2">
                 <label className="text-sm font-medium text-[var(--color-text)]">
-                  Worker Mode
+                  {t('createAgent.workerMode')}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {(Object.keys(workerModeOptions) as WorkerMode[]).map(mode => {
@@ -543,10 +545,10 @@ export function CreateAgentDialog({
                         )}
                         <div>
                           <div className={`text-sm font-medium ${isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-[var(--color-text)]'}`}>
-                            {config.label}
+                            {t(config.labelKey)}
                           </div>
                           <div className="text-xs text-[var(--color-text-tertiary)]">
-                            {config.description}
+                            {t(config.descriptionKey)}
                           </div>
                         </div>
                       </button>
@@ -560,7 +562,7 @@ export function CreateAgentDialog({
             {form.role === 'steward' && (
               <div className="space-y-2">
                 <label htmlFor="steward-focus" className="text-sm font-medium text-[var(--color-text)]">
-                  Focus Area
+                  {t('createAgent.focusArea')}
                 </label>
                 <div className="relative">
                   <select
@@ -580,14 +582,14 @@ export function CreateAgentDialog({
                   >
                     {(Object.keys(stewardFocusOptions) as StewardFocus[]).map(focus => (
                       <option key={focus} value={focus}>
-                        {stewardFocusOptions[focus].label}
+                        {t(stewardFocusOptions[focus].labelKey)}
                       </option>
                     ))}
                   </select>
                   <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-tertiary)] pointer-events-none" />
                 </div>
                 <p className="text-xs text-[var(--color-text-tertiary)]">
-                  {stewardFocusOptions[form.stewardFocus].description}
+                  {t(stewardFocusOptions[form.stewardFocus].descriptionKey)}
                 </p>
               </div>
             )}
@@ -596,12 +598,12 @@ export function CreateAgentDialog({
             {form.role === 'steward' && form.stewardFocus === 'custom' && (
               <div className="space-y-2">
                 <label htmlFor="steward-playbook" className="text-sm font-medium text-[var(--color-text)]">
-                  Workflow Template
+                  {t('createAgent.workflowTemplate')}
                 </label>
                 {playbooks.length === 0 ? (
                   <div className="px-3 py-4 text-sm text-[var(--color-text-secondary)] bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg">
                     <p className="mb-2">
-                      No workflow templates exist yet. Create one on the Workflows page to use with custom stewards.
+                      {t('createAgent.noWorkflowTemplates')}
                     </p>
                     <Link
                       to="/workflows"
@@ -610,7 +612,7 @@ export function CreateAgentDialog({
                       data-testid="create-workflow-template-link"
                     >
                       <Plus className="w-4 h-4" />
-                      Create Workflow Template
+                      {t('createAgent.createWorkflowTemplate')}
                     </Link>
                   </div>
                 ) : (
@@ -630,7 +632,7 @@ export function CreateAgentDialog({
                       "
                       data-testid="steward-playbook"
                     >
-                      <option value="">Select a workflow template...</option>
+                      <option value="">{t('createAgent.selectWorkflowPlaceholder')}</option>
                       {playbooks.map(pb => (
                         <option key={pb.id} value={pb.id}>
                           {pb.title}
@@ -641,7 +643,7 @@ export function CreateAgentDialog({
                   </div>
                 )}
                 <p className="text-xs text-[var(--color-text-tertiary)]">
-                  The workflow template defines this steward&apos;s behavior when its triggers fire.
+                  {t('createAgent.workflowTemplateHelp')}
                 </p>
               </div>
             )}
@@ -651,7 +653,7 @@ export function CreateAgentDialog({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium text-[var(--color-text)]">
-                    Triggers
+                    {t('createAgent.triggers')}
                   </label>
                   <div className="flex gap-1">
                     <button
@@ -661,7 +663,7 @@ export function CreateAgentDialog({
                       data-testid="add-cron-trigger"
                     >
                       <Clock className="w-3 h-3" />
-                      Cron
+                      {t('createAgent.cron')}
                     </button>
                     <button
                       type="button"
@@ -670,13 +672,13 @@ export function CreateAgentDialog({
                       data-testid="add-event-trigger"
                     >
                       <Zap className="w-3 h-3" />
-                      Event
+                      {t('createAgent.event')}
                     </button>
                   </div>
                 </div>
                 {form.triggers.length === 0 ? (
                   <p className="text-xs text-[var(--color-text-tertiary)] italic">
-                    No triggers configured. Steward will only run manually.
+                    {t('createAgent.noTriggers')}
                   </p>
                 ) : (
                   <div className="space-y-2">
@@ -690,7 +692,7 @@ export function CreateAgentDialog({
                           <div className="flex-1 space-y-1">
                             <div className="flex items-center gap-2">
                               <Clock className="w-4 h-4 text-[var(--color-text-secondary)]" />
-                              <span className="text-xs font-medium text-[var(--color-text-secondary)]">Cron Schedule</span>
+                              <span className="text-xs font-medium text-[var(--color-text-secondary)]">{t('createAgent.cronSchedule')}</span>
                             </div>
                             <CronScheduleBuilder
                               value={trigger.schedule}
@@ -702,7 +704,7 @@ export function CreateAgentDialog({
                           <div className="flex-1 space-y-1">
                             <div className="flex items-center gap-2">
                               <Zap className="w-4 h-4 text-[var(--color-text-secondary)]" />
-                              <span className="text-xs font-medium text-[var(--color-text-secondary)]">Event</span>
+                              <span className="text-xs font-medium text-[var(--color-text-secondary)]">{t('createAgent.eventLabel')}</span>
                             </div>
                             <input
                               type="text"
@@ -723,7 +725,7 @@ export function CreateAgentDialog({
                               type="text"
                               value={trigger.condition ?? ''}
                               onChange={e => updateTrigger(index, { ...trigger, condition: e.target.value || undefined })}
-                              placeholder="Condition (optional)"
+                              placeholder={t('createAgent.conditionOptional')}
                               className="
                                 w-full px-2 py-1
                                 text-xs
@@ -740,7 +742,7 @@ export function CreateAgentDialog({
                           type="button"
                           onClick={() => removeTrigger(index)}
                           className="p-1 text-[var(--color-text-tertiary)] hover:text-red-500 transition-colors"
-                          aria-label="Remove trigger"
+                          aria-label={t('createAgent.removeTrigger')}
                           data-testid={`trigger-${index}-remove`}
                         >
                           <Trash2 className="w-4 h-4" />
@@ -761,20 +763,20 @@ export function CreateAgentDialog({
                 data-testid="toggle-capabilities"
               >
                 <ChevronDown className={`w-4 h-4 transition-transform ${showCapabilities ? 'rotate-180' : ''}`} />
-                Settings & Tags
+                {t('createAgent.settingsTags')}
               </button>
               {showCapabilities && (
                 <div className="space-y-3 pl-6">
                   <div className="space-y-1">
                     <label htmlFor="agent-tags" className="text-xs font-medium text-[var(--color-text-secondary)]">
-                      Tags (comma-separated)
+                      {t('createAgent.tagsLabel')}
                     </label>
                     <input
                       id="agent-tags"
                       type="text"
                       value={form.tags}
                       onChange={e => setForm(prev => ({ ...prev, tags: e.target.value }))}
-                      placeholder="e.g., team-alpha, high-priority"
+                      placeholder={t('createAgent.tagsPlaceholder')}
                       className="
                         w-full px-3 py-1.5
                         text-sm
@@ -791,7 +793,7 @@ export function CreateAgentDialog({
                     {hasMultipleProviders && (
                       <div className="space-y-1">
                         <label htmlFor="agent-provider" className="text-xs font-medium text-[var(--color-text-secondary)]">
-                          Provider
+                          {t('createAgent.provider')}
                         </label>
                         <div className="relative">
                           <select
@@ -811,7 +813,7 @@ export function CreateAgentDialog({
                           >
                             {providers.map(p => (
                               <option key={p.name} value={p.name} disabled={!p.available}>
-                                {getProviderLabel(p.name)}{!p.available ? ' (not installed)' : ''}
+                                {getProviderLabel(p.name)}{!p.available ? t('createAgent.notInstalled') : ''}
                               </option>
                             ))}
                           </select>
@@ -822,13 +824,13 @@ export function CreateAgentDialog({
                     {/* Model selector */}
                     <div className="space-y-1">
                       <label htmlFor="agent-model" className="text-xs font-medium text-[var(--color-text-secondary)]">
-                        Model
+                        {t('createAgent.model')}
                       </label>
                       <div className="relative">
                         {modelsLoading ? (
                           <div className="flex items-center gap-2 py-1.5 text-xs text-[var(--color-text-tertiary)]">
                             <Loader2 className="w-3 h-3 animate-spin" />
-                            Loading models...
+                            {t('createAgent.loadingModels')}
                           </div>
                         ) : (
                           <select
@@ -849,7 +851,7 @@ export function CreateAgentDialog({
                             data-testid="agent-model"
                           >
                             <option value="">
-                              {defaultModel ? `Default (${defaultModel.displayName})` : '(Default)'}
+                              {defaultModel ? t('createAgent.defaultModel', { name: defaultModel.displayName }) : t('createAgent.defaultModelFallback')}
                             </option>
                             {models.map(m => (
                               <option key={m.id} value={m.id}>
@@ -867,7 +869,7 @@ export function CreateAgentDialog({
                   {/* Executable path */}
                   <div className="space-y-1">
                     <label htmlFor="agent-executable-path" className="text-xs font-medium text-[var(--color-text-secondary)]">
-                      Executable Path (optional)
+                      {t('createAgent.execPath')}
                     </label>
                     <input
                       id="agent-executable-path"
@@ -887,21 +889,21 @@ export function CreateAgentDialog({
                       data-testid="agent-executable-path"
                     />
                     <p className="text-xs text-[var(--color-text-tertiary)]">
-                      Custom path to the provider CLI executable. Leave empty to use the default.
+                      {t('createAgent.execPathHelp')}
                     </p>
                   </div>
                   {/* Target Branch (director only) */}
                   {form.role === 'director' && (
                     <div className="space-y-1">
                       <label htmlFor="agent-target-branch" className="text-xs font-medium text-[var(--color-text-secondary)]">
-                        Target Branch (optional)
+                        {t('createAgent.targetBranch')}
                       </label>
                       <input
                         id="agent-target-branch"
                         type="text"
                         value={form.targetBranch}
                         onChange={e => setForm(prev => ({ ...prev, targetBranch: e.target.value }))}
-                        placeholder="auto-detect (master/main)"
+                        placeholder={t('createAgent.targetBranchPlaceholder')}
                         className="
                           w-full px-3 py-1.5
                           text-sm
@@ -914,7 +916,7 @@ export function CreateAgentDialog({
                         data-testid="agent-target-branch"
                       />
                       <p className="text-xs text-[var(--color-text-tertiary)]">
-                        Branch to use as the base for task branches. Leave empty to auto-detect.
+                        {t('createAgent.targetBranchHelp')}
                       </p>
                     </div>
                   )}
@@ -938,7 +940,7 @@ export function CreateAgentDialog({
                 "
                 data-testid="cancel-create-agent"
               >
-                Cancel
+                {t('common:button.cancel')}
               </button>
               <button
                 type="submit"
@@ -959,12 +961,12 @@ export function CreateAgentDialog({
                 {createAgent.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Creating...
+                    {t('createAgent.creating')}
                   </>
                 ) : (
                   <>
                     <Plus className="w-4 h-4" />
-                    Create {form.role === 'steward' ? 'Steward' : form.role === 'worker' ? 'Worker' : 'Agent'}
+                    {t('createAgent.create', { role: form.role === 'steward' ? 'Steward' : form.role === 'worker' ? 'Worker' : 'Agent' })}
                   </>
                 )}
               </button>

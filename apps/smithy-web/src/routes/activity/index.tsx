@@ -8,6 +8,7 @@
 import { useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Activity as ActivityIcon, RefreshCw, Radio, WifiOff } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useKeyboardShortcut } from '@stoneforge/ui';
 import { getCurrentBinding, formatKeyBinding } from '../../lib/keyboard';
 import { useActivityStream } from '../../api/hooks/useActivity.js';
@@ -23,6 +24,7 @@ import {
 import { PresetSelectionModal } from '../../components/settings/index.js';
 
 export function ActivityPage() {
+  const { t } = useTranslation('smithy');
   const navigate = useNavigate();
   const { isConnected } = useActivityStream('all');
   const { data: daemonStatus } = useDaemonStatus();
@@ -76,9 +78,9 @@ export function ActivityPage() {
             <ActivityIcon className="w-5 h-5 text-[var(--color-primary)]" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-[var(--color-text)]">Activity</h1>
+            <h1 className="text-xl font-semibold text-[var(--color-text)]">{t('activityRoute.title')}</h1>
             <p className="text-sm text-[var(--color-text-secondary)]">
-              Command center for agent orchestration
+              {t('activityRoute.subtitle')}
             </p>
           </div>
         </div>
@@ -95,12 +97,12 @@ export function ActivityPage() {
             {isConnected ? (
               <>
                 <Radio className="w-3 h-3" />
-                Live
+                {t('activityRoute.live')}
               </>
             ) : (
               <>
                 <WifiOff className="w-3 h-3" />
-                Offline
+                {t('activityRoute.offline')}
               </>
             )}
           </div>
@@ -118,7 +120,7 @@ export function ActivityPage() {
                 daemonStatus?.isRunning ? 'bg-[var(--color-success)]' : 'bg-[var(--color-text-tertiary)]'
               }`}
             />
-            Daemon
+            {t('activityRoute.daemon')}
           </div>
 
           <button
@@ -127,7 +129,7 @@ export function ActivityPage() {
             data-testid="activity-refresh"
           >
             <RefreshCw className="w-4 h-4" />
-            Refresh
+            {t('activityRoute.refresh')}
             <kbd className="ml-1 text-xs bg-[var(--color-surface-elevated)] text-[var(--color-text-secondary)] px-1 py-0.5 rounded border border-[var(--color-border)]">
               {formatKeyBinding(getCurrentBinding('action.refreshActivity'))}
             </kbd>
@@ -141,7 +143,7 @@ export function ActivityPage() {
       {/* Section 2: Active Agents Dashboard */}
       <div data-testid="active-agents-section">
         <h2 className="text-sm font-medium text-[var(--color-text-secondary)] mb-3">
-          Active Agents
+          {t('activityRoute.activeAgents')}
         </h2>
         <ActiveAgentsDashboard
           onOpenTerminal={handleOpenTerminal}

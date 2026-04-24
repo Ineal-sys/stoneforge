@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   Search,
   FileCode,
@@ -225,6 +226,7 @@ function OptionToggle({ active, onClick, icon: Icon, label }: OptionToggleProps)
 
 export const EditorSearchPanel = forwardRef<EditorSearchPanelRef, EditorSearchPanelProps>(
   function EditorSearchPanel({ onSelectResult, className = '' }, ref) {
+    const { t } = useTranslation('smithy');
     const inputRef = useRef<HTMLInputElement>(null);
     const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
 
@@ -328,7 +330,7 @@ export const EditorSearchPanel = forwardRef<EditorSearchPanelRef, EditorSearchPa
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={isWorkspaceOpen ? 'Search...' : 'Open workspace...'}
+              placeholder={isWorkspaceOpen ? t('editor.search') : t('editor.openWorkspace')}
               className="w-full h-7 pl-7 pr-7 text-xs bg-[var(--color-surface)] border border-[var(--color-border)] rounded focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]"
               disabled={!isWorkspaceOpen}
               data-testid="editor-search-input"
@@ -337,7 +339,7 @@ export const EditorSearchPanel = forwardRef<EditorSearchPanelRef, EditorSearchPa
               <button
                 onClick={handleClear}
                 className="absolute right-1.5 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-[var(--color-surface-hover)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
-                title="Clear search"
+                title={t('editor.clearSearch')}
                 data-testid="editor-search-clear"
               >
                 <X className="w-3.5 h-3.5" />
@@ -354,19 +356,19 @@ export const EditorSearchPanel = forwardRef<EditorSearchPanelRef, EditorSearchPa
               active={options.caseSensitive ?? false}
               onClick={toggleCaseSensitive}
               icon={CaseSensitive}
-              label="Match Case"
+              label={t('editor.matchCase')}
             />
             <OptionToggle
               active={options.wholeWord ?? false}
               onClick={toggleWholeWord}
               icon={WholeWord}
-              label="Whole Word"
+              label={t('editor.wholeWord')}
             />
             <OptionToggle
               active={options.useRegex ?? false}
               onClick={toggleRegex}
               icon={Regex}
-              label="Use Regex"
+              label={t('editor.useRegex')}
             />
           </div>
 
@@ -386,7 +388,7 @@ export const EditorSearchPanel = forwardRef<EditorSearchPanelRef, EditorSearchPa
           {/* Results summary */}
           {isComplete && hasQuery && !isSearching && (
             <div className="text-xs text-[var(--color-text-muted)]">
-              {totalMatches} {totalMatches === 1 ? 'result' : 'results'} in {results.length} {results.length === 1 ? 'file' : 'files'}
+              {t('editor.resultsSummary', { matches: totalMatches, files: results.length })}
               {searchTime !== null && ` (${Math.round(searchTime)}ms)`}
             </div>
           )}
@@ -421,9 +423,9 @@ export const EditorSearchPanel = forwardRef<EditorSearchPanelRef, EditorSearchPa
           {!isWorkspaceLoading && !workspaceError && !isWorkspaceOpen && (
             <div className="flex flex-col items-center justify-center py-8 text-center px-3">
               <Loader2 className="w-8 h-8 text-[var(--color-text-muted)] mb-3 animate-spin" />
-              <h4 className="text-sm font-medium text-[var(--color-text)] mb-1">Loading...</h4>
+              <h4 className="text-sm font-medium text-[var(--color-text)] mb-1">{t('editor.loading')}</h4>
               <p className="text-xs text-[var(--color-text-secondary)]">
-                Workspace is loading
+                {t('editor.workspaceLoading')}
               </p>
             </div>
           )}
@@ -432,9 +434,9 @@ export const EditorSearchPanel = forwardRef<EditorSearchPanelRef, EditorSearchPa
           {isWorkspaceOpen && !hasQuery && !isSearching && (
             <div className="flex flex-col items-center justify-center py-8 text-center px-3">
               <Search className="w-8 h-8 text-[var(--color-text-muted)] mb-3" />
-              <h4 className="text-sm font-medium text-[var(--color-text)] mb-1">Search Files</h4>
+              <h4 className="text-sm font-medium text-[var(--color-text)] mb-1">{t('editor.searchFiles')}</h4>
               <p className="text-xs text-[var(--color-text-secondary)]">
-                Type to search in all files
+                {t('editor.typeToSearch')}
               </p>
             </div>
           )}
@@ -443,9 +445,9 @@ export const EditorSearchPanel = forwardRef<EditorSearchPanelRef, EditorSearchPa
           {showNoResults && (
             <div className="flex flex-col items-center justify-center py-8 text-center px-3">
               <X className="w-8 h-8 text-[var(--color-text-muted)] mb-3" />
-              <h4 className="text-sm font-medium text-[var(--color-text)] mb-1">No Results</h4>
+              <h4 className="text-sm font-medium text-[var(--color-text)] mb-1">{t('editor.noResults')}</h4>
               <p className="text-xs text-[var(--color-text-secondary)]">
-                No files contain "{query}"
+                {t('editor.noFilesContain', { query })}
               </p>
             </div>
           )}

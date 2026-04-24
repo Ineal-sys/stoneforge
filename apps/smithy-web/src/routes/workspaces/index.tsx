@@ -9,6 +9,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearch, useNavigate } from '@tanstack/react-router';
 import { getCurrentBinding, formatKeyBinding } from '../../lib/keyboard';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   LayoutGrid,
   Plus,
@@ -30,14 +31,16 @@ import {
 import { useAgent, useResumeAgentSession } from '../../api/hooks/useAgents';
 
 /** Layout preset configuration */
-const layoutPresets: { id: LayoutPreset; icon: typeof Square; label: string }[] = [
-  { id: 'single', icon: Square, label: 'Single' },
-  { id: 'columns', icon: Columns, label: 'Columns' },
-  { id: 'rows', icon: Rows, label: 'Rows' },
-  { id: 'grid', icon: Grid3X3, label: 'Grid' },
+const layoutPresetConfig: { id: LayoutPreset; icon: typeof Square; labelKey: string }[] = [
+  { id: 'single', icon: Square, labelKey: 'workspaces.presetSingle' },
+  { id: 'columns', icon: Columns, labelKey: 'workspaces.presetColumns' },
+  { id: 'rows', icon: Rows, labelKey: 'workspaces.presetRows' },
+  { id: 'grid', icon: Grid3X3, labelKey: 'workspaces.presetGrid' },
 ];
 
 export function WorkspacesPage() {
+  const { t } = useTranslation('smithy');
+  const layoutPresets = layoutPresetConfig.map(p => ({ ...p, label: t(p.labelKey) }));
   const search = useSearch({ from: '/workspaces' }) as {
     layout?: string;
     agent?: string;
@@ -153,9 +156,9 @@ export function WorkspacesPage() {
             <LayoutGrid className="w-5 h-5 text-[var(--color-primary)]" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-[var(--color-text)]">Workspaces</h1>
+            <h1 className="text-xl font-semibold text-[var(--color-text)]">{t('workspaces.title')}</h1>
             <p className="text-sm text-[var(--color-text-secondary)]">
-              Terminal multiplexer for agent sessions
+              {t('workspaces.subtitle')}
               {paneCount > 0 && ` • ${paneCount} pane${paneCount === 1 ? '' : 's'}`}
             </p>
           </div>
@@ -198,7 +201,7 @@ export function WorkspacesPage() {
                   data-testid="layout-menu"
                 >
                   <div className="px-3 py-1.5 text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wide">
-                    Layout Presets
+                    {t('workspaces.layoutPresets')}
                   </div>
                   {layoutPresets.map((preset) => (
                     <button
@@ -226,7 +229,7 @@ export function WorkspacesPage() {
                     <>
                       <div className="my-1 border-t border-[var(--color-border)]" />
                       <div className="px-3 py-1.5 text-xs font-medium text-[var(--color-text-tertiary)] uppercase tracking-wide">
-                        Saved Layouts
+                        {t('workspaces.savedLayouts')}
                       </div>
                       {savedLayouts.map((saved) => (
                         <div
@@ -245,7 +248,7 @@ export function WorkspacesPage() {
                           <button
                             onClick={() => deleteLayout(saved.id)}
                             className="p-1 rounded text-[var(--color-text-tertiary)] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-                            title="Delete layout"
+                            title={t('workspaces.deleteLayout')}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -266,7 +269,7 @@ export function WorkspacesPage() {
                         className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]"
                       >
                         <Save className="w-4 h-4" />
-                        Save Current Layout
+                        {t('workspaces.saveCurrentLayout')}
                       </button>
                     </>
                   )}
@@ -281,7 +284,7 @@ export function WorkspacesPage() {
                       className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                     >
                       <Trash2 className="w-4 h-4" />
-                      Clear All Panes
+                      {t('workspaces.clearAllPanes')}
                     </button>
                   )}
                 </div>
@@ -301,11 +304,11 @@ export function WorkspacesPage() {
                 hover:bg-[var(--color-surface-hover)]
                 transition-colors duration-150
               "
-              title="Rotate grid layout"
+              title={t('workspaces.rotateGridLayout')}
               data-testid="workspaces-rotate-btn"
             >
               <RotateCw className="w-4 h-4" />
-              <span className="hidden @sm:inline">Rotate</span>
+              <span className="hidden @sm:inline">{t('workspaces.rotate')}</span>
             </button>
           )}
 
@@ -323,7 +326,7 @@ export function WorkspacesPage() {
             data-testid="workspaces-add-pane"
           >
             <Plus className="w-4 h-4" />
-            <span className="hidden @sm:inline">Add Pane</span>
+            <span className="hidden @sm:inline">{t('workspaces.addPane')}</span>
             <kbd className="hidden @sm:inline ml-1 text-xs bg-[var(--color-primary-700)]/50 text-white px-1 py-0.5 rounded">
               {formatKeyBinding(getCurrentBinding('action.addPane'))}
             </kbd>
@@ -365,10 +368,10 @@ export function WorkspacesPage() {
           >
             <LayoutGrid className="w-12 h-12 text-[var(--color-text-tertiary)] mb-4 opacity-50" />
             <h2 className="text-lg font-medium text-[var(--color-text)] mb-1">
-              No Terminal Panes
+              {t('workspaces.noTerminalPanes')}
             </h2>
             <p className="text-sm text-[var(--color-text-secondary)] mb-4 text-center max-w-sm">
-              Add panes to view and interact with your agent terminals side by side.
+              {t('workspaces.noTerminalPanesDescription')}
             </p>
             <button
               onClick={() => setShowAddPane(true)}
@@ -382,7 +385,7 @@ export function WorkspacesPage() {
               "
             >
               <Plus className="w-4 h-4" />
-              Add Your First Pane
+              {t('workspaces.addYourFirstPane')}
             </button>
           </div>
         )}
@@ -423,7 +426,7 @@ export function WorkspacesPage() {
                 type="text"
                 value={layoutName}
                 onChange={(e) => setLayoutName(e.target.value)}
-                placeholder="Layout name..."
+                placeholder={t('workspaces.layoutNamePlaceholder')}
                 className="
                   w-full px-3 py-2 mb-4
                   text-sm
@@ -449,7 +452,7 @@ export function WorkspacesPage() {
                     hover:bg-[var(--color-surface-hover)]
                   "
                 >
-                  Cancel
+                  {t('workspaces.cancel')}
                 </button>
                 <button
                   onClick={handleSaveLayout}
@@ -462,7 +465,7 @@ export function WorkspacesPage() {
                     disabled:opacity-50 disabled:cursor-not-allowed
                   "
                 >
-                  Save
+                  {t('workspaces.save')}
                 </button>
               </div>
             </div>

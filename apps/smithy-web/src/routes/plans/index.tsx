@@ -10,6 +10,7 @@
  */
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useSearch, useNavigate } from '@tanstack/react-router';
 import { ClipboardList, Plus, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -40,6 +41,7 @@ import {
 import { CreateTaskModal } from '../../components/task/CreateTaskModal';
 
 export function PlansPage() {
+  const { t } = useTranslation('smithy');
   const search = useSearch({ from: '/plans' }) as {
     selected?: string;
     status?: string;
@@ -157,11 +159,11 @@ export function PlansPage() {
       .then((data: { task?: { id: string; title: string }; id?: string; title?: string }) => {
         const task = data.task || data as { id: string; title: string };
         notifyPlanModalTaskCreated({ id: task.id, title: task.title });
-        toast.success('Task created and added to selection');
+        toast.success(t('plans.taskCreatedAndAdded'));
       })
       .catch(() => {
         // Even if fetch fails, invalidate queries to refresh the list
-        notifyPlanModalTaskCreated({ id: taskId, title: 'New Task' });
+        notifyPlanModalTaskCreated({ id: taskId, title: t('plans.newTask') });
       });
     setShowCreateTaskModal(false);
   }, []);
@@ -174,15 +176,15 @@ export function PlansPage() {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
         <AlertCircle className="w-12 h-12 text-red-400 mb-4" />
-        <h2 className="text-lg font-semibold text-[var(--color-text)]">Failed to load plans</h2>
+        <h2 className="text-lg font-semibold text-[var(--color-text)]">{t('plans.errorTitle')}</h2>
         <p className="text-[var(--color-text-secondary)] mt-1">
-          {(error as Error)?.message || 'An unknown error occurred'}
+          {(error as Error)?.message || t('plans.unknownError')}
         </p>
         <button
           onClick={() => refetch()}
           className="mt-4 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
         >
-          Retry
+          {t('plans.retry')}
         </button>
       </div>
     );
@@ -192,7 +194,7 @@ export function PlansPage() {
     <div className="flex-1 flex flex-col h-full overflow-hidden" data-testid="plans-page">
       {/* Header */}
       <PageHeader
-        title="Plans"
+        title={t('plans.title')}
         icon={ClipboardList}
         iconColor="text-blue-500"
         count={filteredPlans.length}
@@ -200,8 +202,8 @@ export function PlansPage() {
         bordered
         actions={[
           {
-            label: 'Create Plan',
-            shortLabel: 'Create',
+            label: t('plans.createPlan'),
+            shortLabel: t('plans.create'),
             icon: Plus,
             onClick: () => setShowCreateModal(true),
             shortcut: getCurrentBinding('action.createPlan'),
@@ -249,12 +251,12 @@ export function PlansPage() {
             <div className="flex flex-col items-center justify-center h-full p-6 text-center">
               <ClipboardList className="w-12 h-12 text-gray-300 mb-4" />
               <h3 className="text-lg font-medium text-[var(--color-text)]">
-                {debouncedSearch ? 'No plans found' : 'No plans yet'}
+                {debouncedSearch ? t('plans.noPlansFound') : t('plans.noPlansYet')}
               </h3>
               <p className="text-[var(--color-text-secondary)] mt-1">
                 {debouncedSearch
-                  ? 'Try adjusting your search or filters'
-                  : 'Create your first plan to get started'}
+                  ? t('plans.tryAdjusting')
+                  : t('plans.createFirst')}
               </p>
               {!debouncedSearch && (
                 <button
@@ -262,7 +264,7 @@ export function PlansPage() {
                   className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
                 >
                   <Plus className="w-4 h-4" />
-                  Create Plan
+                  {t('plans.createPlan')}
                 </button>
               )}
             </div>
@@ -315,10 +317,10 @@ export function PlansPage() {
               onClose={handlePlanDeselect}
               taskLinkBase="/tasks"
               onRemoveTaskNotAllowed={() =>
-                toast.error('Cannot remove the last task. Plans must have at least one task.')
+                toast.error(t('plans.cannotRemoveLastTask'))
               }
               onDeleteSuccess={() => {
-                toast.success('Plan deleted successfully');
+                toast.success(t('plans.planDeleted'));
                 handlePlanDeselect();
               }}
               onDeleteError={(msg: string) => toast.error(msg)}

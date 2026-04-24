@@ -11,6 +11,7 @@
  */
 
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
@@ -33,6 +34,7 @@ export function Pagination({
   onPageSizeChange,
   showPageSizeSelector = true,
 }: PaginationProps) {
+  const { t } = useTranslation('smithy');
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, totalItems);
 
@@ -106,7 +108,7 @@ export function Pagination({
               onChange={(e) => onPageSizeChange(parseInt(e.target.value, 10))}
               className="px-2 py-1 text-sm border border-[var(--color-border)] rounded-md bg-[var(--color-input-bg)] text-[var(--color-text)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]"
               data-testid="pagination-page-size"
-              aria-label="Items per page"
+              aria-label={t('shared.itemsPerPage')}
             >
               {PAGE_SIZE_OPTIONS.map((size) => (
                 <option key={size} value={size}>
@@ -122,23 +124,23 @@ export function Pagination({
       {/* Right side: Page navigation */}
       {totalPages > 1 && (
         <div className="flex items-center gap-1">
-          {/* First page */}
+          {/* t('shared.firstPage') */}
           <button
             onClick={() => onPageChange(1)}
             disabled={currentPage === 1}
             className="p-2 rounded hover:bg-[var(--color-surface-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            aria-label="First page"
+            aria-label={t('shared.firstPage')}
             data-testid="pagination-first"
           >
             <ChevronsLeft className="w-4 h-4" />
           </button>
 
-          {/* Previous page */}
+          {/* t('shared.previousPage') */}
           <button
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
             className="p-2 rounded hover:bg-[var(--color-surface-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            aria-label="Previous page"
+            aria-label={t('shared.previousPage')}
             data-testid="pagination-prev"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -169,23 +171,23 @@ export function Pagination({
             )}
           </div>
 
-          {/* Next page */}
+          {/* t('shared.nextPage') */}
           <button
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
             className="p-2 rounded hover:bg-[var(--color-surface-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            aria-label="Next page"
+            aria-label={t('shared.nextPage')}
             data-testid="pagination-next"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
 
-          {/* Last page */}
+          {/* t('shared.lastPage') */}
           <button
             onClick={() => onPageChange(totalPages)}
             disabled={currentPage === totalPages}
             className="p-2 rounded hover:bg-[var(--color-surface-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            aria-label="Last page"
+            aria-label={t('shared.lastPage')}
             data-testid="pagination-last"
           >
             <ChevronsRight className="w-4 h-4" />

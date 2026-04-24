@@ -9,6 +9,7 @@
  * - Threading (TB19)
  */
 
+import { useTranslation } from '@stoneforge/i18n';
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useSearch, useNavigate } from '@tanstack/react-router';
 import { Plus } from 'lucide-react';
@@ -31,6 +32,7 @@ import type { Channel } from '../../api/hooks/useAllElements';
 
 export function MessagesPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation('smithy');
   const search = useSearch({ from: '/messages' });
   const isMobile = useContainerIsMobile();
   const { currentUser } = useCurrentUser();
@@ -59,8 +61,8 @@ export function MessagesPage() {
         }
         // Show toast for new messages in the currently selected channel
         if (msgChannelId && msgChannelId === selectedChannelId) {
-          toast.info('New message received', {
-            description: 'The conversation has been updated',
+          toast.info(t('messages.newMessageReceived'), {
+            description: t('messages.conversationUpdated'),
             duration: 3000,
           });
         }
@@ -140,8 +142,8 @@ export function MessagesPage() {
       to: '/messages',
       search: { channel: undefined, message: undefined },
     });
-    toast.success('Channel deleted', {
-      description: 'The channel has been permanently deleted',
+    toast.success(t('messages.channelDeleted'), {
+      description: t('messages.channelPermanentlyDeleted'),
       duration: 3000,
     });
   }, [navigate]);
@@ -150,8 +152,8 @@ export function MessagesPage() {
     return (
       <div data-testid="messages-page-error" className="flex items-center justify-center h-full">
         <div className="text-center px-4">
-          <p className="text-red-500 mb-2">Failed to load channels</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Please try refreshing the page</p>
+          <p className="text-red-500 mb-2">{t('messages.failedToLoadChannels')}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{t('messages.tryRefreshing')}</p>
         </div>
       </div>
     );
@@ -171,7 +173,7 @@ export function MessagesPage() {
                 data-testid="channels-loading"
                 className="flex-1 flex items-center justify-center"
               >
-                <div className="text-gray-500 dark:text-gray-400">Loading channels...</div>
+                <div className="text-gray-500 dark:text-gray-400">{t('messages.loadingChannels')}</div>
               </div>
             ) : (
               <ChannelList
@@ -191,7 +193,7 @@ export function MessagesPage() {
               onClick={() => setIsCreateModalOpen(true)}
               className="fixed bottom-20 right-4 w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center transition-colors z-30 touch-target"
               data-testid="mobile-create-channel-fab"
-              aria-label="Create new channel"
+              aria-label={t('messages.createNewChannel')}
             >
               <Plus className="w-6 h-6" />
             </button>
@@ -225,7 +227,7 @@ export function MessagesPage() {
           data-testid="channels-loading"
           className="w-64 border-r border-[var(--color-border)] flex items-center justify-center"
         >
-          <div className="text-gray-500 dark:text-gray-400">Loading channels...</div>
+          <div className="text-gray-500 dark:text-gray-400">{t('messages.loadingChannels')}</div>
         </div>
       ) : (
         <ChannelList

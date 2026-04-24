@@ -2,7 +2,29 @@
  * Utility functions for the Documents page
  */
 
+import { useTranslation } from '@stoneforge/i18n';
 import type { LibraryType, LibraryTreeNode, FlatLibraryItem } from './types';
+
+/**
+ * Hook to get translated relative time formatter
+ */
+export function useRelativeTimeFormatter() {
+  const { t } = useTranslation('smithy');
+  return (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return t('documents.justNow');
+    if (diffMins < 60) return t('documents.minutesAgo', { count: diffMins });
+    if (diffHours < 24) return t('documents.hoursAgo', { count: diffHours });
+    if (diffDays < 7) return t('documents.daysAgo', { count: diffDays });
+    return formatDate(dateString);
+  };
+}
 
 /**
  * Build a tree structure from a flat list of libraries

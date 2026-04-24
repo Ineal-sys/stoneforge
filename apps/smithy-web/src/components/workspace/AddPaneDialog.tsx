@@ -4,7 +4,8 @@
  * Allows users to select from available agents to add as a new pane.
  */
 
-import { useState } from 'react';
+import { useState } from 'react'
+import { useTranslation } from '@stoneforge/i18n';;
 import { X, Search, Terminal, Radio, Bot, Users, Zap } from 'lucide-react';
 import type { Agent, AgentRole, WorkerMode } from '../../api/types';
 import { useAgentsByRole } from '../../api/hooks/useAgents';
@@ -116,6 +117,7 @@ export function AddPaneDialog({
   onSelectAgent,
   existingAgentIds = [],
 }: AddPaneDialogProps) {
+  const { t } = useTranslation('smithy');
   const [search, setSearch] = useState('');
   const { persistentWorkers, ephemeralWorkers, stewards, isLoading, error } = useAgentsByRole();
 
@@ -208,7 +210,7 @@ export function AddPaneDialog({
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search agents..."
+                placeholder={t('workspaces.searchAgents')}
                 className="
                   w-full pl-10 pr-4 py-2
                   text-sm
