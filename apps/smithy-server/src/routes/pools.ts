@@ -8,6 +8,7 @@ import { Hono } from 'hono';
 import type { EntityId, ElementId } from '@stoneforge/core';
 import { createLogger } from '@stoneforge/smithy';
 import type { Services } from '../services.js';
+import { t } from '../i18n/index.js';
 import type { AgentPoolService, CreatePoolInput, UpdatePoolInput, PoolAgentTypeConfig } from '@stoneforge/smithy';
 
 const logger = createLogger('orchestrator');
@@ -20,7 +21,7 @@ export function createPoolRoutes(services: Services) {
   if (!poolService) {
     // Return routes that return 503 Service Unavailable
     app.all('/api/pools*', async (c) => {
-      return c.json({ error: { code: 'SERVICE_UNAVAILABLE', message: 'Pool service is not available' } }, 503);
+      return c.json({ error: { code: 'SERVICE_UNAVAILABLE', message: t('SERVICE_UNAVAILABLE') } }, 503);
     });
     return app;
   }
@@ -42,7 +43,7 @@ export function createPoolRoutes(services: Services) {
       return c.json({ pools });
     } catch (error) {
       logger.error('Failed to list pools:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.list_pools') } }, 500);
     }
   });
 
@@ -60,11 +61,11 @@ export function createPoolRoutes(services: Services) {
       };
 
       if (!body.name) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'name is required' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.name_required') } }, 400);
       }
 
       if (typeof body.maxSize !== 'number' || body.maxSize < 1 || body.maxSize > 1000) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'maxSize must be between 1 and 1000' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('MAX_SIZE_RANGE') } }, 400);
       }
 
       const input: CreatePoolInput = {
@@ -82,10 +83,10 @@ export function createPoolRoutes(services: Services) {
     } catch (error) {
       const errorMessage = String(error);
       if (errorMessage.includes('already exists')) {
-        return c.json({ error: { code: 'ALREADY_EXISTS', message: errorMessage } }, 409);
+        return c.json({ error: { code: 'ALREADY_EXISTS', message: t('ALREADY_EXISTS') } }, 409);
       }
       logger.error('Failed to create pool:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: errorMessage } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.create_pool') } }, 500);
     }
   });
 
@@ -103,13 +104,13 @@ export function createPoolRoutes(services: Services) {
       }
 
       if (!pool) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Pool not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.pool') } }, 404);
       }
 
       return c.json({ pool });
     } catch (error) {
       logger.error('Failed to get pool:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_pool') } }, 500);
     }
   });
 
@@ -128,19 +129,19 @@ export function createPoolRoutes(services: Services) {
       }
 
       if (!pool) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Pool not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.pool') } }, 404);
       }
 
       // Validate maxSize if provided
       if (body.maxSize !== undefined && (typeof body.maxSize !== 'number' || body.maxSize < 1 || body.maxSize > 1000)) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'maxSize must be between 1 and 1000' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('MAX_SIZE_RANGE') } }, 400);
       }
 
       const updatedPool = await poolService.updatePool(pool.id, body);
       return c.json({ pool: updatedPool });
     } catch (error) {
       logger.error('Failed to update pool:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.update_pool') } }, 500);
     }
   });
 
@@ -160,7 +161,7 @@ export function createPoolRoutes(services: Services) {
       }
 
       if (!pool) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Pool not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.pool') } }, 404);
       }
 
       // Check for active agents unless force is set
@@ -168,7 +169,7 @@ export function createPoolRoutes(services: Services) {
         return c.json({
           error: {
             code: 'POOL_HAS_ACTIVE_AGENTS',
-            message: `Pool has ${pool.status.activeCount} active agent(s). Use ?force=true to delete anyway.`,
+            message: t('POOL_HAS_ACTIVE_AGENTS', { count: pool.status.activeCount }),
           },
         }, 409);
       }
@@ -177,7 +178,7 @@ export function createPoolRoutes(services: Services) {
       return c.json({ success: true, deleted: pool.id });
     } catch (error) {
       logger.error('Failed to delete pool:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.delete_pool') } }, 500);
     }
   });
 
@@ -195,7 +196,7 @@ export function createPoolRoutes(services: Services) {
       }
 
       if (!pool) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Pool not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.pool') } }, 404);
       }
 
       const status = await poolService.getPoolStatus(pool.id);
@@ -206,7 +207,7 @@ export function createPoolRoutes(services: Services) {
       });
     } catch (error) {
       logger.error('Failed to get pool status:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_pool_status') } }, 500);
     }
   });
 
@@ -218,7 +219,7 @@ export function createPoolRoutes(services: Services) {
       return c.json({ success: true, poolCount: pools.length });
     } catch (error) {
       logger.error('Failed to refresh pool statuses:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.refresh_pools') } }, 500);
     }
   });
 

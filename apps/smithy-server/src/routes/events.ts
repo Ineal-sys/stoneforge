@@ -10,6 +10,7 @@ import { EventEmitter } from 'node:events';
 import type { EntityId, ElementId } from '@stoneforge/core';
 import { createTimestamp } from '@stoneforge/core';
 import type { SpawnedSessionEvent } from '@stoneforge/smithy';
+import { t } from '../i18n/index.js';
 import { createLogger, trackListeners } from '@stoneforge/smithy';
 import type { Services } from '../services.js';
 import { generateActivitySummary } from '../formatters.js';
@@ -135,7 +136,7 @@ export function createEventRoutes(services: Services) {
       return c.json({ events: filteredEvents, hasMore, total: filteredEvents.length });
     } catch (error) {
       logger.error('Failed to list events:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_event') } }, 500);
     }
   });
 
@@ -262,14 +263,14 @@ export function createEventRoutes(services: Services) {
     try {
       const eventId = parseInt(c.req.param('id'), 10);
       if (isNaN(eventId) || eventId < 1) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'Invalid event ID' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_EVENT_ID') } }, 400);
       }
 
       const events = await api.listEvents({ limit: 1 });
       const event = events.find((e) => e.id === eventId);
 
       if (!event) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Event not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('EVENT_NOT_FOUND') } }, 404);
       }
 
       let elementType: string | undefined;
@@ -318,7 +319,7 @@ export function createEventRoutes(services: Services) {
       });
     } catch (error) {
       logger.error('Failed to get event:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_event') } }, 500);
     }
   });
 

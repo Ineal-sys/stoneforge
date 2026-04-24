@@ -12,6 +12,7 @@ import { createLogger, updateOrchestratorTaskMeta, getOrchestratorTaskMeta } fro
 import type { Services } from '../services.js';
 import { formatTaskResponse } from '../formatters.js';
 import type { QuarryAPI } from '@stoneforge/quarry';
+import { t } from '../i18n/index.js';
 
 const logger = createLogger('orchestrator');
 
@@ -89,7 +90,7 @@ export function createTaskRoutes(services: Services) {
       return c.json({ tasks: filtered.map((t) => formatTaskResponse(t)) });
     } catch (error) {
       logger.error('Failed to list tasks:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.list_tasks') } }, 500);
     }
   });
 
@@ -100,7 +101,7 @@ export function createTaskRoutes(services: Services) {
       return c.json({ tasks: tasks.map((t) => formatTaskResponse(t)) });
     } catch (error) {
       logger.error('Failed to list unassigned tasks:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.list_unassigned') } }, 500);
     }
   });
 
@@ -121,7 +122,7 @@ export function createTaskRoutes(services: Services) {
       };
 
       if (!body.title) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'title is required' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.title_required') } }, 400);
       }
 
       // Handle priority as either number (1-5) or string
@@ -174,7 +175,7 @@ export function createTaskRoutes(services: Services) {
         };
         status = statusMap[body.status];
         if (!status) {
-          return c.json({ error: { code: 'INVALID_INPUT', message: `Invalid status: ${body.status}` } }, 400);
+          return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_STATUS', { status: body.status }) } }, 400);
         }
       }
 
@@ -194,7 +195,7 @@ export function createTaskRoutes(services: Services) {
       return c.json({ task: formatTaskResponse(savedTask as unknown as Task) }, 201);
     } catch (error) {
       logger.error('Failed to create task:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.create_task') } }, 500);
     }
   });
 
@@ -220,7 +221,7 @@ export function createTaskRoutes(services: Services) {
 
       const task = await api.get<Task>(taskId);
       if (!task || task.type !== ElementType.TASK) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
       }
 
       const updates: Record<string, unknown> = {};
@@ -243,7 +244,7 @@ export function createTaskRoutes(services: Services) {
         };
         const mappedStatus = statusMap[body.status];
         if (!mappedStatus) {
-          return c.json({ error: { code: 'INVALID_INPUT', message: `Invalid status: ${body.status}` } }, 400);
+          return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_STATUS', { status: body.status }) } }, 400);
         }
         updates.status = mappedStatus;
       }
@@ -258,7 +259,7 @@ export function createTaskRoutes(services: Services) {
       if (body.mergeStatus !== undefined) {
         const validMergeStatuses = ['pending', 'testing', 'merging', 'merged', 'conflict', 'test_failed', 'failed', 'not_applicable'];
         if (!validMergeStatuses.includes(body.mergeStatus)) {
-          return c.json({ error: { code: 'INVALID_INPUT', message: `Invalid mergeStatus: ${body.mergeStatus}` } }, 400);
+          return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_MERGE_STATUS', { status: body.mergeStatus }) } }, 400);
         }
 
         const existingMeta = (task.metadata ?? {}) as Record<string, unknown>;
@@ -280,7 +281,7 @@ export function createTaskRoutes(services: Services) {
       return c.json({ task: formatTaskResponse(updatedTask) });
     } catch (error) {
       logger.error('Failed to update task:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.update_task') } }, 500);
     }
   });
 
@@ -291,7 +292,7 @@ export function createTaskRoutes(services: Services) {
       const task = await api.get<Task>(taskId);
 
       if (!task || task.type !== ElementType.TASK) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
       }
 
       let assignmentInfo = null;
@@ -320,7 +321,7 @@ export function createTaskRoutes(services: Services) {
       return c.json({ task: formattedTask, assignment: assignmentInfo });
     } catch (error) {
       logger.error('Failed to get task:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_task') } }, 500);
     }
   });
 
@@ -332,7 +333,7 @@ export function createTaskRoutes(services: Services) {
 
       const task = await api.get<Task>(taskId);
       if (!task || task.type !== ElementType.TASK) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
       }
 
       // Soft delete by setting status to tombstone
@@ -345,7 +346,7 @@ export function createTaskRoutes(services: Services) {
       return c.json({ success: true });
     } catch (error) {
       logger.error('Failed to delete task:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.delete_task') } }, 500);
     }
   });
 
@@ -358,11 +359,11 @@ export function createTaskRoutes(services: Services) {
 
       const task = await api.get<Task>(taskId);
       if (!task || task.type !== ElementType.TASK) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
       }
 
       if (task.status !== TaskStatus.OPEN) {
-        return c.json({ error: { code: 'INVALID_STATE', message: 'Task must be in open status to start' } }, 400);
+        return c.json({ error: { code: 'INVALID_STATE', message: t('INVALID_STATE.task_must_be_open') } }, 400);
       }
 
       const updatedTask = await api.update(taskId, {
@@ -372,7 +373,7 @@ export function createTaskRoutes(services: Services) {
       return c.json({ task: formatTaskResponse(updatedTask) });
     } catch (error) {
       logger.error('Failed to start task:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.start_task') } }, 500);
     }
   });
 
@@ -392,17 +393,17 @@ export function createTaskRoutes(services: Services) {
       };
 
       if (!body.agentId) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'agentId is required' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.agent_id_required') } }, 400);
       }
 
       const task = await api.get<Task>(taskId);
       if (!task || task.type !== ElementType.TASK) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
       }
 
       const agent = await agentRegistry.getAgent(body.agentId as EntityId);
       if (!agent) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Agent not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.agent') } }, 404);
       }
 
       const result = await dispatchService.dispatch(taskId, body.agentId as EntityId, {
@@ -425,7 +426,7 @@ export function createTaskRoutes(services: Services) {
       });
     } catch (error) {
       logger.error('Failed to dispatch task:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.dispatch_task') } }, 500);
     }
   });
 
@@ -446,17 +447,17 @@ export function createTaskRoutes(services: Services) {
       };
 
       if (!body.agentId) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'agentId is required' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.agent_id_required') } }, 400);
       }
 
       const task = await api.get<Task>(taskId);
       if (!task || task.type !== ElementType.TASK) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
       }
 
       const agent = await agentRegistry.getAgent(body.agentId as EntityId);
       if (!agent) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Agent not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.agent') } }, 404);
       }
 
       const result = await workerTaskService.startWorkerOnTask(taskId, body.agentId as EntityId, {
@@ -496,10 +497,10 @@ export function createTaskRoutes(services: Services) {
     } catch (error) {
       const errorMessage = String(error);
       if (errorMessage.includes('not a worker')) {
-        return c.json({ error: { code: 'INVALID_AGENT', message: 'Agent is not a worker' } }, 400);
+        return c.json({ error: { code: 'INVALID_AGENT', message: t('INVALID_AGENT') } }, 400);
       }
       logger.error('Failed to start worker on task:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: errorMessage } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.start_worker') } }, 500);
     }
   });
 
@@ -515,7 +516,7 @@ export function createTaskRoutes(services: Services) {
 
       const task = await api.get<Task>(taskId);
       if (!task || task.type !== ElementType.TASK) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
       }
 
       const result = await workerTaskService.completeTask(taskId, {
@@ -535,7 +536,7 @@ export function createTaskRoutes(services: Services) {
       });
     } catch (error) {
       logger.error('Failed to complete task:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.complete_task') } }, 500);
     }
   });
 
@@ -546,7 +547,7 @@ export function createTaskRoutes(services: Services) {
 
       const task = await api.get<Task>(taskId);
       if (!task || task.type !== ElementType.TASK) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
       }
 
       // Only allow reset if task has an assignee or is in_progress/review/closed
@@ -557,7 +558,7 @@ export function createTaskRoutes(services: Services) {
 
       if (!canReset) {
         return c.json(
-          { error: { code: 'BAD_REQUEST', message: 'Task cannot be reset - no assignee or work-in-progress state' } },
+          { error: { code: 'BAD_REQUEST', message: t('BAD_REQUEST.task_cannot_reset') } },
           400
         );
       }
@@ -636,7 +637,7 @@ export function createTaskRoutes(services: Services) {
       });
     } catch (error) {
       logger.error('Failed to reset task:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.reset_task') } }, 500);
     }
   });
 
@@ -650,12 +651,12 @@ export function createTaskRoutes(services: Services) {
 
       const task = await api.get<Task>(taskId);
       if (!task || task.type !== ElementType.TASK) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
       }
 
       if (task.status !== TaskStatus.CLOSED) {
         return c.json(
-          { error: { code: 'BAD_REQUEST', message: `Task is not closed (status: ${task.status})` } },
+          { error: { code: 'BAD_REQUEST', message: t('BAD_REQUEST.task_not_closed', { status: task.status }) } },
           400
         );
       }
@@ -725,7 +726,7 @@ export function createTaskRoutes(services: Services) {
       });
     } catch (error) {
       logger.error('Failed to reopen task:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.reopen_task') } }, 500);
     }
   });
 
@@ -739,14 +740,14 @@ export function createTaskRoutes(services: Services) {
 
       const task = await api.get<Task>(taskId);
       if (!task || task.type !== ElementType.TASK) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
       }
 
       // Use workerId from query param, or fall back to task assignee
       const workerId = (workerIdParam as EntityId) || task.assignee;
       if (!workerId) {
         return c.json(
-          { error: { code: 'BAD_REQUEST', message: 'workerId query parameter required when task has no assignee' } },
+          { error: { code: 'BAD_REQUEST', message: t('BAD_REQUEST.worker_id_required') } },
           400
         );
       }
@@ -757,7 +758,7 @@ export function createTaskRoutes(services: Services) {
       return c.json({ task: { id: task.id, title: task.title }, context, prompt });
     } catch (error) {
       logger.error('Failed to get task context:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_task_context') } }, 500);
     }
   });
 
@@ -769,7 +770,7 @@ export function createTaskRoutes(services: Services) {
 
       const task = await api.get<Task>(taskId);
       if (!task || task.type !== ElementType.TASK) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
       }
 
       const success = await workerTaskService.cleanupTask(taskId, body.deleteBranch ?? false);
@@ -777,7 +778,7 @@ export function createTaskRoutes(services: Services) {
       return c.json({ success, taskId, deletedBranch: success && (body.deleteBranch ?? false) });
     } catch (error) {
       logger.error('Failed to cleanup task:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.cleanup_task') } }, 500);
     }
   });
 
@@ -793,7 +794,7 @@ export function createTaskRoutes(services: Services) {
       // Verify task exists
       const task = await api.get<Task>(taskId);
       if (!task || task.type !== ElementType.TASK) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
       }
 
       // Get all dependencies where this task references a document
@@ -817,7 +818,7 @@ export function createTaskRoutes(services: Services) {
       return c.json(attachments.filter(Boolean));
     } catch (error) {
       logger.error('Failed to get task attachments:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_attachments') } }, 500);
     }
   });
 
@@ -829,19 +830,19 @@ export function createTaskRoutes(services: Services) {
 
       // Validate document ID
       if (!body.documentId || typeof body.documentId !== 'string') {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'documentId is required' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.document_id_required') } }, 400);
       }
 
       // Verify task exists
       const task = await api.get<Task>(taskId);
       if (!task || task.type !== ElementType.TASK) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
       }
 
       // Verify document exists
       const doc = await api.get(body.documentId as ElementId);
       if (!doc || doc.type !== 'document') {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Document not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.document') } }, 404);
       }
 
       // Check if already attached
@@ -850,7 +851,7 @@ export function createTaskRoutes(services: Services) {
         (dep) => dep.blockedId === taskId && dep.blockerId === body.documentId && dep.type === 'references'
       );
       if (alreadyAttached) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Document is already attached to this task' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.document_already_attached') } }, 400);
       }
 
       // Create the references dependency
@@ -864,7 +865,7 @@ export function createTaskRoutes(services: Services) {
       return c.json(doc, 201);
     } catch (error) {
       logger.error('Failed to attach document to task:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.attach_document') } }, 500);
     }
   });
 
@@ -877,7 +878,7 @@ export function createTaskRoutes(services: Services) {
       // Verify task exists
       const task = await api.get<Task>(taskId);
       if (!task || task.type !== ElementType.TASK) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
       }
 
       // Find the attachment dependency
@@ -887,7 +888,7 @@ export function createTaskRoutes(services: Services) {
       );
 
       if (!attachmentDep) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Attachment not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.attachment') } }, 404);
       }
 
       // Remove the dependency
@@ -896,7 +897,7 @@ export function createTaskRoutes(services: Services) {
       return c.json({ success: true, taskId, documentId: docId });
     } catch (error) {
       logger.error('Failed to remove task attachment:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.remove_attachment') } }, 500);
     }
   });
 
@@ -915,7 +916,7 @@ export function createTaskRoutes(services: Services) {
       // Verify task exists
       const task = await api.get<Task>(taskId);
       if (!task || task.type !== ElementType.TASK) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
       }
 
       // Get tasks that block this task (blockedBy)
@@ -987,7 +988,7 @@ export function createTaskRoutes(services: Services) {
       });
     } catch (error) {
       logger.error('Failed to get task dependencies:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_dependencies') } }, 500);
     }
   });
 
@@ -1001,7 +1002,7 @@ export function createTaskRoutes(services: Services) {
       };
 
       if (!body.blockerId) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'blockerId is required' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.blocker_id_required') } }, 400);
       }
 
       const blockerId = body.blockerId as ElementId;
@@ -1010,17 +1011,17 @@ export function createTaskRoutes(services: Services) {
       // Verify both tasks exist
       const task = await api.get<Task>(taskId);
       if (!task || task.type !== ElementType.TASK) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
       }
 
       const blockerTask = await api.get<Task>(blockerId);
       if (!blockerTask || blockerTask.type !== ElementType.TASK) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Blocker task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.blocker_task') } }, 404);
       }
 
       // Prevent self-reference
       if (taskId === blockerId) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'A task cannot block itself' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('VALIDATION_ERROR.task_cannot_block_self') } }, 400);
       }
 
       // Add the dependency (blocker blocks this task)
@@ -1041,7 +1042,7 @@ export function createTaskRoutes(services: Services) {
       });
     } catch (error) {
       logger.error('Failed to add dependency:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.add_dependency') } }, 500);
     }
   });
 
@@ -1054,7 +1055,7 @@ export function createTaskRoutes(services: Services) {
       // Verify task exists
       const task = await api.get<Task>(taskId);
       if (!task || task.type !== ElementType.TASK) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
       }
 
       // Find the dependency to get its type
@@ -1064,7 +1065,7 @@ export function createTaskRoutes(services: Services) {
       );
 
       if (!dependency) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Dependency not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.dependency') } }, 404);
       }
 
       // Remove the dependency with the correct type
@@ -1077,7 +1078,7 @@ export function createTaskRoutes(services: Services) {
       });
     } catch (error) {
       logger.error('Failed to remove dependency:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.remove_dependency') } }, 500);
     }
   });
 
@@ -1104,21 +1105,21 @@ export function createTaskRoutes(services: Services) {
       const body = (await c.req.json()) as { mergeStatus: string };
 
       if (!body.mergeStatus) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'mergeStatus is required' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.merge_status_required') } }, 400);
       }
 
       if (!VALID_MERGE_STATUSES.includes(body.mergeStatus as typeof VALID_MERGE_STATUSES[number])) {
         return c.json({
           error: {
             code: 'INVALID_INPUT',
-            message: `Invalid mergeStatus. Must be one of: ${VALID_MERGE_STATUSES.join(', ')}`,
+            message: t('INVALID_INPUT.merge_status_values', { values: VALID_MERGE_STATUSES.join(', ') }),
           },
         }, 400);
       }
 
       const task = await api.get<Task>(taskId);
       if (!task || task.type !== ElementType.TASK) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
       }
 
       // Update orchestrator metadata with new merge status
@@ -1138,7 +1139,7 @@ export function createTaskRoutes(services: Services) {
       return c.json({ task: formatTaskResponse(updatedTask) });
     } catch (error) {
       logger.error('Failed to update merge status:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.update_merge_status') } }, 500);
     }
   });
 

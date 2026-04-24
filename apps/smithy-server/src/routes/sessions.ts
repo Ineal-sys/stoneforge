@@ -13,6 +13,7 @@ import { createLogger, loadRolePrompt, getAgentMetadata, generateSessionBranchNa
 import type { Services } from '../services.js';
 import { formatSessionRecord } from '../formatters.js';
 import { notifySSEClientsOfNewSession } from './events.js';
+import { t } from '../i18n/index.js';
 
 const logger = createLogger('sessions');
 
@@ -228,14 +229,14 @@ export function createSessionRoutes(
 
       const agent = await agentRegistry.getAgent(agentId);
       if (!agent) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Agent not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.agent') } }, 404);
       }
 
       const existingSession = sessionManager.getActiveSession(agentId);
       if (existingSession) {
         return c.json(
           {
-            error: { code: 'SESSION_EXISTS', message: 'Agent already has an active session' },
+            error: { code: 'SESSION_EXISTS', message: t('SESSION_EXISTS') },
             existingSession: formatSessionRecord(existingSession),
           },
           409
@@ -254,7 +255,7 @@ export function createSessionRoutes(
             {
               error: {
                 code: 'RATE_LIMITED',
-                message: 'All executables are currently rate-limited',
+                message: t('RATE_LIMITED'),
                 retryAfter: retryAfterSeconds,
                 soonestReset: rateLimitStatus.soonestReset,
               },
@@ -330,7 +331,7 @@ export function createSessionRoutes(
       if (body.taskId) {
         const taskResult = await api.get<Task>(body.taskId as ElementId);
         if (!taskResult || taskResult.type !== ElementType.TASK) {
-          return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+          return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
         }
 
         await orchestratorApi.assignTaskToAgent(body.taskId as ElementId, agentId);
@@ -423,7 +424,7 @@ Please begin working on this task. Use \`sf task get ${taskResult.id}\` to see f
       );
     } catch (error) {
       logger.error('Failed to start session:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.start_session') } }, 500);
     }
   });
 
@@ -443,7 +444,7 @@ Please begin working on this task. Use \`sf task get ${taskResult.id}\` to see f
         } catch {
           // Agent may not exist
         }
-        return c.json({ success: true, message: 'No active session to stop' });
+        return c.json({ success: true, message: t('NO_ACTIVE_SESSION_TO_STOP') });
       }
 
       await sessionManager.stopSession(activeSession.id, {
@@ -458,7 +459,7 @@ Please begin working on this task. Use \`sf task get ${taskResult.id}\` to see f
       return c.json({ success: true, sessionId: activeSession.id });
     } catch (error) {
       logger.error('Failed to stop session:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.stop_session') } }, 500);
     }
   });
 
@@ -476,7 +477,7 @@ Please begin working on this task. Use \`sf task get ${taskResult.id}\` to see f
       });
 
       if (runningSessions.length === 0) {
-        return c.json({ success: true, stoppedCount: 0, message: 'No running sessions' });
+        return c.json({ success: true, stoppedCount: 0, message: t('NO_RUNNING_SESSIONS') });
       }
 
       // Stop each session
@@ -512,7 +513,7 @@ Please begin working on this task. Use \`sf task get ${taskResult.id}\` to see f
       });
     } catch (error) {
       logger.error('Failed to stop all sessions:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.stop_all_sessions') } }, 500);
     }
   });
 
@@ -523,14 +524,14 @@ Please begin working on this task. Use \`sf task get ${taskResult.id}\` to see f
 
       const activeSession = sessionManager.getActiveSession(agentId);
       if (!activeSession) {
-        return c.json({ error: { code: 'NO_SESSION', message: 'No active session to interrupt' } }, 404);
+        return c.json({ error: { code: 'NO_SESSION', message: t('NO_SESSION.to_interrupt') } }, 404);
       }
 
       await sessionManager.interruptSession(activeSession.id);
       return c.json({ success: true, sessionId: activeSession.id });
     } catch (error) {
       logger.error('Failed to interrupt session:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.interrupt_session') } }, 500);
     }
   });
 
@@ -548,14 +549,14 @@ Please begin working on this task. Use \`sf task get ${taskResult.id}\` to see f
 
       const agent = await agentRegistry.getAgent(agentId);
       if (!agent) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Agent not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.agent') } }, 404);
       }
 
       const existingSession = sessionManager.getActiveSession(agentId);
       if (existingSession) {
         return c.json(
           {
-            error: { code: 'SESSION_EXISTS', message: 'Agent already has an active session' },
+            error: { code: 'SESSION_EXISTS', message: t('SESSION_EXISTS') },
             existingSession: formatSessionRecord(existingSession),
           },
           409
@@ -574,7 +575,7 @@ Please begin working on this task. Use \`sf task get ${taskResult.id}\` to see f
             {
               error: {
                 code: 'RATE_LIMITED',
-                message: 'All executables are currently rate-limited',
+                message: t('RATE_LIMITED'),
                 retryAfter: retryAfterSeconds,
                 soonestReset: rateLimitStatus.soonestReset,
               },
@@ -588,7 +589,7 @@ Please begin working on this task. Use \`sf task get ${taskResult.id}\` to see f
       if (!providerSessionId) {
         const resumable = sessionManager.getMostRecentResumableSession(agentId);
         if (!resumable?.providerSessionId) {
-          return c.json({ error: { code: 'NO_RESUMABLE_SESSION', message: 'No resumable session found' } }, 404);
+          return c.json({ error: { code: 'NO_RESUMABLE_SESSION', message: t('NO_RESUMABLE_SESSION') } }, 404);
         }
         providerSessionId = resumable.providerSessionId;
       }
@@ -632,7 +633,7 @@ Please begin working on this task. Use \`sf task get ${taskResult.id}\` to see f
       return c.json({ success: true, session: formatSessionRecord(session), uwpCheck }, 201);
     } catch (error) {
       logger.error('Failed to resume session:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.resume_session') } }, 500);
     }
   });
 
@@ -642,12 +643,12 @@ Please begin working on this task. Use \`sf task get ${taskResult.id}\` to see f
 
     const activeSession = sessionManager.getActiveSession(agentId);
     if (!activeSession) {
-      return c.json({ error: { code: 'NO_SESSION', message: 'Agent has no active session' } }, 404);
+      return c.json({ error: { code: 'NO_SESSION', message: t('NO_SESSION.for_stream') } }, 404);
     }
 
     const events = sessionManager.getEventEmitter(activeSession.id);
     if (!events) {
-      return c.json({ error: { code: 'NO_EVENTS', message: 'Session event emitter not available' } }, 404);
+      return c.json({ error: { code: 'NO_EVENTS', message: t('NO_EVENTS') } }, 404);
     }
 
     // Ensure event saver is attached for this session (handles existing sessions
@@ -759,12 +760,12 @@ Please begin working on this task. Use \`sf task get ${taskResult.id}\` to see f
       };
 
       if (!body.input) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'Input is required' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.input_required') } }, 400);
       }
 
       const activeSession = sessionManager.getActiveSession(agentId);
       if (!activeSession) {
-        return c.json({ error: { code: 'NO_SESSION', message: 'Agent has no active session' } }, 404);
+        return c.json({ error: { code: 'NO_SESSION', message: t('NO_SESSION.for_input') } }, 404);
       }
 
       await spawnerService.sendInput(activeSession.id, body.input, {
@@ -787,7 +788,7 @@ Please begin working on this task. Use \`sf task get ${taskResult.id}\` to see f
       return c.json({ success: true, sessionId: activeSession.id }, 202);
     } catch (error) {
       logger.error('Failed to send input:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.send_input') } }, 500);
     }
   });
 
@@ -815,7 +816,7 @@ Please begin working on this task. Use \`sf task get ${taskResult.id}\` to see f
       return c.json({ sessions: sessions.map(formatSessionRecord) });
     } catch (error) {
       logger.error('Failed to list sessions:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.list_sessions') } }, 500);
     }
   });
 
@@ -827,7 +828,7 @@ Please begin working on this task. Use \`sf task get ${taskResult.id}\` to see f
       const sessionIdsParam = url.searchParams.get('sessionIds');
 
       if (!sessionIdsParam) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'sessionIds parameter is required' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('SESSION_IDS_REQUIRED') } }, 400);
       }
 
       const sessionIds = sessionIdsParam.split(',').filter(Boolean);
@@ -870,7 +871,7 @@ Please begin working on this task. Use \`sf task get ${taskResult.id}\` to see f
       return c.json({ messages: messagesObj });
     } catch (error) {
       logger.error('Failed to get latest messages:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_latest_messages') } }, 500);
     }
   });
 
@@ -880,12 +881,12 @@ Please begin working on this task. Use \`sf task get ${taskResult.id}\` to see f
       const sessionId = c.req.param('id');
       const session = sessionManager.getSession(sessionId);
       if (!session) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Session not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND') } }, 404);
       }
       return c.json({ session: formatSessionRecord(session) });
     } catch (error) {
       logger.error('Failed to get session:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_session') } }, 500);
     }
   });
 
@@ -958,7 +959,7 @@ Please begin working on this task. Use \`sf task get ${taskResult.id}\` to see f
       return c.json({ messages });
     } catch (error) {
       logger.error('Failed to get session messages:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_session_messages') } }, 500);
     }
   });
 

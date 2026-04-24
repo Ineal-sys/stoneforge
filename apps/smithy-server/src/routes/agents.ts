@@ -10,6 +10,7 @@ import { createLogger } from '@stoneforge/smithy';
 import { getProviderRegistry, ProviderError } from '@stoneforge/smithy/providers';
 import type { Services } from '../services.js';
 import { formatSessionRecord } from '../formatters.js';
+import { t } from '../i18n/index.js';
 
 const logger = createLogger('orchestrator');
 
@@ -26,7 +27,7 @@ export function createAgentRoutes(services: Services) {
       return c.json({ agents });
     } catch (error) {
       logger.error('Failed to list agents:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.list_agents') } }, 500);
     }
   });
 
@@ -50,7 +51,7 @@ export function createAgentRoutes(services: Services) {
       };
 
       if (!body.role || !body.name) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'role and name are required' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.role_name_required') } }, 400);
       }
 
       const createdBy = (body.createdBy ?? 'el-0000') as EntityId;
@@ -70,7 +71,7 @@ export function createAgentRoutes(services: Services) {
 
         case 'worker':
           if (!body.workerMode) {
-            return c.json({ error: { code: 'INVALID_INPUT', message: 'workerMode is required for workers' } }, 400);
+            return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.worker_mode_required') } }, 400);
           }
           agent = await agentRegistry.registerWorker({
             name: body.name,
@@ -86,7 +87,7 @@ export function createAgentRoutes(services: Services) {
 
         case 'steward':
           if (!body.stewardFocus) {
-            return c.json({ error: { code: 'INVALID_INPUT', message: 'stewardFocus is required for stewards' } }, 400);
+            return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.steward_focus_required') } }, 400);
           }
           agent = await agentRegistry.registerSteward({
             name: body.name,
@@ -104,7 +105,7 @@ export function createAgentRoutes(services: Services) {
           break;
 
         default:
-          return c.json({ error: { code: 'INVALID_INPUT', message: `Invalid role: ${body.role}` } }, 400);
+          return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_ROLE', { role: body.role }) } }, 400);
       }
 
       return c.json({ agent }, 201);
@@ -114,7 +115,7 @@ export function createAgentRoutes(services: Services) {
         return c.json({ error: { code: 'ALREADY_EXISTS', message: errorMessage } }, 409);
       }
       logger.error('Failed to register agent:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: errorMessage } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.register_agent') } }, 500);
     }
   });
 
@@ -129,7 +130,7 @@ export function createAgentRoutes(services: Services) {
       };
 
       if (!body.name) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'name is required' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.name_required') } }, 400);
       }
 
       const agent = await agentRegistry.registerDirector({
@@ -146,7 +147,7 @@ export function createAgentRoutes(services: Services) {
         return c.json({ error: { code: 'ALREADY_EXISTS', message: errorMessage } }, 409);
       }
       logger.error('Failed to register director:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: errorMessage } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.register_director') } }, 500);
     }
   });
 
@@ -163,13 +164,13 @@ export function createAgentRoutes(services: Services) {
       };
 
       if (!body.name) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'name is required' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.name_required') } }, 400);
       }
       if (!body.workerMode) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'workerMode is required' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.worker_mode_required') } }, 400);
       }
       if (body.workerMode !== 'ephemeral' && body.workerMode !== 'persistent') {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'workerMode must be "ephemeral" or "persistent"' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.worker_mode_values') } }, 400);
       }
 
       const agent = await agentRegistry.registerWorker({
@@ -188,7 +189,7 @@ export function createAgentRoutes(services: Services) {
         return c.json({ error: { code: 'ALREADY_EXISTS', message: errorMessage } }, 409);
       }
       logger.error('Failed to register worker:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: errorMessage } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.register_worker') } }, 500);
     }
   });
 
@@ -208,21 +209,21 @@ export function createAgentRoutes(services: Services) {
       };
 
       if (!body.name) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'name is required' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.name_required') } }, 400);
       }
       if (!body.stewardFocus) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'stewardFocus is required' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.steward_focus_required') } }, 400);
       }
       const validFocuses = ['merge', 'docs', 'recovery', 'custom'];
       if (!validFocuses.includes(body.stewardFocus)) {
         return c.json(
-          { error: { code: 'INVALID_INPUT', message: `stewardFocus must be one of: ${validFocuses.join(', ')}` } },
+          { error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.steward_focus_values', { values: validFocuses.join(', ') }) } },
           400
         );
       }
       if (body.stewardFocus === 'custom' && !body.playbook?.trim() && !body.playbookId?.trim()) {
         return c.json(
-          { error: { code: 'INVALID_INPUT', message: 'Either playbook or playbookId is required for custom stewards' } },
+          { error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.playbook_or_id_required') } },
           400
         );
       }
@@ -230,13 +231,13 @@ export function createAgentRoutes(services: Services) {
       if (body.triggers) {
         for (const trigger of body.triggers) {
           if (trigger.type === 'cron' && !trigger.schedule) {
-            return c.json({ error: { code: 'INVALID_INPUT', message: 'Cron trigger requires a schedule' } }, 400);
+            return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.cron_schedule_required') } }, 400);
           }
           if (trigger.type === 'event' && !trigger.event) {
-            return c.json({ error: { code: 'INVALID_INPUT', message: 'Event trigger requires an event name' } }, 400);
+            return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.event_name_required') } }, 400);
           }
           if (trigger.type !== 'cron' && trigger.type !== 'event') {
-            return c.json({ error: { code: 'INVALID_INPUT', message: 'Trigger type must be "cron" or "event"' } }, 400);
+            return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.trigger_type_values') } }, 400);
           }
         }
       }
@@ -260,7 +261,7 @@ export function createAgentRoutes(services: Services) {
         return c.json({ error: { code: 'ALREADY_EXISTS', message: errorMessage } }, 409);
       }
       logger.error('Failed to register steward:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: errorMessage } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.register_steward') } }, 500);
     }
   });
 
@@ -270,12 +271,12 @@ export function createAgentRoutes(services: Services) {
       const agentId = c.req.param('id') as EntityId;
       const agent = await agentRegistry.getAgent(agentId);
       if (!agent) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Agent not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.agent') } }, 404);
       }
       return c.json({ agent });
     } catch (error) {
       logger.error('Failed to get agent:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_agent') } }, 500);
     }
   });
 
@@ -287,19 +288,19 @@ export function createAgentRoutes(services: Services) {
 
       const agent = await agentRegistry.getAgent(agentId);
       if (!agent) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Agent not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.agent') } }, 404);
       }
 
       if (body.name !== undefined && (typeof body.name !== 'string' || body.name.trim().length === 0)) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Name must be a non-empty string' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.name_non_empty') } }, 400);
       }
 
       if (body.provider !== undefined && (typeof body.provider !== 'string' || body.provider.trim().length === 0)) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Provider must be a non-empty string' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.provider_non_empty') } }, 400);
       }
 
       if (body.model !== undefined && body.model !== null && (typeof body.model !== 'string' || body.model.trim().length === 0)) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Model must be a non-empty string or null' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.model_non_empty') } }, 400);
       }
 
       // Update name if provided
@@ -323,7 +324,7 @@ export function createAgentRoutes(services: Services) {
       return c.json({ agent: updatedAgent });
     } catch (error) {
       logger.error('Failed to update agent:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.update_agent') } }, 500);
     }
   });
 
@@ -334,20 +335,20 @@ export function createAgentRoutes(services: Services) {
 
       const agent = await agentRegistry.getAgent(agentId);
       if (!agent) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Agent not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.agent') } }, 404);
       }
 
       // Check if agent has an active session
       const activeSession = sessionManager.getActiveSession(agentId);
       if (activeSession) {
-        return c.json({ error: { code: 'AGENT_BUSY', message: 'Cannot delete agent with active session. Stop the agent first.' } }, 409);
+        return c.json({ error: { code: 'AGENT_BUSY', message: t('AGENT_BUSY') } }, 409);
       }
 
       await agentRegistry.deleteAgent(agentId);
       return c.json({ success: true });
     } catch (error) {
       logger.error('Failed to delete agent:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.delete_agent') } }, 500);
     }
   });
 
@@ -357,7 +358,7 @@ export function createAgentRoutes(services: Services) {
       const agentId = c.req.param('id') as EntityId;
       const agent = await agentRegistry.getAgent(agentId);
       if (!agent) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Agent not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.agent') } }, 404);
       }
 
       const activeSession = sessionManager.getActiveSession(agentId);
@@ -371,7 +372,7 @@ export function createAgentRoutes(services: Services) {
       });
     } catch (error) {
       logger.error('Failed to get agent status:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_agent') } }, 500);
     }
   });
 
@@ -382,7 +383,7 @@ export function createAgentRoutes(services: Services) {
 
       const agent = await agentRegistry.getAgent(agentId);
       if (!agent) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Agent not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.agent') } }, 404);
       }
 
       const workload = await taskAssignmentService.getAgentWorkload(agentId);
@@ -393,7 +394,7 @@ export function createAgentRoutes(services: Services) {
       return c.json({ agentId, agentName: agent.name, workload, hasCapacity, maxConcurrentTasks });
     } catch (error) {
       logger.error('Failed to get agent workload:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_agent_workload') } }, 500);
     }
   });
 
@@ -415,7 +416,7 @@ export function createAgentRoutes(services: Services) {
       return c.json({ providers });
     } catch (error) {
       logger.error('Failed to list providers:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.list_providers') } }, 500);
     }
   });
 
@@ -427,7 +428,7 @@ export function createAgentRoutes(services: Services) {
       const provider = registry.get(providerName);
 
       if (!provider) {
-        return c.json({ error: { code: 'NOT_FOUND', message: `Provider not found: ${providerName}` } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.provider', { name: providerName }) } }, 404);
       }
 
       const available = await provider.isAvailable();
@@ -436,7 +437,7 @@ export function createAgentRoutes(services: Services) {
           {
             error: {
               code: 'PROVIDER_UNAVAILABLE',
-              message: `Provider ${providerName} is not available. ${provider.getInstallInstructions()}`,
+              message: t('PROVIDER_UNAVAILABLE', { name: providerName, instructions: provider.getInstallInstructions() }),
             },
           },
           503
@@ -461,7 +462,7 @@ export function createAgentRoutes(services: Services) {
         );
       }
       logger.error('Failed to list provider models:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.list_provider_models') } }, 500);
     }
   });
 

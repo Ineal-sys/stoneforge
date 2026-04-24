@@ -10,6 +10,7 @@ import { randomBytes } from 'node:crypto';
 import { Hono } from 'hono';
 import { createLogger } from '@stoneforge/smithy';
 import { UPLOAD_DIR } from '../config.js';
+import { t } from '../i18n/index.js';
 
 const logger = createLogger('orchestrator');
 
@@ -27,7 +28,7 @@ export function createUploadRoutes() {
       const body = (await c.req.json()) as { filename?: string; data?: string };
 
       if (!body.data) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'No file data provided' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.no_file_data') } }, 400);
       }
 
       const buffer = Buffer.from(body.data, 'base64');
@@ -44,7 +45,7 @@ export function createUploadRoutes() {
       return c.json({ path: filePath, filename: originalName, size: buffer.length });
     } catch (error) {
       logger.error('Failed to upload file:', error);
-      return c.json({ error: { code: 'UPLOAD_FAILED', message: String(error) } }, 500);
+      return c.json({ error: { code: 'UPLOAD_FAILED', message: t('INTERNAL_ERROR.upload') } }, 500);
     }
   });
 

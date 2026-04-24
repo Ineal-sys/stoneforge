@@ -9,6 +9,7 @@ import type { ElementId } from '@stoneforge/core';
 import { createLogger } from '@stoneforge/smithy';
 import type { Services } from '../services.js';
 import { formatWorktreeInfo } from '../formatters.js';
+import { t } from '../i18n/index.js';
 
 const logger = createLogger('orchestrator');
 
@@ -20,14 +21,14 @@ export function createWorktreeRoutes(services: Services) {
   app.get('/api/worktrees', async (c) => {
     try {
       if (!worktreeManager) {
-        return c.json({ error: { code: 'WORKTREES_DISABLED', message: 'Worktree management is disabled' } }, 503);
+        return c.json({ error: { code: 'WORKTREES_DISABLED', message: t('WORKTREES_DISABLED') } }, 503);
       }
 
       const worktrees = await worktreeManager.listWorktrees();
       return c.json({ worktrees: worktrees.map(formatWorktreeInfo) });
     } catch (error) {
       logger.error('Failed to list worktrees:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.list_worktrees') } }, 500);
     }
   });
 
@@ -35,18 +36,18 @@ export function createWorktreeRoutes(services: Services) {
   app.get('/api/worktrees/:path', async (c) => {
     try {
       if (!worktreeManager) {
-        return c.json({ error: { code: 'WORKTREES_DISABLED', message: 'Worktree management is disabled' } }, 503);
+        return c.json({ error: { code: 'WORKTREES_DISABLED', message: t('WORKTREES_DISABLED') } }, 503);
       }
 
       const worktreePath = decodeURIComponent(c.req.param('path'));
       const worktree = await worktreeManager.getWorktree(worktreePath);
       if (!worktree) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Worktree not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('WORKTREE_NOT_FOUND') } }, 404);
       }
       return c.json({ worktree: formatWorktreeInfo(worktree) });
     } catch (error) {
       logger.error('Failed to get worktree:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_worktree') } }, 500);
     }
   });
 
@@ -54,7 +55,7 @@ export function createWorktreeRoutes(services: Services) {
   app.post('/api/worktrees', async (c) => {
     try {
       if (!worktreeManager) {
-        return c.json({ error: { code: 'WORKTREES_DISABLED', message: 'Worktree management is disabled' } }, 503);
+        return c.json({ error: { code: 'WORKTREES_DISABLED', message: t('WORKTREES_DISABLED') } }, 503);
       }
 
       const body = (await c.req.json()) as {
@@ -67,7 +68,7 @@ export function createWorktreeRoutes(services: Services) {
       };
 
       if (!body.agentName || !body.taskId) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'agentName and taskId are required' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT.agentName_taskId') } }, 400);
       }
 
       const result = await worktreeManager.createWorktree({
@@ -91,7 +92,7 @@ export function createWorktreeRoutes(services: Services) {
       );
     } catch (error) {
       logger.error('Failed to create worktree:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.create_worktree') } }, 500);
     }
   });
 
@@ -99,7 +100,7 @@ export function createWorktreeRoutes(services: Services) {
   app.delete('/api/worktrees/:path', async (c) => {
     try {
       if (!worktreeManager) {
-        return c.json({ error: { code: 'WORKTREES_DISABLED', message: 'Worktree management is disabled' } }, 503);
+        return c.json({ error: { code: 'WORKTREES_DISABLED', message: t('WORKTREES_DISABLED') } }, 503);
       }
 
       const worktreePath = decodeURIComponent(c.req.param('path'));
@@ -111,7 +112,7 @@ export function createWorktreeRoutes(services: Services) {
       return c.json({ success: true });
     } catch (error) {
       logger.error('Failed to remove worktree:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.remove_worktree') } }, 500);
     }
   });
 

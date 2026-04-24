@@ -10,6 +10,7 @@ import { readdir, readFile, writeFile, stat, mkdir, unlink, rename as fsRename, 
 import { Hono } from 'hono';
 import { createLogger } from '@stoneforge/smithy';
 import { PROJECT_ROOT } from '../config.js';
+import { t } from '../i18n/index.js';
 
 const logger = createLogger('orchestrator');
 
@@ -363,23 +364,23 @@ export function createWorkspaceFilesRoutes() {
 
       // Validate depth
       if (isNaN(depth) || depth < 0 || depth > 50) {
-        return c.json({ error: { code: 'INVALID_DEPTH', message: 'Depth must be between 0 and 50' } }, 400);
+        return c.json({ error: { code: 'INVALID_DEPTH', message: t('INVALID_DEPTH') } }, 400);
       }
 
       // Validate root path
       const validatedRoot = validatePath(root, workspaceRoot);
       if (!validatedRoot) {
-        return c.json({ error: { code: 'INVALID_PATH', message: 'Path is outside workspace' } }, 400);
+        return c.json({ error: { code: 'INVALID_PATH', message: t('INVALID_PATH') } }, 400);
       }
 
       // Check if directory exists
       try {
         const rootStat = await stat(validatedRoot);
         if (!rootStat.isDirectory()) {
-          return c.json({ error: { code: 'NOT_DIRECTORY', message: 'Path is not a directory' } }, 400);
+          return c.json({ error: { code: 'NOT_DIRECTORY', message: t('NOT_DIRECTORY') } }, 400);
         }
       } catch {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Directory not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('DIRECTORY_NOT_FOUND') } }, 404);
       }
 
       const entries = await readDirectoryTree(validatedRoot, workspaceRoot, 0, depth);
@@ -387,7 +388,7 @@ export function createWorkspaceFilesRoutes() {
       return c.json({ entries, root: workspaceRoot });
     } catch (error) {
       logger.error('Failed to read workspace tree:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.read_tree') } }, 500);
     }
   });
 
@@ -397,13 +398,13 @@ export function createWorkspaceFilesRoutes() {
       const path = c.req.query('path');
 
       if (!path) {
-        return c.json({ error: { code: 'MISSING_PATH', message: 'path query parameter is required' } }, 400);
+        return c.json({ error: { code: 'MISSING_PATH', message: t('MISSING_PATH') } }, 400);
       }
 
       // Validate path
       const validatedPath = validatePath(path, workspaceRoot);
       if (!validatedPath) {
-        return c.json({ error: { code: 'INVALID_PATH', message: 'Path is outside workspace' } }, 400);
+        return c.json({ error: { code: 'INVALID_PATH', message: t('INVALID_PATH') } }, 400);
       }
 
       // Check if file exists and get stats
@@ -411,16 +412,16 @@ export function createWorkspaceFilesRoutes() {
       try {
         fileStat = await stat(validatedPath);
       } catch {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'File not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('FILE_NOT_FOUND') } }, 404);
       }
 
       if (!fileStat.isFile()) {
-        return c.json({ error: { code: 'NOT_FILE', message: 'Path is not a file' } }, 400);
+        return c.json({ error: { code: 'NOT_FILE', message: t('NOT_FILE') } }, 400);
       }
 
       // Check file size
       if (fileStat.size > MAX_FILE_SIZE) {
-        return c.json({ error: { code: 'FILE_TOO_LARGE', message: `File exceeds maximum size of ${MAX_FILE_SIZE} bytes` } }, 413);
+        return c.json({ error: { code: 'FILE_TOO_LARGE', message: t('FILE_TOO_LARGE', { maxSize: MAX_FILE_SIZE }) } }, 413);
       }
 
       // Read file content
@@ -436,7 +437,7 @@ export function createWorkspaceFilesRoutes() {
       });
     } catch (error) {
       logger.error('Failed to read file:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.read_file') } }, 500);
     }
   });
 
@@ -446,17 +447,17 @@ export function createWorkspaceFilesRoutes() {
       const body = await c.req.json() as { path?: string; content?: string };
 
       if (!body.path) {
-        return c.json({ error: { code: 'MISSING_PATH', message: 'path is required' } }, 400);
+        return c.json({ error: { code: 'MISSING_PATH', message: t('MISSING_PATH') } }, 400);
       }
 
       if (body.content === undefined) {
-        return c.json({ error: { code: 'MISSING_CONTENT', message: 'content is required' } }, 400);
+        return c.json({ error: { code: 'MISSING_CONTENT', message: t('MISSING_CONTENT') } }, 400);
       }
 
       // Validate path
       const validatedPath = validatePath(body.path, workspaceRoot);
       if (!validatedPath) {
-        return c.json({ error: { code: 'INVALID_PATH', message: 'Path is outside workspace' } }, 400);
+        return c.json({ error: { code: 'INVALID_PATH', message: t('INVALID_PATH') } }, 400);
       }
 
       // Create parent directories if they don't exist
@@ -476,7 +477,7 @@ export function createWorkspaceFilesRoutes() {
       });
     } catch (error) {
       logger.error('Failed to write file:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.write_file') } }, 500);
     }
   });
 
@@ -486,13 +487,13 @@ export function createWorkspaceFilesRoutes() {
       const path = c.req.query('path');
 
       if (!path) {
-        return c.json({ error: { code: 'MISSING_PATH', message: 'path query parameter is required' } }, 400);
+        return c.json({ error: { code: 'MISSING_PATH', message: t('MISSING_PATH') } }, 400);
       }
 
       // Validate path
       const validatedPath = validatePath(path, workspaceRoot);
       if (!validatedPath) {
-        return c.json({ error: { code: 'INVALID_PATH', message: 'Path is outside workspace' } }, 400);
+        return c.json({ error: { code: 'INVALID_PATH', message: t('INVALID_PATH') } }, 400);
       }
 
       // Check if path exists and get stats
@@ -500,7 +501,7 @@ export function createWorkspaceFilesRoutes() {
       try {
         pathStat = await stat(validatedPath);
       } catch {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Path not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('SOURCE_NOT_FOUND') } }, 404);
       }
 
       // Delete based on type
@@ -516,7 +517,7 @@ export function createWorkspaceFilesRoutes() {
       });
     } catch (error) {
       logger.error('Failed to delete file:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.delete_file') } }, 500);
     }
   });
 
@@ -526,36 +527,36 @@ export function createWorkspaceFilesRoutes() {
       const body = await c.req.json() as { oldPath?: string; newPath?: string };
 
       if (!body.oldPath) {
-        return c.json({ error: { code: 'MISSING_OLD_PATH', message: 'oldPath is required' } }, 400);
+        return c.json({ error: { code: 'MISSING_OLD_PATH', message: t('MISSING_OLD_PATH') } }, 400);
       }
 
       if (!body.newPath) {
-        return c.json({ error: { code: 'MISSING_NEW_PATH', message: 'newPath is required' } }, 400);
+        return c.json({ error: { code: 'MISSING_NEW_PATH', message: t('MISSING_NEW_PATH') } }, 400);
       }
 
       // Validate old path
       const validatedOldPath = validatePath(body.oldPath, workspaceRoot);
       if (!validatedOldPath) {
-        return c.json({ error: { code: 'INVALID_PATH', message: 'oldPath is outside workspace' } }, 400);
+        return c.json({ error: { code: 'INVALID_PATH', message: t('PATH_OUTSIDE_WORKSPACE_old') } }, 400);
       }
 
       // Validate new path
       const validatedNewPath = validatePath(body.newPath, workspaceRoot);
       if (!validatedNewPath) {
-        return c.json({ error: { code: 'INVALID_PATH', message: 'newPath is outside workspace' } }, 400);
+        return c.json({ error: { code: 'INVALID_PATH', message: t('PATH_OUTSIDE_WORKSPACE_new') } }, 400);
       }
 
       // Check if source exists
       try {
         await stat(validatedOldPath);
       } catch {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Source path not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('SOURCE_NOT_FOUND') } }, 404);
       }
 
       // Check if destination already exists
       try {
         await stat(validatedNewPath);
-        return c.json({ error: { code: 'CONFLICT', message: 'Destination path already exists' } }, 409);
+        return c.json({ error: { code: 'CONFLICT', message: t('CONFLICT') } }, 409);
       } catch {
         // Destination does not exist, which is what we want
       }
@@ -574,7 +575,7 @@ export function createWorkspaceFilesRoutes() {
       });
     } catch (error) {
       logger.error('Failed to rename file:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.rename_file') } }, 500);
     }
   });
 
@@ -584,13 +585,13 @@ export function createWorkspaceFilesRoutes() {
       const body = await c.req.json() as { path?: string };
 
       if (!body.path) {
-        return c.json({ error: { code: 'MISSING_PATH', message: 'path is required' } }, 400);
+        return c.json({ error: { code: 'MISSING_PATH', message: t('MISSING_PATH') } }, 400);
       }
 
       // Validate path
       const validatedPath = validatePath(body.path, workspaceRoot);
       if (!validatedPath) {
-        return c.json({ error: { code: 'INVALID_PATH', message: 'Path is outside workspace' } }, 400);
+        return c.json({ error: { code: 'INVALID_PATH', message: t('INVALID_PATH') } }, 400);
       }
 
       // Create directory (and any intermediate directories)
@@ -602,7 +603,7 @@ export function createWorkspaceFilesRoutes() {
       });
     } catch (error) {
       logger.error('Failed to create directory:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.mkdir') } }, 500);
     }
   });
 
@@ -612,7 +613,7 @@ export function createWorkspaceFilesRoutes() {
       const body = await c.req.json() as SearchRequestBody;
 
       if (!body.query) {
-        return c.json({ error: { code: 'MISSING_QUERY', message: 'query is required' } }, 400);
+        return c.json({ error: { code: 'MISSING_QUERY', message: t('MISSING_QUERY') } }, 400);
       }
 
       const maxResults = body.maxResults || DEFAULT_MAX_RESULTS;
@@ -635,7 +636,7 @@ export function createWorkspaceFilesRoutes() {
       try {
         searchRegex = new RegExp(searchPattern, flags);
       } catch {
-        return c.json({ error: { code: 'INVALID_REGEX', message: 'Invalid regular expression' } }, 400);
+        return c.json({ error: { code: 'INVALID_REGEX', message: t('INVALID_REGEX') } }, 400);
       }
 
       const results: SearchFileResult[] = [];
@@ -661,7 +662,7 @@ export function createWorkspaceFilesRoutes() {
       });
     } catch (error) {
       logger.error('Failed to search workspace:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.search_workspace') } }, 500);
     }
   });
 

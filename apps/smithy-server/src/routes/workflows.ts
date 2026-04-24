@@ -6,6 +6,7 @@
 
 import { Hono } from 'hono';
 import { createLogger } from '@stoneforge/smithy';
+import { t } from '../i18n/index.js';
 import type { Services } from '../services.js';
 import {
   createWorkflow,
@@ -157,7 +158,7 @@ export function createWorkflowRoutes(services: Services) {
       return c.json(response);
     } catch (error) {
       logger.error('Error listing workflows:', error);
-      return c.json({ error: { code: 'LIST_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'LIST_ERROR', message: t('INTERNAL_ERROR.list_workflows') } }, 500);
     }
   });
 
@@ -170,7 +171,7 @@ export function createWorkflowRoutes(services: Services) {
       const workflow = await api.get<Workflow>(workflowId as ElementId);
 
       if (!workflow) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('WORKFLOW_NOT_FOUND') } }, 404);
       }
 
       const response: WorkflowResponse = {
@@ -180,7 +181,7 @@ export function createWorkflowRoutes(services: Services) {
       return c.json(response);
     } catch (error) {
       logger.error('Error getting workflow:', error);
-      return c.json({ error: { code: 'GET_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'GET_ERROR', message: t('INTERNAL_ERROR.get_workflow') } }, 500);
     }
   });
 
@@ -197,7 +198,7 @@ export function createWorkflowRoutes(services: Services) {
       // Verify workflow exists
       const workflow = await api.get<Workflow>(workflowId as ElementId);
       if (!workflow) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('WORKFLOW_NOT_FOUND') } }, 404);
       }
 
       // Get all dependencies to find tasks in workflow
@@ -259,7 +260,7 @@ export function createWorkflowRoutes(services: Services) {
       return c.json(response);
     } catch (error) {
       logger.error('Error getting workflow tasks:', error);
-      return c.json({ error: { code: 'GET_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'GET_ERROR', message: t('INTERNAL_ERROR.get_workflow_tasks') } }, 500);
     }
   });
 
@@ -272,7 +273,7 @@ export function createWorkflowRoutes(services: Services) {
       const { title, descriptionRef, playbookId, ephemeral, variables, tags } = body;
 
       if (!title) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Title is required' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.title_required') } }, 400);
       }
 
       // Get system entity for createdBy
@@ -301,7 +302,7 @@ export function createWorkflowRoutes(services: Services) {
       return c.json(response, 201);
     } catch (error) {
       logger.error('Error creating workflow:', error);
-      return c.json({ error: { code: 'CREATE_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'CREATE_ERROR', message: t('INTERNAL_ERROR.create_workflow') } }, 500);
     }
   });
 
@@ -316,7 +317,7 @@ export function createWorkflowRoutes(services: Services) {
 
       const workflow = await api.get<Workflow>(workflowId as ElementId);
       if (!workflow) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('WORKFLOW_NOT_FOUND') } }, 404);
       }
 
       let updatedWorkflow = workflow;
@@ -339,7 +340,7 @@ export function createWorkflowRoutes(services: Services) {
       return c.json(response);
     } catch (error) {
       logger.error('Error updating workflow:', error);
-      return c.json({ error: { code: 'UPDATE_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'UPDATE_ERROR', message: t('INTERNAL_ERROR.update_workflow') } }, 500);
     }
   });
 
@@ -352,12 +353,12 @@ export function createWorkflowRoutes(services: Services) {
 
       const workflow = await api.get<Workflow>(workflowId as ElementId);
       if (!workflow) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('WORKFLOW_NOT_FOUND') } }, 404);
       }
 
       if (workflow.status !== 'pending') {
         return c.json({
-          error: { code: 'INVALID_STATUS', message: `Cannot start workflow in status '${workflow.status}'` }
+          error: { code: 'INVALID_STATUS', message: t('INVALID_WORKFLOW_STATUS', { status: workflow.status }) }
         }, 400);
       }
 
@@ -371,7 +372,7 @@ export function createWorkflowRoutes(services: Services) {
       return c.json(response);
     } catch (error) {
       logger.error('Error starting workflow:', error);
-      return c.json({ error: { code: 'START_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'START_ERROR', message: t('INTERNAL_ERROR.start_workflow') } }, 500);
     }
   });
 
@@ -386,12 +387,12 @@ export function createWorkflowRoutes(services: Services) {
 
       const workflow = await api.get<Workflow>(workflowId as ElementId);
       if (!workflow) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('WORKFLOW_NOT_FOUND') } }, 404);
       }
 
       if (['completed', 'failed', 'cancelled'].includes(workflow.status)) {
         return c.json({
-          error: { code: 'INVALID_STATUS', message: `Cannot cancel workflow in status '${workflow.status}'` }
+          error: { code: 'INVALID_STATUS', message: t('CANNOT_CANCEL_WORKFLOW', { status: workflow.status }) }
         }, 400);
       }
 
@@ -408,7 +409,7 @@ export function createWorkflowRoutes(services: Services) {
       return c.json(response);
     } catch (error) {
       logger.error('Error cancelling workflow:', error);
-      return c.json({ error: { code: 'CANCEL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'CANCEL_ERROR', message: t('INTERNAL_ERROR.cancel_workflow') } }, 500);
     }
   });
 
@@ -421,7 +422,7 @@ export function createWorkflowRoutes(services: Services) {
 
       const workflow = await api.get<Workflow>(workflowId as ElementId);
       if (!workflow) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('WORKFLOW_NOT_FOUND') } }, 404);
       }
 
       await api.delete(workflowId as ElementId);
@@ -429,7 +430,7 @@ export function createWorkflowRoutes(services: Services) {
       return c.json({ success: true });
     } catch (error) {
       logger.error('Error deleting workflow:', error);
-      return c.json({ error: { code: 'DELETE_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'DELETE_ERROR', message: t('INTERNAL_ERROR.delete_workflow') } }, 500);
     }
   });
 
@@ -474,7 +475,7 @@ export function createWorkflowRoutes(services: Services) {
       return c.json(response);
     } catch (error) {
       logger.error('Error listing playbooks:', error);
-      return c.json({ error: { code: 'LIST_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'LIST_ERROR', message: t('INTERNAL_ERROR.list_playbooks') } }, 500);
     }
   });
 
@@ -487,7 +488,7 @@ export function createWorkflowRoutes(services: Services) {
       const playbook = await api.get<Playbook>(playbookId as ElementId);
 
       if (!playbook) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Playbook not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('PLAYBOOK_NOT_FOUND') } }, 404);
       }
 
       const response: PlaybookResponse = {
@@ -497,7 +498,7 @@ export function createWorkflowRoutes(services: Services) {
       return c.json(response);
     } catch (error) {
       logger.error('Error getting playbook:', error);
-      return c.json({ error: { code: 'GET_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'GET_ERROR', message: t('INTERNAL_ERROR.get_playbook') } }, 500);
     }
   });
 
@@ -510,11 +511,11 @@ export function createWorkflowRoutes(services: Services) {
       const { name, title, descriptionRef, steps, variables, extends: extendsArr, tags } = body;
 
       if (!name) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Name is required' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.name_required') } }, 400);
       }
 
       if (!title) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Title is required' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.title_required') } }, 400);
       }
 
       // Get system entity for createdBy
@@ -544,7 +545,7 @@ export function createWorkflowRoutes(services: Services) {
       return c.json(response, 201);
     } catch (error) {
       logger.error('Error creating playbook:', error);
-      return c.json({ error: { code: 'CREATE_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'CREATE_ERROR', message: t('INTERNAL_ERROR.create_playbook') } }, 500);
     }
   });
 
@@ -559,7 +560,7 @@ export function createWorkflowRoutes(services: Services) {
 
       const playbook = await api.get<Playbook>(playbookId as ElementId);
       if (!playbook) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Playbook not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('PLAYBOOK_NOT_FOUND') } }, 404);
       }
 
       const updatedPlaybook = updatePlaybook(playbook, {
@@ -581,7 +582,7 @@ export function createWorkflowRoutes(services: Services) {
       return c.json(response);
     } catch (error) {
       logger.error('Error updating playbook:', error);
-      return c.json({ error: { code: 'UPDATE_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'UPDATE_ERROR', message: t('INTERNAL_ERROR.update_playbook') } }, 500);
     }
   });
 
@@ -594,7 +595,7 @@ export function createWorkflowRoutes(services: Services) {
 
       const playbook = await api.get<Playbook>(playbookId as ElementId);
       if (!playbook) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Playbook not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('PLAYBOOK_NOT_FOUND') } }, 404);
       }
 
       await api.delete(playbookId as ElementId);
@@ -602,7 +603,7 @@ export function createWorkflowRoutes(services: Services) {
       return c.json({ success: true });
     } catch (error) {
       logger.error('Error deleting playbook:', error);
-      return c.json({ error: { code: 'DELETE_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'DELETE_ERROR', message: t('INTERNAL_ERROR.delete_playbook') } }, 500);
     }
   });
 
@@ -620,7 +621,7 @@ export function createWorkflowRoutes(services: Services) {
 
       const playbook = await api.get<Playbook>(playbookId as ElementId);
       if (!playbook) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Playbook not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('PLAYBOOK_NOT_FOUND') } }, 404);
       }
 
       // Get system entity for createdBy
@@ -677,7 +678,7 @@ export function createWorkflowRoutes(services: Services) {
       return c.json(response, 201);
     } catch (error) {
       logger.error('Error instantiating playbook:', error);
-      return c.json({ error: { code: 'INSTANTIATE_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INSTANTIATE_ERROR', message: t('INTERNAL_ERROR.instantiate_playbook') } }, 500);
     }
   });
 

@@ -9,6 +9,7 @@ import type { EntityId } from '@stoneforge/core';
 import { createLogger } from '@stoneforge/smithy';
 import type { Services } from '../services.js';
 import { formatExecutionEntry } from '../formatters.js';
+import { t } from '../i18n/index.js';
 
 const logger = createLogger('orchestrator');
 
@@ -43,7 +44,7 @@ export function createSchedulerRoutes(services: Services) {
       return c.json({ success: true, isRunning: stewardScheduler.isRunning() });
     } catch (error) {
       logger.error('Failed to start scheduler:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.register_steward') } }, 500);
     }
   });
 
@@ -54,7 +55,7 @@ export function createSchedulerRoutes(services: Services) {
       return c.json({ success: true, isRunning: stewardScheduler.isRunning() });
     } catch (error) {
       logger.error('Failed to stop scheduler:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.register_steward') } }, 500);
     }
   });
 
@@ -69,7 +70,7 @@ export function createSchedulerRoutes(services: Services) {
       });
     } catch (error) {
       logger.error('Failed to register stewards:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.register_steward') } }, 500);
     }
   });
 
@@ -80,7 +81,7 @@ export function createSchedulerRoutes(services: Services) {
 
       const success = await stewardScheduler.registerSteward(stewardId);
       if (!success) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Steward not found or invalid' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('STEWARD_NOT_FOUND') } }, 404);
       }
 
       return c.json({
@@ -91,7 +92,7 @@ export function createSchedulerRoutes(services: Services) {
       });
     } catch (error) {
       logger.error('Failed to register steward:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.register_steward') } }, 500);
     }
   });
 
@@ -103,7 +104,7 @@ export function createSchedulerRoutes(services: Services) {
       return c.json({ success, stewardId });
     } catch (error) {
       logger.error('Failed to unregister steward:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.register_steward') } }, 500);
     }
   });
 
@@ -117,7 +118,7 @@ export function createSchedulerRoutes(services: Services) {
       return c.json({ success: result.success, result });
     } catch (error) {
       logger.error('Failed to execute steward:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.register_steward') } }, 500);
     }
   });
 
@@ -130,14 +131,14 @@ export function createSchedulerRoutes(services: Services) {
       };
 
       if (!body.eventName) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'eventName is required' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('EVENT_NAME_REQUIRED') } }, 400);
       }
 
       const triggered = await stewardScheduler.publishEvent(body.eventName, body.eventData ?? {});
       return c.json({ success: true, eventName: body.eventName, stewardsTriggered: triggered });
     } catch (error) {
       logger.error('Failed to publish event:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.register_steward') } }, 500);
     }
   });
 

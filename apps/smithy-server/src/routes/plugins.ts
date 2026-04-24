@@ -9,6 +9,7 @@ import type { StewardPlugin } from '@stoneforge/smithy';
 import { createLogger } from '@stoneforge/smithy';
 import type { Services } from '../services.js';
 import { formatPluginExecutionResult } from '../formatters.js';
+import { t } from '../i18n/index.js';
 
 const logger = createLogger('orchestrator');
 
@@ -58,7 +59,7 @@ export function createPluginRoutes(services: Services) {
       return c.json({ valid: result.valid, errors: result.errors });
     } catch (error) {
       logger.error('Failed to validate plugin:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.list_extensions') } }, 500);
     }
   });
 
@@ -76,14 +77,14 @@ export function createPluginRoutes(services: Services) {
       };
 
       if (!body.plugin) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'plugin is required' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT') } }, 400);
       }
 
       const result = await pluginExecutor.execute(body.plugin, body.options);
       return c.json({ result: formatPluginExecutionResult(result) });
     } catch (error) {
       logger.error('Failed to execute plugin:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.install_extension') } }, 500);
     }
   });
 
@@ -101,7 +102,7 @@ export function createPluginRoutes(services: Services) {
       };
 
       if (!body.plugins || !Array.isArray(body.plugins)) {
-        return c.json({ error: { code: 'INVALID_INPUT', message: 'plugins array is required' } }, 400);
+        return c.json({ error: { code: 'INVALID_INPUT', message: t('INVALID_INPUT') } }, 400);
       }
 
       const result = await pluginExecutor.executeBatch(body.plugins, body.options);
@@ -117,7 +118,7 @@ export function createPluginRoutes(services: Services) {
       });
     } catch (error) {
       logger.error('Failed to execute plugins batch:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.install_extension') } }, 500);
     }
   });
 
@@ -135,14 +136,14 @@ export function createPluginRoutes(services: Services) {
 
       const plugin = pluginExecutor.getBuiltIn(name);
       if (!plugin) {
-        return c.json({ error: { code: 'NOT_FOUND', message: `Built-in plugin not found: ${name}` } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND') } }, 404);
       }
 
       const result = await pluginExecutor.execute(plugin, body.options);
       return c.json({ result: formatPluginExecutionResult(result) });
     } catch (error) {
       logger.error('Failed to execute built-in plugin:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.install_extension') } }, 500);
     }
   });
 

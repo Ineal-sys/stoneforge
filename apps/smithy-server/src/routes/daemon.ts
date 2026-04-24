@@ -8,6 +8,7 @@ import { Hono } from 'hono';
 import { createLogger, parseRateLimitResetTime } from '@stoneforge/smithy';
 import type { Services } from '../services.js';
 import { saveDaemonState, saveDaemonConfigOverrides } from '../daemon-state.js';
+import { t } from '../i18n/index.js';
 
 const logger = createLogger('orchestrator');
 
@@ -34,7 +35,7 @@ export function createDaemonRoutes(services: Services) {
       return c.json({
         isRunning: false,
         available: false,
-        reason: 'DispatchDaemon not available (no git repository)',
+        reason: t('DAEMON_UNAVAILABLE'),
         serverManaged: false,
       });
     }
@@ -64,7 +65,7 @@ export function createDaemonRoutes(services: Services) {
         {
           error: {
             code: 'DAEMON_UNAVAILABLE',
-            message: 'DispatchDaemon not available (no git repository)',
+            message: t('DAEMON_UNAVAILABLE'),
           },
         },
         503
@@ -78,7 +79,7 @@ export function createDaemonRoutes(services: Services) {
           isRunning: true,
           alreadyRunning: true,
           serverManaged,
-          message: 'Daemon is already running',
+          message: t('DAEMON_ALREADY_RUNNING'),
         });
       }
 
@@ -95,7 +96,7 @@ export function createDaemonRoutes(services: Services) {
       });
     } catch (error) {
       logger.error('Failed to start daemon:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.start_daemon') } }, 500);
     }
   });
 
@@ -106,7 +107,7 @@ export function createDaemonRoutes(services: Services) {
         {
           error: {
             code: 'DAEMON_UNAVAILABLE',
-            message: 'DispatchDaemon not available (no git repository)',
+            message: t('DAEMON_UNAVAILABLE'),
           },
         },
         503
@@ -131,12 +132,12 @@ export function createDaemonRoutes(services: Services) {
         wasRunning,
         wasServerManaged,
         message: wasServerManaged
-          ? 'Daemon stopped. Note: This daemon was auto-started by the server.'
-          : 'Daemon stopped.',
+          ? t('DAEMON_STOPPED_SERVER_MANAGED')
+          : t('DAEMON_STOPPED'),
       });
     } catch (error) {
       logger.error('Failed to stop daemon:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.stop_daemon') } }, 500);
     }
   });
 
@@ -147,7 +148,7 @@ export function createDaemonRoutes(services: Services) {
         {
           error: {
             code: 'DAEMON_UNAVAILABLE',
-            message: 'DispatchDaemon not available (no git repository)',
+            message: t('DAEMON_UNAVAILABLE'),
           },
         },
         503
@@ -176,7 +177,7 @@ export function createDaemonRoutes(services: Services) {
             {
               error: {
                 code: 'INVALID_POLL_TYPE',
-                message: `Invalid poll type: ${pollType}. Valid types: worker-availability, inbox, steward-trigger, workflow-task`,
+                message: t('INVALID_POLL_TYPE', { type: pollType }),
               },
             },
             400
@@ -186,7 +187,7 @@ export function createDaemonRoutes(services: Services) {
       return c.json({ success: true, result });
     } catch (error) {
       logger.error(`Failed to run ${pollType} poll:`, error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.poll_daemon') } }, 500);
     }
   });
 
@@ -197,7 +198,7 @@ export function createDaemonRoutes(services: Services) {
         {
           error: {
             code: 'DAEMON_UNAVAILABLE',
-            message: 'DispatchDaemon not available (no git repository)',
+            message: t('DAEMON_UNAVAILABLE'),
           },
         },
         503
@@ -229,7 +230,7 @@ export function createDaemonRoutes(services: Services) {
       });
     } catch (error) {
       logger.error('Failed to update daemon config:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.update_daemon_config') } }, 500);
     }
   });
 
@@ -240,7 +241,7 @@ export function createDaemonRoutes(services: Services) {
         {
           error: {
             code: 'DAEMON_UNAVAILABLE',
-            message: 'DispatchDaemon not available (no git repository)',
+            message: t('DAEMON_UNAVAILABLE'),
           },
         },
         503
@@ -266,7 +267,7 @@ export function createDaemonRoutes(services: Services) {
             {
               error: {
                 code: 'INVALID_TIME',
-                message: `Could not parse time: "${body.until}". Supported formats: "3am", "Feb 22 at 9:30am", "tomorrow at 3pm"`,
+                message: t('INVALID_TIME', { input: body.until }),
               },
             },
             400
@@ -278,7 +279,7 @@ export function createDaemonRoutes(services: Services) {
             {
               error: {
                 code: 'INVALID_DURATION',
-                message: 'Duration must be a positive number (seconds)',
+                message: t('INVALID_DURATION'),
               },
             },
             400
@@ -290,7 +291,7 @@ export function createDaemonRoutes(services: Services) {
           {
             error: {
               code: 'MISSING_PARAMETER',
-              message: 'Either "until" (time string) or "duration" (seconds) is required',
+              message: t('MISSING_PARAMETER'),
             },
           },
           400
@@ -302,11 +303,11 @@ export function createDaemonRoutes(services: Services) {
       return c.json({
         success: true,
         sleepUntil: resetTime.toISOString(),
-        message: `Daemon dispatch paused until ${resetTime.toISOString()}`,
+        message: t('DAEMON_SLEEP', { time: resetTime.toISOString() }),
       });
     } catch (error) {
       logger.error('Failed to put daemon to sleep:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.sleep_daemon') } }, 500);
     }
   });
 
@@ -317,7 +318,7 @@ export function createDaemonRoutes(services: Services) {
         {
           error: {
             code: 'DAEMON_UNAVAILABLE',
-            message: 'DispatchDaemon not available (no git repository)',
+            message: t('DAEMON_UNAVAILABLE'),
           },
         },
         503
@@ -329,11 +330,11 @@ export function createDaemonRoutes(services: Services) {
 
       return c.json({
         success: true,
-        message: 'Daemon dispatch resumed. Rate limits cleared.',
+        message: t('DAEMON_RESUMED'),
       });
     } catch (error) {
       logger.error('Failed to wake daemon:', error);
-      return c.json({ error: { code: 'INTERNAL_ERROR', message: String(error) } }, 500);
+      return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.wake_daemon') } }, 500);
     }
   });
 

@@ -76,6 +76,7 @@ import type { QuarryAPI } from '../api/types.js';
 import type { SyncService } from '../sync/service.js';
 import type { AutoExportService } from '../sync/auto-export.js';
 import type { InboxService } from '../services/inbox.js';
+import { t } from './i18n/index.js';
 // Shared routes for collaborate features
 import {
   createElementsRoutes,
@@ -273,7 +274,7 @@ app.get('/api/stats', async (c) => {
     return c.json(stats);
   } catch (error) {
     console.error('[stoneforge] Failed to get stats:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get stats' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.stats') } }, 500);
   }
 });
 
@@ -400,7 +401,7 @@ app.get('/api/tasks', async (c) => {
     return c.json(result);
   } catch (error) {
     console.error('[stoneforge] Failed to get tasks:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get tasks' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_tasks') } }, 500);
   }
 });
 
@@ -412,7 +413,7 @@ app.get('/api/tasks/ready', async (c) => {
     return c.json(enrichedTasks);
   } catch (error) {
     console.error('[stoneforge] Failed to get ready tasks:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get ready tasks' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_ready_tasks') } }, 500);
   }
 });
 
@@ -424,7 +425,7 @@ app.get('/api/tasks/blocked', async (c) => {
     return c.json(enrichedTasks);
   } catch (error) {
     console.error('[stoneforge] Failed to get blocked tasks:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get blocked tasks' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_blocked_tasks') } }, 500);
   }
 });
 
@@ -440,7 +441,7 @@ app.get('/api/tasks/in-progress', async (c) => {
     return c.json(tasks);
   } catch (error) {
     console.error('[stoneforge] Failed to get in-progress tasks:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get in-progress tasks' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_in_progress_tasks') } }, 500);
   }
 });
 
@@ -487,7 +488,7 @@ app.get('/api/tasks/completed', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to get completed tasks:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get completed tasks' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_completed_tasks') } }, 500);
   }
 });
 
@@ -507,12 +508,12 @@ app.get('/api/tasks/:id', async (c) => {
     const task = await api.get(id, hydrate ? { hydrate } : undefined);
 
     if (!task) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
     }
 
     // Verify it's actually a task
     if (task.type !== 'task') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
     }
 
     // Fetch dependencies and dependents for the task detail view
@@ -528,7 +529,7 @@ app.get('/api/tasks/:id', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to get task:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get task' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_task') } }, 500);
   }
 });
 
@@ -538,10 +539,10 @@ app.post('/api/tasks', async (c) => {
 
     // Validate required fields
     if (!body.title || typeof body.title !== 'string') {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'title is required' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.title_required') } }, 400);
     }
     if (!body.createdBy || typeof body.createdBy !== 'string') {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'createdBy is required' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.createdBy_required') } }, 400);
     }
 
     // Handle description field - creates linked Document (TB124)
@@ -584,7 +585,7 @@ app.post('/api/tasks', async (c) => {
       return c.json({ error: { code: 'VALIDATION_ERROR', message: (error as Error).message } }, 400);
     }
     console.error('[stoneforge] Failed to create task:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to create task' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.create_task') } }, 500);
   }
 });
 
@@ -596,10 +597,10 @@ app.patch('/api/tasks/:id', async (c) => {
     // First verify it's a task
     const existing = await api.get(id);
     if (!existing) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
     }
     if (existing.type !== 'task') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
     }
 
     // Extract allowed updates (prevent changing immutable fields)
@@ -648,16 +649,16 @@ app.patch('/api/tasks/:id', async (c) => {
     return c.json(updated);
   } catch (error) {
     if ((error as { code?: string }).code === 'NOT_FOUND') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
     }
     if ((error as { code?: string }).code === 'CONCURRENT_MODIFICATION') {
-      return c.json({ error: { code: 'CONFLICT', message: 'Task was modified by another process' } }, 409);
+      return c.json({ error: { code: 'CONFLICT', message: t('CONFLICT.concurrent_modification') } }, 409);
     }
     if ((error as { code?: string }).code === 'VALIDATION_ERROR') {
       return c.json({ error: { code: 'VALIDATION_ERROR', message: (error as Error).message } }, 400);
     }
     console.error('[stoneforge] Failed to update task:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to update task' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.update_task') } }, 500);
   }
 });
 
@@ -668,10 +669,10 @@ app.delete('/api/tasks/:id', async (c) => {
     // First verify it's a task
     const existing = await api.get(id);
     if (!existing) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
     }
     if (existing.type !== 'task') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
     }
 
     // TB121/TB122: Check if task is in a plan or workflow and would be the last one
@@ -686,7 +687,7 @@ app.delete('/api/tasks/:id', async (c) => {
             return c.json({
               error: {
                 code: 'LAST_TASK',
-                message: 'Cannot delete the last task in a plan. Plans must have at least one task.'
+                message: t('LAST_TASK.plan')
               }
             }, 400);
           }
@@ -697,7 +698,7 @@ app.delete('/api/tasks/:id', async (c) => {
             return c.json({
               error: {
                 code: 'LAST_TASK',
-                message: "Cannot delete the last task in a workflow. Workflows must have at least one task. Use 'sf workflow delete' to delete the entire workflow."
+                message: t('LAST_TASK.workflow')
               }
             }, 400);
           }
@@ -711,10 +712,10 @@ app.delete('/api/tasks/:id', async (c) => {
     return c.json({ success: true, id });
   } catch (error) {
     if ((error as { code?: string }).code === 'NOT_FOUND') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
     }
     console.error('[stoneforge] Failed to delete task:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to delete task' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.delete_task') } }, 500);
   }
 });
 
@@ -733,10 +734,10 @@ app.get('/api/tasks/:id/attachments', async (c) => {
     // Verify task exists
     const task = await api.get(taskId);
     if (!task) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
     }
     if (task.type !== 'task') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
     }
 
     // Get all dependencies where this task references a document
@@ -760,7 +761,7 @@ app.get('/api/tasks/:id/attachments', async (c) => {
     return c.json(attachments.filter(Boolean));
   } catch (error) {
     console.error('[stoneforge] Failed to get task attachments:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get task attachments' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_attachments') } }, 500);
   }
 });
 
@@ -775,25 +776,25 @@ app.post('/api/tasks/:id/attachments', async (c) => {
 
     // Validate document ID
     if (!body.documentId || typeof body.documentId !== 'string') {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'documentId is required' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.documentId_required') } }, 400);
     }
 
     // Verify task exists
     const task = await api.get(taskId);
     if (!task) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
     }
     if (task.type !== 'task') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
     }
 
     // Verify document exists
     const doc = await api.get(body.documentId as ElementId);
     if (!doc) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Document not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.document') } }, 404);
     }
     if (doc.type !== 'document') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Document not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.document') } }, 404);
     }
 
     // Check if already attached
@@ -802,7 +803,7 @@ app.post('/api/tasks/:id/attachments', async (c) => {
       (dep) => dep.blockedId === taskId && dep.blockerId === body.documentId && dep.type === 'references'
     );
     if (alreadyAttached) {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Document is already attached to this task' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.document_already_attached') } }, 400);
     }
 
     // Create the references dependency (task references document)
@@ -816,7 +817,7 @@ app.post('/api/tasks/:id/attachments', async (c) => {
     return c.json(doc, 201);
   } catch (error) {
     console.error('[stoneforge] Failed to attach document to task:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to attach document' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.attach_document') } }, 500);
   }
 });
 
@@ -832,10 +833,10 @@ app.delete('/api/tasks/:id/attachments/:docId', async (c) => {
     // Verify task exists
     const task = await api.get(taskId);
     if (!task) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
     }
     if (task.type !== 'task') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
     }
 
     // Find the attachment dependency
@@ -845,7 +846,7 @@ app.delete('/api/tasks/:id/attachments/:docId', async (c) => {
     );
 
     if (!attachmentDep) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Document is not attached to this task' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('VALIDATION_ERROR.document_not_attached') } }, 404);
     }
 
     // Remove the dependency
@@ -854,7 +855,7 @@ app.delete('/api/tasks/:id/attachments/:docId', async (c) => {
     return c.json({ success: true, taskId, documentId: docId });
   } catch (error) {
     console.error('[stoneforge] Failed to remove task attachment:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to remove attachment' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.remove_attachment') } }, 500);
   }
 });
 
@@ -870,10 +871,10 @@ app.get('/api/tasks/:id/dependency-tasks', async (c) => {
     // Verify task exists
     const task = await api.get(taskId);
     if (!task) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
     }
     if (task.type !== 'task') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Task not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.task') } }, 404);
     }
 
     // getDependencies(taskId) = rows where taskId is SOURCE (this task blocks others)
@@ -958,7 +959,7 @@ app.get('/api/tasks/:id/dependency-tasks', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to get dependency tasks:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get dependency tasks' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_dependency_tasks') } }, 500);
   }
 });
 
@@ -1037,7 +1038,7 @@ app.get('/api/entities', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to get entities:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get entities' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_entities') } }, 500);
   }
 });
 
@@ -1048,10 +1049,10 @@ app.post('/api/entities', async (c) => {
 
     // Validation
     if (!name || typeof name !== 'string') {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Name is required' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.name_required') } }, 400);
     }
     if (!entityType || !['agent', 'human', 'system'].includes(entityType)) {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Valid entity type (agent, human, system) is required' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.entity_type_required') } }, 400);
     }
 
     // Check for duplicate name
@@ -1061,7 +1062,7 @@ app.post('/api/entities', async (c) => {
       return entity.name.toLowerCase() === name.toLowerCase();
     });
     if (duplicateName) {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Entity with this name already exists' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.entity_name_exists') } }, 400);
     }
 
     const entityInput = {
@@ -1079,7 +1080,7 @@ app.post('/api/entities', async (c) => {
     return c.json(created, 201);
   } catch (error) {
     console.error('[stoneforge] Failed to create entity:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Failed to create entity';
+    const errorMessage = error instanceof Error ? error.message : t('INTERNAL_ERROR.create_entity');
     return c.json({ error: { code: 'INTERNAL_ERROR', message: errorMessage } }, 500);
   }
 });
@@ -1089,12 +1090,12 @@ app.get('/api/entities/:id', async (c) => {
     const id = c.req.param('id') as ElementId;
     const entity = await api.get(id);
     if (!entity) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Entity not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.entity') } }, 404);
     }
     return c.json(entity);
   } catch (error) {
     console.error('[stoneforge] Failed to get entity:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get entity' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_entity') } }, 500);
   }
 });
 
@@ -1107,7 +1108,7 @@ app.patch('/api/entities/:id', async (c) => {
     // Verify entity exists
     const existing = await api.get(id);
     if (!existing || existing.type !== 'entity') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Entity not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.entity') } }, 404);
     }
 
     // Build updates object
@@ -1116,7 +1117,7 @@ app.patch('/api/entities/:id', async (c) => {
     if (name !== undefined) {
       // Validate name format
       if (typeof name !== 'string' || name.trim().length === 0) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Name must be a non-empty string' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.name_non_empty') } }, 400);
       }
       // Check for duplicate name (if changing)
       const existingEntity = existing as unknown as { name: string };
@@ -1127,7 +1128,7 @@ app.patch('/api/entities/:id', async (c) => {
           return entity.name.toLowerCase() === name.toLowerCase() && entity.id !== id;
         });
         if (duplicateName) {
-          return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Entity with this name already exists' } }, 400);
+          return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.entity_name_exists') } }, 400);
         }
       }
       updates.name = name.trim();
@@ -1135,34 +1136,34 @@ app.patch('/api/entities/:id', async (c) => {
 
     if (tags !== undefined) {
       if (!Array.isArray(tags)) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Tags must be an array' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.tags_array') } }, 400);
       }
       updates.tags = tags;
     }
 
     if (metadata !== undefined) {
       if (typeof metadata !== 'object' || metadata === null) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Metadata must be an object' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.metadata_object') } }, 400);
       }
       updates.metadata = metadata;
     }
 
     if (active !== undefined) {
       if (typeof active !== 'boolean') {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Active must be a boolean' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.active_boolean') } }, 400);
       }
       updates.active = active;
     }
 
     if (Object.keys(updates).length === 0) {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'No valid fields to update' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.no_valid_updates') } }, 400);
     }
 
     const updated = await api.update(id, updates);
     return c.json(updated);
   } catch (error) {
     console.error('[stoneforge] Failed to update entity:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Failed to update entity';
+    const errorMessage = error instanceof Error ? error.message : t('INTERNAL_ERROR.update_entity');
     return c.json({ error: { code: 'INTERNAL_ERROR', message: errorMessage } }, 500);
   }
 });
@@ -1178,7 +1179,7 @@ app.get('/api/entities/:id/tasks', async (c) => {
     return c.json(tasks);
   } catch (error) {
     console.error('[stoneforge] Failed to get entity tasks:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get entity tasks' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_entity_tasks') } }, 500);
   }
 });
 
@@ -1189,7 +1190,7 @@ app.get('/api/entities/:id/stats', async (c) => {
     // Verify entity exists
     const entity = await api.get(id);
     if (!entity || entity.type !== 'entity') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Entity not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.entity') } }, 404);
     }
 
     // Get tasks assigned to this entity
@@ -1272,7 +1273,7 @@ app.get('/api/entities/:id/stats', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to get entity stats:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get entity stats' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_entity_stats') } }, 500);
   }
 });
 
@@ -1287,7 +1288,7 @@ app.get('/api/entities/:id/events', async (c) => {
     // Verify entity exists
     const entity = await api.get(id);
     if (!entity || entity.type !== 'entity') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Entity not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.entity') } }, 404);
     }
 
     // Parse event type filter if provided
@@ -1308,7 +1309,7 @@ app.get('/api/entities/:id/events', async (c) => {
     return c.json(events);
   } catch (error) {
     console.error('[stoneforge] Failed to get entity events:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get entity events' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_entity_events') } }, 500);
   }
 });
 
@@ -1325,7 +1326,7 @@ app.get('/api/entities/:id/history', async (c) => {
     // Verify entity exists
     const entity = await api.get(id);
     if (!entity || entity.type !== 'entity') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Entity not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.entity') } }, 404);
     }
 
     const limit = limitParam ? parseInt(limitParam, 10) : 50;
@@ -1363,7 +1364,7 @@ app.get('/api/entities/:id/history', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to get entity history:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get entity history' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_entity_history') } }, 500);
   }
 });
 
@@ -1379,7 +1380,7 @@ app.get('/api/entities/:id/activity', async (c) => {
     // Verify entity exists
     const entity = await api.get(id);
     if (!entity || entity.type !== 'entity') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Entity not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.entity') } }, 404);
     }
 
     // Calculate date range
@@ -1420,7 +1421,7 @@ app.get('/api/entities/:id/activity', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to get entity activity:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get entity activity' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_entity_activity') } }, 500);
   }
 });
 
@@ -1436,7 +1437,7 @@ app.get('/api/entities/:id/mentions', async (c) => {
     // Verify entity exists and get their name
     const entity = await api.get(id);
     if (!entity || entity.type !== 'entity') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Entity not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.entity') } }, 404);
     }
     const entityTyped = entity as unknown as { name: string };
     const entityName = entityTyped.name;
@@ -1489,7 +1490,7 @@ app.get('/api/entities/:id/mentions', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to get entity mentions:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get entity mentions' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_entity_mentions') } }, 500);
   }
 });
 
@@ -1513,7 +1514,7 @@ app.get('/api/entities/:id/inbox', async (c) => {
     // Verify entity exists
     const entity = await api.get(id as unknown as ElementId);
     if (!entity || entity.type !== 'entity') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Entity not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.entity') } }, 404);
     }
 
     // Build filter
@@ -1661,7 +1662,7 @@ app.get('/api/entities/:id/inbox', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to get entity inbox:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get entity inbox' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_entity_inbox') } }, 500);
   }
 });
 
@@ -1673,14 +1674,14 @@ app.get('/api/entities/:id/inbox/count', async (c) => {
     // Verify entity exists
     const entity = await api.get(id as unknown as ElementId);
     if (!entity || entity.type !== 'entity') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Entity not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.entity') } }, 404);
     }
 
     const count = inboxService.getUnreadCount(id);
     return c.json({ count });
   } catch (error) {
     console.error('[stoneforge] Failed to get inbox count:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get inbox count' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_inbox_count') } }, 500);
   }
 });
 
@@ -1692,7 +1693,7 @@ app.post('/api/entities/:id/inbox/mark-all-read', async (c) => {
     // Verify entity exists
     const entity = await api.get(id as unknown as ElementId);
     if (!entity || entity.type !== 'entity') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Entity not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.entity') } }, 404);
     }
 
     const count = inboxService.markAllAsRead(id);
@@ -1712,7 +1713,7 @@ app.post('/api/entities/:id/inbox/mark-all-read', async (c) => {
     return c.json({ markedCount: count });
   } catch (error) {
     console.error('[stoneforge] Failed to mark all as read:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to mark all as read' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.mark_all_read') } }, 500);
   }
 });
 
@@ -1725,13 +1726,13 @@ app.patch('/api/inbox/:itemId', async (c) => {
     }>();
 
     if (!body.status) {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'status is required' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.status_required') } }, 400);
     }
 
     // Get old item state for event broadcasting
     const oldItem = inboxService.getInboxItem(itemId);
     if (!oldItem) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Inbox item not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.inbox_item') } }, 404);
     }
 
     let item;
@@ -1746,7 +1747,7 @@ app.patch('/api/inbox/:itemId', async (c) => {
         item = inboxService.archive(itemId);
         break;
       default:
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid status. Must be read, unread, or archived' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.invalid_inbox_status') } }, 400);
     }
 
     // Broadcast inbox event for real-time updates
@@ -1762,10 +1763,10 @@ app.patch('/api/inbox/:itemId', async (c) => {
   } catch (error) {
     const errorObj = error as { code?: string };
     if (errorObj.code === 'NOT_FOUND') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Inbox item not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.inbox_item') } }, 404);
     }
     console.error('[stoneforge] Failed to update inbox item:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to update inbox item' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.update_inbox_item') } }, 500);
   }
 });
 
@@ -1929,7 +1930,7 @@ app.get('/api/inbox/all', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to get global inbox:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get global inbox' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_global_inbox') } }, 500);
   }
 });
 
@@ -1963,7 +1964,7 @@ app.get('/api/inbox/count', async (c) => {
     return c.json({ count: countResult?.count ?? 0 });
   } catch (error) {
     console.error('[stoneforge] Failed to get global inbox count:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get global inbox count' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_global_inbox_count') } }, 500);
   }
 });
 
@@ -1974,13 +1975,13 @@ app.get('/api/inbox/:itemId', async (c) => {
     const item = inboxService.getInboxItem(itemId);
 
     if (!item) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Inbox item not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.inbox_item') } }, 404);
     }
 
     return c.json(item);
   } catch (error) {
     console.error('[stoneforge] Failed to get inbox item:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get inbox item' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_inbox_item') } }, 500);
   }
 });
 
@@ -1996,7 +1997,7 @@ app.get('/api/entities/:id/reports', async (c) => {
     // Verify entity exists
     const entity = await api.get(id as unknown as ElementId);
     if (!entity || entity.type !== 'entity') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Entity not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.entity') } }, 404);
     }
 
     // Get all entities and filter for direct reports
@@ -2006,7 +2007,7 @@ app.get('/api/entities/:id/reports', async (c) => {
     return c.json(reports);
   } catch (error) {
     console.error('[stoneforge] Failed to get entity reports:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get entity reports' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_entity_reports') } }, 500);
   }
 });
 
@@ -2018,7 +2019,7 @@ app.get('/api/entities/:id/chain', async (c) => {
     // Verify entity exists
     const entity = await api.get(id as unknown as ElementId);
     if (!entity || entity.type !== 'entity') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Entity not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.entity') } }, 404);
     }
 
     // Load all entities for chain lookup
@@ -2035,7 +2036,7 @@ app.get('/api/entities/:id/chain', async (c) => {
     return c.json(chain);
   } catch (error) {
     console.error('[stoneforge] Failed to get management chain:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get management chain' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_management_chain') } }, 500);
   }
 });
 
@@ -2050,7 +2051,7 @@ app.patch('/api/entities/:id/manager', async (c) => {
     // Verify entity exists
     const entity = await api.get(id as unknown as ElementId);
     if (!entity || entity.type !== 'entity') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Entity not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.entity') } }, 404);
     }
 
     // If setting a manager (not clearing)
@@ -2058,12 +2059,12 @@ app.patch('/api/entities/:id/manager', async (c) => {
       // Verify manager exists
       const manager = await api.get(body.managerId as unknown as ElementId);
       if (!manager || manager.type !== 'entity') {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Manager entity not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.manager_entity') } }, 404);
       }
 
       // Check for self-assignment
       if (body.managerId === id) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Entity cannot be its own manager' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.cannot_be_own_manager') } }, 400);
       }
 
       // Check for cycles using detectReportingCycle
@@ -2077,7 +2078,7 @@ app.patch('/api/entities/:id/manager', async (c) => {
       // Check if setting this manager would create a cycle
       const cycleResult = detectReportingCycle(id, body.managerId as EntityId, getEntityForCycle);
       if (cycleResult.hasCycle) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Setting this manager would create a reporting cycle' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.reporting_cycle') } }, 400);
       }
     }
 
@@ -2090,7 +2091,7 @@ app.patch('/api/entities/:id/manager', async (c) => {
     return c.json(updated);
   } catch (error) {
     console.error('[stoneforge] Failed to set entity manager:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Failed to set entity manager';
+    const errorMessage = error instanceof Error ? error.message : t('INTERNAL_ERROR.set_entity_manager');
     return c.json({ error: { code: 'INTERNAL_ERROR', message: errorMessage } }, 500);
   }
 });
@@ -2106,10 +2107,10 @@ app.get('/api/dependencies/:id/tree', async (c) => {
     return c.json(tree);
   } catch (error) {
     if ((error as { code?: string }).code === 'NOT_FOUND') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Element not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.element') } }, 404);
     }
     console.error('[stoneforge] Failed to get dependency tree:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get dependency tree' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_dependency_tree') } }, 500);
   }
 });
 
@@ -2121,7 +2122,7 @@ app.get('/api/dependencies/:id', async (c) => {
     return c.json({ dependencies, dependents });
   } catch (error) {
     console.error('[stoneforge] Failed to get dependencies:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get dependencies' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_dependencies') } }, 500);
   }
 });
 
@@ -2139,7 +2140,7 @@ app.post('/api/dependencies', async (c) => {
     // Validate required fields
     if (!body.blockedId || !body.blockerId || !body.type) {
       return c.json(
-        { error: { code: 'VALIDATION_ERROR', message: 'blockedId, blockerId, and type are required' } },
+        { error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.blockedId_blockerId_type_required') } },
         400
       );
     }
@@ -2161,33 +2162,33 @@ app.post('/api/dependencies', async (c) => {
     // Handle cycle detection
     if (errorObj.code === 'CYCLE_DETECTED') {
       return c.json(
-        { error: { code: 'CYCLE_DETECTED', message: errorObj.message || 'Adding this dependency would create a cycle' } },
+        { error: { code: 'CYCLE_DETECTED', message: errorObj.message || t('CYCLE_DETECTED') } },
         400
       );
     }
     // Handle duplicate dependency
     if (errorObj.code === 'DUPLICATE_DEPENDENCY' || errorObj.name === 'ConflictError') {
       return c.json(
-        { error: { code: 'CONFLICT', message: errorObj.message || 'Dependency already exists' } },
+        { error: { code: 'CONFLICT', message: errorObj.message || t('DUPLICATE_DEPENDENCY') } },
         409
       );
     }
     // Handle not found
     if (errorObj.code === 'NOT_FOUND' || errorObj.name === 'NotFoundError') {
       return c.json(
-        { error: { code: 'NOT_FOUND', message: errorObj.message || 'Source or target element not found' } },
+        { error: { code: 'NOT_FOUND', message: errorObj.message || t('NOT_FOUND.source_or_target') } },
         404
       );
     }
     // Handle validation errors
     if (errorObj.code === 'VALIDATION_ERROR' || errorObj.code === 'INVALID_DEPENDENCY_TYPE' || errorObj.name === 'ValidationError') {
       return c.json(
-        { error: { code: 'VALIDATION_ERROR', message: errorObj.message || 'Invalid dependency type' } },
+        { error: { code: 'VALIDATION_ERROR', message: errorObj.message || t('VALIDATION_ERROR') } },
         400
       );
     }
     console.error('[stoneforge] Failed to create dependency:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to create dependency' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.create_dependency') } }, 500);
   }
 });
 
@@ -2204,17 +2205,17 @@ app.delete('/api/dependencies/:blockedId/:blockerId/:type', async (c) => {
     // Events are automatically recorded in the database by removeDependency
     // and will be picked up by the event broadcaster's polling mechanism
 
-    return c.json({ success: true, message: 'Dependency removed' });
+    return c.json({ success: true, message: t('DEPENDENCY_REMOVED') });
   } catch (error) {
     const errorObj = error as { code?: string; message?: string; name?: string };
     if (errorObj.code === 'NOT_FOUND' || errorObj.name === 'NotFoundError') {
       return c.json(
-        { error: { code: 'NOT_FOUND', message: errorObj.message || 'Dependency not found' } },
+        { error: { code: 'NOT_FOUND', message: errorObj.message || t('NOT_FOUND.dependency') } },
         404
       );
     }
     console.error('[stoneforge] Failed to remove dependency:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to remove dependency' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.remove_dependency') } }, 500);
   }
 });
 
@@ -2283,7 +2284,7 @@ app.get('/api/events', async (c) => {
     return c.json(events);
   } catch (error) {
     console.error('[stoneforge] Failed to get events:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get events' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_events') } }, 500);
   }
 });
 
@@ -2319,7 +2320,7 @@ app.get('/api/events/count', async (c) => {
     return c.json({ count });
   } catch (error) {
     console.error('[stoneforge] Failed to count events:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to count events' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.count_events') } }, 500);
   }
 });
 
@@ -2358,7 +2359,7 @@ app.get('/api/workflows', async (c) => {
     return c.json(workflows);
   } catch (error) {
     console.error('[stoneforge] Failed to get workflows:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get workflows' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_workflows') } }, 500);
   }
 });
 
@@ -2371,11 +2372,11 @@ app.get('/api/workflows/:id', async (c) => {
     const workflow = await api.get(id);
 
     if (!workflow) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.workflow') } }, 404);
     }
 
     if (workflow.type !== 'workflow') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.workflow') } }, 404);
     }
 
     // Optionally hydrate progress
@@ -2387,7 +2388,7 @@ app.get('/api/workflows/:id', async (c) => {
     return c.json(workflow);
   } catch (error) {
     console.error('[stoneforge] Failed to get workflow:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get workflow' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_workflow') } }, 500);
   }
 });
 
@@ -2402,10 +2403,10 @@ app.get('/api/workflows/:id/tasks', async (c) => {
     // First verify workflow exists
     const workflow = await api.get(id);
     if (!workflow) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.workflow') } }, 404);
     }
     if (workflow.type !== 'workflow') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.workflow') } }, 404);
     }
 
     // Build filter for getTasksInWorkflow
@@ -2425,7 +2426,7 @@ app.get('/api/workflows/:id/tasks', async (c) => {
     return c.json(tasks);
   } catch (error) {
     console.error('[stoneforge] Failed to get workflow tasks:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get workflow tasks' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_workflow_tasks') } }, 500);
   }
 });
 
@@ -2436,17 +2437,17 @@ app.get('/api/workflows/:id/progress', async (c) => {
     // First verify workflow exists
     const workflow = await api.get(id);
     if (!workflow) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.workflow') } }, 404);
     }
     if (workflow.type !== 'workflow') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.workflow') } }, 404);
     }
 
     const progress = await api.getWorkflowProgress(id);
     return c.json(progress);
   } catch (error) {
     console.error('[stoneforge] Failed to get workflow progress:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get workflow progress' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_workflow_progress') } }, 500);
   }
 });
 
@@ -2459,10 +2460,10 @@ app.get('/api/workflows/:id/can-delete-task/:taskId', async (c) => {
     // Verify workflow exists
     const workflow = await api.get(workflowId);
     if (!workflow) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.workflow') } }, 404);
     }
     if (workflow.type !== 'workflow') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.workflow') } }, 404);
     }
 
     // Get tasks in workflow
@@ -2471,7 +2472,7 @@ app.get('/api/workflows/:id/can-delete-task/:taskId', async (c) => {
     // Check if this task is in the workflow
     const taskInWorkflow = tasks.some(t => t.id === taskId);
     if (!taskInWorkflow) {
-      return c.json({ canDelete: false, reason: 'Task is not in this workflow' });
+      return c.json({ canDelete: false, reason: t('TASK_NOT_IN_WORKFLOW') });
     }
 
     // Check if this is the last task
@@ -2479,7 +2480,7 @@ app.get('/api/workflows/:id/can-delete-task/:taskId', async (c) => {
     if (isLastTask) {
       return c.json({
         canDelete: false,
-        reason: "Cannot delete the last task in a workflow. Workflows must have at least one task. Use 'sf workflow delete' to delete the entire workflow.",
+        reason: t('CANNOT_DELETE_LAST_WORKFLOW_TASK'),
         isLastTask: true
       });
     }
@@ -2487,7 +2488,7 @@ app.get('/api/workflows/:id/can-delete-task/:taskId', async (c) => {
     return c.json({ canDelete: true });
   } catch (error) {
     console.error('[stoneforge] Failed to check if task can be deleted:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to check if task can be deleted' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.check_can_delete_task') } }, 500);
   }
 });
 
@@ -2497,16 +2498,16 @@ app.post('/api/workflows', async (c) => {
 
     // Validate required fields
     if (!body.title || typeof body.title !== 'string') {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'title is required and must be a string' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.title_string_required') } }, 400);
     }
 
     if (!body.createdBy || typeof body.createdBy !== 'string') {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'createdBy is required and must be a string' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.createdBy_string_required') } }, 400);
     }
 
     // Validate title length
     if (body.title.length < 1 || body.title.length > 500) {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'title must be between 1 and 500 characters' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.title_length') } }, 400);
     }
 
     // TB122: Workflows must have at least one task
@@ -2520,7 +2521,7 @@ app.post('/api/workflows', async (c) => {
       return c.json({
         error: {
           code: 'VALIDATION_ERROR',
-          message: 'Workflows must have at least one task. Provide either initialTaskId (existing task ID) or initialTask (object with title to create new task).'
+          message: t('VALIDATION_ERROR.workflow_needs_task')
         }
       }, 400);
     }
@@ -2529,17 +2530,17 @@ app.post('/api/workflows', async (c) => {
     if (hasInitialTaskId) {
       const existingTask = await api.get(body.initialTaskId as ElementId);
       if (!existingTask) {
-        return c.json({ error: { code: 'NOT_FOUND', message: 'Initial task not found' } }, 404);
+        return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.initial_task') } }, 404);
       }
       if (existingTask.type !== 'task') {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'initialTaskId must reference a task' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.initialTaskId_must_be_task') } }, 400);
       }
     }
 
     // Validate initialTask title if provided
     if (hasInitialTask) {
       if (typeof body.initialTask.title !== 'string' || body.initialTask.title.length < 1 || body.initialTask.title.length > 500) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'initialTask.title must be between 1 and 500 characters' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.initialTask_title_length') } }, 400);
       }
     }
 
@@ -2597,10 +2598,10 @@ app.post('/api/workflows', async (c) => {
       return c.json({ error: { code: 'VALIDATION_ERROR', message: (error as Error).message } }, 400);
     }
     if ((error as { code?: string }).code === 'ALREADY_EXISTS') {
-      return c.json({ error: { code: 'ALREADY_EXISTS', message: 'Task is already in another collection' } }, 409);
+      return c.json({ error: { code: 'ALREADY_EXISTS', message: t('VALIDATION_ERROR.task_already_in_collection') } }, 409);
     }
     console.error('[stoneforge] Failed to create workflow:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to create workflow' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.create_workflow') } }, 500);
   }
 });
 
@@ -2610,11 +2611,11 @@ app.post('/api/workflows/instantiate', async (c) => {
 
     // Validate required fields
     if (!body.playbook || typeof body.playbook !== 'object') {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'playbook is required and must be an object' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.playbook_required_object') } }, 400);
     }
 
     if (!body.createdBy || typeof body.createdBy !== 'string') {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'createdBy is required and must be a string' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.createdBy_string_required') } }, 400);
     }
 
     // TB122: Validate playbook has at least one step
@@ -2623,7 +2624,7 @@ app.post('/api/workflows/instantiate', async (c) => {
       return c.json({
         error: {
           code: 'VALIDATION_ERROR',
-          message: 'Cannot instantiate workflow: playbook has no steps defined. Workflows must have at least one task.'
+          message: t('VALIDATION_ERROR.playbook_no_steps')
         }
       }, 400);
     }
@@ -2647,7 +2648,7 @@ app.post('/api/workflows/instantiate', async (c) => {
       return c.json({
         error: {
           code: 'VALIDATION_ERROR',
-          message: 'Cannot instantiate workflow: all playbook steps were filtered by conditions. At least one task must be created.'
+          message: t('VALIDATION_ERROR.playbook_all_filtered')
         }
       }, 400);
     }
@@ -2678,7 +2679,7 @@ app.post('/api/workflows/instantiate', async (c) => {
       return c.json({ error: { code: 'VALIDATION_ERROR', message: (error as Error).message } }, 400);
     }
     console.error('[stoneforge] Failed to instantiate workflow:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to instantiate workflow' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.instantiate_workflow') } }, 500);
   }
 });
 
@@ -2690,10 +2691,10 @@ app.patch('/api/workflows/:id', async (c) => {
     // First verify workflow exists
     const existing = await api.get(id);
     if (!existing) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.workflow') } }, 404);
     }
     if (existing.type !== 'workflow') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.workflow') } }, 404);
     }
 
     // Extract allowed updates
@@ -2709,7 +2710,7 @@ app.patch('/api/workflows/:id', async (c) => {
     // Validate title if provided
     if (updates.title !== undefined) {
       if (typeof updates.title !== 'string' || updates.title.length < 1 || updates.title.length > 500) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'title must be between 1 and 500 characters' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.title_length') } }, 400);
       }
     }
 
@@ -2717,7 +2718,7 @@ app.patch('/api/workflows/:id', async (c) => {
     if (updates.status !== undefined) {
       const validStatuses = ['pending', 'running', 'completed', 'failed', 'cancelled'];
       if (!validStatuses.includes(updates.status as string)) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: `Invalid status. Must be one of: ${validStatuses.join(', ')}` } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.invalid_status_values', { values: validStatuses.join(', ') }) } }, 400);
       }
     }
 
@@ -2725,13 +2726,13 @@ app.patch('/api/workflows/:id', async (c) => {
     return c.json(updated);
   } catch (error) {
     if ((error as { code?: string }).code === 'NOT_FOUND') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.workflow') } }, 404);
     }
     if ((error as { code?: string }).code === 'VALIDATION_ERROR') {
       return c.json({ error: { code: 'VALIDATION_ERROR', message: (error as Error).message } }, 400);
     }
     console.error('[stoneforge] Failed to update workflow:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to update workflow' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.update_workflow') } }, 500);
   }
 });
 
@@ -2745,10 +2746,10 @@ app.delete('/api/workflows/:id', async (c) => {
     // Verify workflow exists
     const workflow = await api.get(id);
     if (!workflow) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.workflow') } }, 404);
     }
     if (workflow.type !== 'workflow') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.workflow') } }, 404);
     }
 
     // Check if workflow is ephemeral (unless force is specified)
@@ -2756,7 +2757,7 @@ app.delete('/api/workflows/:id', async (c) => {
       return c.json({
         error: {
           code: 'VALIDATION_ERROR',
-          message: 'Cannot delete durable workflow. Use force=true to override.',
+          message: t('VALIDATION_ERROR.cannot_delete_durable_workflow'),
         },
       }, 400);
     }
@@ -2767,10 +2768,10 @@ app.delete('/api/workflows/:id', async (c) => {
     return c.json(result);
   } catch (error) {
     if ((error as { code?: string }).code === 'NOT_FOUND') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.workflow') } }, 404);
     }
     console.error('[stoneforge] Failed to delete workflow:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to delete workflow' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.delete_workflow') } }, 500);
   }
 });
 
@@ -2782,10 +2783,10 @@ app.post('/api/workflows/:id/promote', async (c) => {
     // Verify workflow exists
     const workflow = await api.get(id);
     if (!workflow) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.workflow') } }, 404);
     }
     if (workflow.type !== 'workflow') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.workflow') } }, 404);
     }
 
     // Check if workflow is ephemeral
@@ -2793,7 +2794,7 @@ app.post('/api/workflows/:id/promote', async (c) => {
       return c.json({
         error: {
           code: 'VALIDATION_ERROR',
-          message: 'Workflow is already durable',
+          message: t('VALIDATION_ERROR.workflow_already_durable'),
         },
       }, 400);
     }
@@ -2804,13 +2805,13 @@ app.post('/api/workflows/:id/promote', async (c) => {
     return c.json(updated);
   } catch (error) {
     if ((error as { code?: string }).code === 'NOT_FOUND') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Workflow not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.workflow') } }, 404);
     }
     if ((error as { code?: string }).code === 'VALIDATION_ERROR') {
       return c.json({ error: { code: 'VALIDATION_ERROR', message: (error as Error).message } }, 400);
     }
     console.error('[stoneforge] Failed to promote workflow:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to promote workflow' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.promote_workflow') } }, 500);
   }
 });
 
@@ -2838,7 +2839,7 @@ app.get('/api/playbooks', async (c) => {
     return c.json(playbooks);
   } catch (error) {
     console.error('[stoneforge] Failed to list playbooks:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to list playbooks' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.list_playbooks') } }, 500);
   }
 });
 
@@ -2851,7 +2852,7 @@ app.get('/api/playbooks/:name', async (c) => {
     const found = discovered.find((p: DiscoveredPlaybook) => p.name.toLowerCase() === name.toLowerCase());
 
     if (!found) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Playbook not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.playbook') } }, 404);
     }
 
     // Load the full playbook
@@ -2867,7 +2868,7 @@ app.get('/api/playbooks/:name', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to get playbook:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get playbook' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_playbook') } }, 500);
   }
 });
 
@@ -2938,7 +2939,7 @@ app.get('/api/teams', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to get teams:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get teams' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_teams') } }, 500);
   }
 });
 
@@ -2949,23 +2950,23 @@ app.post('/api/teams', async (c) => {
 
     // Validation
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Name is required' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.name_required') } }, 400);
     }
 
     // Validate members array - TB123: Teams must have at least one member
     if (!members || !Array.isArray(members) || members.length === 0) {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Teams must have at least one member' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.team_members_required') } }, 400);
     }
     // Check each member is a valid string
     for (const member of members) {
       if (typeof member !== 'string' || member.length === 0) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Each member must be a valid entity ID' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.team_member_valid_id') } }, 400);
       }
     }
     // Check for duplicate members
     const uniqueMembers = new Set(members);
     if (uniqueMembers.size !== members.length) {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Duplicate members are not allowed' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.team_duplicate_members') } }, 400);
     }
 
     // Check for duplicate team name
@@ -2975,7 +2976,7 @@ app.post('/api/teams', async (c) => {
       return team.name.toLowerCase() === name.toLowerCase().trim();
     });
     if (duplicateName) {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Team with this name already exists' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.team_name_exists') } }, 400);
     }
 
     const teamInput: CreateTeamInput = {
@@ -2993,7 +2994,7 @@ app.post('/api/teams', async (c) => {
     return c.json(created, 201);
   } catch (error) {
     console.error('[stoneforge] Failed to create team:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Failed to create team';
+    const errorMessage = error instanceof Error ? error.message : t('INTERNAL_ERROR.create_team');
     return c.json({ error: { code: 'INTERNAL_ERROR', message: errorMessage } }, 500);
   }
 });
@@ -3004,13 +3005,13 @@ app.get('/api/teams/:id', async (c) => {
     const team = await api.get(id);
 
     if (!team || team.type !== 'team') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Team not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.team') } }, 404);
     }
 
     return c.json(team);
   } catch (error) {
     console.error('[stoneforge] Failed to get team:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get team' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_team') } }, 500);
   }
 });
 
@@ -3023,7 +3024,7 @@ app.patch('/api/teams/:id', async (c) => {
     // Verify team exists
     const existing = await api.get(id);
     if (!existing || existing.type !== 'team') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Team not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.team') } }, 404);
     }
 
     const existingTeam = existing as unknown as { name: string; members: EntityId[]; tags: string[] };
@@ -3034,7 +3035,7 @@ app.patch('/api/teams/:id', async (c) => {
     if (name !== undefined) {
       // Validate name format
       if (typeof name !== 'string' || name.trim().length === 0) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Name must be a non-empty string' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.name_non_empty') } }, 400);
       }
       // Check for duplicate name (if changing)
       if (name.trim() !== existingTeam.name) {
@@ -3044,7 +3045,7 @@ app.patch('/api/teams/:id', async (c) => {
           return team.name.toLowerCase() === name.toLowerCase().trim() && team.id !== id;
         });
         if (duplicateName) {
-          return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Team with this name already exists' } }, 400);
+          return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.team_name_exists') } }, 400);
         }
       }
       updates.name = name.trim();
@@ -3052,7 +3053,7 @@ app.patch('/api/teams/:id', async (c) => {
 
     if (tags !== undefined) {
       if (!Array.isArray(tags)) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Tags must be an array' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.tags_array') } }, 400);
       }
       updates.tags = tags;
     }
@@ -3062,11 +3063,11 @@ app.patch('/api/teams/:id', async (c) => {
 
     if (addMembers !== undefined) {
       if (!Array.isArray(addMembers)) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'addMembers must be an array' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.team_addMembers_array') } }, 400);
       }
       for (const memberId of addMembers) {
         if (typeof memberId !== 'string' || memberId.length === 0) {
-          return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Each member ID must be a non-empty string' } }, 400);
+          return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.team_member_id_non_empty') } }, 400);
         }
         if (!currentMembers.includes(memberId as EntityId)) {
           currentMembers.push(memberId as EntityId);
@@ -3076,11 +3077,11 @@ app.patch('/api/teams/:id', async (c) => {
 
     if (removeMembers !== undefined) {
       if (!Array.isArray(removeMembers)) {
-        return c.json({ error: { code: 'VALIDATION_ERROR', message: 'removeMembers must be an array' } }, 400);
+        return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.team_removeMembers_array') } }, 400);
       }
       for (const memberId of removeMembers) {
         if (typeof memberId !== 'string' || memberId.length === 0) {
-          return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Each member ID must be a non-empty string' } }, 400);
+          return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.team_member_id_non_empty') } }, 400);
         }
         currentMembers = currentMembers.filter((m) => m !== memberId);
       }
@@ -3092,7 +3093,7 @@ app.patch('/api/teams/:id', async (c) => {
         return c.json({
           error: {
             code: 'VALIDATION_ERROR',
-            message: 'Cannot remove the last member from a team. Teams must have at least one member.'
+            message: t('VALIDATION_ERROR.team_last_member')
           }
         }, 400);
       }
@@ -3100,14 +3101,14 @@ app.patch('/api/teams/:id', async (c) => {
     }
 
     if (Object.keys(updates).length === 0) {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'No valid updates provided' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.no_valid_updates_team') } }, 400);
     }
 
     const updated = await api.update(id, updates);
     return c.json(updated);
   } catch (error) {
     console.error('[stoneforge] Failed to update team:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Failed to update team';
+    const errorMessage = error instanceof Error ? error.message : t('INTERNAL_ERROR.update_team');
     return c.json({ error: { code: 'INTERNAL_ERROR', message: errorMessage } }, 500);
   }
 });
@@ -3119,7 +3120,7 @@ app.delete('/api/teams/:id', async (c) => {
     // Verify team exists
     const existing = await api.get(id);
     if (!existing || existing.type !== 'team') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Team not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.team') } }, 404);
     }
 
     // Soft-delete the team
@@ -3128,10 +3129,10 @@ app.delete('/api/teams/:id', async (c) => {
     return c.json({ success: true, id });
   } catch (error) {
     if ((error as { code?: string }).code === 'NOT_FOUND') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Team not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.team') } }, 404);
     }
     console.error('[stoneforge] Failed to delete team:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to delete team' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.delete_team') } }, 500);
   }
 });
 
@@ -3141,7 +3142,7 @@ app.get('/api/teams/:id/members', async (c) => {
     const team = await api.get(id);
 
     if (!team || team.type !== 'team') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Team not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.team') } }, 404);
     }
 
     // Get member IDs from the team
@@ -3164,7 +3165,7 @@ app.get('/api/teams/:id/members', async (c) => {
     return c.json(members);
   } catch (error) {
     console.error('[stoneforge] Failed to get team members:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get team members' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_team_members') } }, 500);
   }
 });
 
@@ -3174,7 +3175,7 @@ app.get('/api/teams/:id/stats', async (c) => {
     const team = await api.get(id);
 
     if (!team || team.type !== 'team') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Team not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.team') } }, 404);
     }
 
     const teamData = team as unknown as { members: EntityId[] };
@@ -3257,7 +3258,7 @@ app.get('/api/teams/:id/stats', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to get team stats:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get team stats' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_team_stats') } }, 500);
   }
 });
 
@@ -3269,7 +3270,7 @@ app.get('/api/teams/:id/can-remove-member/:entityId', async (c) => {
     const team = await api.get(id);
 
     if (!team || team.type !== 'team') {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'Team not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.team') } }, 404);
     }
 
     const teamData = team as unknown as { members: EntityId[] };
@@ -3297,7 +3298,7 @@ app.get('/api/teams/:id/can-remove-member/:entityId', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to check can-remove-member:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to check member removal' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.check_member_removal') } }, 500);
   }
 });
 
@@ -3316,7 +3317,7 @@ app.get('/api/sync/status', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to get sync status:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get sync status' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_sync_status') } }, 500);
   }
 });
 
@@ -3342,7 +3343,7 @@ app.post('/api/sync/export', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to export:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to export data' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.export_data') } }, 500);
   }
 });
 
@@ -3352,7 +3353,7 @@ app.post('/api/sync/import', async (c) => {
 
     // Validate request
     if (!body.elements || typeof body.elements !== 'string') {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'elements field is required and must be a JSONL string' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.elements_jsonl_required') } }, 400);
     }
 
     const result = syncService.importFromStrings(
@@ -3376,7 +3377,7 @@ app.post('/api/sync/import', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to import:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to import data' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.import_data') } }, 500);
   }
 });
 
@@ -3415,7 +3416,7 @@ app.post('/api/uploads', async (c) => {
 
     if (!file || !(file instanceof File)) {
       return c.json({
-        error: { code: 'VALIDATION_ERROR', message: 'No file provided. Use multipart/form-data with a "file" field.' }
+        error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.no_file_multipart') }
       }, 400);
     }
 
@@ -3463,7 +3464,7 @@ app.post('/api/uploads', async (c) => {
     }, 201);
   } catch (error) {
     console.error('[stoneforge] Failed to upload file:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to upload file' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.upload_file') } }, 500);
   }
 });
 
@@ -3479,7 +3480,7 @@ app.get('/api/uploads/:filename/usage', async (c) => {
 
     // Security: prevent directory traversal
     if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid filename' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.invalid_filename') } }, 400);
     }
 
     // Check if file exists
@@ -3488,7 +3489,7 @@ app.get('/api/uploads/:filename/usage', async (c) => {
     const exists = await file.exists();
 
     if (!exists) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'File not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.file') } }, 404);
     }
 
     // Search for documents that reference this image
@@ -3517,7 +3518,7 @@ app.get('/api/uploads/:filename/usage', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to get upload usage:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to get upload usage' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.get_upload_usage') } }, 500);
   }
 });
 
@@ -3531,7 +3532,7 @@ app.get('/api/uploads/:filename', async (c) => {
 
     // Security: prevent directory traversal
     if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid filename' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.invalid_filename') } }, 400);
     }
 
     const filepath = resolve(UPLOADS_DIR, filename);
@@ -3541,7 +3542,7 @@ app.get('/api/uploads/:filename', async (c) => {
     const exists = await file.exists();
 
     if (!exists) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'File not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.file') } }, 404);
     }
 
     // Determine content type from extension
@@ -3567,7 +3568,7 @@ app.get('/api/uploads/:filename', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to serve file:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to serve file' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.serve_file') } }, 500);
   }
 });
 
@@ -3622,7 +3623,7 @@ app.get('/api/uploads', async (c) => {
     });
   } catch (error) {
     console.error('[stoneforge] Failed to list uploads:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to list uploads' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.list_uploads') } }, 500);
   }
 });
 
@@ -3636,7 +3637,7 @@ app.delete('/api/uploads/:filename', async (c) => {
 
     // Security: prevent directory traversal
     if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
-      return c.json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid filename' } }, 400);
+      return c.json({ error: { code: 'VALIDATION_ERROR', message: t('VALIDATION_ERROR.invalid_filename') } }, 400);
     }
 
     const filepath = resolve(UPLOADS_DIR, filename);
@@ -3646,7 +3647,7 @@ app.delete('/api/uploads/:filename', async (c) => {
     const exists = await file.exists();
 
     if (!exists) {
-      return c.json({ error: { code: 'NOT_FOUND', message: 'File not found' } }, 404);
+      return c.json({ error: { code: 'NOT_FOUND', message: t('NOT_FOUND.file') } }, 404);
     }
 
     // Delete the file
@@ -3657,7 +3658,7 @@ app.delete('/api/uploads/:filename', async (c) => {
     return c.json({ success: true, filename });
   } catch (error) {
     console.error('[stoneforge] Failed to delete upload:', error);
-    return c.json({ error: { code: 'INTERNAL_ERROR', message: 'Failed to delete upload' } }, 500);
+    return c.json({ error: { code: 'INTERNAL_ERROR', message: t('INTERNAL_ERROR.delete_upload') } }, 500);
   }
 });
 

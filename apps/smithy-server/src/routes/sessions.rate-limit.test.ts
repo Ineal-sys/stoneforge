@@ -150,7 +150,7 @@ describe('Session Routes - Rate Limit Guard', () => {
 
       const body = await response.json() as { error: { code: string; message: string; retryAfter: number; soonestReset: string } };
       expect(body.error.code).toBe('RATE_LIMITED');
-      expect(body.error.message).toContain('rate-limited');
+      expect(body.error.message).toContain('limités en débit');
       expect(body.error.retryAfter).toBeGreaterThan(0);
       expect(body.error.soonestReset).toBe(soonestReset);
     });
@@ -222,7 +222,7 @@ describe('Session Routes - Rate Limit Guard', () => {
 
       const body = await response.json() as { error: { code: string; message: string; retryAfter: number; soonestReset: string } };
       expect(body.error.code).toBe('RATE_LIMITED');
-      expect(body.error.message).toContain('rate-limited');
+      expect(body.error.message).toContain('limités en débit');
     });
 
     test('allows session resume when executables are not rate-limited', async () => {

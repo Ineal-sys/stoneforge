@@ -8,6 +8,7 @@
 import { Hono } from 'hono';
 import { stream } from 'hono/streaming';
 import { createLogger } from '@stoneforge/smithy';
+import { t } from '../i18n/index.js';
 
 const logger = createLogger('extensions');
 
@@ -200,7 +201,7 @@ export function createExtensionsRoutes() {
       if (!downloadUrl) {
         logger.error('No download URL in metadata:', JSON.stringify(metadata, null, 2));
         return c.json(
-          { error: { code: 'NO_DOWNLOAD_URL', message: 'Extension metadata does not contain a download URL' } },
+          { error: { code: 'NO_DOWNLOAD_URL', message: t('NO_DOWNLOAD_URL') } },
           404
         );
       }
@@ -219,7 +220,7 @@ export function createExtensionsRoutes() {
       }
 
       if (!downloadResponse.body) {
-        return c.json({ error: { code: 'NO_BODY', message: 'Download response has no body' } }, 502);
+        return c.json({ error: { code: 'NO_BODY', message: t('NO_BODY') } }, 502);
       }
 
       // Forward Content-Type and other relevant headers
