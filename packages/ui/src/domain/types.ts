@@ -184,11 +184,11 @@ export interface PriorityConfig {
  * Default priority configuration
  */
 export const PRIORITY_CONFIG: Record<number, PriorityConfig> = {
-  1: { label: 'Critical', variant: 'error' },
-  2: { label: 'High', variant: 'warning' },
-  3: { label: 'Medium', variant: 'primary' },
-  4: { label: 'Low', variant: 'default' },
-  5: { label: 'Trivial', variant: 'outline' },
+  1: { label: 'domain.priority.critical', variant: 'error' },
+  2: { label: 'domain.priority.high', variant: 'warning' },
+  3: { label: 'domain.priority.medium', variant: 'primary' },
+  4: { label: 'domain.priority.low', variant: 'default' },
+  5: { label: 'domain.priority.trivial', variant: 'outline' },
 };
 
 /**
@@ -202,15 +202,8 @@ export function getPriorityConfig(priority: number): PriorityConfig {
  * Get priority display name
  */
 export function getPriorityDisplayName(priority: Priority | number, t: TFunction): string {
-  const key = Object.entries(PRIORITY_CONFIG).find(([, v]) => v.label === getPriorityConfig(priority).label)?.[0];
-  switch (key) {
-    case '1': return t('domain.priority.critical');
-    case '2': return t('domain.priority.high');
-    case '3': return t('domain.priority.medium');
-    case '4': return t('domain.priority.low');
-    case '5': return t('domain.priority.trivial');
-    default: return t('domain.priority.medium');
-  }
+  const config = PRIORITY_CONFIG[priority];
+  return config ? t(config.label) : t('domain.priority.medium');
 }
 
 /**

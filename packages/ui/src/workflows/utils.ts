@@ -92,7 +92,7 @@ export function formatRelativeTime(
  * Format date to readable string
  */
 export function formatDate(timestamp: string): string {
-  return new Date(timestamp).toLocaleDateString('en-US', {
+  return new Date(timestamp).toLocaleDateString('fr-FR', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

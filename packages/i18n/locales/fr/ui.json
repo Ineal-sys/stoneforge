@@ -473,6 +473,7 @@
     "hashSectionDocuments": "Documents",
     "hashTaskStatus": "Statut : {{status}}",
     "hashDocumentFallback": "Document",
+    "entityFetchFailed": "Échec du chargement de l'entité",
     "linkEnterUrl": "Entrer l'URL (ex. : https://example.com)",
     "linkApply": "Appliquer le lien",
     "linkUpdate": "Mettre à jour",
@@ -544,7 +545,10 @@
     "slashCategoryBlocks": "Blocs",
     "slashCategoryMedia": "Média",
     "slashCategoryEmbeds": "Intégrations",
-    "slashNoMatch": "Aucune commande correspondante"
+    "slashNoMatch": "Aucune commande correspondante",
+    "fetchMembersFailed": "Échec du chargement des membres du canal",
+    "fetchEntitiesFailed": "Échec du chargement des entités",
+    "imageLoadFailed": "Échec du chargement des images"
   },
   "domain": {
     "priority": {
@@ -646,6 +650,10 @@
       "currentlyWorkingOn": "Actuellement en cours",
       "moreTags": "+{{count}} de plus",
       "viewFullProfile": "Voir le profil complet"
+    },
+    "entityLink": {
+      "fetchFailed": "Échec du chargement de l'entité",
+      "fetchStatsFailed": "Échec du chargement des statistiques de l'entité"
     }
   },
   "documents": {

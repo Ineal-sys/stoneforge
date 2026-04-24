@@ -25,7 +25,7 @@ import {
   Check,
   AlertCircle,
 } from 'lucide-react';
-import { useTranslation } from '@stoneforge/i18n';
+import { useTranslation, i18n } from '@stoneforge/i18n';
 
 interface MessageImageAttachmentProps {
   isOpen: boolean;
@@ -84,7 +84,7 @@ export function MessageImageAttachment({
     try {
       const response = await fetch('/api/uploads');
       if (!response.ok) {
-        throw new Error('Failed to load images');
+        throw new Error(i18n.t('ui:channel.imageLoadFailed'));
       }
       const data = await response.json();
       setLibraryImages(data.files || []);

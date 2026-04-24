@@ -20,7 +20,7 @@ import {
   Ban,
   CircleX,
 } from 'lucide-react';
-import { useTranslation } from '@stoneforge/i18n';
+import { useTranslation, i18n } from '@stoneforge/i18n';
 
 // Task status icons and colors
 const STATUS_CONFIG: Record<string, { icon: React.ReactNode; className: string }> = {
@@ -65,7 +65,7 @@ export function TaskEmbedCard({ taskId }: TaskEmbedCardProps) {
     queryKey: ['task', taskId],
     queryFn: async () => {
       const response = await fetch(`/api/tasks/${taskId}`);
-      if (!response.ok) throw new Error('Task not found');
+      if (!response.ok) throw new Error(i18n.t('ui:channel.embedTaskNotFound', { taskId }));
       return response.json();
     },
     staleTime: 30000, // Cache for 30 seconds
@@ -148,7 +148,7 @@ export function DocumentEmbedCard({ documentId }: DocumentEmbedCardProps) {
     queryKey: ['document', documentId],
     queryFn: async () => {
       const response = await fetch(`/api/documents/${documentId}`);
-      if (!response.ok) throw new Error('Document not found');
+      if (!response.ok) throw new Error(i18n.t('ui:channel.embedDocumentNotFound', { documentId }));
       return response.json();
     },
     staleTime: 30000, // Cache for 30 seconds

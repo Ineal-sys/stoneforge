@@ -160,7 +160,7 @@ export const TaskCard = React.forwardRef<HTMLDivElement, TaskCardProps>(
             )}
           </div>
           <Badge variant={priority.variant} size="sm">
-            {priority.label}
+            {t(priority.label)}
           </Badge>
         </div>
 

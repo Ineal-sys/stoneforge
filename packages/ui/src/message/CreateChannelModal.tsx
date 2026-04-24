@@ -4,7 +4,7 @@ import { Loader2, Plus, Hash, Users } from 'lucide-react';
 import { TagInput } from '../components/TagInput';
 import { ResponsiveModal } from '../layout/ResponsiveModal';
 import { useCurrentUser } from '../contexts';
-import { useTranslation } from '@stoneforge/i18n';
+import { useTranslation, i18n } from '@stoneforge/i18n';
 
 interface Entity {
   id: string;
@@ -43,7 +43,7 @@ function useEntities() {
     queryKey: ['entities'],
     queryFn: async () => {
       const response = await fetch('/api/entities');
-      if (!response.ok) throw new Error('Failed to fetch entities');
+      if (!response.ok) throw new Error(i18n.t('ui:channel.fetchEntitiesFailed'));
       const data = await response.json();
       // Handle paginated response format
       return data.items || data;

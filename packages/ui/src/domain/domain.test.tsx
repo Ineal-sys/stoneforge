@@ -48,37 +48,37 @@ describe('Domain Types Utility Functions', () => {
   describe('getPriorityConfig', () => {
     test('returns correct config for priority 1 (Critical)', () => {
       const config = getPriorityConfig(1);
-      expect(config.label).toBe('Critical');
+      expect(config.label).toBe('domain.priority.critical');
       expect(config.variant).toBe('error');
     });
 
     test('returns correct config for priority 2 (High)', () => {
       const config = getPriorityConfig(2);
-      expect(config.label).toBe('High');
+      expect(config.label).toBe('domain.priority.high');
       expect(config.variant).toBe('warning');
     });
 
     test('returns correct config for priority 3 (Medium)', () => {
       const config = getPriorityConfig(3);
-      expect(config.label).toBe('Medium');
+      expect(config.label).toBe('domain.priority.medium');
       expect(config.variant).toBe('primary');
     });
 
     test('returns correct config for priority 4 (Low)', () => {
       const config = getPriorityConfig(4);
-      expect(config.label).toBe('Low');
+      expect(config.label).toBe('domain.priority.low');
       expect(config.variant).toBe('default');
     });
 
     test('returns correct config for priority 5 (Trivial)', () => {
       const config = getPriorityConfig(5);
-      expect(config.label).toBe('Trivial');
+      expect(config.label).toBe('domain.priority.trivial');
       expect(config.variant).toBe('outline');
     });
 
     test('returns default config for unknown priority', () => {
       const config = getPriorityConfig(99);
-      expect(config.label).toBe('Medium');
+      expect(config.label).toBe('domain.priority.medium');
       expect(config.variant).toBe('primary');
     });
   });

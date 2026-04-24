@@ -10,7 +10,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, UserPlus, UserMinus, Users, Crown, LogOut, Loader2, AlertCircle, Trash2, AlertTriangle } from 'lucide-react';
 import { useDeleteChannel } from './useDeleteChannel';
 import { EntityLink } from './EntityLink';
-import { useTranslation } from '@stoneforge/i18n';
+import { useTranslation, i18n } from '@stoneforge/i18n';
 
 // ============================================================================
 // Types
@@ -63,7 +63,7 @@ function useChannelMembers(channelId: string) {
     queryFn: async () => {
       const response = await fetch(`/api/channels/${channelId}/members?hydrate=true`);
       if (!response.ok) {
-        throw new Error('Failed to fetch channel members');
+        throw new Error(i18n.t('ui:channel.fetchMembersFailed'));
       }
       return response.json();
     },
@@ -75,7 +75,7 @@ function useEntities() {
     queryKey: ['entities'],
     queryFn: async () => {
       const response = await fetch('/api/entities');
-      if (!response.ok) throw new Error('Failed to fetch entities');
+      if (!response.ok) throw new Error(i18n.t('ui:channel.fetchEntitiesFailed'));
       const data = await response.json();
       // Handle paginated response format
       return data.items || data;

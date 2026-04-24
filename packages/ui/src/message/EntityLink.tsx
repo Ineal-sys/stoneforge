@@ -8,6 +8,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Bot, User, Server, Loader2 } from 'lucide-react';
 import { type ReactNode } from 'react';
+import { i18n } from '@stoneforge/i18n';
 import { type Entity } from './entity-types';
 
 interface EntityLinkProps {
@@ -70,13 +71,13 @@ function useEntityByRef(entityRef: string | null) {
         const response = await fetch(`/api/entities/${entityRef}`);
         if (!response.ok) {
           if (response.status === 404) return null;
-          throw new Error('Failed to fetch entity');
+          throw new Error(i18n.t('ui:channel.entityFetchFailed'));
         }
         return response.json();
       } else {
         // Search by name
         const response = await fetch(`/api/entities?search=${encodeURIComponent(entityRef)}&limit=100`);
-        if (!response.ok) throw new Error('Failed to fetch entity');
+        if (!response.ok) throw new Error(i18n.t('ui:channel.entityFetchFailed'));
         const result: { items: Entity[] } = await response.json();
         // Find exact match (case-insensitive)
         const entity = result.items.find(

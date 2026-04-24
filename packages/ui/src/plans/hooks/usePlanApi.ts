@@ -37,7 +37,7 @@ export function usePlan(planId: string | null) {
   return useQuery<HydratedPlan>({
     queryKey: ['plans', planId],
     queryFn: async () => {
-      if (!planId) throw new Error('No plan selected');
+      if (!planId) throw new Error(i18n.t('ui:plans.error.noPlanSelected'));
       const response = await fetch(`/api/plans/${planId}?hydrate.progress=true`);
       if (!response.ok) {
         const error = await response.json();
@@ -56,7 +56,7 @@ export function usePlanTasks(planId: string | null) {
   return useQuery<PlanTaskType[]>({
     queryKey: ['plans', planId, 'tasks'],
     queryFn: async () => {
-      if (!planId) throw new Error('No plan selected');
+      if (!planId) throw new Error(i18n.t('ui:plans.error.noPlanSelected'));
       const response = await fetch(`/api/plans/${planId}/tasks`);
       if (!response.ok) {
         const error = await response.json();
@@ -75,7 +75,7 @@ export function usePlanProgress(planId: string | null) {
   return useQuery<PlanProgress>({
     queryKey: ['plans', planId, 'progress'],
     queryFn: async () => {
-      if (!planId) throw new Error('No plan selected');
+      if (!planId) throw new Error(i18n.t('ui:plans.error.noPlanSelected'));
       const response = await fetch(`/api/plans/${planId}/progress`);
       if (!response.ok) {
         const error = await response.json();

@@ -14,7 +14,7 @@ import * as HoverCard from '@radix-ui/react-hover-card';
 import { useQuery } from '@tanstack/react-query';
 import { Bot, User, Server, Loader2, ExternalLink, Clock } from 'lucide-react';
 import { type ReactNode } from 'react';
-import { useTranslation } from '@stoneforge/i18n';
+import { useTranslation, i18n } from '@stoneforge/i18n';
 import type { Entity, EntityType } from './types';
 
 /**
@@ -136,12 +136,12 @@ function useEntityByRef(entityRef: string | null) {
         const response = await fetch(`/api/entities/${entityRef}`);
         if (!response.ok) {
           if (response.status === 404) return null;
-          throw new Error('Failed to fetch entity');
+          throw new Error(i18n.t('ui:domain.entityLink.fetchFailed'));
         }
         return response.json();
       } else {
         const response = await fetch(`/api/entities?search=${encodeURIComponent(entityRef)}&limit=100`);
-        if (!response.ok) throw new Error('Failed to fetch entity');
+        if (!response.ok) throw new Error(i18n.t('ui:domain.entityLink.fetchFailed'));
         const result: { items: Entity[] } = await response.json();
         const entity = result.items.find(
           (e) => e.name.toLowerCase() === entityRef.toLowerCase()
@@ -162,7 +162,7 @@ function useEntityStats(entityId: string | null) {
     queryKey: ['entities', entityId, 'stats'],
     queryFn: async () => {
       const response = await fetch(`/api/entities/${entityId}/stats`);
-      if (!response.ok) throw new Error('Failed to fetch entity stats');
+      if (!response.ok) throw new Error(i18n.t('ui:domain.entityLink.fetchStatsFailed'));
       return response.json();
     },
     enabled: !!entityId,

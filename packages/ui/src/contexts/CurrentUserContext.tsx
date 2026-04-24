@@ -11,6 +11,7 @@
  */
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { i18n } from '@stoneforge/i18n';
 
 // Types
 export interface UserEntity {
@@ -108,7 +109,7 @@ export function CurrentUserProvider({ children, useHumanEntities }: CurrentUserP
 export function useCurrentUser() {
   const context = useContext(CurrentUserContext);
   if (context === undefined) {
-    throw new Error('useCurrentUser must be used within a CurrentUserProvider');
+    throw new Error(i18n.t('ui:errors.useCurrentUserMissingProvider'));
   }
   return context;
 }
