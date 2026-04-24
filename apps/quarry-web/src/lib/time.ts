@@ -3,20 +3,29 @@
  * TB94: Inbox Time-Ago Indicator
  */
 
+import { i18n } from '@stoneforge/i18n';
+
 /**
  * Time period categories for grouping messages
  */
 export type TimePeriod = 'today' | 'yesterday' | 'this-week' | 'earlier';
 
 /**
- * Time period display labels
+ * Time period display labels - uses i18n keys
  */
 export const TIME_PERIOD_LABELS: Record<TimePeriod, string> = {
-  today: 'Today',
-  yesterday: 'Yesterday',
-  'this-week': 'This Week',
-  earlier: 'Earlier',
+  today: 'timeLib.today',
+  yesterday: 'timeLib.yesterday',
+  'this-week': 'timeLib.thisWeek',
+  earlier: 'timeLib.earlier',
 };
+
+/**
+ * Gets the translated display label for a time period
+ */
+export function getTimePeriodLabel(period: TimePeriod): string {
+  return i18n.t(TIME_PERIOD_LABELS[period]);
+}
 
 /**
  * Determines which time period a date falls into
@@ -96,19 +105,19 @@ export function formatRelativeTime(date: Date | string): string {
   const days = Math.floor(diff / 86400000);
 
   if (minutes < 1) {
-    return 'just now';
+    return i18n.t('timeLib.justNow');
   }
   if (minutes < 60) {
-    return `${minutes}m ago`;
+    return i18n.t('timeLib.minutesAgo', { count: minutes });
   }
   if (hours < 24) {
-    return `${hours}h ago`;
+    return i18n.t('timeLib.hoursAgo', { count: hours });
   }
   if (days === 1) {
-    return 'Yesterday';
+    return i18n.t('timeLib.yesterday');
   }
   if (days < 7) {
-    return `${days}d ago`;
+    return i18n.t('timeLib.daysAgo', { count: days });
   }
 
   // For older dates, show the actual date
@@ -133,16 +142,16 @@ export function formatCompactTime(date: Date | string): string {
   const days = Math.floor(diff / 86400000);
 
   if (minutes < 1) {
-    return 'now';
+    return i18n.t('timeLib.now');
   }
   if (minutes < 60) {
-    return `${minutes}m`;
+    return i18n.t('timeLib.minutesShort', { count: minutes });
   }
   if (hours < 24) {
-    return `${hours}h`;
+    return i18n.t('timeLib.hoursShort', { count: hours });
   }
   if (days < 7) {
-    return `${days}d`;
+    return i18n.t('timeLib.daysShort', { count: days });
   }
 
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -218,10 +227,10 @@ export function formatDateSeparator(date: Date | string): string {
   const inputDayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
   if (inputDayStart.getTime() === todayStart.getTime()) {
-    return 'Today';
+    return i18n.t('timeLib.today');
   }
   if (inputDayStart.getTime() === yesterdayStart.getTime()) {
-    return 'Yesterday';
+    return i18n.t('timeLib.yesterday');
   }
 
   // For older dates, show full weekday and date: "Monday, January 15"

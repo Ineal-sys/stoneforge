@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   X,
   Pencil,
@@ -94,6 +95,7 @@ interface EntityDetailPanelProps {
 
 export function EntityDetailPanel({ entityId, onClose }: EntityDetailPanelProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation('quarry');
   const { data: entity, isLoading: entityLoading } = useEntity(entityId);
   const { data: stats, isLoading: statsLoading } = useEntityStats(entityId);
   const { data: tasks, isLoading: tasksLoading } = useEntityTasks(entityId);
@@ -309,7 +311,7 @@ export function EntityDetailPanel({ entityId, onClose }: EntityDetailPanelProps)
         handleInboxKeyNavigation('next');
       }
     }, [activeTab, handleInboxKeyNavigation]),
-    'Select next inbox message'
+    t('entities.inbox.selectNextMessage', { defaultValue: 'Select next inbox message' })
   );
 
   useKeyboardShortcut(
@@ -319,7 +321,7 @@ export function EntityDetailPanel({ entityId, onClose }: EntityDetailPanelProps)
         handleInboxKeyNavigation('prev');
       }
     }, [activeTab, handleInboxKeyNavigation]),
-    'Select previous inbox message'
+    t('entities.inbox.selectPreviousMessage', { defaultValue: 'Select previous inbox message' })
   );
 
   const handleSave = async () => {
@@ -376,7 +378,7 @@ export function EntityDetailPanel({ entityId, onClose }: EntityDetailPanelProps)
   if (entityLoading) {
     return (
       <div className="h-full flex items-center justify-center" data-testid="entity-detail-loading">
-        <span className="text-gray-500">Loading...</span>
+        <span className="text-gray-500">{t('entities.detail.loading')}</span>
       </div>
     );
   }
@@ -384,7 +386,7 @@ export function EntityDetailPanel({ entityId, onClose }: EntityDetailPanelProps)
   if (!entity) {
     return (
       <div className="h-full flex items-center justify-center" data-testid="entity-detail-error">
-        <span className="text-red-600">Entity not found</span>
+        <span className="text-red-600">{t('entities.detail.notFound')}</span>
       </div>
     );
   }
@@ -416,7 +418,7 @@ export function EntityDetailPanel({ entityId, onClose }: EntityDetailPanelProps)
                 <h2 className="text-lg font-medium text-gray-900">{entity.name}</h2>
                 {!isActive && (
                   <span className="px-1.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded">
-                    Inactive
+                    {t('entities.detail.inactive')}
                   </span>
                 )}
               </div>
@@ -480,7 +482,7 @@ export function EntityDetailPanel({ entityId, onClose }: EntityDetailPanelProps)
           }`}
           data-testid="entity-tab-overview"
         >
-          Overview
+          {t('entities.detail.overview')}
         </button>
         <button
           onClick={() => setActiveTab('inbox')}
@@ -492,7 +494,7 @@ export function EntityDetailPanel({ entityId, onClose }: EntityDetailPanelProps)
           data-testid="entity-tab-inbox"
         >
           <Inbox className="w-4 h-4" />
-          Inbox
+          {t('entities.detail.inbox')}
           {inboxCount && inboxCount.count > 0 && (
             <span className="px-1.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded-full" data-testid="inbox-count-badge">
               {inboxCount.count}
@@ -509,7 +511,7 @@ export function EntityDetailPanel({ entityId, onClose }: EntityDetailPanelProps)
           data-testid="entity-tab-history"
         >
           <History className="w-4 h-4" />
-          History
+          {t('entities.detail.history')}
         </button>
       </div>
 
@@ -656,6 +658,7 @@ function OverviewTabContent({
   onNavigateToTask: (taskId: string) => void;
   navigate: any;
 }) {
+  const { t } = useTranslation('quarry');
   const styles = ENTITY_TYPE_STYLES[entity.entityType] || ENTITY_TYPE_STYLES.system;
   const isActive = entity.active !== false;
 
@@ -669,7 +672,7 @@ function OverviewTabContent({
           </span>
           {entity.publicKey && (
             <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded">
-              Has Public Key
+              {t('entities.detail.hasPublicKey')}
             </span>
           )}
         </div>
@@ -677,11 +680,11 @@ function OverviewTabContent({
         {/* Active Status Toggle */}
         <div className="mb-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Status</span>
+            <span className="text-sm text-gray-600">{t('entities.detail.status')}</span>
             {showDeactivateConfirm ? (
               <div className="flex items-center gap-2" data-testid="entity-deactivate-confirm">
                 <span className="text-sm text-gray-600">
-                  {isActive ? 'Deactivate?' : 'Reactivate?'}
+                  {isActive ? t('entities.detail.deactivate') : t('entities.detail.reactivate')}
                 </span>
                 <button
                   onClick={onToggleActive}
@@ -689,14 +692,14 @@ function OverviewTabContent({
                   className="px-2 py-1 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded disabled:opacity-50"
                   data-testid="entity-confirm-toggle-button"
                 >
-                  {updateEntity.isPending ? 'Saving...' : 'Confirm'}
+                  {updateEntity.isPending ? t('entities.detail.saving') : t('entities.detail.confirm')}
                 </button>
                 <button
                   onClick={() => setShowDeactivateConfirm(false)}
                   className="px-2 py-1 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded"
                   data-testid="entity-cancel-toggle-button"
                 >
-                  Cancel
+                  {t('common:button.cancel')}
                 </button>
               </div>
             ) : (
@@ -712,12 +715,12 @@ function OverviewTabContent({
                 {isActive ? (
                   <>
                     <Power className="w-3 h-3" />
-                    Active
+                    {t('entities.detail.active')}
                   </>
                 ) : (
                   <>
                     <PowerOff className="w-3 h-3" />
-                    Inactive
+                    {t('entities.detail.inactive')}
                   </>
                 )}
               </button>
@@ -729,14 +732,14 @@ function OverviewTabContent({
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Tag className="w-4 h-4 text-gray-400" />
-            <span className="text-sm font-medium text-gray-700">Tags</span>
+            <span className="text-sm font-medium text-gray-700">{t('entities.detail.tags')}</span>
           </div>
           {isEditing ? (
             <input
               type="text"
               value={editTags}
               onChange={(e) => setEditTags(e.target.value)}
-              placeholder="Enter tags separated by commas..."
+              placeholder={t('entities.detail.tagsPlaceholder')}
               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               data-testid="entity-edit-tags-input"
             />
@@ -759,7 +762,7 @@ function OverviewTabContent({
               ))}
             </div>
           ) : (
-            <span className="text-sm text-gray-400">No tags</span>
+            <span className="text-sm text-gray-400">{t('entities.detail.noTags')}</span>
           )}
         </div>
       </div>
@@ -768,13 +771,13 @@ function OverviewTabContent({
       <div className="border-t border-gray-100 pt-4">
         <div className="flex items-center gap-2 mb-3">
           <GitBranch className="w-4 h-4 text-gray-400" />
-          <h3 className="text-sm font-medium text-gray-900">Organization</h3>
+          <h3 className="text-sm font-medium text-gray-900">{t('entities.detail.organization')}</h3>
         </div>
 
         {/* Reports To (Manager) */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-600">Reports To</span>
+            <span className="text-sm text-gray-600">{t('entities.detail.reportsTo')}</span>
             {!showManagerPicker ? (
               <button
                 onClick={() => {
@@ -784,7 +787,7 @@ function OverviewTabContent({
                 className="text-xs text-blue-600 hover:text-blue-700"
                 data-testid="entity-edit-manager-button"
               >
-                {entity.reportsTo ? 'Change' : 'Set Manager'}
+                {entity.reportsTo ? t('entities.detail.change') : t('entities.detail.setManager')}
               </button>
             ) : (
               <button
@@ -792,7 +795,7 @@ function OverviewTabContent({
                 className="text-xs text-gray-500 hover:text-gray-700"
                 data-testid="entity-cancel-manager-edit"
               >
-                Cancel
+                {t('common:button.cancel')}
               </button>
             )}
           </div>
@@ -818,7 +821,7 @@ function OverviewTabContent({
               onClick={(id) => navigate({ to: '/entities', search: { selected: id, name: undefined, page: 1, limit: 25 } })}
             />
           ) : (
-            <span className="text-sm text-gray-400" data-testid="entity-no-manager">No manager assigned</span>
+            <span className="text-sm text-gray-400" data-testid="entity-no-manager">{t('entities.detail.noManager')}</span>
           )}
           {setEntityManager.isError && (
             <p className="mt-1 text-xs text-red-600" data-testid="entity-manager-error">
@@ -830,7 +833,7 @@ function OverviewTabContent({
         {/* Management Chain */}
         {managementChain && managementChain.length > 0 && (
           <div className="mb-4" data-testid="entity-management-chain">
-            <div className="text-xs text-gray-500 mb-2">Management Chain</div>
+            <div className="text-xs text-gray-500 mb-2">{t('entities.detail.managementChain')}</div>
             <div className="flex flex-wrap items-center gap-1">
               <span className="text-sm text-gray-700">{entity.name}</span>
               {managementChain.map((manager: Entity, index: number) => (
@@ -849,14 +852,14 @@ function OverviewTabContent({
           </div>
         )}
         {chainLoading && (
-          <div className="text-xs text-gray-400 mb-4">Loading management chain...</div>
+          <div className="text-xs text-gray-400 mb-4">{t('entities.detail.loadingManagementChain')}</div>
         )}
 
         {/* Direct Reports */}
         <div>
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-gray-600">
-              Direct Reports {directReports && directReports.length > 0 && `(${directReports.length})`}
+              {t('entities.detail.directReports')} {directReports && directReports.length > 0 && `(${directReports.length})`}
             </span>
             {directReports && directReports.length > 0 && (
               <button
@@ -867,21 +870,21 @@ function OverviewTabContent({
                 {showOrgChart ? (
                   <>
                     <ChevronDown className="w-3 h-3" />
-                    Hide chart
+                    {t('entities.detail.hideChart')}
                   </>
                 ) : (
                   <>
                     <GitBranch className="w-3 h-3" />
-                    Show chart
+                    {t('entities.detail.showChart')}
                   </>
                 )}
               </button>
             )}
           </div>
           {reportsLoading ? (
-            <div className="text-xs text-gray-400">Loading reports...</div>
+            <div className="text-xs text-gray-400">{t('entities.detail.loadingReports')}</div>
           ) : !directReports || directReports.length === 0 ? (
-            <span className="text-sm text-gray-400" data-testid="entity-no-reports">No direct reports</span>
+            <span className="text-sm text-gray-400" data-testid="entity-no-reports">{t('entities.detail.noDirectReports')}</span>
           ) : showOrgChart ? (
             <OrgChartView
               rootEntity={entity}
@@ -915,17 +918,17 @@ function OverviewTabContent({
 
       {/* Statistics */}
       <div>
-        <h3 className="text-sm font-medium text-gray-900 mb-3">Statistics</h3>
+        <h3 className="text-sm font-medium text-gray-900 mb-3">{t('entities.detail.statistics')}</h3>
         {statsLoading ? (
-          <div className="text-sm text-gray-500">Loading stats...</div>
+          <div className="text-sm text-gray-500">{t('entities.detail.loadingStats')}</div>
         ) : stats ? (
           <div className="grid grid-cols-2 gap-3" data-testid="entity-stats">
-            <StatCard icon={ListTodo} label="Assigned Tasks" value={stats.assignedTaskCount} />
-            <StatCard icon={Clock} label="Active Tasks" value={stats.activeTaskCount} color="text-yellow-600" />
-            <StatCard icon={CheckCircle} label="Completed" value={stats.completedTaskCount} color="text-green-600" />
-            <StatCard icon={ListTodo} label="Created Tasks" value={stats.createdTaskCount} color="text-blue-600" />
-            <StatCard icon={MessageSquare} label="Messages Sent" value={stats.messageCount} />
-            <StatCard icon={FileText} label="Documents Created" value={stats.documentCount} />
+            <StatCard icon={ListTodo} label={t('entities.detail.assignedTasks')} value={stats.assignedTaskCount} />
+            <StatCard icon={Clock} label={t('entities.detail.activeTasks')} value={stats.activeTaskCount} color="text-yellow-600" />
+            <StatCard icon={CheckCircle} label={t('entities.detail.completed')} value={stats.completedTaskCount} color="text-green-600" />
+            <StatCard icon={ListTodo} label={t('entities.detail.createdTasks')} value={stats.createdTaskCount} color="text-blue-600" />
+            <StatCard icon={MessageSquare} label={t('entities.detail.messagesSent')} value={stats.messageCount} />
+            <StatCard icon={FileText} label={t('entities.detail.documentsCreated')} value={stats.documentCount} />
           </div>
         ) : null}
       </div>
@@ -934,7 +937,7 @@ function OverviewTabContent({
       <div className="border-t border-gray-100 pt-4">
         <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
           <Activity className="w-4 h-4" />
-          Activity
+          {t('entities.detail.activity')}
         </h3>
         <ContributionChart
           activity={activityData?.activity || []}
@@ -948,12 +951,12 @@ function OverviewTabContent({
       {/* Active Tasks */}
       <div>
         <h3 className="text-sm font-medium text-gray-900 mb-3">
-          Assigned Tasks ({tasks.length})
+          {t('entities.detail.assignedTasksList', { count: tasks.length })}
         </h3>
         {tasksLoading ? (
-          <div className="text-sm text-gray-500">Loading tasks...</div>
+          <div className="text-sm text-gray-500">{t('entities.detail.loadingTasks')}</div>
         ) : tasks.length === 0 ? (
-          <div className="text-sm text-gray-500">No active tasks assigned</div>
+          <div className="text-sm text-gray-500">{t('entities.detail.noActiveTasks')}</div>
         ) : (
           <div className="space-y-2" data-testid="entity-tasks">
             {tasks.slice(0, 5).map((task: any) => (
@@ -965,7 +968,7 @@ function OverviewTabContent({
                 className="w-full text-xs text-blue-600 hover:text-blue-700 text-center py-1 hover:bg-blue-50 rounded transition-colors"
                 data-testid="view-all-tasks"
               >
-                +{tasks.length - 5} more tasks
+                {t('entities.detail.moreTasks', { count: tasks.length - 5 })}
               </button>
             )}
           </div>
@@ -976,12 +979,12 @@ function OverviewTabContent({
       <div>
         <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
           <Activity className="w-4 h-4" />
-          Recent Activity
+          {t('entities.detail.recentActivity')}
         </h3>
         {eventsLoading ? (
-          <div className="text-sm text-gray-500">Loading activity...</div>
+          <div className="text-sm text-gray-500">{t('entities.detail.loadingActivity')}</div>
         ) : !events || events.length === 0 ? (
-          <div className="text-sm text-gray-500">No recent activity</div>
+          <div className="text-sm text-gray-500">{t('entities.detail.noRecentActivity')}</div>
         ) : (
           <>
             <div className="divide-y divide-gray-100" data-testid="entity-events">
@@ -995,7 +998,7 @@ function OverviewTabContent({
                 className="w-full mt-3 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded py-2 transition-colors flex items-center justify-center gap-1"
                 data-testid="view-all-activity"
               >
-                View all activity
+                {t('entities.detail.viewAllActivity')}
                 <ChevronRight className="w-4 h-4" />
               </button>
             )}
@@ -1007,7 +1010,7 @@ function OverviewTabContent({
       <div className="border-t border-gray-100 pt-4">
         <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
           <AtSign className="w-4 h-4" />
-          Mentioned In
+          {t('entities.detail.mentionedIn')}
           {mentionsData && mentionsData.totalCount > 0 && (
             <span className="px-1.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-full" data-testid="mentions-count-badge">
               {mentionsData.totalCount}
@@ -1015,10 +1018,10 @@ function OverviewTabContent({
           )}
         </h3>
         {mentionsLoading ? (
-          <div className="text-sm text-gray-500">Loading mentions...</div>
+          <div className="text-sm text-gray-500">{t('entities.detail.loadingMentions')}</div>
         ) : !mentionsData || mentionsData.totalCount === 0 ? (
           <div className="text-sm text-gray-500" data-testid="no-mentions">
-            No documents or tasks mention this entity
+            {t('entities.detail.noMentions')}
           </div>
         ) : (
           <div className="space-y-2" data-testid="entity-mentions">
@@ -1067,7 +1070,7 @@ function OverviewTabContent({
             ))}
             {mentionsData.totalCount > 5 && (
               <div className="text-xs text-gray-500 text-center py-1">
-                +{mentionsData.totalCount - 5} more mentions
+                {t('entities.detail.moreMentions', { count: mentionsData.totalCount - 5 })}
               </div>
             )}
           </div>
@@ -1076,8 +1079,8 @@ function OverviewTabContent({
 
       {/* Timestamps */}
       <div className="text-xs text-gray-400 pt-4 border-t border-gray-100">
-        <div>Created: {new Date(entity.createdAt).toLocaleString()}</div>
-        <div>Updated: {new Date(entity.updatedAt).toLocaleString()}</div>
+        <div>{t('entities.detail.created')}: {new Date(entity.createdAt).toLocaleString()}</div>
+        <div>{t('entities.detail.updated')}: {new Date(entity.updatedAt).toLocaleString()}</div>
       </div>
     </>
   );
@@ -1141,6 +1144,7 @@ function InboxTabContent({
   onNavigateToEntity: (entityId: string) => void;
   refetchInbox: () => void;
 }) {
+  const { t } = useTranslation('quarry');
   return (
     <div className="flex flex-col h-full -m-4" data-testid="entity-inbox-tab">
       {/* Inbox Header with View Tabs */}
@@ -1149,7 +1153,7 @@ function InboxTabContent({
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium text-gray-900 flex items-center gap-2">
             <Inbox className="w-4 h-4" />
-            Inbox
+            {t('entities.detail.inbox')}
           </h3>
           {inboxView !== 'archived' && inboxCount && inboxCount.count > 0 && (
             <button
@@ -1163,7 +1167,7 @@ function InboxTabContent({
               ) : (
                 <CheckCircle className="w-3 h-3" />
               )}
-              Mark all read
+              {t('entities.inbox.markAllRead')}
             </button>
           )}
         </div>
@@ -1234,7 +1238,7 @@ function InboxTabContent({
               data-testid="inbox-filter-button"
             >
               <Filter className="w-3 h-3" />
-              Filter
+              {t('entities.inbox.filter')}
               <ChevronDown className="w-3 h-3" />
             </button>
             <div
@@ -1243,11 +1247,11 @@ function InboxTabContent({
               data-testid="inbox-filter-dropdown"
             >
               <div className="p-1">
-                <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">Source Type</div>
+                <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">{t('entities.inbox.sourceType')}</div>
                 {[
-                  { value: 'all', label: 'All Messages', icon: Mail },
-                  { value: 'direct', label: 'Direct Messages', icon: MessageSquare },
-                  { value: 'mention', label: 'Mentions', icon: AtSign },
+                  { value: 'all', label: t('entities.inbox.filterOptions.allMessages'), icon: Mail },
+                  { value: 'direct', label: t('entities.inbox.filterOptions.directMessages'), icon: MessageSquare },
+                  { value: 'mention', label: t('entities.inbox.filterOptions.mentions'), icon: AtSign },
                 ].map((option) => {
                   const OptionIcon = option.icon;
                   const isSelected = inboxSourceFilter === option.value;
@@ -1293,7 +1297,7 @@ function InboxTabContent({
               data-testid="inbox-sort-button"
             >
               <ArrowUpDown className="w-3 h-3" />
-              Sort
+              {t('entities.inbox.sort')}
               <ChevronDown className="w-3 h-3" />
             </button>
             <div
@@ -1303,9 +1307,9 @@ function InboxTabContent({
             >
               <div className="p-1">
                 {[
-                  { value: 'newest', label: 'Newest First', icon: ArrowDown },
-                  { value: 'oldest', label: 'Oldest First', icon: ArrowUp },
-                  { value: 'sender', label: 'By Sender', icon: User },
+                  { value: 'newest', label: t('entities.inbox.sortOptions.newestFirst'), icon: ArrowDown },
+                  { value: 'oldest', label: t('entities.inbox.sortOptions.oldestFirst'), icon: ArrowUp },
+                  { value: 'sender', label: t('entities.inbox.sortOptions.bySender'), icon: User },
                 ].map((option) => {
                   const OptionIcon = option.icon;
                   const isSelected = inboxSortOrder === option.value;
@@ -1346,12 +1350,12 @@ function InboxTabContent({
                 {inboxSourceFilter === 'direct' ? (
                   <>
                     <MessageSquare className="w-3 h-3" />
-                    Direct Messages
+                    {t('entities.inbox.activeFilters.directMessages')}
                   </>
                 ) : (
                   <>
                     <AtSign className="w-3 h-3" />
-                    Mentions
+                    {t('entities.inbox.activeFilters.mentions')}
                   </>
                 )}
                 <button
@@ -1371,12 +1375,12 @@ function InboxTabContent({
                 {inboxSortOrder === 'oldest' ? (
                   <>
                     <ArrowUp className="w-3 h-3" />
-                    Oldest First
+                    {t('entities.inbox.activeFilters.oldestFirst')}
                   </>
                 ) : (
                   <>
                     <User className="w-3 h-3" />
-                    By Sender
+                    {t('entities.inbox.activeFilters.bySender')}
                   </>
                 )}
                 <button
@@ -1397,7 +1401,7 @@ function InboxTabContent({
                 className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
                 data-testid="inbox-clear-all-filters"
               >
-                Clear all
+                {t('entities.inbox.activeFilters.clearAll')}
               </button>
             )}
           </div>
@@ -1412,13 +1416,13 @@ function InboxTabContent({
           data-testid="inbox-message-list"
         >
           {inboxLoading ? (
-            <div className="p-4 text-sm text-gray-500">Loading inbox...</div>
+            <div className="p-4 text-sm text-gray-500">{t('entities.inbox.loading')}</div>
           ) : inboxError ? (
             <div className="text-center py-8 px-4" data-testid="inbox-error">
               <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-700">Failed to load inbox</p>
+              <p className="text-sm text-gray-700">{t('entities.inbox.failedToLoad')}</p>
               <p className="text-xs text-gray-500 mt-1 mb-3">
-                There was an error loading your messages
+                {t('entities.inbox.failedToLoadMessages')}
               </p>
               <button
                 onClick={() => refetchInbox()}
@@ -1426,7 +1430,7 @@ function InboxTabContent({
                 data-testid="inbox-retry"
               >
                 <RefreshCw className="w-3 h-3" />
-                Retry
+                {t('entities.inbox.retry')}
               </button>
             </div>
           ) : !inboxData || inboxData.items.length === 0 ? (
@@ -1434,30 +1438,30 @@ function InboxTabContent({
               <Inbox className="w-8 h-8 text-gray-300 mx-auto mb-2" />
               <p className="text-sm text-gray-500">
                 {inboxView === 'unread'
-                  ? 'No unread messages'
+                  ? t('entities.inbox.empty.unread')
                   : inboxView === 'archived'
-                  ? 'No archived messages'
-                  : 'No messages in inbox'}
+                  ? t('entities.inbox.empty.archived')
+                  : t('entities.inbox.empty.all')}
               </p>
               <p className="text-xs text-gray-400 mt-1">
                 {inboxView === 'archived'
-                  ? 'Archived messages will appear here'
-                  : 'Direct messages and @mentions will appear here'}
+                  ? t('entities.inbox.empty.archivedHint')
+                  : t('entities.inbox.empty.hint')}
               </p>
             </div>
           ) : filteredAndSortedInboxItems.length === 0 ? (
             <div className="text-center py-8 px-4" data-testid="inbox-filtered-empty">
               <Filter className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">No messages match your filters</p>
+              <p className="text-sm text-gray-500">{t('entities.inbox.filteredEmpty.title')}</p>
               <p className="text-xs text-gray-400 mt-1">
-                Try adjusting your filter settings
+                {t('entities.inbox.filteredEmpty.hint')}
               </p>
               <button
                 onClick={() => onSourceFilterChange('all')}
                 className="mt-2 text-xs font-medium text-blue-600 hover:text-blue-700"
                 data-testid="inbox-clear-filters-link"
               >
-                Clear filters
+                {t('entities.inbox.filteredEmpty.clearFilters')}
               </button>
             </div>
           ) : (
@@ -1493,15 +1497,15 @@ function InboxTabContent({
             <div className="text-center text-xs text-gray-500 py-2 border-t border-gray-100">
               {inboxSourceFilter !== 'all' ? (
                 <>
-                  Showing {filteredAndSortedInboxItems.length} of {inboxData.items.length} (filtered)
+                  {t('entities.inbox.showing', { filtered: filteredAndSortedInboxItems.length, total: inboxData.items.length })}
                 </>
               ) : inboxData.hasMore ? (
                 <>
-                  Showing {inboxData.items.length} of {inboxData.total} items
+                  {t('entities.inbox.showingTotal', { shown: inboxData.items.length, total: inboxData.total })}
                 </>
               ) : (
                 <>
-                  {inboxData.items.length} {inboxData.items.length === 1 ? 'item' : 'items'}
+                  {t('entities.inbox.itemCount', { count: inboxData.items.length })}
                 </>
               )}
             </div>

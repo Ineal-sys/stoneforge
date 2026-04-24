@@ -4,6 +4,7 @@
  */
 
 import { Hash, Lock, Users, MessageSquare, Plus, Search } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { VirtualizedList } from '../../../components/shared/VirtualizedList';
 import type { Channel } from '../../../api/hooks/useAllElements';
 
@@ -96,6 +97,7 @@ export function ChannelList({
   onSearchChange,
   isMobile = false,
 }: ChannelListProps) {
+  const { t } = useTranslation('quarry');
   // Separate channels into groups and direct
   const groupChannels = channels.filter((c) => c.channelType === 'group');
   const directChannels = channels.filter((c) => c.channelType === 'direct');
@@ -104,14 +106,14 @@ export function ChannelList({
   const listItems: ListItem[] = [];
 
   if (groupChannels.length > 0) {
-    listItems.push({ type: 'header', label: 'Channels', key: 'header-group' });
+    listItems.push({ type: 'header', label: t('messages.channels'), key: 'header-group' });
     groupChannels.forEach((channel) => {
       listItems.push({ type: 'channel', channel, key: channel.id });
     });
   }
 
   if (directChannels.length > 0) {
-    listItems.push({ type: 'header', label: 'Direct Messages', key: 'header-direct' });
+    listItems.push({ type: 'header', label: t('messages.directMessages'), key: 'header-direct' });
     directChannels.forEach((channel) => {
       listItems.push({ type: 'channel', channel, key: channel.id });
     });
@@ -163,14 +165,14 @@ export function ChannelList({
             } flex items-center gap-2`}
           >
             <MessageSquare className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} text-blue-500`} />
-            Channels
+            {t('messages.channels')}
           </h2>
           <button
             onClick={onNewChannel}
             className={`text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-colors ${
               isMobile ? 'p-2 touch-target' : 'p-1.5'
             }`}
-            title="New Channel"
+            title={t('messages.createChannel')}
             data-testid="new-channel-button-sidebar"
           >
             <Plus className={isMobile ? 'w-6 h-6' : 'w-5 h-5'} />
@@ -187,7 +189,7 @@ export function ChannelList({
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={isMobile ? 'Search...' : 'Search channels...'}
+            placeholder={isMobile ? t('button.search') + '...' : t('messages.searchPlaceholder')}
             className={`w-full border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-[var(--color-surface)] text-[var(--color-text)] ${
               isMobile ? 'pl-10 pr-4 py-2.5 text-base' : 'pl-8 pr-3 py-1.5 text-sm'
             }`}
@@ -211,7 +213,7 @@ export function ChannelList({
               }`}
             />
             <p className={isMobile ? 'text-base' : 'text-sm'}>
-              {searchQuery ? 'No channels match your search' : 'No channels yet'}
+              {searchQuery ? t('messages.noChannels') : t('messages.noChannels')}
             </p>
             {!searchQuery && (
               <button
@@ -221,7 +223,7 @@ export function ChannelList({
                 }`}
                 data-testid="new-channel-button-empty"
               >
-                Create one
+                {t('channel.create')}
               </button>
             )}
           </div>
@@ -245,7 +247,7 @@ export function ChannelList({
           data-testid="channel-count"
           className="p-3 border-t border-gray-200 dark:border-[var(--color-border)] text-xs text-gray-500 dark:text-gray-400"
         >
-          {totalChannels} {totalChannels === 1 ? 'channel' : 'channels'}
+          {t('messages.channelCount', { count: totalChannels })}
         </div>
       )}
     </div>
@@ -257,6 +259,7 @@ export function ChannelList({
 // ============================================================================
 
 export function ChannelPlaceholder({ isMobile = false }: { isMobile?: boolean }) {
+  const { t } = useTranslation('quarry');
   return (
     <div
       data-testid="channel-placeholder"
@@ -267,10 +270,10 @@ export function ChannelPlaceholder({ isMobile = false }: { isMobile?: boolean })
       <div className="text-center px-4">
         <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
         <h3 className="text-lg font-medium text-[var(--color-text)] mb-1">
-          Select a channel
+          {t('messages.selectChannel')}
         </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Choose a channel from the sidebar to view messages
+          {t('messages.chooseChannelHint')}
         </p>
       </div>
     </div>

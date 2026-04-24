@@ -2,6 +2,7 @@
  * TeamCard - Desktop team card display
  */
 
+import { useTranslation } from '@stoneforge/i18n';
 import { Users } from 'lucide-react';
 import { MemberAvatarStack } from './MemberAvatarStack';
 import type { Team } from '../types';
@@ -13,6 +14,7 @@ interface TeamCardProps {
 }
 
 export function TeamCard({ team, isSelected, onClick }: TeamCardProps) {
+  const { t } = useTranslation('quarry');
   const isActive = team.status !== 'tombstone';
   const memberCount = team.members?.length || 0;
 
@@ -39,7 +41,7 @@ export function TeamCard({ team, isSelected, onClick }: TeamCardProps) {
             <h3 className="font-medium text-gray-900 truncate">{team.name}</h3>
             {!isActive && (
               <span className="px-1.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded">
-                Deleted
+                {t('teamCard.deleted')}
               </span>
             )}
           </div>
@@ -50,7 +52,7 @@ export function TeamCard({ team, isSelected, onClick }: TeamCardProps) {
           className="px-2 py-1 text-xs font-medium rounded bg-indigo-100 text-indigo-800"
           data-testid={`team-member-count-${team.id}`}
         >
-          {memberCount} {memberCount === 1 ? 'member' : 'members'}
+          {t('teamCard.memberCount', { count: memberCount })}
         </span>
       </div>
 
@@ -76,7 +78,7 @@ export function TeamCard({ team, isSelected, onClick }: TeamCardProps) {
       )}
 
       <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-        Created {new Date(team.createdAt).toLocaleDateString()}
+        {t('teamCard.createdDate', { date: new Date(team.createdAt).toLocaleDateString() })}
       </div>
     </div>
   );

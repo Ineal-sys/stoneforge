@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { Users, CheckCircle2, MessageSquare, Workflow, AlertCircle, AlertTriangle, BellRing, Check } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { NotificationsSettings, NotificationPreferences, ToastDuration, ToastPosition } from '../types';
 import { DEFAULT_NOTIFICATIONS } from '../constants';
 import { getStoredNotifications, setStoredNotifications, getBrowserNotificationPermission, requestNotificationPermission } from '../utils';
@@ -57,6 +58,7 @@ interface NotificationsSectionProps {
 }
 
 export function NotificationsSection({ isMobile }: NotificationsSectionProps) {
+  const { t } = useTranslation('quarry');
   const [settings, setSettings] = useState<NotificationsSettings>(DEFAULT_NOTIFICATIONS);
   const [browserPermission, setBrowserPermission] = useState<NotificationPermission | 'unsupported'>('default');
   const [permissionRequesting, setPermissionRequesting] = useState(false);
@@ -113,21 +115,21 @@ export function NotificationsSection({ isMobile }: NotificationsSectionProps) {
 
   return (
     <div data-testid="settings-notifications-section">
-      <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Notifications</h3>
+      <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{t('notificationsSection.title')}</h3>
       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 sm:mb-6">
-        Configure how you receive notifications about activity in your workspace.
+        {t('notificationsSection.description')}
       </p>
 
       {/* Browser Notifications */}
       <div className="mb-6 sm:mb-8">
-        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">Browser Notifications</h4>
+        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">{t('notificationsSection.browserNotifications')}</h4>
 
         {browserPermission === 'unsupported' && (
           <div className="mb-4 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
               <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                Browser notifications are not supported in this browser.
+                {t('notificationsSection.notSupported')}
               </p>
             </div>
           </div>
@@ -138,7 +140,7 @@ export function NotificationsSection({ isMobile }: NotificationsSectionProps) {
             <div className="flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
               <p className="text-sm text-red-700 dark:text-red-300">
-                Browser notifications are blocked. Please enable them in your browser settings.
+                {t('notificationsSection.blocked')}
               </p>
             </div>
           </div>
@@ -153,10 +155,10 @@ export function NotificationsSection({ isMobile }: NotificationsSectionProps) {
               data-testid="request-permission-button"
             >
               <BellRing className="w-4 h-4" />
-              {permissionRequesting ? 'Requesting...' : 'Enable Browser Notifications'}
+              {permissionRequesting ? t('notificationsSection.requesting') : t('notificationsSection.enableBrowser')}
             </button>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Click to request permission for browser notifications.
+              {t('notificationsSection.enableDescription')}
             </p>
           </div>
         )}
@@ -169,9 +171,9 @@ export function NotificationsSection({ isMobile }: NotificationsSectionProps) {
                   <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Browser Notifications</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{t('notificationsSection.grantedLabel')}</span>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Show desktop notifications for important events
+                    {t('notificationsSection.grantedDescription')}
                   </p>
                 </div>
               </div>
@@ -187,40 +189,40 @@ export function NotificationsSection({ isMobile }: NotificationsSectionProps) {
 
       {/* Notification Preferences */}
       <div className="mb-8">
-        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Notification Types</h4>
+        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t('notificationsSection.types')}</h4>
         <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-          Choose which events you want to be notified about.
+          {t('notificationsSection.typesDescription')}
         </p>
 
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
           <NotificationToggleRow
             icon={Users}
-            label="Task assigned to me"
-            description="When a task is assigned to you or your team"
+            label={t('notificationsSection.taskAssigned')}
+            description={t('notificationsSection.taskAssignedDescription')}
             enabled={settings.preferences.taskAssigned}
             onToggle={() => togglePreference('taskAssigned')}
             testId="notification-task-assigned"
           />
           <NotificationToggleRow
             icon={CheckCircle2}
-            label="Task completed"
-            description="When a task you're watching is completed"
+            label={t('notificationsSection.taskCompleted')}
+            description={t('notificationsSection.taskCompletedDescription')}
             enabled={settings.preferences.taskCompleted}
             onToggle={() => togglePreference('taskCompleted')}
             testId="notification-task-completed"
           />
           <NotificationToggleRow
             icon={MessageSquare}
-            label="New message in channel"
-            description="When you receive a new message in a channel"
+            label={t('notificationsSection.newMessage')}
+            description={t('notificationsSection.newMessageDescription')}
             enabled={settings.preferences.newMessage}
             onToggle={() => togglePreference('newMessage')}
             testId="notification-new-message"
           />
           <NotificationToggleRow
             icon={Workflow}
-            label="Workflow completed/failed"
-            description="When a workflow finishes or encounters an error"
+            label={t('notificationsSection.workflowEvent')}
+            description={t('notificationsSection.workflowEventDescription')}
             enabled={settings.preferences.workflowCompleted}
             onToggle={() => togglePreference('workflowCompleted')}
             testId="notification-workflow-completed"
@@ -230,19 +232,19 @@ export function NotificationsSection({ isMobile }: NotificationsSectionProps) {
 
       {/* Toast Settings */}
       <div className="mb-6 sm:mb-8">
-        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">Toast Notifications</h4>
+        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">{t('notificationsSection.toastNotifications')}</h4>
         <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mb-3 sm:mb-4">
-          Configure how in-app toast notifications appear.
+          {t('notificationsSection.toastDescription')}
         </p>
 
         {/* Duration */}
         <div className="mb-4">
-          <label className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-2 block">Duration</label>
+          <label className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-2 block">{t('notificationsSection.duration')}</label>
           <div className={`flex gap-2 ${isMobile ? 'flex-col' : ''}`}>
             {([
-              { value: 3000 as ToastDuration, label: '3 seconds' },
-              { value: 5000 as ToastDuration, label: '5 seconds' },
-              { value: 10000 as ToastDuration, label: '10 seconds' },
+              { value: 3000 as ToastDuration, label: t('notificationsSection.3seconds') },
+              { value: 5000 as ToastDuration, label: t('notificationsSection.5seconds') },
+              { value: 10000 as ToastDuration, label: t('notificationsSection.10seconds') },
             ]).map(({ value, label }) => (
               <button
                 key={value}
@@ -265,13 +267,13 @@ export function NotificationsSection({ isMobile }: NotificationsSectionProps) {
 
         {/* Position */}
         <div>
-          <label className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-2 block">Position</label>
+          <label className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-2 block">{t('notificationsSection.position')}</label>
           <div className="grid grid-cols-2 gap-2">
             {([
-              { value: 'top-right' as ToastPosition, label: 'Top Right' },
-              { value: 'top-left' as ToastPosition, label: 'Top Left' },
-              { value: 'bottom-right' as ToastPosition, label: 'Bottom Right' },
-              { value: 'bottom-left' as ToastPosition, label: 'Bottom Left' },
+              { value: 'top-right' as ToastPosition, label: t('notificationsSection.topRight') },
+              { value: 'top-left' as ToastPosition, label: t('notificationsSection.topLeft') },
+              { value: 'bottom-right' as ToastPosition, label: t('notificationsSection.bottomRight') },
+              { value: 'bottom-left' as ToastPosition, label: t('notificationsSection.bottomLeft') },
             ]).map(({ value, label }) => (
               <button
                 key={value}
@@ -294,7 +296,7 @@ export function NotificationsSection({ isMobile }: NotificationsSectionProps) {
 
       {/* Note */}
       <p className="text-xs text-gray-400 dark:text-gray-500 mt-6 text-center">
-        Notification settings are saved automatically and apply immediately.
+        {t('notificationsSection.footer')}
       </p>
     </div>
   );

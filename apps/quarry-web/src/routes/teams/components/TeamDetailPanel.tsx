@@ -8,6 +8,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { Users, X, Pencil, Save, Trash2, Loader2, Search, Plus, UserMinus } from 'lucide-react';
 import { ListTodo, CheckCircle, Clock, PlusCircle } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { EntityLink } from '@stoneforge/ui/domain';
 import { useEntityNavigation } from '../../../hooks/useEntityNavigation';
 import { useTeam, useTeamMembers, useTeamStats, useUpdateTeam, useDeleteTeam, useAllEntities } from '../hooks';
@@ -30,6 +31,7 @@ export function TeamDetailPanel({ teamId, onClose, onDeleted }: TeamDetailPanelP
   const updateTeam = useUpdateTeam();
   const deleteTeam = useDeleteTeam();
   const { onNavigate, renderProfileLink } = useEntityNavigation();
+  const { t } = useTranslation('quarry');
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [editName, setEditName] = useState('');
@@ -64,7 +66,7 @@ export function TeamDetailPanel({ teamId, onClose, onDeleted }: TeamDetailPanelP
   if (teamLoading) {
     return (
       <div className="h-full flex items-center justify-center" data-testid="team-detail-loading">
-        <span className="text-gray-500">Loading...</span>
+        <span className="text-gray-500">{t('teamDetail.loading')}</span>
       </div>
     );
   }
@@ -72,7 +74,7 @@ export function TeamDetailPanel({ teamId, onClose, onDeleted }: TeamDetailPanelP
   if (!team) {
     return (
       <div className="h-full flex items-center justify-center" data-testid="team-detail-error">
-        <span className="text-red-600">Team not found</span>
+        <span className="text-red-600">{t('teamDetail.notFound')}</span>
       </div>
     );
   }
@@ -204,7 +206,7 @@ export function TeamDetailPanel({ teamId, onClose, onDeleted }: TeamDetailPanelP
                   )}
                   {!isActive && (
                     <span className="px-1.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded">
-                      Deleted
+                      {t('teamDetail.deleted')}
                     </span>
                   )}
                 </>
@@ -219,7 +221,7 @@ export function TeamDetailPanel({ teamId, onClose, onDeleted }: TeamDetailPanelP
               onClick={() => setShowDeleteConfirm(true)}
               className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
               data-testid="team-delete-button"
-              title="Delete team"
+              title={t('teamDetail.deleteTeam', { defaultValue: 'Delete team' })}
             >
               <Trash2 className="w-5 h-5" />
             </button>
@@ -258,7 +260,7 @@ export function TeamDetailPanel({ teamId, onClose, onDeleted }: TeamDetailPanelP
         <div>
           <div className="flex items-center gap-2 mb-3">
             <span className="px-2 py-1 text-sm font-medium bg-indigo-100 text-indigo-800 rounded">
-              {memberCount} {memberCount === 1 ? 'Member' : 'Members'}
+              {t('teamDetail.memberCount', { count: memberCount })}
             </span>
             {team.status && (
               <span className={`px-2 py-1 text-xs font-medium rounded ${
@@ -283,15 +285,15 @@ export function TeamDetailPanel({ teamId, onClose, onDeleted }: TeamDetailPanelP
 
         {/* Statistics */}
         <div>
-          <h3 className="text-sm font-medium text-gray-900 mb-3">Statistics</h3>
+          <h3 className="text-sm font-medium text-gray-900 mb-3">{t('teamDetail.statistics')}</h3>
           {statsLoading ? (
-            <div className="text-sm text-gray-500">Loading stats...</div>
+            <div className="text-sm text-gray-500">{t('teamDetail.loadingStats')}</div>
           ) : stats ? (
             <div className="grid grid-cols-2 gap-3" data-testid="team-stats">
-              <StatCard icon={ListTodo} label="Total Tasks" value={stats.totalTasksAssigned} />
-              <StatCard icon={Clock} label="Active Tasks" value={stats.activeTasksAssigned} color="text-yellow-600" />
-              <StatCard icon={CheckCircle} label="Completed" value={stats.completedTasksAssigned} color="text-green-600" />
-              <StatCard icon={PlusCircle} label="Created by Team" value={stats.createdByTeamMembers} color="text-blue-600" />
+              <StatCard icon={ListTodo} label={t('teamDetail.totalTasks')} value={stats.totalTasksAssigned} />
+              <StatCard icon={Clock} label={t('teamDetail.activeTasks')} value={stats.activeTasksAssigned} color="text-yellow-600" />
+              <StatCard icon={CheckCircle} label={t('teamDetail.completed')} value={stats.completedTasksAssigned} color="text-green-600" />
+              <StatCard icon={PlusCircle} label={t('teamDetail.createdByTeam')} value={stats.createdByTeamMembers} color="text-blue-600" />
             </div>
           ) : null}
         </div>
@@ -299,7 +301,7 @@ export function TeamDetailPanel({ teamId, onClose, onDeleted }: TeamDetailPanelP
         {/* Workload Distribution */}
         {stats && stats.workloadDistribution && stats.workloadDistribution.length > 0 && (
           <div>
-            <h3 className="text-sm font-medium text-gray-900 mb-3">Workload Distribution</h3>
+            <h3 className="text-sm font-medium text-gray-900 mb-3">{t('teamDetail.workloadDistribution')}</h3>
             <div className="space-y-2" data-testid="team-workload">
               {stats.workloadDistribution.map((item) => (
                 <WorkloadBar
@@ -318,7 +320,7 @@ export function TeamDetailPanel({ teamId, onClose, onDeleted }: TeamDetailPanelP
         {/* Members List */}
         <div>
           <h3 className="text-sm font-medium text-gray-900 mb-3">
-            Team Members ({memberCount})
+            {t('teamDetail.teamMembers', { count: memberCount })}
           </h3>
 
           {/* Add Member Search (only for active teams) */}
@@ -330,7 +332,7 @@ export function TeamDetailPanel({ teamId, onClose, onDeleted }: TeamDetailPanelP
                   type="text"
                   value={memberSearch}
                   onChange={(e) => setMemberSearch(e.target.value)}
-                  placeholder="Add member..."
+                  placeholder={t('teamDetail.addMember')}
                   className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   data-testid="add-member-search"
                 />
@@ -338,9 +340,9 @@ export function TeamDetailPanel({ teamId, onClose, onDeleted }: TeamDetailPanelP
               {memberSearch.trim() && (
                 <div className="mt-1 max-h-32 overflow-auto border border-gray-200 rounded-md bg-white shadow-lg" data-testid="add-member-results">
                   {entities.isLoading ? (
-                    <div className="p-2 text-sm text-gray-500 text-center">Loading...</div>
+                    <div className="p-2 text-sm text-gray-500 text-center">{t('teamDetail.loadingEntities', { defaultValue: 'Loading...' })}</div>
                   ) : availableEntities.length === 0 ? (
-                    <div className="p-2 text-sm text-gray-500 text-center">No matching entities</div>
+                    <div className="p-2 text-sm text-gray-500 text-center">{t('teamDetail.noMatchingEntities', { defaultValue: 'No matching entities' })}</div>
                   ) : (
                     availableEntities.slice(0, 5).map((entity) => {
                       const styles = ENTITY_TYPE_STYLES[entity.entityType] || ENTITY_TYPE_STYLES.system;
@@ -369,12 +371,12 @@ export function TeamDetailPanel({ teamId, onClose, onDeleted }: TeamDetailPanelP
           {/* TB123: Show warning when only one member remains */}
           {members && members.length === 1 && isActive && (
             <div className="mb-3 p-2 bg-amber-50 border border-amber-200 rounded-md text-xs text-amber-700" data-testid="last-member-warning">
-              This is the last member. Teams must have at least one member.
+              {t('teamDetail.lastMemberWarning')}
             </div>
           )}
 
           {membersLoading ? (
-            <div className="text-sm text-gray-500">Loading members...</div>
+            <div className="text-sm text-gray-500">{t('teamDetail.loadingMembers')}</div>
           ) : members && members.length > 0 ? (
             <div className="space-y-1" data-testid="team-members-list">
               {members.map((member) => {
@@ -414,7 +416,7 @@ export function TeamDetailPanel({ teamId, onClose, onDeleted }: TeamDetailPanelP
                             ? 'text-gray-300 cursor-not-allowed'
                             : 'text-gray-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100'
                         }`}
-                        title={isLastMember ? 'Cannot remove the last member from a team' : 'Remove from team'}
+                        title={isLastMember ? t('teamDetail.cannotRemoveLast') : t('teamDetail.removeFromTeam')}
                         data-testid={`remove-member-${member.id}`}
                       >
                         <UserMinus className="w-4 h-4" />
@@ -426,17 +428,17 @@ export function TeamDetailPanel({ teamId, onClose, onDeleted }: TeamDetailPanelP
             </div>
           ) : memberCount > 0 ? (
             <div className="text-sm text-gray-500">
-              {memberCount} members (details not available)
+              {t('teamDetail.memberDetailsUnavailable', { count: memberCount })}
             </div>
           ) : (
-            <div className="text-sm text-gray-500">No members</div>
+            <div className="text-sm text-gray-500">{t('teamDetail.noMembers')}</div>
           )}
         </div>
 
         {/* Timestamps */}
         <div className="text-xs text-gray-500 dark:text-gray-400 pt-4 border-t border-gray-100">
-          <div>Created: {new Date(team.createdAt).toLocaleString()}</div>
-          <div>Updated: {new Date(team.updatedAt).toLocaleString()}</div>
+          <div>{t('teamDetail.created')} {new Date(team.createdAt).toLocaleString()}</div>
+          <div>{t('teamDetail.updated')} {new Date(team.updatedAt).toLocaleString()}</div>
         </div>
       </div>
     </div>

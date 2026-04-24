@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { Sun, Moon, Monitor, Contrast } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { Theme } from '../types';
 import { getHighContrastBase, setHighContrastBase, getSystemTheme, applyTheme } from '../utils';
 
@@ -26,6 +27,7 @@ function ThemeOption({
   onSelect,
   isMobile,
 }: ThemeOptionProps) {
+  const { t } = useTranslation('quarry');
   return (
     <button
       onClick={onSelect}
@@ -54,7 +56,7 @@ function ThemeOption({
           </span>
           {isSelected && (
             <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 rounded">
-              Active
+              {t('themeSection.active')}
             </span>
           )}
         </div>
@@ -71,6 +73,7 @@ interface ThemeSectionProps {
 }
 
 export function ThemeSection({ currentTheme, onThemeChange, isMobile }: ThemeSectionProps) {
+  const { t } = useTranslation('quarry');
   const [highContrastBase, setHighContrastBaseState] = useState<'light' | 'dark'>('light');
 
   // Initialize high contrast base on mount
@@ -95,16 +98,16 @@ export function ThemeSection({ currentTheme, onThemeChange, isMobile }: ThemeSec
 
   return (
     <div data-testid="settings-theme-section">
-      <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Theme</h3>
+      <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{t('themeSection.title')}</h3>
       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 sm:mb-6">
-        Choose how the application looks. You can select light mode, dark mode, high contrast mode, or follow your system settings.
+        {t('themeSection.description')}
       </p>
 
       <div className="space-y-2 sm:space-y-3">
         <ThemeOption
           theme="light"
-          label="Light"
-          description="A clean, bright interface for daytime use"
+          label={t('themeSection.light')}
+          description={t('themeSection.lightDescription')}
           icon={Sun}
           isSelected={currentTheme === 'light'}
           onSelect={() => onThemeChange('light')}
@@ -112,8 +115,8 @@ export function ThemeSection({ currentTheme, onThemeChange, isMobile }: ThemeSec
         />
         <ThemeOption
           theme="dark"
-          label="Dark"
-          description="Easy on the eyes, perfect for low-light environments"
+          label={t('themeSection.dark')}
+          description={t('themeSection.darkDescription')}
           icon={Moon}
           isSelected={currentTheme === 'dark'}
           onSelect={() => onThemeChange('dark')}
@@ -121,8 +124,8 @@ export function ThemeSection({ currentTheme, onThemeChange, isMobile }: ThemeSec
         />
         <ThemeOption
           theme="high-contrast"
-          label="High Contrast"
-          description="Improved readability with enhanced color contrast (WCAG AAA)"
+          label={t('themeSection.highContrast')}
+          description={t('themeSection.highContrastDescription')}
           icon={Contrast}
           isSelected={currentTheme === 'high-contrast'}
           onSelect={() => onThemeChange('high-contrast')}
@@ -130,8 +133,8 @@ export function ThemeSection({ currentTheme, onThemeChange, isMobile }: ThemeSec
         />
         <ThemeOption
           theme="system"
-          label="System"
-          description={`Automatically match your system preference (currently ${resolvedTheme})`}
+          label={t('themeSection.system')}
+          description={t('themeSection.systemDescription', { theme: resolvedTheme })}
           icon={Monitor}
           isSelected={currentTheme === 'system'}
           onSelect={() => onThemeChange('system')}
@@ -142,9 +145,9 @@ export function ThemeSection({ currentTheme, onThemeChange, isMobile }: ThemeSec
       {/* High Contrast Base Toggle */}
       {currentTheme === 'high-contrast' && (
         <div className="mt-4 sm:mt-6 p-3 sm:p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50" data-testid="high-contrast-base-section">
-          <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">High Contrast Base</h4>
+          <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">{t('themeSection.highContrastBase')}</h4>
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 sm:mb-3">
-            Choose whether high contrast mode uses a light or dark base.
+            {t('themeSection.highContrastBaseDescription')}
           </p>
           <div className="flex flex-col sm:flex-row gap-2">
             <button
@@ -159,7 +162,7 @@ export function ThemeSection({ currentTheme, onThemeChange, isMobile }: ThemeSec
               data-testid="high-contrast-base-light"
             >
               <Sun className="w-4 h-4" />
-              Light Base
+              {t('themeSection.lightBase')}
             </button>
             <button
               onClick={() => handleHighContrastBaseChange('dark')}
@@ -173,7 +176,7 @@ export function ThemeSection({ currentTheme, onThemeChange, isMobile }: ThemeSec
               data-testid="high-contrast-base-dark"
             >
               <Moon className="w-4 h-4" />
-              Dark Base
+              {t('themeSection.darkBase')}
             </button>
           </div>
         </div>
@@ -181,7 +184,7 @@ export function ThemeSection({ currentTheme, onThemeChange, isMobile }: ThemeSec
 
       {/* Theme Preview */}
       <div className="mt-6 sm:mt-8">
-        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">Preview</h4>
+        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">{t('themeSection.preview')}</h4>
         <div className={`
           p-4 rounded-lg border
           ${currentTheme === 'high-contrast'
@@ -205,14 +208,14 @@ export function ThemeSection({ currentTheme, onThemeChange, isMobile }: ThemeSec
                   ? highContrastBase === 'dark' ? 'text-white' : 'text-black'
                   : resolvedTheme === 'dark' ? 'text-white' : 'text-gray-900'
               }`}>
-                Sample Task
+                {t('themeSection.sampleTask')}
               </div>
               <div className={`text-xs ${
                 currentTheme === 'high-contrast'
                   ? highContrastBase === 'dark' ? 'text-[#e0e0e0]' : 'text-[#333333]'
                   : resolvedTheme === 'dark' ? 'text-gray-400' : 'text-gray-500'
               }`}>
-                This is how content will appear
+                {t('themeSection.sampleContent')}
               </div>
             </div>
           </div>
@@ -227,7 +230,7 @@ export function ThemeSection({ currentTheme, onThemeChange, isMobile }: ThemeSec
                 : 'bg-blue-100 text-blue-800'
             }
           `}>
-            Open
+            {t('themeSection.open')}
           </div>
         </div>
       </div>

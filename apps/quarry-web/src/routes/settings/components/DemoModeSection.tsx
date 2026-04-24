@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FlaskConical, Loader2, AlertCircle, Check, Users, Cpu, Server } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { ToggleSwitch } from './ToggleSwitch';
 
 interface DemoModeStatus {
@@ -29,6 +30,7 @@ interface DemoModeSectionProps {
 }
 
 export function DemoModeSection({ isMobile: _isMobile }: DemoModeSectionProps) {
+  const { t } = useTranslation('quarry');
   const queryClient = useQueryClient();
   const [lastResult, setLastResult] = useState<DemoModeResult | null>(null);
 
@@ -89,9 +91,9 @@ export function DemoModeSection({ isMobile: _isMobile }: DemoModeSectionProps) {
 
   return (
     <div data-testid="settings-demo-mode-section">
-      <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Demo Mode</h3>
+      <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{t('demoMode.title')}</h3>
       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 sm:mb-6">
-        Enable demo mode to switch all agents to a free provider and model. Useful for demonstrations and testing without consuming API credits.
+        {t('demoMode.description')}
       </p>
 
       {/* Toggle Section */}
@@ -101,12 +103,12 @@ export function DemoModeSection({ isMobile: _isMobile }: DemoModeSectionProps) {
             <div className="flex items-center gap-2">
               <FlaskConical className="w-4 h-4 text-gray-500 flex-shrink-0" />
               <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100">
-                Enable Demo Mode
+                {t('demoMode.enable')}
               </span>
               {isToggling && <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />}
             </div>
             <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5 ml-6">
-              Switch all agents to opencode / minimax-m2.5-free
+              {t('demoMode.enableDescription')}
             </p>
           </div>
           {isLoading ? (
@@ -124,18 +126,18 @@ export function DemoModeSection({ isMobile: _isMobile }: DemoModeSectionProps) {
 
       {/* Status Section */}
       <div className="mb-6 sm:mb-8">
-        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">Status</h4>
+        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">{t('demoMode.status')}</h4>
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 space-y-3">
           {isLoading ? (
             <div className="flex items-center gap-2 text-gray-500">
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span className="text-xs sm:text-sm">Loading status...</span>
+              <span className="text-xs sm:text-sm">{t('demoMode.loadingStatus')}</span>
             </div>
           ) : statusError ? (
             <div className="flex items-center gap-2 text-red-500">
               <AlertCircle className="w-4 h-4" />
               <span className="text-xs sm:text-sm">
-                Demo mode service is not available. Make sure the server is running.
+                {t('demoMode.unavailable')}
               </span>
             </div>
           ) : status ? (
@@ -143,7 +145,7 @@ export function DemoModeSection({ isMobile: _isMobile }: DemoModeSectionProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <FlaskConical className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Status</span>
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('demoMode.status')}</span>
                 </div>
                 <span
                   className={`text-xs sm:text-sm font-medium ${
@@ -153,13 +155,13 @@ export function DemoModeSection({ isMobile: _isMobile }: DemoModeSectionProps) {
                   }`}
                   data-testid="demo-mode-status"
                 >
-                  {status.enabled ? 'Demo Mode Active' : 'Normal Mode'}
+                  {status.enabled ? t('demoMode.active') : t('demoMode.normal')}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Server className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Demo Provider</span>
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('demoMode.demoProvider')}</span>
                 </div>
                 <code
                   className="text-[10px] sm:text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded"
@@ -171,7 +173,7 @@ export function DemoModeSection({ isMobile: _isMobile }: DemoModeSectionProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Cpu className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Demo Model</span>
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('demoMode.demoModel')}</span>
                 </div>
                 <code
                   className="text-[10px] sm:text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded"
@@ -185,11 +187,11 @@ export function DemoModeSection({ isMobile: _isMobile }: DemoModeSectionProps) {
                   <div className="flex items-center gap-2">
                     <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 flex-shrink-0" />
                     <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                      Saved Configs
+                      {t('demoMode.savedConfigs')}
                     </span>
                   </div>
                   <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400" data-testid="demo-mode-saved-count">
-                    {status.savedConfigCount} agent{status.savedConfigCount !== 1 ? 's' : ''}
+                    {status.savedConfigCount} {t('demoMode.agents')}
                   </span>
                 </div>
               )}
@@ -207,13 +209,13 @@ export function DemoModeSection({ isMobile: _isMobile }: DemoModeSectionProps) {
           <div className="flex items-center gap-2 text-green-700 dark:text-green-300 mb-1">
             <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span className="font-medium text-xs sm:text-sm">
-              {lastResult.enabled ? 'Demo Mode Enabled' : 'Demo Mode Disabled'}
+              {lastResult.enabled ? t('demoMode.enabled') : t('demoMode.disabled')}
             </span>
           </div>
           <p className="text-[10px] sm:text-xs text-green-600 dark:text-green-400 ml-6">
             {lastResult.enabled
-              ? `${lastResult.agentsUpdated} agent${lastResult.agentsUpdated !== 1 ? 's' : ''} switched to ${lastResult.provider}/${lastResult.model}`
-              : `${lastResult.agentsUpdated} agent${lastResult.agentsUpdated !== 1 ? 's' : ''} restored to previous configuration`}
+              ? `${lastResult.agentsUpdated} ${t('demoMode.agents')} ${t('demoMode.switchedTo', { provider: lastResult.provider, model: lastResult.model })}`
+              : `${lastResult.agentsUpdated} ${t('demoMode.agents')} ${t('demoMode.restored')}`}
           </p>
         </div>
       )}
@@ -223,7 +225,7 @@ export function DemoModeSection({ isMobile: _isMobile }: DemoModeSectionProps) {
           <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
             <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span className="text-xs sm:text-sm">
-              Failed to toggle demo mode. Please try again.
+              {t('demoMode.toggleFailed')}
             </span>
           </div>
         </div>
@@ -232,8 +234,8 @@ export function DemoModeSection({ isMobile: _isMobile }: DemoModeSectionProps) {
       {/* Info Note */}
       <div className="p-3 sm:p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg">
         <p className="text-[10px] sm:text-xs text-amber-700 dark:text-amber-400">
-          <strong>Note:</strong> Enabling demo mode will override all agent provider/model settings.
-          Previous configurations are saved and will be restored when demo mode is disabled.
+          <strong>{t('demoMode.note')}</strong> {t('demoMode.noteText')}
+          {t('demoMode.noteText2')}
         </p>
       </div>
     </div>

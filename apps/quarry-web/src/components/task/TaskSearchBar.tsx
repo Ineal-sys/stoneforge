@@ -9,6 +9,7 @@
  */
 
 import { useRef, useEffect } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import { Search, X } from 'lucide-react';
 
 interface TaskSearchBarProps {
@@ -24,6 +25,7 @@ export function TaskSearchBar({
   onClear,
   compact = false,
 }: TaskSearchBarProps) {
+  const { t } = useTranslation('quarry');
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Handle Escape key to clear search and / to focus
@@ -59,7 +61,7 @@ export function TaskSearchBar({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={compact ? "Search..." : "Search tasks... (Press / to focus)"}
+        placeholder={compact ? t("taskSearch.compact") : t("taskSearch.placeholder")}
         className="w-full pl-9 pr-8 py-2 sm:py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
         data-testid="task-search-input"
       />
@@ -68,7 +70,7 @@ export function TaskSearchBar({
           onClick={onClear}
           className="absolute inset-y-0 right-0 pr-2 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 touch-target"
           data-testid="task-search-clear"
-          aria-label="Clear search (Escape)"
+          aria-label={t("taskSearch.clearSearch")}
         >
           <X className="w-4 h-4" />
         </button>

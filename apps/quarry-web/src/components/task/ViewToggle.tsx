@@ -6,6 +6,7 @@
  */
 
 import { List, LayoutGrid } from "lucide-react";
+import { useTranslation } from '@stoneforge/i18n';
 import type { ViewMode } from "../../lib/task-constants";
 
 interface ViewToggleProps {
@@ -14,6 +15,7 @@ interface ViewToggleProps {
 }
 
 export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
+  const { t } = useTranslation('quarry');
   return (
     <div
       className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-md p-0.5"
@@ -27,11 +29,11 @@ export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
             : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
         }`}
         data-testid="view-toggle-list"
-        aria-label="List view (V L)"
-        title="List view (V L)"
+        aria-label={t('viewToggle.listView')}
+        title={t('viewToggle.listView')}
       >
         <List className="w-4 h-4 sm:w-4 sm:h-4" />
-        <span className="pl-2">List</span>
+        <span className="pl-2">{t('viewToggle.list')}</span>
       </button>
       <button
         onClick={() => onViewChange("kanban")}
@@ -41,11 +43,11 @@ export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
             : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
         }`}
         data-testid="view-toggle-kanban"
-        aria-label="Kanban view (V K)"
-        title="Kanban view (V K)"
+        aria-label={t('viewToggle.kanbanView')}
+        title={t('viewToggle.kanbanView')}
       >
         <LayoutGrid className="w-4 h-4 sm:w-4 sm:h-4" />
-        <span className="pl-2">Kanban</span>
+        <span className="pl-2">{t('viewToggle.kanban')}</span>
       </button>
     </div>
   );

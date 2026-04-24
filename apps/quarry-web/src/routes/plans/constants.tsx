@@ -16,7 +16,7 @@ import {
 // ============================================================================
 
 export interface StatusConfig {
-  label: string;
+  labelKey: string;
   icon: React.ReactNode;
   color: string;
   bgColor: string;
@@ -24,25 +24,25 @@ export interface StatusConfig {
 
 export const STATUS_CONFIG: Record<string, StatusConfig> = {
   draft: {
-    label: 'Draft',
+    labelKey: 'plans.status.draft',
     icon: React.createElement(FileEdit, { className: 'w-4 h-4' }),
     color: 'text-gray-600',
     bgColor: 'bg-gray-100',
   },
   active: {
-    label: 'Active',
+    labelKey: 'plans.status.active',
     icon: React.createElement(CircleDot, { className: 'w-4 h-4' }),
     color: 'text-blue-700',
     bgColor: 'bg-blue-100',
   },
   completed: {
-    label: 'Completed',
+    labelKey: 'plans.status.completed',
     icon: React.createElement(CheckCircle2, { className: 'w-4 h-4' }),
     color: 'text-green-700',
     bgColor: 'bg-green-100',
   },
   cancelled: {
-    label: 'Cancelled',
+    labelKey: 'plans.status.cancelled',
     icon: React.createElement(XCircle, { className: 'w-4 h-4' }),
     color: 'text-red-700',
     bgColor: 'bg-red-100',

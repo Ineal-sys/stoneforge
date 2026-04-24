@@ -22,9 +22,10 @@ import {
   Paperclip,
   CornerUpLeft,
 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { InboxItem } from '../types';
 import type { TimePeriod } from '../../../lib';
-import { TIME_PERIOD_LABELS, formatCompactTime } from '../../../lib';
+import { formatCompactTime, getTimePeriodLabel } from '../../../lib';
 
 // Avatar helpers
 function getAvatarIcon(entityType?: string, size: 'sm' | 'md' = 'sm') {
@@ -65,7 +66,7 @@ export function InboxTimePeriodHeader({ period }: { period: TimePeriod }) {
     >
       <Calendar className="w-3 h-3 text-gray-500" />
       <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
-        {TIME_PERIOD_LABELS[period]}
+        {getTimePeriodLabel(period)}
       </span>
     </div>
   );
@@ -87,9 +88,10 @@ export function InboxMessageListItem({
   onSelect,
   formattedTime,
 }: InboxMessageListItemProps) {
+  const { t } = useTranslation('quarry');
   const isUnread = item.status === 'unread';
   const displayTime = formattedTime ?? formatCompactTime(item.createdAt);
-  const senderName = item.sender?.name ?? 'Unknown';
+  const senderName = item.sender?.name ?? t('inbox.unknown');
   const senderType = item.sender?.entityType ?? 'agent';
   const messagePreview = item.message?.contentPreview ?? '';
   const firstLine = messagePreview.split('\n')[0]?.slice(0, 50) || '';
@@ -160,6 +162,7 @@ export function InboxMessageContent({
   onNavigateToEntity,
   onReply,
 }: InboxMessageContentProps) {
+  const { t } = useTranslation('quarry');
   const isUnread = item.status === 'unread';
   const isArchived = item.status === 'archived';
 
@@ -196,14 +199,14 @@ export function InboxMessageContent({
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return 'just now';
-    if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
-    if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
-    if (days < 7) return `${days} day${days === 1 ? '' : 's'} ago`;
+    if (minutes < 1) return t('time.justNow');
+    if (minutes < 60) return t('time.minutesAgo', { count: minutes });
+    if (hours < 24) return t('time.hoursAgo', { count: hours });
+    if (days < 7) return t('time.daysAgo', { count: days });
     return '';
   };
 
-  const senderName = item.sender?.name ?? 'Unknown';
+  const senderName = item.sender?.name ?? t('inbox.unknown');
   const senderType = item.sender?.entityType ?? 'agent';
   const senderId = item.sender?.id ?? item.message?.sender;
   const channelName = item.channel?.name ?? item.channelId;
@@ -258,12 +261,12 @@ export function InboxMessageContent({
                   {item.sourceType === 'mention' ? (
                     <>
                       <AtSign className="w-3 h-3" />
-                      Mention
+                      {t('inbox.mention')}
                     </>
                   ) : (
                     <>
                       <MessageSquare className="w-3 h-3" />
-                      Direct
+                      {t('inbox.direct')}
                     </>
                   )}
                 </span>
@@ -281,7 +284,7 @@ export function InboxMessageContent({
                   <button
                     onClick={onReply}
                     className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                    title="Reply"
+                    title={t('inbox.reply')}
                     data-testid={`inbox-content-reply-${item.id}`}
                   >
                     <Reply className="w-4 h-4" />
@@ -291,7 +294,7 @@ export function InboxMessageContent({
                   <button
                     onClick={onRestore}
                     className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
-                    title="Restore"
+                    title={t('inbox.restore')}
                     data-testid={`inbox-content-restore-${item.id}`}
                   >
                     <RefreshCw className="w-4 h-4" />
@@ -302,7 +305,7 @@ export function InboxMessageContent({
                       <button
                         onClick={onMarkRead}
                         className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                        title="Mark as read"
+                        title={t('inbox.markAsRead')}
                         data-testid={`inbox-content-mark-read-${item.id}`}
                       >
                         <CheckCheck className="w-4 h-4" />
@@ -311,7 +314,7 @@ export function InboxMessageContent({
                       <button
                         onClick={onMarkUnread}
                         className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                        title="Mark as unread"
+                        title={t('inbox.markAsUnread')}
                         data-testid={`inbox-content-mark-unread-${item.id}`}
                       >
                         <Mail className="w-4 h-4" />
@@ -320,7 +323,7 @@ export function InboxMessageContent({
                     <button
                       onClick={onArchive}
                       className="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded transition-colors"
-                      title="Archive"
+                      title={t('inbox.archive')}
                       data-testid={`inbox-content-archive-${item.id}`}
                     >
                       <Archive className="w-4 h-4" />
@@ -353,7 +356,7 @@ export function InboxMessageContent({
           >
             <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
               <CornerUpLeft className="w-3 h-3" />
-              <span>Reply to</span>
+              <span>{t('inbox.replyTo')}</span>
             </div>
             <div className="flex items-start gap-2">
               <button
@@ -369,13 +372,13 @@ export function InboxMessageContent({
                   className="text-xs font-medium text-gray-700 hover:text-blue-600 hover:underline"
                   data-testid={`inbox-content-thread-parent-sender-${item.id}`}
                 >
-                  {item.threadParent.sender?.name ?? 'Unknown'}
+                  {item.threadParent.sender?.name ?? t('inbox.unknown')}
                 </button>
                 <p
                   className="text-xs text-gray-500 truncate mt-0.5"
                   data-testid={`inbox-content-thread-parent-preview-${item.id}`}
                 >
-                  {item.threadParent.contentPreview || 'No content'}
+                  {item.threadParent.contentPreview || t('inbox.noContent')}
                 </p>
               </div>
             </div>
@@ -390,7 +393,7 @@ export function InboxMessageContent({
             }`}
             data-testid={`inbox-content-body-${item.id}`}
           >
-            {messageContent || <span className="text-gray-400 italic">No content</span>}
+            {messageContent || <span className="text-gray-400 italic">{t('inbox.noContent')}</span>}
           </div>
         </div>
 
@@ -402,7 +405,7 @@ export function InboxMessageContent({
           >
             <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
               <Paperclip className="w-3 h-3" />
-              <span>{item.attachments!.length} attachment{item.attachments!.length !== 1 ? 's' : ''}</span>
+              <span>{t('inbox.attachmentCount', { count: item.attachments!.length })}</span>
             </div>
             <div className="space-y-2">
               {item.attachments!.map((attachment) => (
@@ -453,7 +456,7 @@ export function InboxMessageContent({
           className="text-sm text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
           data-testid={`inbox-content-view-in-channel-${item.id}`}
         >
-          View in channel
+          {t('inbox.viewInChannel')}
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
@@ -465,12 +468,14 @@ export function InboxMessageContent({
  * Empty state for message content panel when no message is selected
  */
 export function InboxMessageEmptyState() {
+  const { t } = useTranslation('quarry');
+
   return (
     <div className="h-full flex flex-col items-center justify-center text-gray-400" data-testid="inbox-content-empty">
       <Inbox className="w-12 h-12 mb-3" />
-      <p className="text-sm font-medium">Select a message</p>
-      <p className="text-xs mt-1">Choose a message from the list to view its content</p>
-      <p className="text-xs mt-3 text-gray-300">Tip: Use J/K keys to navigate</p>
+      <p className="text-sm font-medium">{t('inbox.selectMessage')}</p>
+      <p className="text-xs mt-1">{t('inbox.selectMessageHint')}</p>
+      <p className="text-xs mt-3 text-gray-300">{t('inbox.navigateTip')}</p>
     </div>
   );
 }

@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { RefreshCw, Download, Upload, Loader2, HardDrive, AlertCircle, AlertTriangle, Check } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { SyncStatus, ExportResult, ImportResult, SyncSettings } from '../types';
 import { DEFAULT_SYNC_SETTINGS } from '../constants';
 import { getStoredSyncSettings, setStoredSyncSettings } from '../utils';
@@ -15,6 +16,7 @@ interface SyncSectionProps {
 }
 
 export function SyncSection({ isMobile }: SyncSectionProps) {
+  const { t } = useTranslation('quarry');
   const queryClient = useQueryClient();
   const [syncSettings, setSyncSettings] = useState<SyncSettings>(DEFAULT_SYNC_SETTINGS);
   const [exportResult, setExportResult] = useState<ExportResult | null>(null);
@@ -109,14 +111,14 @@ export function SyncSection({ isMobile }: SyncSectionProps) {
       }
 
       if (!elementsContent) {
-        alert('No valid elements file found. Please select a file named "elements.jsonl" or containing "elements" in the filename.');
+        alert(t('sync.noValidFile'));
         return;
       }
 
       importMutation.mutate({ elements: elementsContent, dependencies: dependenciesContent });
     } catch (error) {
       console.error('Failed to read files:', error);
-      alert('Failed to read the selected files.');
+      alert(t('sync.failedToRead'));
     }
 
     // Reset file input
@@ -136,33 +138,33 @@ export function SyncSection({ isMobile }: SyncSectionProps) {
   };
 
   const formatTimestamp = (timestamp?: string) => {
-    if (!timestamp) return 'Never';
+    if (!timestamp) return t('sync.never');
     const date = new Date(timestamp);
     return date.toLocaleString();
   };
 
   return (
     <div data-testid="settings-sync-section">
-      <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Sync</h3>
+      <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{t('sync.title')}</h3>
       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 sm:mb-6">
-        Export and import your data as JSONL files. This allows you to backup your data, share it across machines, or version control your work.
+        {t('sync.description')}
       </p>
 
       {/* Status Section */}
       <div className="mb-6 sm:mb-8">
-        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">Status</h4>
+        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">{t('sync.status')}</h4>
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 space-y-3">
           {statusLoading ? (
             <div className="flex items-center gap-2 text-gray-500">
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span className="text-xs sm:text-sm">Loading status...</span>
+              <span className="text-xs sm:text-sm">{t('sync.loadingStatus')}</span>
             </div>
           ) : syncStatus ? (
             <>
               <div className={`flex gap-2 ${isMobile ? 'flex-col' : 'items-center justify-between'}`}>
                 <div className="flex items-center gap-2">
                   <HardDrive className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Export Path</span>
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('sync.exportPath')}</span>
                 </div>
                 <code className="text-[10px] sm:text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded truncate max-w-full" data-testid="export-path">
                   {syncStatus.exportPath}
@@ -171,19 +173,19 @@ export function SyncSection({ isMobile }: SyncSectionProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Pending Changes</span>
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('sync.pendingChanges')}</span>
                 </div>
                 <span
                   className={`text-xs sm:text-sm font-medium ${syncStatus.hasPendingChanges ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400'}`}
                   data-testid="dirty-element-count"
                 >
-                  {syncStatus.dirtyElementCount} elements
+                  {syncStatus.dirtyElementCount} {t('sync.elements')}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Last Export</span>
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('sync.lastExport')}</span>
                 </div>
                 <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400" data-testid="last-export-time">
                   {formatTimestamp(syncSettings.lastExportAt)}
@@ -192,7 +194,7 @@ export function SyncSection({ isMobile }: SyncSectionProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Last Import</span>
+                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{t('sync.lastImport')}</span>
                 </div>
                 <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400" data-testid="last-import-time">
                   {formatTimestamp(syncSettings.lastImportAt)}
@@ -200,19 +202,19 @@ export function SyncSection({ isMobile }: SyncSectionProps) {
               </div>
             </>
           ) : (
-            <div className="text-xs sm:text-sm text-red-500">Failed to load status</div>
+            <div className="text-xs sm:text-sm text-red-500">{t('sync.failedToLoadStatus')}</div>
           )}
         </div>
       </div>
 
       {/* Auto-Export Toggle */}
       <div className="mb-6 sm:mb-8">
-        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">Auto Export</h4>
+        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">{t('sync.autoExport')}</h4>
         <div className="flex items-center justify-between gap-3 p-3 sm:p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
           <div className="min-w-0 flex-1">
-            <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 block">Enable Auto Export</span>
+            <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 block">{t('sync.enableAutoExport')}</span>
             <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              Automatically export changes to JSONL files (feature coming soon)
+              {t('sync.autoExportDescription')}
             </p>
           </div>
           <ToggleSwitch
@@ -226,10 +228,10 @@ export function SyncSection({ isMobile }: SyncSectionProps) {
 
       {/* Export Section */}
       <div className="mb-6 sm:mb-8">
-        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">Export Data</h4>
+        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">{t('sync.exportData')}</h4>
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4">
           <p className="text-[10px] sm:text-sm text-gray-500 dark:text-gray-400 mb-3 sm:mb-4">
-            Export all elements and dependencies to JSONL files in the .stoneforge directory.
+            {t('sync.exportDescription')}
           </p>
           <button
             onClick={handleExport}
@@ -242,7 +244,7 @@ export function SyncSection({ isMobile }: SyncSectionProps) {
             ) : (
               <Download className="w-4 h-4" />
             )}
-            {exportMutation.isPending ? 'Exporting...' : 'Export Now'}
+            {exportMutation.isPending ? t('sync.exporting') : t('sync.exportNow')}
           </button>
 
           {/* Export Result */}
@@ -250,14 +252,14 @@ export function SyncSection({ isMobile }: SyncSectionProps) {
             <div className="mt-3 sm:mt-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800" data-testid="export-result">
               <div className="flex items-center gap-2 text-green-700 dark:text-green-300 mb-2">
                 <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="font-medium text-xs sm:text-sm">Export Successful</span>
+                <span className="font-medium text-xs sm:text-sm">{t('sync.exportSuccessful')}</span>
               </div>
               <div className="text-[10px] sm:text-sm text-green-600 dark:text-green-400 space-y-1">
-                <div>Elements exported: {exportResult.elementsExported}</div>
-                <div>Dependencies exported: {exportResult.dependenciesExported}</div>
+                <div>{t('sync.elementsExported')} {exportResult.elementsExported}</div>
+                <div>{t('sync.dependenciesExported')} {exportResult.dependenciesExported}</div>
                 <div className="text-[10px] sm:text-xs mt-2 break-all">
-                  <div>Elements file: {exportResult.elementsFile}</div>
-                  <div>Dependencies file: {exportResult.dependenciesFile}</div>
+                  <div>{t('sync.elementsFile')} {exportResult.elementsFile}</div>
+                  <div>{t('sync.dependenciesFile')} {exportResult.dependenciesFile}</div>
                 </div>
               </div>
             </div>
@@ -267,7 +269,7 @@ export function SyncSection({ isMobile }: SyncSectionProps) {
             <div className="mt-3 sm:mt-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
               <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
                 <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="text-xs sm:text-sm">Export failed. Please try again.</span>
+                <span className="text-xs sm:text-sm">{t('sync.exportFailed')}</span>
               </div>
             </div>
           )}
@@ -276,10 +278,10 @@ export function SyncSection({ isMobile }: SyncSectionProps) {
 
       {/* Import Section */}
       <div className="mb-6 sm:mb-8">
-        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">Import Data</h4>
+        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">{t('sync.importData')}</h4>
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4">
           <p className="text-[10px] sm:text-sm text-gray-500 dark:text-gray-400 mb-3 sm:mb-4">
-            Import elements and dependencies from JSONL files. Select both elements.jsonl and dependencies.jsonl files.
+            {t('sync.importDescription')}
           </p>
           <input
             type="file"
@@ -301,7 +303,7 @@ export function SyncSection({ isMobile }: SyncSectionProps) {
             ) : (
               <Upload className="w-4 h-4" />
             )}
-            {importMutation.isPending ? 'Importing...' : 'Import from File'}
+            {importMutation.isPending ? t('sync.importing') : t('sync.importFromFile')}
           </button>
 
           {/* Import Result */}
@@ -325,7 +327,7 @@ export function SyncSection({ isMobile }: SyncSectionProps) {
                   <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 )}
                 <span className="font-medium text-xs sm:text-sm">
-                  {importResult.errors.length > 0 ? 'Import Completed with Warnings' : 'Import Successful'}
+                  {importResult.errors.length > 0 ? t('sync.importWithWarnings') : t('sync.importSuccessful')}
                 </span>
               </div>
               <div className={`text-[10px] sm:text-sm ${
@@ -333,22 +335,22 @@ export function SyncSection({ isMobile }: SyncSectionProps) {
                   ? 'text-yellow-600 dark:text-yellow-400'
                   : 'text-green-600 dark:text-green-400'
               } space-y-1`}>
-                <div>Elements imported: {importResult.elementsImported}</div>
-                <div>Elements skipped: {importResult.elementsSkipped}</div>
-                <div>Dependencies imported: {importResult.dependenciesImported}</div>
-                <div>Dependencies skipped: {importResult.dependenciesSkipped}</div>
+                <div>{t('sync.elementsImported')} {importResult.elementsImported}</div>
+                <div>{t('sync.elementsSkipped')} {importResult.elementsSkipped}</div>
+                <div>{t('sync.dependenciesImported')} {importResult.dependenciesImported}</div>
+                <div>{t('sync.dependenciesSkipped')} {importResult.dependenciesSkipped}</div>
                 {importResult.conflicts.length > 0 && (
-                  <div className="mt-2">Conflicts resolved: {importResult.conflicts.length}</div>
+                  <div className="mt-2">{t('sync.conflictsResolved')} {importResult.conflicts.length}</div>
                 )}
                 {importResult.errors.length > 0 && (
                   <div className="mt-2 text-[10px] sm:text-xs text-red-600 dark:text-red-400">
-                    Errors: {importResult.errors.length}
+                    {t('sync.errors')} {importResult.errors.length}
                     <ul className="list-disc list-inside mt-1">
                       {importResult.errors.slice(0, 3).map((err, i) => (
                         <li key={i} className="break-all">{err.file}:{err.line} - {err.message}</li>
                       ))}
                       {importResult.errors.length > 3 && (
-                        <li>... and {importResult.errors.length - 3} more</li>
+                        <li>{t('sync.moreErrors', { count: importResult.errors.length - 3 })}</li>
                       )}
                     </ul>
                   </div>
@@ -361,7 +363,7 @@ export function SyncSection({ isMobile }: SyncSectionProps) {
             <div className="mt-3 sm:mt-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
               <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
                 <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="text-xs sm:text-sm">Import failed. Please check your files and try again.</span>
+                <span className="text-xs sm:text-sm">{t('sync.importFailed')}</span>
               </div>
             </div>
           )}
@@ -370,7 +372,7 @@ export function SyncSection({ isMobile }: SyncSectionProps) {
 
       {/* Note */}
       <p className="text-xs text-gray-400 dark:text-gray-500 mt-6 text-center">
-        JSONL exports are git-friendly and can be version controlled for backup.
+        {t('sync.gitlNote')}
       </p>
     </div>
   );

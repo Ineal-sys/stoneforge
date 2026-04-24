@@ -20,6 +20,7 @@ import {
   MessageSquare,
   Smile,
 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { DocumentTagInput } from '@stoneforge/ui/documents';
 import { useAllEntities } from '../../../api/hooks/useAllElements';
 import { EmojiPickerModal } from '../../../components/editor/EmojiPickerModal';
@@ -69,6 +70,7 @@ export function DocumentDetailPanel({
   onNavigateToDocument,
   isMobile = false,
 }: DocumentDetailPanelProps) {
+  const { t } = useTranslation('quarry');
   const { data: document, isLoading, isError, error } = useDocument(documentId);
   const updateDocument = useUpdateDocument();
   const cloneDocument = useCloneDocument();
@@ -259,7 +261,7 @@ export function DocumentDetailPanel({
         data-testid="document-detail-loading"
         className="h-full flex items-center justify-center bg-white dark:bg-[var(--color-bg)]"
       >
-        <div className="text-gray-500 dark:text-gray-400">Loading document...</div>
+        <div className="text-gray-500 dark:text-gray-400">{t('documents.detail.loading')}</div>
       </div>
     );
   }
@@ -270,7 +272,7 @@ export function DocumentDetailPanel({
         data-testid="document-detail-error"
         className="h-full flex flex-col items-center justify-center bg-white dark:bg-[var(--color-bg)] px-4"
       >
-        <div className="text-red-600 dark:text-red-400 mb-2">Failed to load document</div>
+        <div className="text-red-600 dark:text-red-400 mb-2">{t('documents.detail.failedToLoad')}</div>
         <div className="text-sm text-gray-500 dark:text-gray-400">{(error as Error)?.message}</div>
       </div>
     );
@@ -282,12 +284,12 @@ export function DocumentDetailPanel({
         data-testid="document-detail-not-found"
         className="h-full flex items-center justify-center bg-white dark:bg-[var(--color-bg)]"
       >
-        <div className="text-gray-500 dark:text-gray-400">Document not found</div>
+        <div className="text-gray-500 dark:text-gray-400">{t('documents.detail.notFound')}</div>
       </div>
     );
   }
 
-  const title = document.title || `Document ${document.id}`;
+  const title = document.title || t('documents.detail.untitled', { id: document.id });
   const typeConfig = CONTENT_TYPE_CONFIG[document.contentType] || CONTENT_TYPE_CONFIG.text;
 
   return (
@@ -305,14 +307,14 @@ export function DocumentDetailPanel({
               className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded ${typeConfig.color}`}
             >
               {typeConfig.icon}
-              {typeConfig.label}
+              {t(`documents.contentType.${document.contentType}`, { defaultValue: typeConfig.label })}
             </span>
             {document.version !== undefined && (
               <span
                 data-testid="document-detail-version"
                 className="text-xs text-gray-500"
               >
-                v{document.version}
+                {t('documents.detail.version', { defaultValue: 'v{{version}}', version: document.version })}
               </span>
             )}
           </div>
@@ -323,7 +325,7 @@ export function DocumentDetailPanel({
             <button
               onClick={() => setShowIconPicker(true)}
               className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors group"
-              title={document.metadata?.icon ? 'Change icon' : 'Add icon'}
+              title={document.metadata?.icon ? t('documents.detail.changeIcon') : t('documents.detail.addIcon')}
               data-testid="document-icon-button"
             >
               {document.metadata?.icon ? (
@@ -343,7 +345,7 @@ export function DocumentDetailPanel({
                 onChange={(e) => setEditedTitle(e.target.value)}
                 data-testid="document-title-input"
                 className="text-lg font-semibold text-gray-900 flex-1 border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Document title"
+                placeholder={t('documents.detail.documentTitle')}
               />
             ) : (
               <h2
@@ -359,7 +361,7 @@ export function DocumentDetailPanel({
               <button
                 onClick={handleRemoveIcon}
                 className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
-                title="Remove icon"
+                title={t('documents.detail.removeIcon')}
                 data-testid="document-remove-icon-button"
               >
                 <X className="w-4 h-4" />
@@ -376,11 +378,11 @@ export function DocumentDetailPanel({
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-gray-500">
             <div className="flex items-center gap-1" title={formatDate(previewingVersion !== null && previewDocument ? previewDocument.createdAt : document.createdAt)}>
               <Clock className="w-3 h-3" />
-              <span>Created {formatRelativeTime(previewingVersion !== null && previewDocument ? previewDocument.createdAt : document.createdAt)}</span>
+              <span>{t('documents.detail.created')} {formatRelativeTime(previewingVersion !== null && previewDocument ? previewDocument.createdAt : document.createdAt)}</span>
             </div>
             <div className="flex items-center gap-1" title={formatDate(previewingVersion !== null && previewDocument ? previewDocument.updatedAt : document.updatedAt)}>
               <Clock className="w-3 h-3" />
-              <span>Updated {formatRelativeTime(previewingVersion !== null && previewDocument ? previewDocument.updatedAt : document.updatedAt)}</span>
+              <span>{t('documents.detail.updated')} {formatRelativeTime(previewingVersion !== null && previewDocument ? previewDocument.updatedAt : document.updatedAt)}</span>
             </div>
             <div className="flex items-center gap-1">
               <User className="w-3 h-3" />
@@ -398,8 +400,8 @@ export function DocumentDetailPanel({
                 disabled={updateDocument.isPending}
                 data-testid="document-save-button"
                 className={`${isMobile ? 'p-2 touch-target' : 'p-1.5'} text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/30 rounded disabled:opacity-50`}
-                aria-label="Save changes"
-                title="Save (Cmd+S)"
+                aria-label={t('documents.detail.saveChanges')}
+                title={t('documents.detail.saveChanges')}
               >
                 <Save className="w-5 h-5" />
               </button>
@@ -408,7 +410,7 @@ export function DocumentDetailPanel({
                 disabled={updateDocument.isPending}
                 data-testid="document-cancel-button"
                 className={`${isMobile ? 'p-2 touch-target' : 'p-1.5'} text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 rounded disabled:opacity-50`}
-                aria-label="Cancel editing"
+                aria-label={t('documents.detail.cancelEditing')}
               >
                 <XCircle className="w-5 h-5" />
               </button>
@@ -420,8 +422,8 @@ export function DocumentDetailPanel({
                 disabled={previewingVersion !== null}
                 data-testid="document-edit-button"
                 className={`${isMobile ? 'p-2 touch-target' : 'p-1.5'} text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded disabled:opacity-50 disabled:cursor-not-allowed`}
-                aria-label="Edit document"
-                title={previewingVersion !== null ? 'Exit preview to edit' : 'Edit document'}
+                aria-label={t('documents.detail.editDocument')}
+                title={previewingVersion !== null ? t('documents.detail.exitPreviewToEdit') : t('documents.detail.editDocument')}
               >
                 <Edit3 className="w-5 h-5" />
               </button>
@@ -433,8 +435,8 @@ export function DocumentDetailPanel({
                     disabled={cloneDocument.isPending || previewingVersion !== null}
                     data-testid="document-clone-button"
                     className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                    aria-label="Clone document"
-                    title={previewingVersion !== null ? 'Exit preview to clone' : 'Clone document'}
+                    aria-label={t('documents.detail.cloneDocument')}
+                    title={previewingVersion !== null ? t('documents.detail.exitPreviewToClone') : t('documents.detail.cloneDocument')}
                   >
                     <Copy className="w-5 h-5" />
                   </button>
@@ -446,8 +448,8 @@ export function DocumentDetailPanel({
                         ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/30'
                         : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
-                    aria-label={showVersionHistory ? 'Hide version history' : 'Show version history'}
-                    title="Version history"
+                    aria-label={showVersionHistory ? t('documents.detail.hideVersionHistory') : t('documents.detail.showVersionHistory')}
+                    title={t('documents.detail.versionHistory')}
                   >
                     <History className="w-5 h-5" />
                   </button>
@@ -462,13 +464,13 @@ export function DocumentDetailPanel({
                     ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/30'
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                 }`}
-                aria-label={showCommentsPanel ? 'Hide comments' : 'Show comments'}
-                title="Comments"
+                aria-label={showCommentsPanel ? t('documents.detail.hideComments') : t('documents.detail.showComments')}
+                title={t('documents.detail.comments')}
               >
                 <MessageSquare className="w-5 h-5" />
                 {commentCount > 0 && (
                   <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">
-                    {commentCount > 9 ? '9+' : commentCount}
+                    {commentCount > 9 ? t('documents.detail.commentCountOverflow', { defaultValue: '9+' }) : commentCount}
                   </span>
                 )}
               </button>
@@ -484,8 +486,8 @@ export function DocumentDetailPanel({
                   ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/30'
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
               }`}
-              aria-label={isExpanded ? 'Collapse document' : 'Expand document'}
-              title={isExpanded ? 'Show document list' : 'Hide document list'}
+              aria-label={isExpanded ? t('documents.detail.collapseDocument') : t('documents.detail.expandDocument')}
+              title={isExpanded ? t('documents.detail.showDocumentList') : t('documents.detail.hideDocumentList')}
             >
               {isExpanded ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
             </button>
@@ -496,8 +498,8 @@ export function DocumentDetailPanel({
               onClick={onExitFullscreen}
               data-testid="document-fullscreen-button"
               className="p-1.5 rounded text-blue-600 bg-blue-50 dark:bg-blue-900/30"
-              aria-label="Exit fullscreen"
-              title="Exit fullscreen (Escape)"
+              aria-label={t('documents.detail.exitFullscreen')}
+              title={t('documents.detail.exitFullscreen')}
             >
               <Shrink className="w-5 h-5" />
             </button>
@@ -507,8 +509,8 @@ export function DocumentDetailPanel({
                 onClick={onEnterFullscreen}
                 data-testid="document-fullscreen-button"
                 className="p-1.5 rounded text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                aria-label="Enter fullscreen"
-                title="Focus mode (fullscreen)"
+                aria-label={t('documents.detail.enterFullscreen')}
+                title={t('documents.detail.enterFullscreen')}
               >
                 <Expand className="w-5 h-5" />
               </button>
@@ -519,7 +521,7 @@ export function DocumentDetailPanel({
             <button
               onClick={isFullscreen ? onExitFullscreen : onClose}
               className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
-              aria-label={isFullscreen ? 'Exit fullscreen' : 'Close panel'}
+              aria-label={isFullscreen ? t('documents.detail.exitFullscreen') : t('documents.detail.closePanel')}
               data-testid="document-detail-close"
             >
               <X className="w-5 h-5" />
@@ -534,7 +536,7 @@ export function DocumentDetailPanel({
           data-testid="document-update-error"
           className={`${isMobile ? 'mx-3' : 'mx-4'} mt-2 p-2 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-sm rounded`}
         >
-          {updateDocument.error?.message || 'Failed to save document'}
+          {updateDocument.error?.message || t('documents.detail.failedToSave')}
         </div>
       )}
 
@@ -551,7 +553,7 @@ export function DocumentDetailPanel({
               <div className="flex items-center gap-2">
                 <Eye className="w-4 h-4 text-blue-600" />
                 <span className="text-sm text-blue-800">
-                  Previewing version {previewingVersion}
+                  {t('documents.detail.previewingVersion', { version: previewingVersion })}
                 </span>
               </div>
               <button
@@ -559,7 +561,7 @@ export function DocumentDetailPanel({
                 data-testid="exit-preview-button"
                 className="text-xs text-blue-600 hover:text-blue-800 font-medium"
               >
-                Exit Preview
+                {t('documents.detail.exitPreview')}
               </button>
             </div>
           )}
@@ -572,7 +574,7 @@ export function DocumentDetailPanel({
                 contentType={document.contentType}
                 onChange={setEditedContent}
                 onSave={handleSave}
-                placeholder="Start writing..."
+                placeholder={t('documents.detail.startWriting')}
                 onComment={handleComment}
                 mentionEntities={mentionEntities}
               />

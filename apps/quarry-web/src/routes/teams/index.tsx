@@ -8,6 +8,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearch, useNavigate } from '@tanstack/react-router';
 import { UsersRound, Plus } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { Pagination, PageHeader } from '../../components/shared';
 import { ElementNotFound } from '../../components/shared/ElementNotFound';
 import { MobileDetailSheet } from '../../components/shared/MobileDetailSheet';
@@ -28,6 +29,7 @@ export function TeamsPage() {
   const navigate = useNavigate();
   const search = useSearch({ from: '/teams' });
   const isMobile = useIsMobile();
+  const { t } = useTranslation('quarry');
   // Track shortcut changes to update the badge
   useShortcutVersion();
 
@@ -139,7 +141,7 @@ export function TeamsPage() {
       <div className={`flex flex-col ${!isMobile && selectedTeamId ? 'w-1/2' : 'w-full'} transition-all duration-200`}>
         {/* Header */}
         <PageHeader
-          title="Teams"
+          title={t('teamsPage.title')}
           icon={UsersRound}
           iconColor="text-blue-500"
           count={teamItems.length}
@@ -147,8 +149,8 @@ export function TeamsPage() {
           bordered
           actions={[
             {
-              label: 'Create Team',
-              shortLabel: 'Add',
+              label: t('teamsPage.createTeam'),
+              shortLabel: t('teamsPage.add'),
               icon: Plus,
               onClick: () => setIsCreateModalOpen(true),
               shortcut: getCurrentBinding('action.createTeam'),
@@ -164,7 +166,7 @@ export function TeamsPage() {
         {isLoading && (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-[var(--color-text-muted)]" data-testid="teams-loading">
-              Loading teams...
+              {t('teamsPage.loading')}
             </div>
           </div>
         )}
@@ -175,24 +177,24 @@ export function TeamsPage() {
             <div className="text-center px-4" data-testid="teams-empty">
               {searchQuery ? (
                 <>
-                  <p className="text-[var(--color-text-muted)]">No teams match your search</p>
+                  <p className="text-[var(--color-text-muted)]">{t('teamsPage.noSearchMatch')}</p>
                   <button
                     onClick={handleClearSearch}
                     className="mt-2 text-sm text-blue-600 hover:text-blue-700 touch-target"
                     data-testid="clear-search-button"
                   >
-                    Clear search
+                    {t('teamsPage.clearSearch')}
                   </button>
                 </>
               ) : (
                 <>
-                  <p className="text-[var(--color-text-muted)]">No teams created</p>
+                  <p className="text-[var(--color-text-muted)]">{t('teamsPage.noTeams')}</p>
                   <button
                     onClick={() => setIsCreateModalOpen(true)}
                     className="mt-2 text-sm text-blue-600 hover:text-blue-700 touch-target"
                     data-testid="create-team-empty-button"
                   >
-                    Create one
+                    {t('teamsPage.createOne')}
                   </button>
                 </>
               )}
@@ -249,15 +251,15 @@ export function TeamsPage() {
         <MobileDetailSheet
           open={!!selectedTeamId}
           onClose={handleCloseDetail}
-          title="Team Details"
+          title={t('teamsPage.teamDetails')}
           data-testid="team-detail-sheet"
         >
           {deepLink.notFound ? (
             <ElementNotFound
-              elementType="Team"
+              elementType={t('teamsPage.elementType')}
               elementId={selectedTeamId}
               backRoute="/teams"
-              backLabel="Back to Teams"
+              backLabel={t('teamsPage.backToTeams')}
               onDismiss={handleCloseDetail}
             />
           ) : (
@@ -271,10 +273,10 @@ export function TeamsPage() {
         <div className="w-1/2 border-l border-[var(--color-border)]" data-testid="team-detail-container">
           {deepLink.notFound ? (
             <ElementNotFound
-              elementType="Team"
+              elementType={t('teamsPage.elementType')}
               elementId={selectedTeamId}
               backRoute="/teams"
-              backLabel="Back to Teams"
+              backLabel={t('teamsPage.backToTeams')}
               onDismiss={handleCloseDetail}
             />
           ) : (

@@ -8,6 +8,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, Loader2, Plus, Bot, User, Server } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useIsMobile } from '../../hooks';
 
 interface Entity {
@@ -60,9 +61,9 @@ function useCreateEntity() {
 }
 
 const ENTITY_TYPE_OPTIONS = [
-  { value: 'agent', label: 'Agent', description: 'AI agent - automated actors performing work', icon: Bot },
-  { value: 'human', label: 'Human', description: 'Human user - manual actors in the system', icon: User },
-  { value: 'system', label: 'System', description: 'System process - automated infrastructure', icon: Server },
+  { value: 'agent', labelKey: 'entities.create.typeAgent', descriptionKey: 'entities.create.typeAgentDesc', icon: Bot },
+  { value: 'human', labelKey: 'entities.create.typeHuman', descriptionKey: 'entities.create.typeHumanDesc', icon: User },
+  { value: 'system', labelKey: 'entities.create.typeSystem', descriptionKey: 'entities.create.typeSystemDesc', icon: Server },
 ] as const;
 
 export function CreateEntityModal({
@@ -77,6 +78,7 @@ export function CreateEntityModal({
 
   const nameInputRef = useRef<HTMLInputElement>(null);
   const createEntity = useCreateEntity();
+  const { t } = useTranslation('quarry');
 
   // Focus name input when modal opens
   useEffect(() => {
@@ -156,7 +158,7 @@ export function CreateEntityModal({
         `}>
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-            <h2 className="text-lg font-semibold text-[var(--color-text)]">Create Entity</h2>
+            <h2 className="text-lg font-semibold text-[var(--color-text)]">{t('entities.create.title')}</h2>
             <button
               onClick={onClose}
               className="p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] rounded touch-target"
@@ -172,7 +174,7 @@ export function CreateEntityModal({
             {/* Name */}
             <div className="mb-4">
               <label htmlFor="entity-name" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                Name <span className="text-red-500">*</span>
+                {t('entities.create.entityName', { defaultValue: 'Name' })} <span className="text-red-500">*</span>
               </label>
               <input
                 ref={nameInputRef}
@@ -180,20 +182,20 @@ export function CreateEntityModal({
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter entity name..."
+                placeholder={t('entities.create.entityNamePlaceholder', { defaultValue: 'Enter entity name...' })}
                 className="w-full px-3 py-2.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 data-testid="create-entity-name-input"
                 required
               />
               <p className="mt-1 text-xs text-[var(--color-text-muted)]">
-                Must start with a letter, followed by alphanumeric characters, hyphens, or underscores
+                {t('entities.create.nameHint', { defaultValue: 'Must start with a letter, followed by alphanumeric characters, hyphens, or underscores' })}
               </p>
             </div>
 
             {/* Entity Type */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                Type <span className="text-red-500">*</span>
+                {t('entities.create.entityType', { defaultValue: 'Type' })} <span className="text-red-500">*</span>
               </label>
               <div className="space-y-2" data-testid="create-entity-type-options">
                 {ENTITY_TYPE_OPTIONS.map((option) => {
@@ -219,9 +221,9 @@ export function CreateEntityModal({
                       <Icon className={`w-5 h-5 ${entityType === option.value ? 'text-blue-600 dark:text-blue-400' : 'text-[var(--color-text-muted)]'}`} />
                       <div className="flex-1 min-w-0">
                         <div className={`font-medium ${entityType === option.value ? 'text-blue-900 dark:text-blue-100' : 'text-[var(--color-text)]'}`}>
-                          {option.label}
+                          {t(option.labelKey, { defaultValue: option.value.charAt(0).toUpperCase() + option.value.slice(1) })}
                         </div>
-                        <div className="text-xs text-[var(--color-text-muted)]">{option.description}</div>
+                        <div className="text-xs text-[var(--color-text-muted)]">{t(option.descriptionKey)}</div>
                       </div>
                     </label>
                   );
@@ -232,13 +234,13 @@ export function CreateEntityModal({
             {/* Public Key (optional) */}
             <div className="mb-4">
               <label htmlFor="entity-public-key" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                Public Key <span className="text-[var(--color-text-muted)]">(optional)</span>
+                {t('entities.create.publicKey', { defaultValue: 'Public Key' })} <span className="text-[var(--color-text-muted)]">({t('entities.create.optional', { defaultValue: 'optional' })})</span>
               </label>
               <textarea
                 id="entity-public-key"
                 value={publicKey}
                 onChange={(e) => setPublicKey(e.target.value)}
-                placeholder="Ed25519 public key, base64 encoded..."
+                placeholder={t('entities.create.publicKeyPlaceholder', { defaultValue: 'Ed25519 public key, base64 encoded...' })}
                 rows={3}
                 className="w-full px-3 py-2.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
                 data-testid="create-entity-public-key-input"
@@ -248,14 +250,14 @@ export function CreateEntityModal({
             {/* Tags (optional) */}
             <div className="mb-4">
               <label htmlFor="entity-tags" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                Tags <span className="text-[var(--color-text-muted)]">(optional)</span>
+                {t('entities.create.tags', { defaultValue: 'Tags' })} <span className="text-[var(--color-text-muted)]">({t('entities.create.optional', { defaultValue: 'optional' })})</span>
               </label>
               <input
                 id="entity-tags"
                 type="text"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
-                placeholder="Enter tags separated by commas..."
+                placeholder={t('entities.create.tagsPlaceholder', { defaultValue: 'Enter tags separated by commas...' })}
                 className="w-full px-3 py-2.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 data-testid="create-entity-tags-input"
               />
@@ -276,7 +278,7 @@ export function CreateEntityModal({
                 className={`px-4 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] rounded-md transition-colors ${isMobileModal ? 'w-full' : ''}`}
                 data-testid="create-entity-cancel"
               >
-                Cancel
+                {t('entities.create.cancel')}
               </button>
               <button
                 type="submit"
@@ -287,12 +289,12 @@ export function CreateEntityModal({
                 {createEntity.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Creating...
+                    {t('entities.create.creating')}
                   </>
                 ) : (
                   <>
                     <Plus className="w-4 h-4" />
-                    Create Entity
+                    {t('entities.create.create')}
                   </>
                 )}
               </button>

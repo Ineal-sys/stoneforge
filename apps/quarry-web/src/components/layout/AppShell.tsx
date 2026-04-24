@@ -7,6 +7,7 @@ import { ThemeToggle } from '@stoneforge/ui';
 import { useRealtimeEvents } from '../../api/hooks/useRealtimeEvents';
 import { useQuery } from '@tanstack/react-query';
 import { useGlobalKeyboardShortcuts, useKeyboardShortcut, useIsMobile, useIsTablet, GlobalQuickActionsProvider } from '../../hooks';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   ChevronRight,
   LayoutDashboard,
@@ -48,11 +49,12 @@ function useHealth() {
 }
 
 function ConnectionStatus({ wsState, health }: { wsState: ConnectionState; health: ReturnType<typeof useHealth> }) {
+  const { t } = useTranslation('quarry');
   if (wsState === 'connecting' || wsState === 'reconnecting') {
     return (
       <div className="flex items-center gap-2 text-[var(--color-warning-text)]">
         <div className="w-2 h-2 rounded-full bg-[var(--color-warning)] animate-pulse" />
-        <span className="text-sm font-medium">{wsState === 'connecting' ? 'Connecting...' : 'Reconnecting...'}</span>
+        <span className="text-sm font-medium">{wsState === 'connecting' ? t('connection.connecting') : t('connection.reconnecting')}</span>
       </div>
     );
   }
@@ -61,7 +63,7 @@ function ConnectionStatus({ wsState, health }: { wsState: ConnectionState; healt
     return (
       <div className="flex items-center gap-2 text-[var(--color-success-text)]">
         <div className="w-2 h-2 rounded-full bg-[var(--color-success)]" />
-        <span className="text-sm font-medium">Live</span>
+        <span className="text-sm font-medium">{t('connection.live')}</span>
       </div>
     );
   }
@@ -70,7 +72,7 @@ function ConnectionStatus({ wsState, health }: { wsState: ConnectionState; healt
     return (
       <div className="flex items-center gap-2 text-[var(--color-text-tertiary)]">
         <div className="w-2 h-2 rounded-full bg-[var(--color-text-tertiary)] animate-pulse" />
-        <span className="text-sm">Connecting...</span>
+        <span className="text-sm">{t('connection.connecting')}</span>
       </div>
     );
   }
@@ -79,7 +81,7 @@ function ConnectionStatus({ wsState, health }: { wsState: ConnectionState; healt
     return (
       <div className="flex items-center gap-2 text-[var(--color-danger-text)]">
         <div className="w-2 h-2 rounded-full bg-[var(--color-danger)]" />
-        <span className="text-sm font-medium">Disconnected</span>
+        <span className="text-sm font-medium">{t('connection.disconnected')}</span>
       </div>
     );
   }
@@ -87,36 +89,36 @@ function ConnectionStatus({ wsState, health }: { wsState: ConnectionState; healt
   return (
     <div className="flex items-center gap-2 text-[var(--color-warning-text)]">
       <div className="w-2 h-2 rounded-full bg-[var(--color-warning)]" />
-      <span className="text-sm font-medium">Polling</span>
+      <span className="text-sm font-medium">{t('connection.polling')}</span>
     </div>
   );
 }
 
 // Route metadata for breadcrumbs
 interface RouteConfig {
-  label: string;
+  labelKey: string;
   icon?: React.ComponentType<{ className?: string }>;
   parent?: string;
 }
 
 const ROUTE_CONFIG: Record<string, RouteConfig> = {
-  '/dashboard': { label: 'Dashboard', icon: LayoutDashboard },
-  '/dashboard/overview': { label: 'Overview', icon: LayoutDashboard },
-  '/dashboard/timeline': { label: 'Timeline', icon: History },
-  '/tasks': { label: 'Tasks', icon: CheckSquare },
-  '/plans': { label: 'Plans', icon: ClipboardList },
-  '/workflows': { label: 'Workflows', icon: Workflow },
-  '/dependencies': { label: 'Dependencies', icon: Network },
-  '/inbox': { label: 'Inbox', icon: Inbox },
-  '/messages': { label: 'Messages', icon: MessageSquare },
-  '/documents': { label: 'Documents', icon: FileText },
-  '/entities': { label: 'Entities', icon: Users },
-  '/teams': { label: 'Teams', icon: UsersRound },
-  '/settings': { label: 'Settings', icon: Settings },
+  '/dashboard': { labelKey: 'appShell.routeLabels.dashboard', icon: LayoutDashboard },
+  '/dashboard/overview': { labelKey: 'appShell.routeLabels.overview', icon: LayoutDashboard },
+  '/dashboard/timeline': { labelKey: 'appShell.routeLabels.timeline', icon: History },
+  '/tasks': { labelKey: 'appShell.routeLabels.tasks', icon: CheckSquare },
+  '/plans': { labelKey: 'appShell.routeLabels.plans', icon: ClipboardList },
+  '/workflows': { labelKey: 'appShell.routeLabels.workflows', icon: Workflow },
+  '/dependencies': { labelKey: 'appShell.routeLabels.dependencies', icon: Network },
+  '/inbox': { labelKey: 'appShell.routeLabels.inbox', icon: Inbox },
+  '/messages': { labelKey: 'appShell.routeLabels.messages', icon: MessageSquare },
+  '/documents': { labelKey: 'appShell.routeLabels.documents', icon: FileText },
+  '/entities': { labelKey: 'appShell.routeLabels.entities', icon: Users },
+  '/teams': { labelKey: 'appShell.routeLabels.teams', icon: UsersRound },
+  '/settings': { labelKey: 'appShell.routeLabels.settings', icon: Settings },
 };
 
 interface BreadcrumbItem {
-  label: string;
+  labelKey: string;
   path: string;
   icon?: React.ComponentType<{ className?: string }>;
   isLast: boolean;
@@ -153,7 +155,7 @@ function useBreadcrumbs(): BreadcrumbItem[] {
       const config = ROUTE_CONFIG[p];
       if (config) {
         breadcrumbs.push({
-          label: config.label,
+          labelKey: config.labelKey,
           path: p,
           icon: config.icon,
           isLast: index === pathsToResolve.length - 1,
@@ -166,6 +168,7 @@ function useBreadcrumbs(): BreadcrumbItem[] {
 }
 
 function Breadcrumbs() {
+  const { t } = useTranslation('quarry');
   const breadcrumbs = useBreadcrumbs();
 
   if (breadcrumbs.length === 0) {
@@ -173,10 +176,11 @@ function Breadcrumbs() {
   }
 
   return (
-    <nav aria-label="Breadcrumb" data-testid="breadcrumbs">
+    <nav aria-label={t('appShell.breadcrumb')} data-testid="breadcrumbs">
       <ol className="flex items-center gap-1 text-sm">
         {breadcrumbs.map((crumb, index) => {
           const Icon = crumb.icon;
+          const translatedLabel = t(crumb.labelKey);
           return (
             <li key={crumb.path} className="flex items-center">
               {index > 0 && (
@@ -185,19 +189,19 @@ function Breadcrumbs() {
               {crumb.isLast ? (
                 <span
                   className="flex items-center gap-1.5 px-2 py-1 font-semibold text-[var(--color-text)] rounded-md"
-                  data-testid={`breadcrumb-${crumb.label.toLowerCase().replace(/\s/g, '-')}`}
+                  data-testid={`breadcrumb-${translatedLabel.toLowerCase().replace(/\s/g, '-')}`}
                 >
                   {Icon && <Icon className="w-4 h-4" />}
-                  {crumb.label}
+                  {translatedLabel}
                 </span>
               ) : (
                 <Link
                   to={crumb.path}
                   className="flex items-center gap-1.5 px-2 py-1 text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] rounded-md transition-colors duration-150"
-                  data-testid={`breadcrumb-${crumb.label.toLowerCase().replace(/\s/g, '-')}`}
+                  data-testid={`breadcrumb-${translatedLabel.toLowerCase().replace(/\s/g, '-')}`}
                 >
                   {Icon && <Icon className="w-4 h-4" />}
-                  {crumb.label}
+                  {translatedLabel}
                 </Link>
               )}
             </li>
@@ -213,6 +217,7 @@ function Breadcrumbs() {
  * Shows only the current page title
  */
 function BreadcrumbsMobile() {
+  const { t } = useTranslation('quarry');
   const breadcrumbs = useBreadcrumbs();
   const lastCrumb = breadcrumbs[breadcrumbs.length - 1];
 
@@ -228,7 +233,7 @@ function BreadcrumbsMobile() {
       data-testid="breadcrumbs-mobile"
     >
       {Icon && <Icon className="w-4 h-4" />}
-      <span className="truncate max-w-[150px]">{lastCrumb.label}</span>
+      <span className="truncate max-w-[150px]">{t(lastCrumb.labelKey)}</span>
     </div>
   );
 }
@@ -272,6 +277,7 @@ function useSidebarState() {
 }
 
 export function AppShell() {
+  const { t } = useTranslation('quarry');
   const {
     isMobile,
     isTablet,
@@ -296,7 +302,7 @@ export function AppShell() {
       setDesktopCollapsed(prev => !prev);
     }
   }, [isMobile, setMobileDrawerOpen, setDesktopCollapsed]);
-  useKeyboardShortcut('Cmd+B', toggleSidebar, 'Toggle sidebar');
+  useKeyboardShortcut('Cmd+B', toggleSidebar, t('appShell.toggleSidebar'));
 
   // Open mobile drawer
   const openMobileDrawer = useCallback(() => {
@@ -323,8 +329,8 @@ export function AppShell() {
   useEffect(() => {
     const path = routerState.location.pathname;
     const config = ROUTE_CONFIG[path];
-    document.title = config ? `Quarry | ${config.label}` : 'Quarry';
-  }, [routerState.location.pathname]);
+    document.title = config ? t('appShell.pageTitle', { label: t(config.labelKey) }) : t('appShell.pageDefaultTitle');
+  }, [routerState.location.pathname, t]);
 
   // Calculate sidebar collapsed state based on device type
   // - Mobile: sidebar is hidden (shown as drawer)
@@ -372,7 +378,7 @@ export function AppShell() {
               <button
                 onClick={openMobileDrawer}
                 className="p-2 -ml-2 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors duration-150 touch-target"
-                aria-label="Open navigation menu"
+                aria-label={t('appShell.openNavigation')}
                 aria-expanded={mobileDrawerOpen}
                 data-testid="mobile-menu-button"
               >
@@ -385,7 +391,7 @@ export function AppShell() {
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
                 className="p-2 -mr-2 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors duration-150 touch-target"
-                aria-label="Search"
+                aria-label={t('appShell.search')}
                 data-testid="mobile-search-button"
               >
                 <Search className="w-5 h-5" />

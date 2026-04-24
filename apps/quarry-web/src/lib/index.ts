@@ -12,6 +12,7 @@ export {
 export {
   type TimePeriod,
   TIME_PERIOD_LABELS,
+  getTimePeriodLabel,
   getTimePeriod,
   groupByTimePeriod,
   formatRelativeTime,

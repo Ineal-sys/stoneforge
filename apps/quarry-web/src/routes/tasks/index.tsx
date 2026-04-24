@@ -14,6 +14,7 @@ import {
   Sparkles,
   SlidersHorizontal,
 } from "lucide-react";
+import { useTranslation } from '@stoneforge/i18n';
 
 // Hooks
 import {
@@ -90,6 +91,7 @@ import {
 export function TasksPage() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/tasks" });
+  const { t } = useTranslation('quarry');
 
   // Pagination state from URL
   const currentPage = search.page ?? 1;
@@ -565,14 +567,14 @@ export function TasksPage() {
       >
         {/* Header */}
         <PageHeader
-          title="Tasks"
+          title={t('tasks.title')}
           icon={CheckSquare}
           iconColor="text-blue-500"
           bordered
           actions={[
             {
-              label: "Create Task",
-              shortLabel: "Create",
+              label: t('tasks.createTask'),
+              shortLabel: t('createTask.create'),
               icon: Plus,
               onClick: openCreateTaskModal,
               shortcut: getCurrentBinding("action.createTask"),
@@ -626,7 +628,7 @@ export function TasksPage() {
                   data-testid="mobile-filter-button"
                 >
                   <SlidersHorizontal className="w-4 h-4" />
-                  <span>Filters</span>
+                  <span>{t('filterBar.filters')}</span>
                   {activeFilterCount > 0 && (
                     <span className="px-1.5 py-0.5 text-xs font-medium bg-blue-600 text-white rounded-full">
                       {activeFilterCount}
@@ -670,7 +672,7 @@ export function TasksPage() {
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-blue-600" />
               <span className="text-sm font-medium text-blue-800">
-                Ready tasks only
+                {t('dashboard.readyTasks.title')}
               </span>
               <button
                 onClick={handleClearReadyOnly}
@@ -689,7 +691,7 @@ export function TasksPage() {
           data-testid="tasks-view-container"
         >
           {isLoading && (
-            <div className="p-4 text-gray-500">Loading tasks...</div>
+            <div className="p-4 text-gray-500">{t('tasks.loadingTasks')}</div>
           )}
 
           {!isLoading && viewMode === "list" && (
@@ -709,7 +711,7 @@ export function TasksPage() {
                   ))}
                   {taskItems.length === 0 && (
                     <div className="p-8 text-center text-[var(--color-text-muted)]">
-                      No tasks found
+                      {t('tasks.noTasksFound')}
                     </div>
                   )}
                 </div>
@@ -778,7 +780,7 @@ export function TasksPage() {
               elementType="Task"
               elementId={selectedTaskId}
               backRoute="/tasks"
-              backLabel="Back to Tasks"
+              backLabel={t('tasks.title')}
               onDismiss={handleCloseDetail}
             />
           ) : (
@@ -795,7 +797,7 @@ export function TasksPage() {
         <MobileDetailSheet
           open={!!selectedTaskId}
           onClose={handleCloseDetail}
-          title="Task Details"
+          title={t('tasks.title')}
           data-testid="mobile-task-detail-sheet"
         >
           {deepLink.notFound ? (
@@ -803,7 +805,7 @@ export function TasksPage() {
               elementType="Task"
               elementId={selectedTaskId}
               backRoute="/tasks"
-              backLabel="Back to Tasks"
+              backLabel={t('tasks.title')}
               onDismiss={handleCloseDetail}
             />
           ) : (
@@ -820,7 +822,7 @@ export function TasksPage() {
         <button
           onClick={openCreateTaskModal}
           className="fixed bottom-6 right-6 w-14 h-14 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg z-40 touch-target"
-          aria-label="Create new task"
+          aria-label={t('tasks.createTask')}
           data-testid="mobile-create-task-fab"
         >
           <Plus className="w-6 h-6" />

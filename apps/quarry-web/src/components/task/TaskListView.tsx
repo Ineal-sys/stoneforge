@@ -17,6 +17,7 @@ import { formatRelativeTime } from '../../lib/time';
 import { fuzzySearch, highlightMatches, formatStatus } from '../../lib/task-utils';
 import type { Task, TaskGroup, SortConfig, SortField, Entity } from '../../lib/task-constants';
 import { TASK_ROW_HEIGHT, PRIORITY_LABELS, STATUS_COLORS } from '../../lib/task-constants';
+import { useTranslation } from '@stoneforge/i18n';
 
 // ============================================================================
 // TaskRow Component
@@ -43,6 +44,7 @@ export function TaskRow({
   searchQuery,
   entities = [],
 }: TaskRowProps) {
+  const { t } = useTranslation('quarry');
   const priority = PRIORITY_LABELS[task.priority] || PRIORITY_LABELS[3];
   const statusColor = STATUS_COLORS[task.status] || STATUS_COLORS.open;
 
@@ -79,7 +81,7 @@ export function TaskRow({
           onClick={handleCheckboxClick}
           className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
           data-testid={`task-checkbox-${task.id}`}
-          aria-label={isChecked ? `Deselect task: ${task.title}` : `Select task: ${task.title}`}
+          aria-label={isChecked ? t('taskList.deselectTask', { title: task.title }) : t('taskList.selectTask', { title: task.title })}
         >
           {isChecked ? (
             <CheckSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -99,7 +101,7 @@ export function TaskRow({
       </div>
       <div className="w-28 px-4 py-3">
         <span className={`px-2 py-1 text-xs font-medium rounded ${priority.color}`}>
-          {priority.label}
+          {t(priority.label)}
         </span>
       </div>
       <div className="w-28 px-4 py-3 text-sm text-gray-600 dark:text-gray-400 capitalize truncate">
@@ -230,6 +232,7 @@ interface TableHeaderProps {
 }
 
 function TableHeader({ allSelected, someSelected, onSelectAll, sort, onSort }: TableHeaderProps) {
+  const { t } = useTranslation('quarry');
   return (
     <div className="bg-gray-50 sticky top-0 z-10 border-b border-gray-200">
       <div className="flex items-center" data-testid="tasks-list-header">
@@ -238,7 +241,7 @@ function TableHeader({ allSelected, someSelected, onSelectAll, sort, onSort }: T
             onClick={onSelectAll}
             className="p-1 hover:bg-gray-200 rounded"
             data-testid="task-select-all"
-            aria-label={allSelected ? 'Deselect all tasks' : 'Select all tasks'}
+            aria-label={allSelected ? t('taskList.deselectAll') : t('taskList.selectAll')}
           >
             {allSelected ? (
               <CheckSquare className="w-4 h-4 text-blue-600" />
@@ -252,25 +255,25 @@ function TableHeader({ allSelected, someSelected, onSelectAll, sort, onSort }: T
           </button>
         </div>
         <div className="flex-1 min-w-[200px]">
-          <SortableHeaderCell label="Task" field="title" currentSort={sort} onSort={onSort} />
+          <SortableHeaderCell label={t('taskList.task')} field="title" currentSort={sort} onSort={onSort} />
         </div>
         <div className="w-28">
-          <SortableHeaderCell label="Status" field="status" currentSort={sort} onSort={onSort} />
+          <SortableHeaderCell label={t('taskList.status')} field="status" currentSort={sort} onSort={onSort} />
         </div>
         <div className="w-28">
-          <SortableHeaderCell label="Priority" field="priority" currentSort={sort} onSort={onSort} />
+          <SortableHeaderCell label={t('taskList.priority')} field="priority" currentSort={sort} onSort={onSort} />
         </div>
         <div className="w-28">
-          <SortableHeaderCell label="Type" field="taskType" currentSort={sort} onSort={onSort} />
+          <SortableHeaderCell label={t('taskList.type')} field="taskType" currentSort={sort} onSort={onSort} />
         </div>
         <div className="w-32">
-          <SortableHeaderCell label="Assignee" field="assignee" currentSort={sort} onSort={onSort} />
+          <SortableHeaderCell label={t('taskList.assignee')} field="assignee" currentSort={sort} onSort={onSort} />
         </div>
         <div className="w-32 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          Tags
+          {t('taskList.tags')}
         </div>
         <div className="w-28">
-          <SortableHeaderCell label="Created" field="created_at" currentSort={sort} onSort={onSort} />
+          <SortableHeaderCell label={t('taskList.created')} field="created_at" currentSort={sort} onSort={onSort} />
         </div>
       </div>
     </div>
@@ -308,7 +311,8 @@ export function ListView({
   searchQuery,
   entities = [],
 }: ListViewProps) {
-  const allSelected = tasks.length > 0 && tasks.every(t => selectedIds.has(t.id));
+  const { t } = useTranslation('quarry');
+  const allSelected = tasks.length > 0 && tasks.every(task => selectedIds.has(task.id));
   const someSelected = selectedIds.size > 0;
 
   if (tasks.length === 0) {
@@ -322,7 +326,7 @@ export function ListView({
           onSort={onSort}
         />
         <div className="p-6 text-center text-gray-500">
-          No tasks found.
+          {t('taskList.noTasksFound')}
         </div>
       </div>
     );
@@ -422,6 +426,7 @@ export function GroupedListView({
   onSort,
   entities = [],
 }: GroupedListViewProps) {
+  const { t } = useTranslation('quarry');
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
   const toggleGroup = (key: string) => {
@@ -455,7 +460,7 @@ export function GroupedListView({
           onSort={onSort}
         />
         <div className="p-6 text-center text-gray-500">
-          No tasks found.
+          {t('taskList.noTasksFound')}
         </div>
       </div>
     );

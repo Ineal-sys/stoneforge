@@ -4,6 +4,7 @@
 
 import { useMemo } from 'react';
 import { GanttChart } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   BarChart,
   Bar,
@@ -43,6 +44,7 @@ function RoadmapTooltip({
   active?: boolean;
   payload?: Array<{ payload: RoadmapBarData }>;
 }) {
+  const { t } = useTranslation('quarry');
   if (!active || !payload?.length) return null;
 
   const data = payload[0].payload;
@@ -57,20 +59,21 @@ function RoadmapTooltip({
       <div className="flex items-center gap-2 mb-2">
         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${statusConfig.bgColor} ${statusConfig.color}`}>
           {statusConfig.icon}
-          {statusConfig.label}
+          {t(statusConfig.labelKey)}
         </span>
-        <span className="text-xs text-gray-500">{data.completionPercentage}% complete</span>
+        <span className="text-xs text-gray-500">{t('plans.roadmap.percentComplete', { percentage: data.completionPercentage })}</span>
       </div>
       <div className="text-xs text-gray-500">
-        <div>Start: {data.startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
-        <div>End: {data.endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
-        <div>Duration: {data.duration} days</div>
+        <div>{t('plans.roadmap.start')} {data.startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+        <div>{t('plans.roadmap.end')} {data.endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+        <div>{t('plans.roadmap.duration', { count: data.duration })}</div>
       </div>
     </div>
   );
 }
 
 export function RoadmapView({ plans, onPlanClick, selectedPlanId }: RoadmapViewProps) {
+  const { t } = useTranslation('quarry');
   // Calculate timeline range based on plan dates
   const { timelineStart, timelineEnd, chartData, tickValues, tickFormatter } = useMemo(() => {
     if (plans.length === 0) {
@@ -178,8 +181,8 @@ export function RoadmapView({ plans, onPlanClick, selectedPlanId }: RoadmapViewP
         className="flex flex-col items-center justify-center h-full py-12 text-center"
       >
         <GanttChart className="w-12 h-12 text-gray-300 mb-3" />
-        <p className="text-gray-500">No plans to display in roadmap</p>
-        <p className="text-sm text-gray-400 mt-1">Create plans to see them on the timeline</p>
+        <p className="text-gray-500">{t('plans.roadmap.empty')}</p>
+        <p className="text-sm text-gray-400 mt-1">{t('plans.roadmap.emptyHint')}</p>
       </div>
     );
   }
@@ -201,7 +204,7 @@ export function RoadmapView({ plans, onPlanClick, selectedPlanId }: RoadmapViewP
             {timelineEnd.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
           </div>
           <div className="text-xs text-gray-500">
-            {plans.length} plan{plans.length !== 1 ? 's' : ''}
+            {t('plans.roadmap.planCount', { count: plans.length })}
           </div>
         </div>
       </div>
@@ -295,7 +298,7 @@ export function RoadmapView({ plans, onPlanClick, selectedPlanId }: RoadmapViewP
                 className="w-3 h-3 rounded"
                 style={{ backgroundColor: STATUS_BAR_COLORS[status] }}
               />
-              <span className="text-gray-600">{config.label}</span>
+              <span className="text-gray-600">{t(config.labelKey)}</span>
             </div>
           ))}
         </div>

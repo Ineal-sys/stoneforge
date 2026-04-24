@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { X, Loader2, Plus, FileText } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { TagInput } from '@stoneforge/ui';
 import { useCurrentUser } from '../../contexts';
 
@@ -66,12 +67,6 @@ function useCreateDocument() {
   });
 }
 
-const CONTENT_TYPE_OPTIONS = [
-  { value: 'text', label: 'Plain Text' },
-  { value: 'markdown', label: 'Markdown' },
-  { value: 'json', label: 'JSON' },
-];
-
 export function CreateDocumentModal({
   isOpen,
   onClose,
@@ -89,6 +84,7 @@ export function CreateDocumentModal({
   const createDocument = useCreateDocument();
   const { data: libraries } = useLibraries();
   const { currentUser } = useCurrentUser();
+  const { t } = useTranslation('quarry');
 
   // Focus title input when modal opens
   useEffect(() => {
@@ -170,7 +166,7 @@ export function CreateDocumentModal({
           <div className={`flex items-center justify-between ${isMobile ? 'px-4 py-4' : 'px-4 py-3'} border-b border-gray-200 dark:border-[var(--color-border)]`}>
             <div className="flex items-center gap-2">
               <FileText className="w-5 h-5 text-blue-500" />
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--color-text)]">Create Document</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--color-text)]">{t('documents.create.title')}</h2>
             </div>
             <button
               onClick={onClose}
@@ -187,7 +183,7 @@ export function CreateDocumentModal({
             {/* Title */}
             <div className="mb-4">
               <label htmlFor="document-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Title <span className="text-red-500">*</span>
+                {t('documents.create.documentTitle', { defaultValue: 'Title' })} <span className="text-red-500">*</span>
               </label>
               <input
                 ref={titleInputRef}
@@ -195,7 +191,7 @@ export function CreateDocumentModal({
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter document title..."
+                placeholder={t('documents.create.documentTitlePlaceholder', { defaultValue: 'Enter document title...' })}
                 className={`w-full px-3 ${isMobile ? 'py-3' : 'py-2'} border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                 data-testid="create-document-title-input"
                 required
@@ -205,7 +201,7 @@ export function CreateDocumentModal({
             {/* Content Type */}
             <div className="mb-4">
               <label htmlFor="document-content-type" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Content Type
+                {t('documents.create.contentType', { defaultValue: 'Content Type' })}
               </label>
               <select
                 id="document-content-type"
@@ -214,18 +210,16 @@ export function CreateDocumentModal({
                 className={`w-full px-3 ${isMobile ? 'py-3' : 'py-2'} border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                 data-testid="create-document-content-type-select"
               >
-                {CONTENT_TYPE_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
+                <option value="text">{t('documents.create.plainText', { defaultValue: 'Plain Text' })}</option>
+                <option value="markdown">{t('documents.create.markdown', { defaultValue: 'Markdown' })}</option>
+                <option value="json">JSON</option>
               </select>
             </div>
 
             {/* Library */}
             <div className="mb-4">
               <label htmlFor="document-library" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Library (optional)
+                {t('documents.create.library', { defaultValue: 'Library' })} ({t('documents.create.optional', { defaultValue: 'optional' })})
               </label>
               <select
                 id="document-library"
@@ -234,7 +228,7 @@ export function CreateDocumentModal({
                 className={`w-full px-3 ${isMobile ? 'py-3' : 'py-2'} border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                 data-testid="create-document-library-select"
               >
-                <option value="">No library</option>
+                <option value="">{t('documents.create.noLibrary', { defaultValue: 'No library' })}</option>
                 {libraries?.map((library) => (
                   <option key={library.id} value={library.id}>
                     {library.name}
@@ -246,7 +240,7 @@ export function CreateDocumentModal({
             {/* Content */}
             <div className="mb-4">
               <label htmlFor="document-content" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Initial Content
+                {t('documents.create.initialContent', { defaultValue: 'Initial Content' })}
               </label>
               <textarea
                 id="document-content"
@@ -268,12 +262,12 @@ export function CreateDocumentModal({
             {/* Tags */}
             <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Tags
+                {t('documents.create.tags', { defaultValue: 'Tags' })}
               </label>
               <TagInput
                 tags={tags}
                 onChange={setTags}
-                placeholder="Type and press comma to add tags"
+                placeholder={t('documents.create.tagsPlaceholder', { defaultValue: 'Type and press comma to add tags' })}
                 data-testid="create-document-tags-input"
               />
             </div>
@@ -284,7 +278,7 @@ export function CreateDocumentModal({
                 className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300"
                 data-testid="create-document-error"
               >
-                {(createDocument.error as Error)?.message || 'Failed to create document'}
+                {(createDocument.error as Error)?.message || t('documents.create.failedToCreate', { defaultValue: 'Failed to create document' })}
               </div>
             )}
 
@@ -301,12 +295,12 @@ export function CreateDocumentModal({
                     {createDocument.isPending ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Creating...
+                        {t('documents.create.creating')}
                       </>
                     ) : (
                       <>
                         <Plus className="w-4 h-4" />
-                        Create Document
+                        {t('documents.create.create')}
                       </>
                     )}
                   </button>
@@ -316,7 +310,7 @@ export function CreateDocumentModal({
                     className="w-full px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors touch-target"
                     data-testid="create-document-cancel-button"
                   >
-                    Cancel
+                    {t('documents.create.cancel')}
                   </button>
                 </>
               ) : (
@@ -327,7 +321,7 @@ export function CreateDocumentModal({
                     className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
                     data-testid="create-document-cancel-button"
                   >
-                    Cancel
+                    {t('documents.create.cancel')}
                   </button>
                   <button
                     type="submit"
@@ -338,12 +332,12 @@ export function CreateDocumentModal({
                     {createDocument.isPending ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Creating...
+                        {t('documents.create.creating')}
                       </>
                     ) : (
                       <>
                         <Plus className="w-4 h-4" />
-                        Create Document
+                        {t('documents.create.create')}
                       </>
                     )}
                   </button>

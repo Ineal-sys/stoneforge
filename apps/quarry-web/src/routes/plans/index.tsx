@@ -15,6 +15,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useDebounce, useIsMobile, useGlobalQuickActions, useShortcutVersion } from '../../hooks';
 import { getCurrentBinding } from '../../lib/keyboard';
 import { useSearch, useNavigate } from '@tanstack/react-router';
@@ -47,6 +48,7 @@ import { ClipboardList, Plus } from 'lucide-react';
  * Main Plans Page Component with search and responsive design
  */
 export function PlansPage() {
+  const { t } = useTranslation('quarry');
   const navigate = useNavigate();
   const search = useSearch({ from: '/plans' });
   const isMobile = useIsMobile();
@@ -180,7 +182,7 @@ export function PlansPage() {
     <div data-testid="plans-page" className="h-full flex flex-col">
       {/* Header */}
       <PageHeader
-        title="Plans"
+        title={t('plans.title')}
         icon={ClipboardList}
         iconColor="text-blue-500"
         count={plans.length > 0 ? plans.length : undefined}
@@ -188,8 +190,8 @@ export function PlansPage() {
         bordered
         actions={[
           {
-            label: 'Create Plan',
-            shortLabel: 'Create',
+            label: t('plans.createPlan'),
+            shortLabel: t('button.create'),
             icon: Plus,
             onClick: openCreatePlanModal,
             shortcut: getCurrentBinding('action.createPlan'),
@@ -234,7 +236,7 @@ export function PlansPage() {
               data-testid="plans-loading"
               className="text-center py-12 text-[var(--color-text-secondary)]"
             >
-              Loading plans...
+              {t('plans.loadingPlans')}
             </div>
           )}
 
@@ -243,7 +245,7 @@ export function PlansPage() {
               data-testid="plans-error"
               className="text-center py-12 text-red-500"
             >
-              Failed to load plans
+              {t('plans.failedToLoad')}
             </div>
           )}
 
@@ -256,23 +258,23 @@ export function PlansPage() {
               {isSearchActive ? (
                 <>
                   <p className="text-[var(--color-text-secondary)]" data-testid="plans-no-search-results">
-                    No plans matching "{debouncedSearchQuery}"
+                    {t('plans.noPlansFound')}
                   </p>
                   <button
                     onClick={handleSearchClear}
                     className="mt-2 text-sm text-blue-600 hover:text-blue-800"
                     data-testid="plans-clear-search"
                   >
-                    Clear search
+                    {t('button.reset')}
                   </button>
                 </>
               ) : (
                 <>
-                  <p className="text-[var(--color-text-secondary)]">No plans found</p>
+                  <p className="text-[var(--color-text-secondary)]">{t('plans.noPlansFound')}</p>
                   <p className="text-sm text-[var(--color-text-muted)] mt-1">
                     {selectedStatus
-                      ? `No ${selectedStatus} plans available`
-                      : 'Create your first plan to get started'}
+                      ? t('plans.noPlansFound')
+                      : t('plans.createPlan')}
                   </p>
                 </>
               )}
@@ -324,10 +326,10 @@ export function PlansPage() {
           <div className="w-96 flex-shrink-0 border-l border-[var(--color-border)]" data-testid="plan-detail-container">
             {deepLink.notFound ? (
               <ElementNotFound
-                elementType="Plan"
+                elementType={t('plans.title')}
                 elementId={selectedPlanId}
                 backRoute="/plans"
-                backLabel="Back to Plans"
+                backLabel={t('button.back')}
                 onDismiss={handleCloseDetail}
               />
             ) : (
@@ -345,15 +347,15 @@ export function PlansPage() {
         <MobileDetailSheet
           open={!!selectedPlanId}
           onClose={handleCloseDetail}
-          title="Plan Details"
+          title={t('plans.detail.title', { defaultValue: t('plans.title') })}
           data-testid="mobile-plan-detail-sheet"
         >
           {deepLink.notFound ? (
             <ElementNotFound
-              elementType="Plan"
+              elementType={t('plans.title')}
               elementId={selectedPlanId}
               backRoute="/plans"
-              backLabel="Back to Plans"
+              backLabel={t('button.back')}
               onDismiss={handleCloseDetail}
             />
           ) : (
@@ -370,7 +372,7 @@ export function PlansPage() {
         <button
           onClick={openCreatePlanModal}
           className="fixed bottom-6 right-6 w-14 h-14 flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg z-40 touch-target"
-          aria-label="Create new plan"
+          aria-label={t('plans.createPlan')}
           data-testid="mobile-create-plan-fab"
         >
           <Plus className="w-6 h-6" />

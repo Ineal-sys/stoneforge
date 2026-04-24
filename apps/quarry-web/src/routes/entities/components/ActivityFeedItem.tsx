@@ -14,6 +14,7 @@ import {
   Users,
   Activity,
 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { StoneforgeEvent } from '../types';
 
 interface ActivityFeedItemProps {
@@ -21,6 +22,8 @@ interface ActivityFeedItemProps {
 }
 
 export function ActivityFeedItem({ event }: ActivityFeedItemProps) {
+  const { t } = useTranslation('quarry');
+
   // Get appropriate icon based on event type and element type
   const getEventIcon = () => {
     const elementType = event.elementType || '';
@@ -93,19 +96,19 @@ export function ActivityFeedItem({ event }: ActivityFeedItemProps) {
 
     // Special case handling for common patterns
     if (eventType === 'closed' && elementType === 'task') {
-      return 'Completed task';
+      return t('activityFeed.completedTask');
     }
     if (eventType === 'created' && elementType === 'message') {
-      return 'Sent message';
+      return t('activityFeed.sentMessage');
     }
     if (eventType === 'updated' && elementType === 'document') {
-      return 'Edited document';
+      return t('activityFeed.editedDocument');
     }
     if (eventType === 'created' && elementType === 'task') {
-      return 'Created task';
+      return t('activityFeed.createdTask');
     }
     if (eventType === 'created' && elementType === 'document') {
-      return 'Created document';
+      return t('activityFeed.createdDocument');
     }
 
     // Default pattern: "Event type + element type"
@@ -121,10 +124,10 @@ export function ActivityFeedItem({ event }: ActivityFeedItemProps) {
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return 'just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
+    if (minutes < 1) return t('activityFeed.justNow');
+    if (minutes < 60) return t('activityFeed.minutesAgo', { count: minutes });
+    if (hours < 24) return t('activityFeed.hoursAgo', { count: hours });
+    if (days < 7) return t('activityFeed.daysAgo', { count: days });
     return date.toLocaleDateString();
   };
 

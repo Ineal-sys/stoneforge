@@ -3,6 +3,7 @@
  */
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   MessageSquare,
   Search,
@@ -47,6 +48,7 @@ interface ChannelViewProps {
 }
 
 export function ChannelView({ channelId, isMobile = false, onBack, onChannelDeleted }: ChannelViewProps) {
+  const { t } = useTranslation('quarry');
   const { data: channel } = useChannel(channelId);
   const { data: messages = [], isLoading, error } = useChannelMessages(channelId);
   const { currentUser } = useCurrentUser();
@@ -175,7 +177,7 @@ export function ChannelView({ channelId, isMobile = false, onBack, onChannelDele
               searchInputRef.current?.blur();
             }
           }}
-          placeholder="Search messages..."
+          placeholder={t('messages.search.placeholder')}
           className="w-48 pl-8 pr-8 py-1.5 text-sm border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-[var(--color-surface)] text-[var(--color-text)]"
           data-testid="message-search-input"
         />
@@ -216,8 +218,8 @@ export function ChannelView({ channelId, isMobile = false, onBack, onChannelDele
           mobile ? 'p-2 touch-target' : 'p-1.5 ml-2'
         }`}
         data-testid="delete-channel-header-button"
-        aria-label="Delete channel"
-        title="Delete channel"
+        aria-label={t('channel.deleteChannel')}
+        title={t('channel.deleteChannel')}
       >
         {deleteChannel.isPending ? (
           <Loader2 className={`animate-spin ${mobile ? 'w-5 h-5' : 'w-4 h-4'}`} />
@@ -239,7 +241,7 @@ export function ChannelView({ channelId, isMobile = false, onBack, onChannelDele
             onClick={() => setShowMobileSearch(!showMobileSearch)}
             className="p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors touch-target"
             data-testid="mobile-search-toggle"
-            aria-label="Search messages"
+            aria-label={t('messages.search.placeholder')}
           >
             <Search className="w-5 h-5" />
           </button>
@@ -297,7 +299,7 @@ export function ChannelView({ channelId, isMobile = false, onBack, onChannelDele
                         setShowMobileSearch(false);
                       }
                     }}
-                    placeholder="Search..."
+                    placeholder={t('button.search') + '...'}
                     className="w-full pl-10 pr-10 py-2.5 text-base border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-[var(--color-surface)] text-[var(--color-text)]"
                     data-testid="mobile-message-search-input"
                     autoFocus
@@ -344,14 +346,14 @@ export function ChannelView({ channelId, isMobile = false, onBack, onChannelDele
               data-testid="messages-loading"
               className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400"
             >
-              Loading messages...
+              {t('messages.loading')}
             </div>
           ) : error ? (
             <div
               data-testid="messages-error"
               className="flex items-center justify-center h-full text-red-500"
             >
-              Failed to load messages
+              {t('messages.failedToLoad')}
             </div>
           ) : (
             <VirtualizedChatList
@@ -391,13 +393,13 @@ export function ChannelView({ channelId, isMobile = false, onBack, onChannelDele
                       isMobile ? 'w-10 h-10' : 'w-12 h-12'
                     }`}
                   />
-                  <p className={isMobile ? 'text-base' : 'text-sm'}>No messages yet</p>
+                  <p className={isMobile ? 'text-base' : 'text-sm'}>{t('messages.noMessages')}</p>
                   <p
                     className={`text-gray-400 dark:text-gray-500 mt-1 ${
                       isMobile ? 'text-sm' : 'text-xs'
                     }`}
                   >
-                    Be the first to send a message!
+                    {t('messages.beFirstToSend')}
                   </p>
                 </div>
               )}
@@ -472,9 +474,9 @@ export function ChannelView({ channelId, isMobile = false, onBack, onChannelDele
                     <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-[var(--color-text)]">Delete Channel</h2>
+                    <h2 className="text-lg font-semibold text-[var(--color-text)]">{t('channel.deleteChannel')}</h2>
                     <p className="text-sm text-[var(--color-text-secondary)]">
-                      This action cannot be undone.
+                      {t('channel.actionCannotBeUndone')}
                     </p>
                   </div>
                 </div>
@@ -483,7 +485,7 @@ export function ChannelView({ channelId, isMobile = false, onBack, onChannelDele
               {/* Body */}
               <div className="px-5 py-4">
                 <p className="text-sm text-[var(--color-text-secondary)] mb-3">
-                  All messages and data in this channel will be permanently deleted.
+                  {t('channel.deleteWarning')}
                 </p>
                 <div className="p-3 bg-[var(--color-surface-elevated)] rounded-md border border-[var(--color-border)]">
                   <p className="text-sm font-medium text-[var(--color-text)] truncate" title={channel.name}>
@@ -503,7 +505,7 @@ export function ChannelView({ channelId, isMobile = false, onBack, onChannelDele
                   className="px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-surface-elevated)] hover:bg-[var(--color-surface-hover)] rounded-md transition-colors disabled:opacity-50"
                   data-testid="delete-channel-cancel"
                 >
-                  Cancel
+                  {t('button.cancel')}
                 </button>
                 <button
                   onClick={handleDeleteChannel}
@@ -512,7 +514,7 @@ export function ChannelView({ channelId, isMobile = false, onBack, onChannelDele
                   data-testid="delete-channel-confirm"
                 >
                   {deleteChannel.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                  Delete
+                  {t('button.delete')}
                 </button>
               </div>
 
@@ -544,6 +546,7 @@ interface MobileThreadPanelProps {
 }
 
 function MobileThreadPanel({ selectedThread, channel, onClose }: MobileThreadPanelProps) {
+  const { t } = useTranslation('quarry');
   return (
     <div
       className="fixed inset-0 z-50 bg-[var(--color-bg)] flex flex-col"
@@ -554,11 +557,11 @@ function MobileThreadPanel({ selectedThread, channel, onClose }: MobileThreadPan
           onClick={onClose}
           className="p-2 -ml-2 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors touch-target"
           data-testid="mobile-thread-back"
-          aria-label="Close thread"
+          aria-label={t('messages.thread.close')}
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
-        <span className="font-medium text-[var(--color-text)]">Thread</span>
+        <span className="font-medium text-[var(--color-text)]">{t('messages.thread.title')}</span>
       </div>
       <div className="flex-1 overflow-hidden">
         <ThreadPanel parentMessage={selectedThread} channel={channel} onClose={onClose} />

@@ -4,6 +4,7 @@
 
 import { useRef, useEffect } from 'react';
 import { Search, X } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 
 interface PlanSearchBarProps {
   value: string;
@@ -12,6 +13,7 @@ interface PlanSearchBarProps {
 }
 
 export function PlanSearchBar({ value, onChange, onClear }: PlanSearchBarProps) {
+  const { t } = useTranslation('quarry');
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Handle Escape key to clear search and / to focus
@@ -47,7 +49,7 @@ export function PlanSearchBar({ value, onChange, onClear }: PlanSearchBarProps) 
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Search plans... (Press / to focus)"
+        placeholder={t('plans.search.placeholder')}
         className="w-full pl-9 pr-8 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
         data-testid="plan-search-input"
       />
@@ -56,7 +58,7 @@ export function PlanSearchBar({ value, onChange, onClear }: PlanSearchBarProps) 
           onClick={onClear}
           className="absolute inset-y-0 right-0 pr-2 flex items-center text-gray-400 hover:text-gray-600"
           data-testid="plan-search-clear"
-          aria-label="Clear search (Escape)"
+          aria-label={t('plans.search.clearAriaLabel')}
         >
           <X className="w-4 h-4" />
         </button>

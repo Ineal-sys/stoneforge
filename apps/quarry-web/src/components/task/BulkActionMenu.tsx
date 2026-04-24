@@ -11,6 +11,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, X, Loader2, Trash2 } from 'lucide-react';
 import { STATUS_OPTIONS, PRIORITY_OPTIONS } from '../../lib/task-constants';
+import { useTranslation } from '@stoneforge/i18n';
 
 interface BulkActionMenuProps {
   selectedCount: number;
@@ -31,6 +32,7 @@ export function BulkActionMenu({
   isPending,
   isDeleting,
 }: BulkActionMenuProps) {
+  const { t } = useTranslation('quarry');
   const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [isPriorityOpen, setIsPriorityOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -79,7 +81,7 @@ export function BulkActionMenu({
       data-testid="bulk-action-menu"
     >
       <span className="text-sm font-medium text-blue-700" data-testid="bulk-selected-count">
-        {selectedCount} selected
+        {t('bulkActions.selected', { count: selectedCount })}
       </span>
 
       {/* Status dropdown */}
@@ -90,7 +92,7 @@ export function BulkActionMenu({
           className="inline-flex items-center gap-1 px-2 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
           data-testid="bulk-status-button"
         >
-          Set Status
+          {t('bulkActions.setStatus')}
           <ChevronDown className="w-3 h-3" />
         </button>
         {isStatusOpen && (
@@ -108,7 +110,7 @@ export function BulkActionMenu({
                 className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50"
                 data-testid={`bulk-status-option-${option.value}`}
               >
-                {option.label}
+                {t(option.label)}
               </button>
             ))}
           </div>
@@ -123,7 +125,7 @@ export function BulkActionMenu({
           className="inline-flex items-center gap-1 px-2 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
           data-testid="bulk-priority-button"
         >
-          Set Priority
+          {t('bulkActions.setPriority')}
           <ChevronDown className="w-3 h-3" />
         </button>
         {isPriorityOpen && (
@@ -141,7 +143,7 @@ export function BulkActionMenu({
                 className="w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50"
                 data-testid={`bulk-priority-option-${option.value}`}
               >
-                {option.label}
+                {t(option.label)}
               </button>
             ))}
           </div>
@@ -157,11 +159,11 @@ export function BulkActionMenu({
           data-testid="bulk-delete-button"
         >
           <Trash2 className="w-3 h-3" />
-          Delete
+          {t('bulkActions.delete')}
         </button>
       ) : (
         <div className="inline-flex items-center gap-2 px-2 py-1 bg-red-50 border border-red-300 rounded" data-testid="bulk-delete-confirm">
-          <span className="text-sm text-red-700">Delete {selectedCount} tasks?</span>
+          <span className="text-sm text-red-700">{t('bulkActions.deleteConfirm', { count: selectedCount })}</span>
           <button
             onClick={handleConfirmDelete}
             disabled={isDeleting}
@@ -171,7 +173,7 @@ export function BulkActionMenu({
             {isDeleting ? (
               <Loader2 className="w-3 h-3 animate-spin" />
             ) : (
-              'Confirm'
+              t('bulkActions.confirm')
             )}
           </button>
           <button
@@ -180,7 +182,7 @@ export function BulkActionMenu({
             className="px-2 py-0.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
             data-testid="bulk-delete-cancel-button"
           >
-            Cancel
+            {t('common:button.cancel')}
           </button>
         </div>
       )}

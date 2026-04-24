@@ -20,6 +20,7 @@ import {
   CheckCircle2,
   XCircle,
 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { ProgressRing } from '../../../components/shared/ProgressRing';
 import type { HydratedPlan } from '../types';
 
@@ -32,25 +33,25 @@ interface MobilePlanCardProps {
 
 const STATUS_CONFIG: Record<
   string,
-  { label: string; icon: React.ReactNode; color: string }
+  { labelKey: string; icon: React.ReactNode; color: string }
 > = {
   draft: {
-    label: 'Draft',
+    labelKey: 'plans.status.draft',
     icon: <FileEdit className="w-3 h-3" />,
     color: 'bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300',
   },
   active: {
-    label: 'Active',
+    labelKey: 'plans.status.active',
     icon: <CircleDot className="w-3 h-3" />,
     color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
   },
   completed: {
-    label: 'Completed',
+    labelKey: 'plans.status.completed',
     icon: <CheckCircle2 className="w-3 h-3" />,
     color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
   },
   cancelled: {
-    label: 'Cancelled',
+    labelKey: 'plans.status.cancelled',
     icon: <XCircle className="w-3 h-3" />,
     color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
   },
@@ -110,6 +111,7 @@ export function MobilePlanCard({
   onClick,
   searchMatchIndices,
 }: MobilePlanCardProps) {
+  const { t } = useTranslation('quarry');
   const statusConfig = STATUS_CONFIG[plan.status] || STATUS_CONFIG.draft;
   const progress = plan._progress;
   const hasProgress = progress && progress.totalTasks > 0;
@@ -164,7 +166,7 @@ export function MobilePlanCard({
           {/* Status badge */}
           <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-xs font-medium rounded ${statusConfig.color}`}>
             {statusConfig.icon}
-            {statusConfig.label}
+            {t(statusConfig.labelKey)}
           </span>
 
           {/* Tags (limited) */}
@@ -199,7 +201,7 @@ export function MobilePlanCard({
         ) : (
           <div
             className="w-8 h-8 rounded-full border-2 border-dashed border-[var(--color-border)] flex items-center justify-center"
-            title="No tasks in plan"
+            title={t('plans.progress.noTasks')}
           >
             <span className="text-[8px] text-[var(--color-text-muted)]">--</span>
           </div>

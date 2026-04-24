@@ -13,11 +13,12 @@ export const ENTITY_TYPE_STYLES: Record<string, { bg: string; text: string; icon
   system: { bg: 'bg-gray-100', text: 'text-gray-800', icon: Server },
 };
 
+// Labels are i18n keys — use t(key) at render time
 export const FILTER_TABS: { value: EntityTypeFilter; label: string; icon: typeof Users }[] = [
-  { value: 'all', label: 'All', icon: Users },
-  { value: 'agent', label: 'Agents', icon: Bot },
-  { value: 'human', label: 'Humans', icon: User },
-  { value: 'system', label: 'Systems', icon: Server },
+  { value: 'all', label: 'entities.filterTabs.all', icon: Users },
+  { value: 'agent', label: 'entities.filterTabs.agents', icon: Bot },
+  { value: 'human', label: 'entities.filterTabs.humans', icon: User },
+  { value: 'system', label: 'entities.filterTabs.systems', icon: Server },
 ];
 
 export const STATUS_COLORS: Record<string, string> = {
@@ -36,17 +37,17 @@ export const PRIORITY_COLORS: Record<number, string> = {
 };
 
 export const INBOX_VIEW_TABS: { value: InboxViewType; label: string }[] = [
-  { value: 'unread', label: 'Unread' },
-  { value: 'all', label: 'All' },
-  { value: 'archived', label: 'Archived' },
+  { value: 'unread', label: 'entities.inbox.viewTabs.unread' },
+  { value: 'all', label: 'entities.inbox.viewTabs.all' },
+  { value: 'archived', label: 'entities.inbox.viewTabs.archived' },
 ];
 
 export const HISTORY_EVENT_TYPE_OPTIONS: { value: HistoryEventTypeFilter; label: string }[] = [
-  { value: 'all', label: 'All Events' },
-  { value: 'created', label: 'Created' },
-  { value: 'updated', label: 'Updated' },
-  { value: 'closed', label: 'Closed' },
-  { value: 'deleted', label: 'Deleted' },
+  { value: 'all', label: 'entities.history.eventTypes.all' },
+  { value: 'created', label: 'entities.history.eventTypes.created' },
+  { value: 'updated', label: 'entities.history.eventTypes.updated' },
+  { value: 'closed', label: 'entities.history.eventTypes.closed' },
+  { value: 'deleted', label: 'entities.history.eventTypes.deleted' },
 ];
 
 // LocalStorage keys

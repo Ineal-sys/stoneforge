@@ -3,6 +3,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   Clock,
   CheckCircle2,
@@ -45,6 +46,7 @@ interface StatusTransition {
 }
 
 function getStatusTransitions(currentStatus: string): StatusTransition[] {
+  // Labels are translated at render time via t()
   switch (currentStatus) {
     case 'draft':
       return [{ status: 'active', label: 'Activate', icon: Play, color: 'bg-blue-500 hover:bg-blue-600' }];
@@ -61,7 +63,15 @@ function getStatusTransitions(currentStatus: string): StatusTransition[] {
   }
 }
 
+const STATUS_TRANSITION_KEYS: Record<string, string> = {
+  'Activate': 'plans.action.activate',
+  'Complete': 'plans.action.complete',
+  'Cancel': 'plans.action.cancel',
+  'Reopen as Draft': 'plans.action.reopenAsDraft',
+};
+
 export function PlanDetailPanel({ planId, onClose }: PlanDetailPanelProps) {
+  const { t } = useTranslation('quarry');
   const { data: plan, isLoading, isError, error } = usePlan(planId);
   const { data: tasks = [] } = usePlanTasks(planId);
   const { data: progress } = usePlanProgress(planId);
@@ -149,7 +159,7 @@ export function PlanDetailPanel({ planId, onClose }: PlanDetailPanelProps) {
         data-testid="plan-detail-loading"
         className="h-full flex items-center justify-center bg-white"
       >
-        <div className="text-gray-500">Loading plan...</div>
+        <div className="text-gray-500">{t('plans.loading')}</div>
       </div>
     );
   }
@@ -160,7 +170,7 @@ export function PlanDetailPanel({ planId, onClose }: PlanDetailPanelProps) {
         data-testid="plan-detail-error"
         className="h-full flex flex-col items-center justify-center bg-white"
       >
-        <div className="text-red-600 mb-2">Failed to load plan</div>
+        <div className="text-red-600 mb-2">{t('plans.error.failedToLoad')}</div>
         <div className="text-sm text-gray-500">{(error as Error)?.message}</div>
       </div>
     );
@@ -172,7 +182,7 @@ export function PlanDetailPanel({ planId, onClose }: PlanDetailPanelProps) {
         data-testid="plan-detail-not-found"
         className="h-full flex items-center justify-center bg-white"
       >
-        <div className="text-gray-500">Plan not found</div>
+        <div className="text-gray-500">{t('plans.notFound')}</div>
       </div>
     );
   }
@@ -213,7 +223,7 @@ export function PlanDetailPanel({ planId, onClose }: PlanDetailPanelProps) {
                   onClick={handleSaveTitle}
                   disabled={updatePlan.isPending}
                   className="p-1 text-green-600 hover:bg-green-50 rounded"
-                  title="Save"
+                  title={t('button.save')}
                 >
                   <Check className="w-5 h-5" />
                 </button>
@@ -221,7 +231,7 @@ export function PlanDetailPanel({ planId, onClose }: PlanDetailPanelProps) {
                   data-testid="cancel-edit-btn"
                   onClick={handleCancelEdit}
                   className="p-1 text-gray-400 hover:bg-gray-100 rounded"
-                  title="Cancel"
+                  title={t('button.cancel')}
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -238,7 +248,7 @@ export function PlanDetailPanel({ planId, onClose }: PlanDetailPanelProps) {
                   data-testid="edit-title-btn"
                   onClick={() => setIsEditMode(true)}
                   className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Edit title"
+                  title={t('plans.action.editTitle')}
                 >
                   <Pencil className="w-4 h-4" />
                 </button>
@@ -254,7 +264,7 @@ export function PlanDetailPanel({ planId, onClose }: PlanDetailPanelProps) {
           <button
             onClick={onClose}
             className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
-            aria-label="Close panel"
+            aria-label={t('plans.detail.closePanel')}
             data-testid="plan-detail-close"
           >
             <X className="w-5 h-5" />
@@ -275,7 +285,7 @@ export function PlanDetailPanel({ planId, onClose }: PlanDetailPanelProps) {
                   className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white rounded ${transition.color} disabled:opacity-50`}
                 >
                   <Icon className="w-4 h-4" />
-                  {transition.label}
+                  {t(STATUS_TRANSITION_KEYS[transition.label] ?? transition.label)}
                 </button>
               );
             })}
@@ -287,14 +297,14 @@ export function PlanDetailPanel({ planId, onClose }: PlanDetailPanelProps) {
           {/* Progress Section with Progress Ring */}
           {progress && (
             <div className="mb-6" data-testid="plan-progress-section">
-              <div className="text-sm font-medium text-gray-700 mb-4">Progress</div>
+              <div className="text-sm font-medium text-gray-700 mb-4">{t('plans.progress.title')}</div>
               <div className="flex flex-col items-center gap-4">
                 {/* Large Progress Ring (80px) */}
                 <ProgressRingWithBreakdown
                   percentage={progress.completionPercentage}
                   completed={progress.completedTasks}
                   total={progress.totalTasks}
-                  itemLabel="tasks"
+                  itemLabel={t('plans.tasksLabel')}
                   size="large"
                   testId="plan-detail-progress-ring"
                 />
@@ -310,7 +320,7 @@ export function PlanDetailPanel({ planId, onClose }: PlanDetailPanelProps) {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <div className="text-sm font-medium text-gray-700">
-                Tasks ({tasks.length})
+                {t('plans.tasks.title', { count: tasks.length })}
               </div>
               <button
                 data-testid="add-task-btn"
@@ -318,7 +328,7 @@ export function PlanDetailPanel({ planId, onClose }: PlanDetailPanelProps) {
                 className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded transition-colors"
               >
                 <Plus className="w-3 h-3" />
-                Add Task
+                {t('plans.tasks.addTask')}
               </button>
             </div>
             <PlanTaskList
@@ -335,7 +345,7 @@ export function PlanDetailPanel({ planId, onClose }: PlanDetailPanelProps) {
               <div>
                 <div className="flex items-center gap-1 mb-1">
                   <Clock className="w-3 h-3" />
-                  <span className="font-medium">Created:</span>
+                  <span className="font-medium">{t('plans.metadata.created')}</span>
                 </div>
                 <span title={formatDate(plan.createdAt)}>
                   {formatRelativeTime(plan.createdAt)}
@@ -344,7 +354,7 @@ export function PlanDetailPanel({ planId, onClose }: PlanDetailPanelProps) {
               <div>
                 <div className="flex items-center gap-1 mb-1">
                   <Clock className="w-3 h-3" />
-                  <span className="font-medium">Updated:</span>
+                  <span className="font-medium">{t('plans.metadata.updated')}</span>
                 </div>
                 <span title={formatDate(plan.updatedAt)}>
                   {formatRelativeTime(plan.updatedAt)}
@@ -353,7 +363,7 @@ export function PlanDetailPanel({ planId, onClose }: PlanDetailPanelProps) {
               <div className="col-span-2">
                 <div className="flex items-center gap-1 mb-1">
                   <User className="w-3 h-3" />
-                  <span className="font-medium">Created by:</span>
+                  <span className="font-medium">{t('plans.metadata.createdBy')}</span>
                 </div>
                 <span className="font-mono">{plan.createdBy}</span>
               </div>
@@ -361,7 +371,7 @@ export function PlanDetailPanel({ planId, onClose }: PlanDetailPanelProps) {
                 <div className="col-span-2">
                   <div className="flex items-center gap-1 mb-1">
                     <CheckCircle2 className="w-3 h-3 text-green-500" />
-                    <span className="font-medium">Completed:</span>
+                    <span className="font-medium">{t('plans.metadata.completed')}</span>
                   </div>
                   <span>{formatDate(plan.completedAt)}</span>
                 </div>
@@ -370,7 +380,7 @@ export function PlanDetailPanel({ planId, onClose }: PlanDetailPanelProps) {
                 <div className="col-span-2">
                   <div className="flex items-center gap-1 mb-1">
                     <XCircle className="w-3 h-3 text-red-500" />
-                    <span className="font-medium">Cancelled:</span>
+                    <span className="font-medium">{t('plans.metadata.cancelled')}</span>
                   </div>
                   <span>{formatDate(plan.cancelledAt)}</span>
                   {plan.cancelReason && (
@@ -384,7 +394,7 @@ export function PlanDetailPanel({ planId, onClose }: PlanDetailPanelProps) {
             {plan.tags && plan.tags.length > 0 && (
               <div className="mt-4">
                 <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-                  Tags
+                  {t('plans.metadata.tags')}
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {plan.tags.map((tag: string) => (

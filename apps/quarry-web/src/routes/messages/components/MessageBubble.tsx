@@ -12,6 +12,7 @@ import {
   MoreVertical,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from '@stoneforge/i18n';
 import { EntityLink } from '@stoneforge/ui/domain';
 import { useEntityNavigation } from '../../../hooks/useEntityNavigation';
 import { renderMessageContent } from '../../../lib/message-content';
@@ -68,6 +69,7 @@ export function MessageBubble({
   isHighlighted = false,
   isMobile = false,
 }: MessageBubbleProps) {
+  const { t } = useTranslation('quarry');
   const [copied, setCopied] = useState(false);
   const [showMobileActions, setShowMobileActions] = useState(false);
   const messageRef = useRef<HTMLDivElement>(null);
@@ -91,11 +93,11 @@ export function MessageBubble({
     try {
       await navigator.clipboard.writeText(content);
       setCopied(true);
-      toast.success('Message copied');
+      toast.success(t('messages.copied'));
       setTimeout(() => setCopied(false), 2000);
       setShowMobileActions(false);
     } catch {
-      toast.error('Failed to copy message');
+      toast.error(t('messages.copyFailed'));
     }
   };
 
@@ -202,7 +204,7 @@ export function MessageBubble({
               renderMessageContent(message._content)
             ) : (
               <span className="text-gray-400 dark:text-gray-500 italic">
-                Content not loaded
+                {t('messages.contentNotLoaded')}
               </span>
             )}
           </div>
@@ -230,7 +232,7 @@ export function MessageBubble({
                         isMobile ? 'text-xs' : 'text-sm'
                       }`}
                     >
-                      {doc.title || 'Untitled Document'}
+                      {doc.title || t('documents.untitled', { defaultValue: 'Untitled' })}
                     </div>
                     <div className={isMobile ? 'text-[10px]' : 'text-xs'}>
                       <span className="px-1 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded text-[10px]">
@@ -251,7 +253,7 @@ export function MessageBubble({
                 data-testid={`message-thread-indicator-${message.id}`}
                 className={`text-blue-500 ${isMobile ? 'text-[10px]' : 'text-xs'}`}
               >
-                Reply in thread
+                {t('messages.replyInThread')}
               </div>
             )}
 
@@ -266,7 +268,7 @@ export function MessageBubble({
               >
                 <MessageCircle className={isMobile ? 'w-2.5 h-2.5' : 'w-3 h-3'} />
                 <span>
-                  {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
+                  {replyCount} {replyCount === 1 ? t('messages.reply_one', { count: 1 }) : t('messages.reply_other', { count: replyCount })}
                 </span>
               </button>
             )}
@@ -279,7 +281,7 @@ export function MessageBubble({
                 className="flex items-center gap-1 text-xs text-gray-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <MessageCircle className="w-3 h-3" />
-                <span>Reply</span>
+                <span>{t('messages.thread.reply')}</span>
               </button>
             )}
           </div>
@@ -295,7 +297,7 @@ export function MessageBubble({
               data-testid={`message-copy-button-${message.id}`}
               onClick={handleCopy}
               className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-              title="Copy message (C when focused)"
+              title={t('messages.copyMessage')}
             >
               {copied ? (
                 <Check className="w-4 h-4 text-green-500" />
@@ -308,7 +310,7 @@ export function MessageBubble({
                 data-testid={`message-reply-action-${message.id}`}
                 onClick={() => onReply(message)}
                 className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                title="Reply in thread"
+                title={t('messages.replyInThread')}
               >
                 <MessageCircle className="w-4 h-4" />
               </button>
@@ -322,7 +324,7 @@ export function MessageBubble({
             data-testid={`message-more-button-${message.id}`}
             onClick={() => setShowMobileActions(true)}
             className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 self-start mt-1 touch-target"
-            aria-label="More actions"
+            aria-label={t('messages.moreActions')}
           >
             <MoreVertical className="w-4 h-4" />
           </button>
@@ -365,6 +367,7 @@ function MobileActionSheet({
   copied,
   onClose,
 }: MobileActionSheetProps) {
+  const { t } = useTranslation('quarry');
   return (
     <div
       className="fixed inset-0 z-50"
@@ -392,7 +395,7 @@ function MobileActionSheet({
           ) : (
             <Copy className="w-5 h-5 text-gray-500" />
           )}
-          <span className="text-[var(--color-text)]">Copy message</span>
+          <span className="text-[var(--color-text)]">{t('messages.copyMessage')}</span>
         </button>
 
         {!isThreaded && onReply && (
@@ -405,7 +408,7 @@ function MobileActionSheet({
             data-testid={`message-reply-action-mobile-${message.id}`}
           >
             <MessageCircle className="w-5 h-5 text-gray-500" />
-            <span className="text-[var(--color-text)]">Reply in thread</span>
+            <span className="text-[var(--color-text)]">{t('messages.replyInThread')}</span>
           </button>
         )}
 
@@ -413,7 +416,7 @@ function MobileActionSheet({
           onClick={onClose}
           className="w-full flex items-center justify-center px-4 py-3 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors mt-2 touch-target"
         >
-          <span className="text-[var(--color-text)] font-medium">Cancel</span>
+          <span className="text-[var(--color-text)] font-medium">{t('button.cancel')}</span>
         </button>
       </div>
     </div>

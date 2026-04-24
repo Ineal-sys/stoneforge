@@ -23,6 +23,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { AlertTriangle, CheckCircle2, Clock, Eye, PlayCircle, User, Filter, ArrowUpDown, Loader2, Inbox } from 'lucide-react';
 import { formatCompactTime } from '../../lib/time';
 import { useAllTasks, type Task } from '../../api/hooks/useAllElements';
+import { useTranslation } from '@stoneforge/i18n';
 
 // Storage for scroll positions keyed by column ID
 const kanbanScrollPositionStore = new Map<string, number>();
@@ -77,31 +78,34 @@ const DEFAULT_FILTERS: ColumnFilters = {
 };
 
 // Sort options matching page-level sort
+// Labels are i18n keys — use t(key) at render time
 const SORT_OPTIONS: { value: SortField; label: string }[] = [
-  { value: 'priority', label: 'Priority' },
-  { value: 'created_at', label: 'Created' },
-  { value: 'updated_at', label: 'Updated' },
-  { value: 'deadline', label: 'Deadline' },
-  { value: 'title', label: 'Title' },
-  { value: 'complexity', label: 'Complexity' },
+  { value: 'priority', label: 'tasks.sortOptions.priority' },
+  { value: 'created_at', label: 'tasks.sortOptions.created' },
+  { value: 'updated_at', label: 'tasks.sortOptions.updated' },
+  { value: 'deadline', label: 'tasks.sortOptions.deadline' },
+  { value: 'title', label: 'tasks.sortOptions.title' },
+  { value: 'complexity', label: 'tasks.sortOptions.complexity' },
 ];
 
+// Labels are i18n keys — use t(key) at render time
 const PRIORITY_FILTER_OPTIONS = [
-  { value: 1, label: 'Critical' },
-  { value: 2, label: 'High' },
-  { value: 3, label: 'Medium' },
-  { value: 4, label: 'Low' },
-  { value: 5, label: 'Trivial' },
+  { value: 1, label: 'tasks.priority.critical' },
+  { value: 2, label: 'tasks.priority.high' },
+  { value: 3, label: 'tasks.priority.medium' },
+  { value: 4, label: 'tasks.priority.low' },
+  { value: 5, label: 'tasks.priority.trivial' },
 ];
 
 // Column configuration - maps status values to column definitions
+// Titles are i18n keys — use t(key) at render time
 const COLUMNS = [
-  { id: 'backlog', title: 'Backlog', status: 'backlog', color: 'bg-slate-500', icon: Inbox, iconColor: 'text-slate-600 dark:text-slate-400' },
-  { id: 'open', title: 'Open', status: 'open', color: 'bg-green-500', icon: CheckCircle2, iconColor: 'text-green-600 dark:text-green-400' },
-  { id: 'in-progress', title: 'In Progress', status: 'in_progress', color: 'bg-yellow-500', icon: PlayCircle, iconColor: 'text-yellow-600 dark:text-yellow-400' },
-  { id: 'blocked', title: 'Blocked', status: 'blocked', color: 'bg-red-500', icon: AlertTriangle, iconColor: 'text-red-600 dark:text-red-400' },
-  { id: 'review', title: 'Review', status: 'review', color: 'bg-purple-500', icon: Eye, iconColor: 'text-purple-600 dark:text-purple-400' },
-  { id: 'closed', title: 'Completed', status: 'closed', color: 'bg-blue-500', icon: Clock, iconColor: 'text-blue-600 dark:text-blue-400' },
+  { id: 'backlog', title: 'tasks.status.backlog', status: 'backlog', color: 'bg-slate-500', icon: Inbox, iconColor: 'text-slate-600 dark:text-slate-400' },
+  { id: 'open', title: 'tasks.status.open', status: 'open', color: 'bg-green-500', icon: CheckCircle2, iconColor: 'text-green-600 dark:text-green-400' },
+  { id: 'in-progress', title: 'tasks.status.inProgress', status: 'in_progress', color: 'bg-yellow-500', icon: PlayCircle, iconColor: 'text-yellow-600 dark:text-yellow-400' },
+  { id: 'blocked', title: 'tasks.status.blocked', status: 'blocked', color: 'bg-red-500', icon: AlertTriangle, iconColor: 'text-red-600 dark:text-red-400' },
+  { id: 'review', title: 'tasks.status.review', status: 'review', color: 'bg-purple-500', icon: Eye, iconColor: 'text-purple-600 dark:text-purple-400' },
+  { id: 'closed', title: 'tasks.status.closed', status: 'closed', color: 'bg-blue-500', icon: Clock, iconColor: 'text-blue-600 dark:text-blue-400' },
 ] as const;
 
 // Hook to persist column preferences in localStorage
@@ -248,7 +252,7 @@ function useUpdateTaskStatus() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error?.message || 'Failed to update task');
+        throw new Error(error.error?.message || 'Failed to update task status');
       }
 
       return response.json();
@@ -403,6 +407,7 @@ function FilterSortDropdown({
   pageSort,
   onUpdate,
 }: FilterSortDropdownProps) {
+  const { t } = useTranslation('quarry');
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -453,7 +458,7 @@ function FilterSortDropdown({
   };
 
   // Get label for current sort
-  const pageSortLabel = SORT_OPTIONS.find(opt => opt.value === pageSort.field)?.label || pageSort.field;
+  const pageSortLabel = t(SORT_OPTIONS.find(opt => opt.value === pageSort.field)?.label || pageSort.field);
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -464,7 +469,7 @@ function FilterSortDropdown({
             ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50'
             : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
         }`}
-        title="Filter & Sort"
+        title={t('kanban.filterSort')}
         data-testid={`${columnId}-filter-button`}
       >
         <Filter className="w-3.5 h-3.5" />
@@ -484,7 +489,7 @@ function FilterSortDropdown({
           <div className="px-3 pb-2 border-b border-gray-100 dark:border-neutral-700">
             <div className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
               <ArrowUpDown className="w-3 h-3" />
-              Sort
+              {t('kanban.sort')}
             </div>
 
             {/* Sort Field Dropdown */}
@@ -495,10 +500,10 @@ function FilterSortDropdown({
                 className="w-full text-xs border border-gray-200 dark:border-neutral-600 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-neutral-700 text-gray-900 dark:text-gray-100"
                 data-testid={`${columnId}-sort-field`}
               >
-                <option value="page">Page sort ({pageSortLabel})</option>
+                <option value="page">{t('kanban.sort')} ({pageSortLabel})</option>
                 {SORT_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
-                    {option.label}
+                    {t(option.label)}
                   </option>
                 ))}
               </select>
@@ -515,7 +520,7 @@ function FilterSortDropdown({
                 }`}
                 data-testid={`${columnId}-sort-asc`}
               >
-                Ascending
+                {t('kanban.ascending')}
               </button>
               <button
                 onClick={() => handleSortDirectionChange('desc')}
@@ -526,7 +531,7 @@ function FilterSortDropdown({
                 }`}
                 data-testid={`${columnId}-sort-desc`}
               >
-                Descending
+                {t('kanban.descending')}
               </button>
             </div>
           </div>
@@ -536,7 +541,7 @@ function FilterSortDropdown({
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                 <Filter className="w-3 h-3" />
-                Filter
+                {t('kanban.filter')}
               </div>
               {activeFilters > 0 && (
                 <button
@@ -544,14 +549,14 @@ function FilterSortDropdown({
                   className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
                   data-testid={`${columnId}-clear-filters`}
                 >
-                  Clear
+                  {t('kanban.clear')}
                 </button>
               )}
             </div>
 
             {/* Priority Filter */}
             <div className="mb-2">
-              <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Priority</label>
+              <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t('filterBar.priority')}</label>
               <select
                 value={preferences.filters.priority ?? ''}
                 onChange={(e) => onUpdate({
@@ -563,7 +568,7 @@ function FilterSortDropdown({
                 className="w-full text-xs border border-gray-200 dark:border-neutral-600 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-neutral-700 text-gray-900 dark:text-gray-100"
                 data-testid={`${columnId}-filter-priority`}
               >
-                <option value="">All priorities</option>
+                <option value="">{t('kanban.allPriorities')}</option>
                 {PRIORITY_FILTER_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
@@ -575,7 +580,7 @@ function FilterSortDropdown({
             {/* Assignee Filter */}
             {availableAssignees.length > 0 && (
               <div className="mb-2">
-                <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Assignee</label>
+                <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t('filterBar.assignee')}</label>
                 <select
                   value={preferences.filters.assignee ?? ''}
                   onChange={(e) => onUpdate({
@@ -587,7 +592,7 @@ function FilterSortDropdown({
                   className="w-full text-xs border border-gray-200 dark:border-neutral-600 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-neutral-700 text-gray-900 dark:text-gray-100"
                   data-testid={`${columnId}-filter-assignee`}
                 >
-                  <option value="">All assignees</option>
+                  <option value="">{t('kanban.allAssignees')}</option>
                   {availableAssignees.map((assignee) => (
                     <option key={assignee} value={assignee}>
                       {assignee}
@@ -600,7 +605,7 @@ function FilterSortDropdown({
             {/* Tag Filter */}
             {availableTags.length > 0 && (
               <div className="mb-1">
-                <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Tag</label>
+                <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">{t('taskDetail.tags')}</label>
                 <select
                   value={preferences.filters.tag ?? ''}
                   onChange={(e) => onUpdate({
@@ -612,7 +617,7 @@ function FilterSortDropdown({
                   className="w-full text-xs border border-gray-200 dark:border-neutral-600 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-neutral-700 text-gray-900 dark:text-gray-100"
                   data-testid={`${columnId}-filter-tag`}
                 >
-                  <option value="">All tags</option>
+                  <option value="">{t('kanban.allTags')}</option>
                   {availableTags.map((tag) => (
                     <option key={tag} value={tag}>
                       {tag}
@@ -669,6 +674,7 @@ function VirtualizedKanbanColumn({
   availableTags,
   isLoading,
 }: VirtualizedKanbanColumnProps) {
+  const { t } = useTranslation('quarry');
   const parentRef = useRef<HTMLDivElement>(null);
   const taskIds = tasks.map(t => t.id);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -753,7 +759,7 @@ function VirtualizedKanbanColumn({
       <div className="flex items-center gap-2 p-3 border-b border-gray-200 dark:border-neutral-700 sticky top-0 bg-gray-50 dark:bg-neutral-800 z-10">
         <div className={`w-2 h-2 rounded-full ${color}`} />
         {icon}
-        <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">{title}</span>
+        <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">{t(title)}</span>
         <span
           className="px-2 py-0.5 text-xs bg-gray-200 dark:bg-neutral-700 text-gray-600 dark:text-gray-300 rounded-full"
           data-testid={`kanban-column-${columnId}-count`}
@@ -788,7 +794,7 @@ function VirtualizedKanbanColumn({
         )}
         {!isLoading && tasks.length === 0 && (
           <div className="p-4 text-center text-gray-400 dark:text-gray-500 text-sm h-32 flex items-center justify-center">
-            {totalCount > 0 ? 'No matching tasks' : 'No tasks'}
+            {totalCount > 0 ? t('kanban.noMatchingTasks') : t('kanban.noTasks')}
           </div>
         )}
         {!isLoading && tasks.length > 0 && (

@@ -1,4 +1,4 @@
-import { StrictMode, useEffect, useState } from 'react';
+import { StrictMode, Suspense, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
@@ -8,6 +8,7 @@ import { TooltipProvider } from '@stoneforge/ui';
 import { DataPreloader } from './components/shared';
 import { CurrentUserProvider } from './contexts';
 import { getToastPosition, getToastDuration } from './routes/settings';
+import './i18n';
 import './index.css';
 
 // Initialize theme before React renders to prevent flash of wrong theme
@@ -93,15 +94,17 @@ function DynamicToaster() {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <CurrentUserProvider>
-        <TooltipProvider>
-          <DataPreloader>
-            <RouterProvider router={router} />
-            <DynamicToaster />
-          </DataPreloader>
-        </TooltipProvider>
-      </CurrentUserProvider>
-    </QueryClientProvider>
+    <Suspense fallback={<div className="h-screen w-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400">Chargement...</div>}>
+      <QueryClientProvider client={queryClient}>
+        <CurrentUserProvider>
+          <TooltipProvider>
+            <DataPreloader>
+              <RouterProvider router={router} />
+              <DynamicToaster />
+            </DataPreloader>
+          </TooltipProvider>
+        </CurrentUserProvider>
+      </QueryClientProvider>
+    </Suspense>
   </StrictMode>
 );

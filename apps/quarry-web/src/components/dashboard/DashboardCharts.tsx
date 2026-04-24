@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
+import { useTranslation } from '@stoneforge/i18n';
 import {
   PieChart,
   Pie,
@@ -84,7 +85,7 @@ function useAllEntities() {
 }
 
 // Calculate tasks by status from raw task data
-function calculateTasksByStatus(tasks: Task[]): TasksByStatusData[] {
+function calculateTasksByStatus(tasks: Task[], t: (key: string) => string): TasksByStatusData[] {
   const counts: Record<string, number> = {
     open: 0,
     in_progress: 0,
@@ -100,30 +101,30 @@ function calculateTasksByStatus(tasks: Task[]): TasksByStatusData[] {
 
   return Object.entries(counts)
     .map(([status, value]) => ({
-      name: formatStatusName(status),
+      name: formatStatusName(status, t),
       value,
       status,
     }))
     .filter((d) => d.value > 0);
 }
 
-function formatStatusName(status: string): string {
+function formatStatusName(status: string, t: (key: string) => string): string {
   switch (status) {
     case 'open':
-      return 'Open';
+      return t('dashboardCharts.open');
     case 'in_progress':
-      return 'In Progress';
+      return t('dashboardCharts.inProgress');
     case 'blocked':
-      return 'Blocked';
+      return t('dashboardCharts.blocked');
     case 'closed':
-      return 'Completed';
+      return t('dashboardCharts.completed');
     default:
       return status;
   }
 }
 
 // Calculate tasks completed over time (last 7 days)
-function calculateCompletedOverTime(tasks: Task[]): CompletedOverTimeData[] {
+function calculateCompletedOverTime(tasks: Task[], t: (key: string) => string): CompletedOverTimeData[] {
   const days: CompletedOverTimeData[] = [];
   const now = new Date();
 
@@ -134,7 +135,7 @@ function calculateCompletedOverTime(tasks: Task[]): CompletedOverTimeData[] {
     date.setHours(0, 0, 0, 0);
 
     const dateStr = date.toISOString().split('T')[0];
-    const dayLabel = i === 0 ? 'Today' : i === 1 ? 'Yesterday' : date.toLocaleDateString('en-US', { weekday: 'short' });
+    const dayLabel = i === 0 ? t('dashboardCharts.today') : i === 1 ? t('dashboardCharts.yesterday') : date.toLocaleDateString('fr-FR', { weekday: 'short' });
 
     days.push({
       date: dateStr,
@@ -200,47 +201,49 @@ function calculateWorkloadByAgent(
 }
 
 // Custom tooltip for donut chart
-function DonutTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: TasksByStatusData }> }) {
+function DonutTooltip({ active, payload, t }: { active?: boolean; payload?: Array<{ payload: TasksByStatusData }>; t: (key: string) => string }) {
   if (!active || !payload?.length) return null;
 
   const data = payload[0].payload;
   return (
     <div className="bg-card p-2 rounded-lg shadow-lg border border-border">
       <p className="text-sm font-medium text-foreground">{data.name}</p>
-      <p className="text-sm text-muted-foreground">{data.value} tasks</p>
+      <p className="text-sm text-muted-foreground">{data.value} {t('dashboardCharts.tasks')}</p>
     </div>
   );
 }
 
 // Custom tooltip for line chart
-function LineChartTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) {
+function LineChartTooltip({ active, payload, label, t }: { active?: boolean; payload?: Array<{ value: number }>; label?: string; t: (key: string) => string }) {
   if (!active || !payload?.length) return null;
 
   return (
     <div className="bg-card p-2 rounded-lg shadow-lg border border-border">
       <p className="text-sm font-medium text-foreground">{label}</p>
-      <p className="text-sm text-muted-foreground">{payload[0].value} completed</p>
+      <p className="text-sm text-muted-foreground">{payload[0].value} {t('dashboardCharts.completedLabel')}</p>
     </div>
   );
 }
 
 // Custom tooltip for bar chart
-function BarChartTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: WorkloadByAgentData }> }) {
+function BarChartTooltip({ active, payload, t }: { active?: boolean; payload?: Array<{ payload: WorkloadByAgentData }>; t: (key: string) => string }) {
   if (!active || !payload?.length) return null;
 
   const data = payload[0].payload;
+  const taskLabel = data.tasks === 1 ? t('dashboardCharts.activeTask') : t('dashboardCharts.activeTask_plural');
   return (
     <div className="bg-card p-2 rounded-lg shadow-lg border border-border">
       <p className="text-sm font-medium text-foreground">{data.name}</p>
       <p className="text-sm text-muted-foreground">
-        {data.tasks} active task{data.tasks !== 1 ? 's' : ''} ({data.percentage}%)
+        {data.tasks} {taskLabel} ({data.percentage}%)
       </p>
-      <p className="text-xs text-muted-foreground mt-1">Click to view tasks</p>
+      <p className="text-xs text-muted-foreground mt-1">{t('dashboardCharts.clickToView')}</p>
     </div>
   );
 }
 
 export function TasksByStatusChart() {
+  const { t } = useTranslation('quarry');
   const { data: tasks, isLoading, isError } = useAllTasks();
   const isMobile = useIsMobile();
   const isTouchDevice = useTouchDevice();
@@ -256,9 +259,9 @@ export function TasksByStatusChart() {
   if (isLoading) {
     return (
       <div className="bg-card rounded-lg shadow-sm p-4 sm:p-6 border border-border" data-testid="tasks-by-status-chart">
-        <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">Tasks by Status</h4>
+        <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">{t('dashboardCharts.tasksByStatus')}</h4>
         <div className="h-40 sm:h-48 flex items-center justify-center">
-          <div className="animate-pulse text-muted-foreground text-sm">Loading chart...</div>
+          <div className="animate-pulse text-muted-foreground text-sm">{t('dashboardCharts.loading')}</div>
         </div>
       </div>
     );
@@ -267,23 +270,23 @@ export function TasksByStatusChart() {
   if (isError || !tasks) {
     return (
       <div className="bg-card rounded-lg shadow-sm p-4 sm:p-6 border border-border" data-testid="tasks-by-status-chart">
-        <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">Tasks by Status</h4>
+        <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">{t('dashboardCharts.tasksByStatus')}</h4>
         <div className="h-40 sm:h-48 flex items-center justify-center">
-          <div className="text-error text-sm">Failed to load chart data</div>
+          <div className="text-error text-sm">{t('dashboardCharts.failed')}</div>
         </div>
       </div>
     );
   }
 
-  const chartData = calculateTasksByStatus(tasks);
+  const chartData = calculateTasksByStatus(tasks, t);
   const totalTasks = chartData.reduce((sum, d) => sum + d.value, 0);
 
   if (totalTasks === 0) {
     return (
       <div className="bg-card rounded-lg shadow-sm p-4 sm:p-6 border border-border" data-testid="tasks-by-status-chart">
-        <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">Tasks by Status</h4>
+        <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">{t('dashboardCharts.tasksByStatus')}</h4>
         <div className="h-40 sm:h-48 flex items-center justify-center">
-          <div className="text-muted-foreground text-sm">No tasks to display</div>
+          <div className="text-muted-foreground text-sm">{t('dashboardCharts.noTasks')}</div>
         </div>
       </div>
     );
@@ -294,7 +297,7 @@ export function TasksByStatusChart() {
 
   return (
     <div className="bg-card rounded-lg shadow-sm p-4 sm:p-6 border border-border" data-testid="tasks-by-status-chart">
-      <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">Tasks by Status</h4>
+      <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">{t('dashboardCharts.tasksByStatus')}</h4>
       <div className="h-40 sm:h-48">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -321,7 +324,7 @@ export function TasksByStatusChart() {
               ))}
             </Pie>
             <Tooltip
-              content={<DonutTooltip />}
+              content={<DonutTooltip t={t} />}
               trigger={isTouchDevice ? 'click' : 'hover'}
               wrapperStyle={{ zIndex: 1000 }}
             />
@@ -332,7 +335,7 @@ export function TasksByStatusChart() {
       {isMobile && activeIndex !== null && chartData[activeIndex] && (
         <div className="mt-2 text-center text-sm text-foreground" data-testid="mobile-tooltip">
           <span className="font-medium">{chartData[activeIndex].name}</span>
-          <span className="text-muted-foreground ml-2">{chartData[activeIndex].value} tasks</span>
+          <span className="text-muted-foreground ml-2">{chartData[activeIndex].value} {t('dashboardCharts.tasks')}</span>
         </div>
       )}
       <div className="mt-3 sm:mt-4 flex justify-center gap-2 sm:gap-4 flex-wrap" data-testid="chart-legend">
@@ -360,6 +363,7 @@ export function TasksByStatusChart() {
 }
 
 export function TasksCompletedOverTimeChart() {
+  const { t } = useTranslation('quarry');
   const { data: tasks, isLoading, isError } = useAllTasks();
   const isMobile = useIsMobile();
   const isTouchDevice = useTouchDevice();
@@ -367,9 +371,9 @@ export function TasksCompletedOverTimeChart() {
   if (isLoading) {
     return (
       <div className="bg-card rounded-lg shadow-sm p-4 sm:p-6 border border-border" data-testid="tasks-completed-chart">
-        <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">Tasks Completed (Last 7 Days)</h4>
+        <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">{t('dashboardCharts.completed7days')}</h4>
         <div className="h-40 sm:h-48 flex items-center justify-center">
-          <div className="animate-pulse text-muted-foreground text-sm">Loading chart...</div>
+          <div className="animate-pulse text-muted-foreground text-sm">{t('dashboardCharts.loading')}</div>
         </div>
       </div>
     );
@@ -378,25 +382,25 @@ export function TasksCompletedOverTimeChart() {
   if (isError || !tasks) {
     return (
       <div className="bg-card rounded-lg shadow-sm p-4 sm:p-6 border border-border" data-testid="tasks-completed-chart">
-        <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">Tasks Completed (Last 7 Days)</h4>
+        <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">{t('dashboardCharts.completed7days')}</h4>
         <div className="h-40 sm:h-48 flex items-center justify-center">
-          <div className="text-error text-sm">Failed to load chart data</div>
+          <div className="text-error text-sm">{t('dashboardCharts.failed')}</div>
         </div>
       </div>
     );
   }
 
-  const chartData = calculateCompletedOverTime(tasks);
+  const chartData = calculateCompletedOverTime(tasks, t);
   const totalCompleted = chartData.reduce((sum, d) => sum + d.completed, 0);
 
   return (
     <div className="bg-card rounded-lg shadow-sm p-4 sm:p-6 border border-border" data-testid="tasks-completed-chart">
       <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">
-        <span className="hidden sm:inline">Tasks Completed (Last 7 Days)</span>
-        <span className="sm:hidden">Completed (7 Days)</span>
+        <span className="hidden sm:inline">{t('dashboardCharts.completed7days')}</span>
+        <span className="sm:hidden">{t('dashboardCharts.completed7daysMobile')}</span>
         {totalCompleted > 0 && (
           <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs font-normal text-muted-foreground">
-            Total: {totalCompleted}
+            {t('dashboardCharts.total')} {totalCompleted}
           </span>
         )}
       </h4>
@@ -419,7 +423,7 @@ export function TasksCompletedOverTimeChart() {
               width={isMobile ? 25 : 30}
             />
             <Tooltip
-              content={<LineChartTooltip />}
+              content={<LineChartTooltip t={t} />}
               trigger={isTouchDevice ? 'click' : 'hover'}
               wrapperStyle={{ zIndex: 1000 }}
             />
@@ -442,6 +446,7 @@ export function TasksCompletedOverTimeChart() {
 }
 
 export function WorkloadByAgentChart() {
+  const { t } = useTranslation('quarry');
   const { data: tasks, isLoading: tasksLoading, isError: tasksError } = useAllTasks();
   const { data: entities, isLoading: entitiesLoading, isError: entitiesError } = useAllEntities();
   const navigate = useNavigate();
@@ -475,10 +480,9 @@ export function WorkloadByAgentChart() {
   if (isLoading) {
     return (
       <div className="bg-card rounded-lg shadow-sm p-4 sm:p-6 border border-border" data-testid="workload-by-agent-chart">
-        <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">Workload by Agent</h4>
+        <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">{t('dashboardCharts.workloadByAgent')}</h4>
         <div className="h-40 sm:h-48 flex items-center justify-center">
-          <div className="animate-pulse text-muted-foreground text-sm">Loading chart...</div>
-        </div>
+          <div className="animate-pulse text-muted-foreground text-sm">{t('dashboardCharts.loading')}</div>        </div>
       </div>
     );
   }
@@ -486,9 +490,9 @@ export function WorkloadByAgentChart() {
   if (isError || !tasks || !entities) {
     return (
       <div className="bg-card rounded-lg shadow-sm p-4 sm:p-6 border border-border" data-testid="workload-by-agent-chart">
-        <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">Workload by Agent</h4>
+        <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">{t('dashboardCharts.workloadByAgent')}</h4>
         <div className="h-40 sm:h-48 flex items-center justify-center">
-          <div className="text-error text-sm">Failed to load chart data</div>
+          <div className="text-error text-sm">{t('dashboardCharts.failed')}</div>
         </div>
       </div>
     );
@@ -499,9 +503,9 @@ export function WorkloadByAgentChart() {
   if (chartData.length === 0) {
     return (
       <div className="bg-card rounded-lg shadow-sm p-4 sm:p-6 border border-border" data-testid="workload-by-agent-chart">
-        <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">Workload by Agent</h4>
+        <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">{t('dashboardCharts.workloadByAgent')}</h4>
         <div className="h-40 sm:h-48 flex items-center justify-center">
-          <div className="text-muted-foreground text-sm">No assigned tasks</div>
+          <div className="text-muted-foreground text-sm">{t('dashboardCharts.noAssignedTasks')}</div>
         </div>
       </div>
     );
@@ -515,7 +519,7 @@ export function WorkloadByAgentChart() {
 
   return (
     <div className="bg-card rounded-lg shadow-sm p-4 sm:p-6 border border-border" data-testid="workload-by-agent-chart">
-      <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">Workload by Agent</h4>
+      <h4 className="text-xs sm:text-sm font-medium text-foreground mb-3 sm:mb-4">{t('dashboardCharts.workloadByAgent')}</h4>
       <div className="h-40 sm:h-48">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={displayData} layout="vertical">
@@ -536,7 +540,7 @@ export function WorkloadByAgentChart() {
               width={isMobile ? 55 : 70}
             />
             <Tooltip
-              content={<BarChartTooltip />}
+              content={<BarChartTooltip t={t} />}
               trigger={isTouchDevice ? 'click' : 'hover'}
               wrapperStyle={{ zIndex: 1000 }}
             />
@@ -554,8 +558,8 @@ export function WorkloadByAgentChart() {
       {isMobile && activeIndex !== null && chartData[activeIndex] && (
         <div className="mt-2 text-center text-sm" data-testid="mobile-tooltip-bar">
           <span className="font-medium text-foreground">{chartData[activeIndex].name}</span>
-          <span className="text-muted-foreground ml-2">{chartData[activeIndex].tasks} tasks</span>
-          <p className="text-xs text-muted-foreground mt-1">Tap again to view tasks</p>
+          <span className="text-muted-foreground ml-2">{chartData[activeIndex].tasks} {t('dashboardCharts.tasks')}</span>
+          <p className="text-xs text-muted-foreground mt-1">{t('dashboardCharts.tapToView')}</p>
         </div>
       )}
     </div>
@@ -564,9 +568,10 @@ export function WorkloadByAgentChart() {
 
 // Main charts grid component
 export function DashboardCharts() {
+  const { t } = useTranslation('quarry');
   return (
     <div className="mt-6 sm:mt-8" data-testid="dashboard-charts">
-      <h3 className="text-sm sm:text-md font-medium text-foreground mb-3 sm:mb-4">Charts</h3>
+      <h3 className="text-sm sm:text-md font-medium text-foreground mb-3 sm:mb-4">{t('dashboardCharts.charts')}</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6" data-testid="charts-grid">
         <TasksByStatusChart />
         <TasksCompletedOverTimeChart />

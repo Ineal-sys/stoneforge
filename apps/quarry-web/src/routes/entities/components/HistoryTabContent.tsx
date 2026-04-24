@@ -4,6 +4,7 @@
 
 import { useState } from 'react';
 import { History, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useEntityHistory } from '../hooks';
 import { getStoredHistoryPageSize, getStoredHistoryEventType, setStoredHistoryEventType } from '../utils';
 import { HISTORY_EVENT_TYPE_OPTIONS } from '../constants';
@@ -19,6 +20,7 @@ export function HistoryTabContent({ entityId }: HistoryTabContentProps) {
   const [pageSize] = useState(() => getStoredHistoryPageSize());
   const [eventTypeFilter, setEventTypeFilter] = useState<HistoryEventTypeFilter>(() => getStoredHistoryEventType());
   const [expandedEvents, setExpandedEvents] = useState<Set<number>>(new Set());
+  const { t } = useTranslation('quarry');
 
   const { data, isLoading, isError } = useEntityHistory(entityId, page, pageSize, eventTypeFilter);
 
@@ -63,10 +65,10 @@ export function HistoryTabContent({ entityId }: HistoryTabContentProps) {
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium text-gray-900 flex items-center gap-2">
             <History className="w-4 h-4" />
-            Event History
+            {t('history.title')}
             {data && (
               <span className="text-gray-500 font-normal">
-                ({data.total} total)
+                {t('history.total', { count: data.total })}
               </span>
             )}
           </h3>
@@ -74,7 +76,7 @@ export function HistoryTabContent({ entityId }: HistoryTabContentProps) {
             <button
               onClick={expandAll}
               className="text-xs text-gray-600 hover:text-gray-800 px-2 py-1 rounded hover:bg-gray-100 transition-colors"
-              title="Expand all"
+              title={t('history.expandAll')}
               data-testid="history-expand-all"
             >
               <Eye className="w-3 h-3" />
@@ -82,7 +84,7 @@ export function HistoryTabContent({ entityId }: HistoryTabContentProps) {
             <button
               onClick={collapseAll}
               className="text-xs text-gray-600 hover:text-gray-800 px-2 py-1 rounded hover:bg-gray-100 transition-colors"
-              title="Collapse all"
+              title={t('history.collapseAll')}
               data-testid="history-collapse-all"
             >
               <EyeOff className="w-3 h-3" />
@@ -114,20 +116,20 @@ export function HistoryTabContent({ entityId }: HistoryTabContentProps) {
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-            <span className="ml-2 text-sm text-gray-500">Loading history...</span>
+            <span className="ml-2 text-sm text-gray-500">{t('history.loading')}</span>
           </div>
         ) : isError ? (
           <div className="text-center py-8">
             <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-2" />
-            <p className="text-sm text-red-600">Failed to load history</p>
+            <p className="text-sm text-red-600">{t('history.failedToLoad')}</p>
           </div>
         ) : !data?.items.length ? (
           <div className="text-center py-8">
             <History className="w-8 h-8 text-gray-300 mx-auto mb-2" />
             <p className="text-sm text-gray-500">
               {eventTypeFilter !== 'all'
-                ? `No ${eventTypeFilter} events found`
-                : 'No events recorded yet'}
+                ? t('history.noFilteredEvents', { type: eventTypeFilter })
+                : t('history.noEvents')}
             </p>
           </div>
         ) : (
@@ -148,7 +150,11 @@ export function HistoryTabContent({ entityId }: HistoryTabContentProps) {
       {data && data.total > pageSize && (
         <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-gray-50">
           <span className="text-xs text-gray-500">
-            Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, data.total)} of {data.total}
+            {t('history.showing', {
+              start: (page - 1) * pageSize + 1,
+              end: Math.min(page * pageSize, data.total),
+              total: data.total,
+            })}
           </span>
           <div className="flex items-center gap-1">
             <button
@@ -157,10 +163,10 @@ export function HistoryTabContent({ entityId }: HistoryTabContentProps) {
               className="px-2 py-1 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="history-prev-page"
             >
-              Previous
+              {t('history.previous')}
             </button>
             <span className="px-2 text-xs text-gray-600">
-              Page {page} of {totalPages}
+              {t('history.page', { current: page, total: totalPages })}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
@@ -168,7 +174,7 @@ export function HistoryTabContent({ entityId }: HistoryTabContentProps) {
               className="px-2 py-1 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               data-testid="history-next-page"
             >
-              Next
+              {t('history.next')}
             </button>
           </div>
         </div>

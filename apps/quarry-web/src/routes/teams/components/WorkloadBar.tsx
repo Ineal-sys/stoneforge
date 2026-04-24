@@ -2,6 +2,7 @@
  * WorkloadBar - Displays workload distribution for a team member
  */
 
+import { useTranslation } from '@stoneforge/i18n';
 import { useNavigate } from '@tanstack/react-router';
 
 interface WorkloadBarProps {
@@ -21,6 +22,7 @@ export function WorkloadBar({
   maxTasks,
   onClick,
 }: WorkloadBarProps) {
+  const { t } = useTranslation('quarry');
   const barWidth = maxTasks > 0 ? Math.round((taskCount / maxTasks) * 100) : 0;
   const navigate = useNavigate();
 
@@ -41,7 +43,7 @@ export function WorkloadBar({
       className="flex items-center gap-3 w-full text-left hover:bg-gray-50 rounded p-1 -mx-1 transition-colors cursor-pointer group"
       data-testid={`workload-bar-${memberId}`}
       onClick={handleClick}
-      title={`Click to view ${memberName}'s tasks`}
+      title={t('workload.viewTasks', { name: memberName })}
     >
       <div className="w-24 truncate text-sm text-gray-700 group-hover:text-blue-600">{memberName}</div>
       <div className="flex-1 h-6 bg-gray-100 rounded-full overflow-hidden">

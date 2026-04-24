@@ -14,6 +14,7 @@
 
 import { useMemo } from 'react';
 import { CheckSquare, Square } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 
 interface Task {
   id: string;
@@ -36,12 +37,13 @@ interface MobileTaskCardProps {
   searchQuery?: string;
 }
 
+// Labels are i18n keys — use t(key) at render time
 const PRIORITY_LABELS: Record<number, { label: string; color: string; border: string }> = {
-  1: { label: 'Critical', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', border: 'border-l-red-500' },
-  2: { label: 'High', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300', border: 'border-l-orange-500' },
-  3: { label: 'Medium', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300', border: 'border-l-yellow-500' },
-  4: { label: 'Low', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', border: 'border-l-green-500' },
-  5: { label: 'Trivial', color: 'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300', border: 'border-l-gray-400' },
+  1: { label: 'tasks.priority.critical', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300', border: 'border-l-red-500' },
+  2: { label: 'tasks.priority.high', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300', border: 'border-l-orange-500' },
+  3: { label: 'tasks.priority.medium', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300', border: 'border-l-yellow-500' },
+  4: { label: 'tasks.priority.low', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300', border: 'border-l-green-500' },
+  5: { label: 'tasks.priority.trivial', color: 'bg-gray-100 text-gray-800 dark:bg-gray-800/50 dark:text-gray-300', border: 'border-l-gray-400' },
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -120,6 +122,7 @@ export function MobileTaskCard({
   onClick,
   searchQuery,
 }: MobileTaskCardProps) {
+  const { t } = useTranslation('quarry');
   const priority = PRIORITY_LABELS[task.priority] || PRIORITY_LABELS[3];
   const statusColor = STATUS_COLORS[task.status] || STATUS_COLORS.open;
 
@@ -156,7 +159,7 @@ export function MobileTaskCard({
         onTouchEnd={handleCheckboxClick}
         className="flex-shrink-0 p-1 -m-1 touch-target"
         data-testid={`mobile-task-checkbox-${task.id}`}
-        aria-label={isChecked ? `Deselect task: ${task.title}` : `Select task: ${task.title}`}
+        aria-label={isChecked ? t('taskList.deselectTask', { title: task.title }) : t('taskList.selectTask', { title: task.title })}
       >
         {isChecked ? (
           <CheckSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -186,12 +189,12 @@ export function MobileTaskCard({
         <div className="flex items-center gap-1.5 flex-wrap">
           {/* Status badge */}
           <span className={`px-1.5 py-0.5 text-xs font-medium rounded ${statusColor}`}>
-            {task.status.replace('_', ' ')}
+            {t(`tasks.status.${task.status.replace('_', '')}`, task.status.replace('_', ' '))}
           </span>
 
           {/* Priority badge */}
           <span className={`px-1.5 py-0.5 text-xs font-medium rounded ${priority.color}`}>
-            {priority.label}
+            {t(priority.label)}
           </span>
 
           {/* Task type */}

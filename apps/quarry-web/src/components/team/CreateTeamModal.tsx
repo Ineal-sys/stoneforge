@@ -8,6 +8,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { X, Loader2, Plus, Search, Bot, User, Server } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useIsMobile } from '../../hooks';
 
 interface Team {
@@ -102,6 +103,7 @@ export function CreateTeamModal({
   const nameInputRef = useRef<HTMLInputElement>(null);
   const createTeam = useCreateTeam();
   const entities = useAllEntities();
+  const { t } = useTranslation('quarry');
 
   // Filter entities based on search
   const availableEntities = useMemo(() => {
@@ -209,7 +211,7 @@ export function CreateTeamModal({
         `}>
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)] bg-[var(--color-surface)]">
-            <h2 className="text-lg font-semibold text-[var(--color-text)]">Create Team</h2>
+            <h2 className="text-lg font-semibold text-[var(--color-text)]">{t('teams.create.title')}</h2>
             <button
               onClick={onClose}
               className="p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] rounded touch-target"
@@ -225,7 +227,7 @@ export function CreateTeamModal({
             {/* Name */}
             <div className="mb-4">
               <label htmlFor="team-name" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                Team Name <span className="text-red-500">*</span>
+                {t('teams.create.teamName', { defaultValue: 'Team Name' })} <span className="text-red-500">*</span>
               </label>
               <input
                 ref={nameInputRef}
@@ -233,7 +235,7 @@ export function CreateTeamModal({
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter team name..."
+                placeholder={t('teams.create.teamNamePlaceholder', { defaultValue: 'Enter team name...' })}
                 className="w-full px-3 py-2.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 data-testid="create-team-name-input"
                 required
@@ -243,11 +245,11 @@ export function CreateTeamModal({
             {/* Members - TB123: Required */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                Members <span className="text-red-500">*</span>
+                {t('teams.create.members', { defaultValue: 'Members' })} <span className="text-red-500">*</span>
               </label>
               {selectedMembers.length === 0 && (
                 <p className="text-xs text-amber-600 dark:text-amber-400 mb-2">
-                  Teams must have at least one member. Search and select an entity below.
+                  {t('teams.create.memberRequired', { defaultValue: 'Teams must have at least one member. Search and select an entity below.' })}
                 </p>
               )}
 
@@ -286,7 +288,7 @@ export function CreateTeamModal({
                   type="text"
                   value={memberSearch}
                   onChange={(e) => setMemberSearch(e.target.value)}
-                  placeholder="Search entities to add..."
+                  placeholder={t('teams.create.searchEntities', { defaultValue: 'Search entities to add...' })}
                   className="w-full pl-8 pr-3 py-2.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   data-testid="member-search-input"
                 />
@@ -296,9 +298,9 @@ export function CreateTeamModal({
               {memberSearch.trim() && (
                 <div className="mt-2 max-h-40 overflow-auto border border-[var(--color-border)] rounded-md" data-testid="entity-search-results">
                   {entities.isLoading ? (
-                    <div className="p-3 text-sm text-[var(--color-text-muted)] text-center">Loading entities...</div>
+                    <div className="p-3 text-sm text-[var(--color-text-muted)] text-center">{t('teams.create.loadingEntities', { defaultValue: 'Loading entities...' })}</div>
                   ) : availableEntities.length === 0 ? (
-                    <div className="p-3 text-sm text-[var(--color-text-muted)] text-center">No matching entities</div>
+                    <div className="p-3 text-sm text-[var(--color-text-muted)] text-center">{t('teams.create.noMatchingEntities', { defaultValue: 'No matching entities' })}</div>
                   ) : (
                     availableEntities.slice(0, 10).map((entity) => {
                       const styles = ENTITY_TYPE_STYLES[entity.entityType] || ENTITY_TYPE_STYLES.system;
@@ -327,14 +329,14 @@ export function CreateTeamModal({
             {/* Tags (optional) */}
             <div className="mb-4">
               <label htmlFor="team-tags" className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                Tags <span className="text-[var(--color-text-muted)]">(optional)</span>
+                {t('teams.create.tags', { defaultValue: 'Tags' })} <span className="text-[var(--color-text-muted)]">({t('teams.create.optional', { defaultValue: 'optional' })})</span>
               </label>
               <input
                 id="team-tags"
                 type="text"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
-                placeholder="Enter tags separated by commas..."
+                placeholder={t('teams.create.tagsPlaceholder', { defaultValue: 'Enter tags separated by commas...' })}
                 className="w-full px-3 py-2.5 border border-[var(--color-border)] rounded-md bg-[var(--color-bg)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 data-testid="create-team-tags-input"
               />
@@ -355,24 +357,24 @@ export function CreateTeamModal({
                 className={`px-4 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] rounded-md transition-colors ${isMobileModal ? 'w-full' : ''}`}
                 data-testid="create-team-cancel"
               >
-                Cancel
+                {t('teams.create.cancel')}
               </button>
               <button
                 type="submit"
                 disabled={!name.trim() || selectedMembers.length === 0 || createTeam.isPending}
                 className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isMobileModal ? 'w-full' : ''}`}
                 data-testid="create-team-submit"
-                title={selectedMembers.length === 0 ? 'Select at least one member to create a team' : undefined}
+                title={selectedMembers.length === 0 ? t('teams.create.selectMemberHint', { defaultValue: 'Select at least one member to create a team' }) : undefined}
               >
                 {createTeam.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Creating...
+                    {t('teams.create.creating')}
                   </>
                 ) : (
                   <>
                     <Plus className="w-4 h-4" />
-                    Create Team
+                    {t('teams.create.create')}
                   </>
                 )}
               </button>

@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { Filter, ChevronDown, XCircle, X } from 'lucide-react';
 import type { FilterConfig, Entity } from '../../lib/task-constants';
 import { STATUS_OPTIONS, PRIORITY_OPTIONS } from '../../lib/task-constants';
+import { useTranslation } from '@stoneforge/i18n';
 
 interface FilterBarProps {
   filters: FilterConfig;
@@ -26,6 +27,7 @@ export function FilterBar({
   onClearFilters,
   entities,
 }: FilterBarProps) {
+  const { t } = useTranslation('quarry');
   const [isExpanded, setIsExpanded] = useState(false);
   const hasActiveFilters = filters.status.length > 0 || filters.priority.length > 0 || filters.assignee !== '';
   const activeFilterCount = filters.status.length + filters.priority.length + (filters.assignee ? 1 : 0);
@@ -54,7 +56,7 @@ export function FilterBar({
           data-testid="filter-toggle"
         >
           <Filter className="w-4 h-4" />
-          <span>Filters</span>
+          <span>{t('filterBar.filters')}</span>
           {activeFilterCount > 0 && (
             <span className="px-1.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
               {activeFilterCount}
@@ -70,7 +72,7 @@ export function FilterBar({
             data-testid="clear-filters"
           >
             <XCircle className="w-4 h-4" />
-            <span>Clear all</span>
+            <span>{t('filterBar.clearAll')}</span>
           </button>
         )}
       </div>
@@ -80,7 +82,7 @@ export function FilterBar({
         <div className="px-4 pb-3 space-y-3">
           {/* Status filter */}
           <div>
-            <label className="block text-xs font-medium text-gray-500 uppercase mb-1.5">Status</label>
+            <label className="block text-xs font-medium text-gray-500 uppercase mb-1.5">{t('filterBar.status')}</label>
             <div className="flex flex-wrap gap-1.5">
               {STATUS_OPTIONS.map((option) => (
                 <button
@@ -93,7 +95,7 @@ export function FilterBar({
                   }`}
                   data-testid={`filter-status-${option.value}`}
                 >
-                  {option.label}
+                  {t(option.label)}
                 </button>
               ))}
             </div>
@@ -101,7 +103,7 @@ export function FilterBar({
 
           {/* Priority filter */}
           <div>
-            <label className="block text-xs font-medium text-gray-500 uppercase mb-1.5">Priority</label>
+            <label className="block text-xs font-medium text-gray-500 uppercase mb-1.5">{t('filterBar.priority')}</label>
             <div className="flex flex-wrap gap-1.5">
               {PRIORITY_OPTIONS.map((option) => (
                 <button
@@ -114,7 +116,7 @@ export function FilterBar({
                   }`}
                   data-testid={`filter-priority-${option.value}`}
                 >
-                  {option.label}
+                  {t(option.label)}
                 </button>
               ))}
             </div>
@@ -122,14 +124,14 @@ export function FilterBar({
 
           {/* Assignee filter */}
           <div>
-            <label className="block text-xs font-medium text-gray-500 uppercase mb-1.5">Assignee</label>
+            <label className="block text-xs font-medium text-gray-500 uppercase mb-1.5">{t('filterBar.assignee')}</label>
             <select
               value={filters.assignee}
               onChange={(e) => onFilterChange({ ...filters, assignee: e.target.value })}
               className="w-full max-w-xs px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white"
               data-testid="filter-assignee"
             >
-              <option value="">All assignees</option>
+              <option value="">{t('filterBar.allAssignees')}</option>
               {entities.map((entity) => (
                 <option key={entity.id} value={entity.id}>
                   {entity.name || entity.id}
@@ -150,11 +152,11 @@ export function FilterBar({
                 key={status}
                 className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full ${option?.color || 'bg-gray-100 text-gray-800'}`}
               >
-                {option?.label || status}
+                {option?.label ? t(option.label) : status}
                 <button
                   onClick={() => toggleStatus(status)}
                   className="hover:opacity-70"
-                  aria-label={`Remove ${option?.label || status} filter`}
+                  aria-label={`Remove ${option?.label ? t(option.label) : status} filter`}
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -168,11 +170,11 @@ export function FilterBar({
                 key={priority}
                 className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full ${option?.color || 'bg-gray-100 text-gray-800'}`}
               >
-                {option?.label || priority}
+                {t(option?.label || '') || priority}
                 <button
                   onClick={() => togglePriority(priority)}
                   className="hover:opacity-70"
-                  aria-label={`Remove ${option?.label || priority} filter`}
+                  aria-label={`Remove ${t(option?.label || '') || priority} filter`}
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -181,11 +183,11 @@ export function FilterBar({
           })}
           {filters.assignee && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-800">
-              Assignee: {entities.find(e => e.id === filters.assignee)?.name || filters.assignee}
+              {t('filterBar.assignee')}: {entities.find(e => e.id === filters.assignee)?.name || filters.assignee}
               <button
                 onClick={() => onFilterChange({ ...filters, assignee: '' })}
                 className="hover:opacity-70"
-                aria-label="Remove assignee filter"
+                aria-label={t('filterBar.removeAssigneeFilter')}
               >
                 <X className="w-3 h-3" />
               </button>

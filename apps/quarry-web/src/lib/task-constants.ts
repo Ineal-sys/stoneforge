@@ -78,48 +78,51 @@ export const EMPTY_FILTER: FilterConfig = {
   assignee: '',
 };
 
+// Labels are i18n keys — use t(key) at render time
 export const STATUS_OPTIONS = [
-  { value: 'open', label: 'Open', color: 'bg-green-100 text-green-800' },
-  { value: 'in_progress', label: 'In Progress', color: 'bg-blue-100 text-blue-800' },
-  { value: 'blocked', label: 'Blocked', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'review', label: 'Review', color: 'bg-purple-100 text-purple-800' },
-  { value: 'closed', label: 'Closed', color: 'bg-gray-100 text-gray-800' },
-  { value: 'deferred', label: 'Deferred', color: 'bg-purple-100 text-purple-800' },
-  { value: 'backlog', label: 'Backlog', color: 'bg-slate-100 text-slate-700' },
+  { value: 'open', label: 'tasks.status.open', color: 'bg-green-100 text-green-800' },
+  { value: 'in_progress', label: 'tasks.status.inProgress', color: 'bg-blue-100 text-blue-800' },
+  { value: 'blocked', label: 'tasks.status.blocked', color: 'bg-yellow-100 text-yellow-800' },
+  { value: 'review', label: 'tasks.status.review', color: 'bg-purple-100 text-purple-800' },
+  { value: 'closed', label: 'tasks.status.closed', color: 'bg-gray-100 text-gray-800' },
+  { value: 'deferred', label: 'tasks.status.deferred', color: 'bg-purple-100 text-purple-800' },
+  { value: 'backlog', label: 'tasks.status.backlog', color: 'bg-slate-100 text-slate-700' },
 ] as const;
 
+// Labels are i18n keys — use t(key) at render time
 export const PRIORITY_OPTIONS = [
-  { value: 1, label: 'Critical', color: 'bg-red-100 text-red-800' },
-  { value: 2, label: 'High', color: 'bg-orange-100 text-orange-800' },
-  { value: 3, label: 'Medium', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 4, label: 'Low', color: 'bg-green-100 text-green-800' },
-  { value: 5, label: 'Trivial', color: 'bg-gray-100 text-gray-800' },
+  { value: 1, label: 'tasks.priority.critical', color: 'bg-red-100 text-red-800' },
+  { value: 2, label: 'tasks.priority.high', color: 'bg-orange-100 text-orange-800' },
+  { value: 3, label: 'tasks.priority.medium', color: 'bg-yellow-100 text-yellow-800' },
+  { value: 4, label: 'tasks.priority.low', color: 'bg-green-100 text-green-800' },
+  { value: 5, label: 'tasks.priority.trivial', color: 'bg-gray-100 text-gray-800' },
 ] as const;
 
 export const SORT_OPTIONS: { value: SortField; label: string }[] = [
-  { value: 'priority', label: 'Priority' },
-  { value: 'created_at', label: 'Created' },
-  { value: 'updated_at', label: 'Updated' },
-  { value: 'deadline', label: 'Deadline' },
-  { value: 'title', label: 'Title' },
-  { value: 'complexity', label: 'Complexity' },
+  { value: 'priority', label: 'tasks.sortOptions.priority' },
+  { value: 'created_at', label: 'tasks.sortOptions.created' },
+  { value: 'updated_at', label: 'tasks.sortOptions.updated' },
+  { value: 'deadline', label: 'tasks.sortOptions.deadline' },
+  { value: 'title', label: 'tasks.sortOptions.title' },
+  { value: 'complexity', label: 'tasks.sortOptions.complexity' },
 ];
 
 export const GROUP_BY_OPTIONS: { value: GroupByField; label: string }[] = [
-  { value: 'none', label: 'None' },
-  { value: 'status', label: 'Status' },
-  { value: 'priority', label: 'Priority' },
-  { value: 'assignee', label: 'Assignee' },
-  { value: 'taskType', label: 'Type' },
-  { value: 'tags', label: 'Tags' },
+  { value: 'none', label: 'tasks.groupByOptions.none' },
+  { value: 'status', label: 'tasks.groupByOptions.status' },
+  { value: 'priority', label: 'tasks.groupByOptions.priority' },
+  { value: 'assignee', label: 'tasks.groupByOptions.assignee' },
+  { value: 'taskType', label: 'tasks.groupByOptions.type' },
+  { value: 'tags', label: 'tasks.groupByOptions.tags' },
 ];
 
+// Labels are i18n keys — use t(key) at render time
 export const PRIORITY_LABELS: Record<number, { label: string; color: string }> = {
-  1: { label: 'Critical', color: 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200' },
-  2: { label: 'High', color: 'bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200' },
-  3: { label: 'Medium', color: 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200' },
-  4: { label: 'Low', color: 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200' },
-  5: { label: 'Trivial', color: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200' },
+  1: { label: 'tasks.priority.critical', color: 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200' },
+  2: { label: 'tasks.priority.high', color: 'bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200' },
+  3: { label: 'tasks.priority.medium', color: 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200' },
+  4: { label: 'tasks.priority.low', color: 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200' },
+  5: { label: 'tasks.priority.trivial', color: 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200' },
 };
 
 export const STATUS_COLORS: Record<string, string> = {

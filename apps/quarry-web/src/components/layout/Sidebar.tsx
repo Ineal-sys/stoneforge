@@ -20,6 +20,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { Tooltip } from '@stoneforge/ui';
+import { useTranslation } from '@stoneforge/i18n';
 import { getCurrentBinding, useShortcutVersion } from '../../lib/keyboard';
 import { useCurrentUser } from '../../contexts';
 
@@ -60,52 +61,8 @@ interface NavSection {
   items: NavItem[];
 }
 
-const NAV_SECTIONS: NavSection[] = [
-  {
-    id: 'dashboard',
-    label: 'Dashboard',
-    icon: LayoutDashboard,
-    defaultExpanded: true,
-    items: [
-      { to: '/dashboard/overview', icon: LayoutDashboard, label: 'Overview', actionId: 'nav.dashboard', testId: 'nav-dashboard' },
-      { to: '/dashboard/timeline', icon: History, label: 'Timeline', actionId: 'nav.timeline', testId: 'nav-timeline', search: { page: 1, limit: 100, actor: undefined } },
-    ],
-  },
-  {
-    id: 'work',
-    label: 'Work',
-    defaultExpanded: true,
-    items: [
-      { to: '/tasks', icon: CheckSquare, label: 'Tasks', actionId: 'nav.tasks', testId: 'nav-tasks', search: { page: 1, limit: 25 } },
-      { to: '/plans', icon: ClipboardList, label: 'Plans', actionId: 'nav.plans', testId: 'nav-plans' },
-      { to: '/workflows', icon: Workflow, label: 'Workflows', actionId: 'nav.workflows', testId: 'nav-workflows' },
-      { to: '/dependencies', icon: Network, label: 'Dependencies', actionId: 'nav.dependencies', testId: 'nav-dependencies' },
-    ],
-  },
-  {
-    id: 'collaborate',
-    label: 'Collaborate',
-    defaultExpanded: true,
-    items: [
-      { to: '/inbox', icon: Inbox, label: 'Inbox', actionId: 'nav.inbox', testId: 'nav-inbox', search: { message: undefined }, badgeKey: 'inbox' },
-      { to: '/messages', icon: MessageSquare, label: 'Messages', actionId: 'nav.messages', testId: 'nav-messages', search: { channel: undefined, message: undefined } },
-      { to: '/documents', icon: FileText, label: 'Documents', actionId: 'nav.documents', testId: 'nav-documents', search: { selected: undefined, library: undefined } },
-    ],
-  },
-  {
-    id: 'organize',
-    label: 'Organize',
-    defaultExpanded: true,
-    items: [
-      { to: '/entities', icon: Users, label: 'Entities', actionId: 'nav.entities', testId: 'nav-entities', search: { selected: undefined, name: undefined, page: 1, limit: 25 } },
-      { to: '/teams', icon: UsersRound, label: 'Teams', actionId: 'nav.teams', testId: 'nav-teams', search: { selected: undefined, page: 1, limit: 25 } },
-    ],
-  },
-];
-
-const BOTTOM_NAV_ITEMS: NavItem[] = [
-  { to: '/settings', icon: Settings, label: 'Settings', testId: 'nav-settings' },
-];
+// NAV_SECTIONS and BOTTOM_NAV_ITEMS are defined inside the Sidebar component
+// so they can use the t() translation function.
 
 interface SidebarProps {
   collapsed?: boolean;
@@ -115,6 +72,55 @@ interface SidebarProps {
 }
 
 export function Sidebar({ collapsed = false, onToggle, isMobileDrawer = false }: SidebarProps) {
+  const { t } = useTranslation('quarry');
+
+  const NAV_SECTIONS: NavSection[] = [
+    {
+      id: 'dashboard',
+      label: t('sidebar.sections.dashboard'),
+      icon: LayoutDashboard,
+      defaultExpanded: true,
+      items: [
+        { to: '/dashboard/overview', icon: LayoutDashboard, label: t('sidebar.items.overview'), actionId: 'nav.dashboard', testId: 'nav-dashboard' },
+        { to: '/dashboard/timeline', icon: History, label: t('sidebar.items.timeline'), actionId: 'nav.timeline', testId: 'nav-timeline', search: { page: 1, limit: 100, actor: undefined } },
+      ],
+    },
+    {
+      id: 'work',
+      label: t('sidebar.sections.work'),
+      defaultExpanded: true,
+      items: [
+        { to: '/tasks', icon: CheckSquare, label: t('sidebar.items.tasks'), actionId: 'nav.tasks', testId: 'nav-tasks', search: { page: 1, limit: 25 } },
+        { to: '/plans', icon: ClipboardList, label: t('sidebar.items.plans'), actionId: 'nav.plans', testId: 'nav-plans' },
+        { to: '/workflows', icon: Workflow, label: t('sidebar.items.workflows'), actionId: 'nav.workflows', testId: 'nav-workflows' },
+        { to: '/dependencies', icon: Network, label: t('sidebar.items.dependencies'), actionId: 'nav.dependencies', testId: 'nav-dependencies' },
+      ],
+    },
+    {
+      id: 'collaborate',
+      label: t('sidebar.sections.collaborate'),
+      defaultExpanded: true,
+      items: [
+        { to: '/inbox', icon: Inbox, label: t('sidebar.items.inbox'), actionId: 'nav.inbox', testId: 'nav-inbox', search: { message: undefined }, badgeKey: 'inbox' },
+        { to: '/messages', icon: MessageSquare, label: t('sidebar.items.messages'), actionId: 'nav.messages', testId: 'nav-messages', search: { channel: undefined, message: undefined } },
+        { to: '/documents', icon: FileText, label: t('sidebar.items.documents'), actionId: 'nav.documents', testId: 'nav-documents', search: { selected: undefined, library: undefined } },
+      ],
+    },
+    {
+      id: 'organize',
+      label: t('sidebar.sections.organize'),
+      defaultExpanded: true,
+      items: [
+        { to: '/entities', icon: Users, label: t('sidebar.items.entities'), actionId: 'nav.entities', testId: 'nav-entities', search: { selected: undefined, name: undefined, page: 1, limit: 25 } },
+        { to: '/teams', icon: UsersRound, label: t('sidebar.items.teams'), actionId: 'nav.teams', testId: 'nav-teams', search: { selected: undefined, page: 1, limit: 25 } },
+      ],
+    },
+  ];
+
+  const BOTTOM_NAV_ITEMS: NavItem[] = [
+    { to: '/settings', icon: Settings, label: t('sidebar.items.settings'), testId: 'nav-settings' },
+  ];
+
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const { currentUser } = useCurrentUser();
@@ -286,14 +292,14 @@ export function Sidebar({ collapsed = false, onToggle, isMobileDrawer = false }:
           </div>
         )}
         {showCollapsedState && (
-          <img src="/logo.png" alt="Stoneforge" className="w-7 h-7 object-contain mx-auto" />
+          <img src="/logo.png" alt={t('app.name')} className="w-7 h-7 object-contain mx-auto" />
         )}
         {/* Collapse button in header - visible when expanded on desktop/tablet, hidden on mobile drawer */}
         {showExpandedState && !isMobileDrawer && (
           <button
             onClick={onToggle}
             className="p-1.5 rounded-md text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-sidebar-item-hover)] transition-colors duration-150"
-            aria-label="Collapse sidebar"
+            aria-label={t('sidebar.collapseSidebar')}
             aria-expanded="true"
             data-testid="sidebar-toggle"
           >
@@ -315,11 +321,11 @@ export function Sidebar({ collapsed = false, onToggle, isMobileDrawer = false }:
       {/* Expand button - visible when collapsed on desktop/tablet, hidden on mobile */}
       {showCollapsedState && !isMobileDrawer && (
         <div className="px-2 py-3 border-t border-[var(--color-sidebar-border)]">
-          <Tooltip content="Expand sidebar" shortcut="⌘B" side="right">
+          <Tooltip content={t('sidebar.expandSidebar')} shortcut="⌘B" side="right">
             <button
               onClick={onToggle}
               className="w-full flex items-center justify-center p-2 rounded-md text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-sidebar-item-hover)] transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-offset-1 focus:ring-offset-[var(--color-sidebar-bg)]"
-              aria-label="Expand sidebar"
+              aria-label={t('sidebar.expandSidebar')}
               aria-expanded="false"
               data-testid="sidebar-expand-button"
             >
@@ -333,7 +339,7 @@ export function Sidebar({ collapsed = false, onToggle, isMobileDrawer = false }:
       {showExpandedState && !isMobileDrawer && (
         <div className="px-4 py-2 text-[10px] text-[var(--color-text-muted)] border-t border-[var(--color-sidebar-border)]">
           <kbd className="px-1.5 py-0.5 rounded bg-[var(--color-surface-hover)] text-[var(--color-text-tertiary)] font-mono">⌘K</kbd>
-          {' '}for commands
+          {' '}{t('app.tagline')}
         </div>
       )}
     </aside>

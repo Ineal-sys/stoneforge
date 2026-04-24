@@ -12,6 +12,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ArrowUp, ArrowDown, ArrowUpDown, ChevronDown, ChevronRight } from 'lucide-react';
 import type { SortField, SortDirection } from '../../lib/task-constants';
 import { SORT_OPTIONS } from '../../lib/task-constants';
+import { useTranslation } from '@stoneforge/i18n';
 
 interface SortByDropdownProps {
   sortField: SortField;
@@ -30,6 +31,7 @@ export function SortByDropdown({
   onSortDirectionChange,
   onSecondarySortChange,
 }: SortByDropdownProps) {
+  const { t } = useTranslation('quarry');
   const [isOpen, setIsOpen] = useState(false);
   const [showSecondary, setShowSecondary] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -60,9 +62,9 @@ export function SortByDropdown({
         data-testid="sort-by-dropdown"
       >
         <ArrowUpDown className="w-4 h-4" />
-        <span>Sort: {selectedOption.label}</span>
+        <span>{t('sortBy.label', { label: t(selectedOption.label) })}</span>
         {secondaryOption && (
-          <span className="text-gray-400">+ {secondaryOption.label}</span>
+          <span className="text-gray-400">{t('sortBy.secondary', { label: t(secondaryOption.label) })}</span>
         )}
         <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
@@ -74,8 +76,8 @@ export function SortByDropdown({
           sortDirection === 'asc' ? 'text-blue-600' : ''
         }`}
         data-testid="sort-direction-toggle"
-        aria-label={sortDirection === 'asc' ? 'Sort ascending' : 'Sort descending'}
-        title={sortDirection === 'asc' ? 'Sort ascending' : 'Sort descending'}
+        aria-label={sortDirection === 'asc' ? t('sortBy.ascending') : t('sortBy.descending')}
+        title={sortDirection === 'asc' ? t('sortBy.ascending') : t('sortBy.descending')}
       >
         {sortDirection === 'asc' ? (
           <ArrowUp className="w-4 h-4" />
@@ -90,7 +92,7 @@ export function SortByDropdown({
           className="absolute z-20 mt-1 top-full left-0 bg-white border border-gray-200 rounded-md shadow-lg py-1 min-w-48"
           data-testid="sort-by-options"
         >
-          <div className="px-3 py-1.5 text-xs font-medium text-gray-500 uppercase">Primary Sort</div>
+          <div className="px-3 py-1.5 text-xs font-medium text-gray-500 uppercase">{t('sortBy.primarySort')}</div>
           {SORT_OPTIONS.map((option) => (
             <button
               key={option.value}
@@ -119,7 +121,7 @@ export function SortByDropdown({
               className="w-full text-left px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 flex items-center justify-between"
               data-testid="sort-secondary-button"
             >
-              <span>Secondary sort...</span>
+              <span>{t('sortBy.secondaryButton')}</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -137,10 +139,10 @@ export function SortByDropdown({
             className="w-full text-left px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-50 flex items-center gap-1"
           >
             <ChevronRight className="w-4 h-4 rotate-180" />
-            <span>Back</span>
+            <span>{t('sortBy.back')}</span>
           </button>
           <div className="border-t border-gray-100 my-1" />
-          <div className="px-3 py-1.5 text-xs font-medium text-gray-500 uppercase">Secondary Sort</div>
+          <div className="px-3 py-1.5 text-xs font-medium text-gray-500 uppercase">{t('sortBy.secondarySort')}</div>
           <button
             onClick={() => {
               onSecondarySortChange(null);
@@ -152,7 +154,7 @@ export function SortByDropdown({
             }`}
             data-testid="sort-secondary-option-none"
           >
-            <span>None</span>
+            <span>{t('sortBy.none')}</span>
             {secondarySort === null && (
               <span className="text-blue-600">✓</span>
             )}

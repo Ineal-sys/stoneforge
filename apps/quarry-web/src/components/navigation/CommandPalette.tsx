@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Command } from 'cmdk';
 import { useNavigate } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from '@stoneforge/i18n';
 import { useIsMobile } from '../../hooks';
 import {
   LayoutDashboard,
@@ -93,6 +94,7 @@ interface CommandItem {
 }
 
 export function CommandPalette() {
+  const { t } = useTranslation('quarry');
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<'commands' | 'messages'>('commands');
   const [searchQuery, setSearchQuery] = useState(''); // For message search
@@ -141,125 +143,125 @@ export function CommandPalette() {
     // Dashboard section
     {
       id: 'nav-dashboard',
-      label: 'Go to Dashboard',
+      label: t('commandPalette.goDashboard'),
       icon: LayoutDashboard,
       action: () => navigate({ to: '/dashboard' }),
       shortcut: 'G H',
-      group: 'Dashboard',
+      group: t('commandPalette.dashboard'),
       keywords: ['overview', 'home'],
     },
     {
       id: 'nav-timeline',
-      label: 'Go to Timeline',
+      label: t('commandPalette.goTimeline'),
       icon: History,
       action: () => navigate({ to: '/dashboard/timeline', search: { page: 1, limit: 100, actor: undefined, startTime: undefined, endTime: undefined } }),
       shortcut: 'G L',
-      group: 'Dashboard',
+      group: t('commandPalette.dashboard'),
       keywords: ['events', 'history', 'activity'],
     },
     // Work section
     {
       id: 'nav-tasks',
-      label: 'Go to Tasks',
+      label: t('commandPalette.goTasks'),
       icon: CheckSquare,
       action: () => navigate({ to: '/tasks', search: { page: 1, limit: 25 } }),
       shortcut: 'G T',
-      group: 'Work',
+      group: t('commandPalette.work'),
       keywords: ['todo', 'items', 'list'],
     },
     {
       id: 'nav-plans',
-      label: 'Go to Plans',
+      label: t('commandPalette.goPlans'),
       icon: Folder,
       action: () => navigate({ to: '/plans' }),
       shortcut: 'G P',
-      group: 'Work',
+      group: t('commandPalette.work'),
       keywords: ['epic', 'project', 'collection'],
     },
     {
       id: 'nav-workflows',
-      label: 'Go to Workflows',
+      label: t('commandPalette.goWorkflows'),
       icon: Workflow,
       action: () => navigate({ to: '/workflows' }),
       shortcut: 'G W',
-      group: 'Work',
+      group: t('commandPalette.work'),
       keywords: ['automation', 'create', 'playbook'],
     },
     {
       id: 'nav-dependencies',
-      label: 'Go to Dependencies',
+      label: t('commandPalette.goDependencies'),
       icon: Network,
       action: () => navigate({ to: '/dependencies' }),
       shortcut: 'G G',
-      group: 'Work',
+      group: t('commandPalette.work'),
       keywords: ['graph', 'blocks', 'relationships'],
     },
     // Collaborate section
     {
       id: 'nav-inbox',
-      label: 'Go to Inbox',
+      label: t('commandPalette.goInbox'),
       icon: Inbox,
       action: () => navigate({ to: '/inbox', search: { message: undefined } }),
       shortcut: 'G I',
-      group: 'Collaborate',
+      group: t('commandPalette.collaborate'),
       keywords: ['notifications', 'unread', 'mentions', 'direct messages'],
     },
     {
       id: 'nav-messages',
-      label: 'Go to Messages',
+      label: t('commandPalette.goMessages'),
       icon: MessageSquare,
       action: () => navigate({ to: '/messages', search: { channel: undefined, message: undefined } }),
       shortcut: 'G M',
-      group: 'Collaborate',
+      group: t('commandPalette.collaborate'),
       keywords: ['chat', 'channels', 'communication'],
     },
     {
       id: 'search-messages',
-      label: 'Search Messages',
+      label: t('commandPalette.searchMessages'),
       icon: Search,
       action: () => {
         setMode('messages');
         setSearchQuery('');
         setTimeout(() => inputRef.current?.focus(), 0);
       },
-      group: 'Collaborate',
+      group: t('commandPalette.collaborate'),
       keywords: ['find', 'message', 'content', 'search'],
     },
     {
       id: 'nav-documents',
-      label: 'Go to Documents',
+      label: t('commandPalette.goDocuments'),
       icon: FileText,
       action: () => navigate({ to: '/documents', search: { selected: undefined, library: undefined } }),
       shortcut: 'G D',
-      group: 'Collaborate',
+      group: t('commandPalette.collaborate'),
       keywords: ['files', 'notes', 'library'],
     },
     // Organize section
     {
       id: 'nav-entities',
-      label: 'Go to Entities',
+      label: t('commandPalette.goEntities'),
       icon: Users,
       action: () => navigate({ to: '/entities', search: { selected: undefined, name: undefined, page: 1, limit: 25 } }),
       shortcut: 'G E',
-      group: 'Organize',
+      group: t('commandPalette.organize'),
       keywords: ['people', 'agents', 'humans'],
     },
     {
       id: 'nav-teams',
-      label: 'Go to Teams',
+      label: t('commandPalette.goTeams'),
       icon: UsersRound,
       action: () => navigate({ to: '/teams', search: { selected: undefined, page: 1, limit: 25 } }),
       shortcut: 'G R',
-      group: 'Organize',
+      group: t('commandPalette.organize'),
       keywords: ['groups', 'members'],
     },
     // Settings
     {
       id: 'nav-settings',
-      label: 'Go to Settings',
+      label: t('commandPalette.goSettings'),
       icon: Settings,
       action: () => navigate({ to: '/settings' }),
-      group: 'Settings',
+      group: t('commandPalette.settings'),
       keywords: ['preferences', 'config'],
     },
   ];
@@ -273,7 +275,13 @@ export function CommandPalette() {
     return acc;
   }, {} as Record<string, CommandItem[]>);
 
-  const groupOrder = ['Dashboard', 'Work', 'Collaborate', 'Organize', 'Settings'];
+  const groupOrder = [
+    t('commandPalette.dashboard'),
+    t('commandPalette.work'),
+    t('commandPalette.collaborate'),
+    t('commandPalette.organize'),
+    t('commandPalette.settings'),
+  ];
 
   // Handle keyboard shortcut to open command palette
   useEffect(() => {
@@ -332,7 +340,7 @@ export function CommandPalette() {
         data-testid="command-palette"
         role="dialog"
         aria-modal="true"
-        aria-label="Command palette"
+        aria-label={t('commandPalette.commandPalette')}
       >
         {mode === 'messages' ? (
           // TB103: Mobile Message Search Mode
@@ -343,7 +351,7 @@ export function CommandPalette() {
                 onClick={() => setMode('commands')}
                 className="p-2 -ml-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors touch-target"
                 data-testid="message-search-back"
-                aria-label="Back to commands"
+                aria-label={t('commandPalette.backToCommands')}
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -355,7 +363,7 @@ export function CommandPalette() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search messages..."
+                placeholder={t('commandPalette.searchMessages')}
                 className="flex-1 py-2 text-base bg-transparent outline-none placeholder:text-[var(--color-text-muted)] text-[var(--color-text)]"
                 data-testid="command-palette-message-search-input"
                 autoFocus
@@ -372,7 +380,7 @@ export function CommandPalette() {
               <button
                 onClick={() => setOpen(false)}
                 className="p-2 -mr-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors touch-target"
-                aria-label="Close"
+                aria-label={t('commandPalette.close')}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -383,19 +391,19 @@ export function CommandPalette() {
               {isSearchingMessages ? (
                 <div className="flex items-center justify-center py-10">
                   <Loader2 className="w-6 h-6 animate-spin text-[var(--color-text-muted)]" />
-                  <span className="ml-2 text-[var(--color-text-muted)]">Searching...</span>
+                  <span className="ml-2 text-[var(--color-text-muted)]">{t('commandPalette.searching')}</span>
                 </div>
               ) : !searchQuery.trim() ? (
                 <div className="py-10 text-center">
                   <MessageSquare className="w-8 h-8 mx-auto mb-2 text-[var(--color-text-tertiary)]" />
-                  <div className="text-[var(--color-text-tertiary)] text-sm">Type to search messages</div>
-                  <div className="text-[var(--color-text-muted)] text-xs mt-1">Search across all channels</div>
+                  <div className="text-[var(--color-text-tertiary)] text-sm">{t('commandPalette.typeToSearch')}</div>
+                  <div className="text-[var(--color-text-muted)] text-xs mt-1">{t('commandPalette.searchAcrossChannels')}</div>
                 </div>
               ) : messageResults.length === 0 ? (
                 <div className="py-10 text-center">
                   <Search className="w-8 h-8 mx-auto mb-2 text-[var(--color-text-tertiary)]" />
-                  <div className="text-[var(--color-text-tertiary)] text-sm">No messages found</div>
-                  <div className="text-[var(--color-text-muted)] text-xs mt-1">Try a different search term</div>
+                  <div className="text-[var(--color-text-tertiary)] text-sm">{t('commandPalette.noMessagesFound')}</div>
+                  <div className="text-[var(--color-text-muted)] text-xs mt-1">{t('commandPalette.tryDifferent')}</div>
                 </div>
               ) : (
                 <div className="space-y-1">
@@ -442,7 +450,7 @@ export function CommandPalette() {
                 onClick={() => setOpen(false)}
                 className="p-2 -ml-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors touch-target"
                 data-testid="command-palette-close-mobile"
-                aria-label="Close"
+                aria-label={t('commandPalette.close')}
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -452,7 +460,7 @@ export function CommandPalette() {
               <Command.Input
                 value={commandSearch}
                 onValueChange={setCommandSearch}
-                placeholder="Search commands..."
+                placeholder={t('commandPalette.searchCommands')}
                 className="flex-1 py-2 text-base bg-transparent outline-none placeholder:text-[var(--color-text-muted)] text-[var(--color-text)]"
                 data-testid="command-palette-input"
                 autoFocus
@@ -462,8 +470,8 @@ export function CommandPalette() {
             {/* Command List */}
             <Command.List className="flex-1 overflow-y-auto p-2" data-testid="command-palette-list-mobile">
                 <Command.Empty className="py-10 text-center">
-                  <div className="text-[var(--color-text-tertiary)] text-sm">No results found.</div>
-                  <div className="text-[var(--color-text-muted)] text-xs mt-1">Try a different search term</div>
+                  <div className="text-[var(--color-text-tertiary)] text-sm">{t('commandPalette.noResults')}</div>
+                  <div className="text-[var(--color-text-muted)] text-xs mt-1">{t('commandPalette.tryDifferent')}</div>
                 </Command.Empty>
 
                 {groupOrder.map((group) => {
@@ -506,7 +514,7 @@ export function CommandPalette() {
 
   // Desktop/Tablet: Centered modal command palette
   return (
-    <div className="fixed inset-0 z-50" data-testid="command-palette" role="dialog" aria-modal="true" aria-label="Command palette">
+    <div className="fixed inset-0 z-50" data-testid="command-palette" role="dialog" aria-modal="true" aria-label={t('commandPalette.commandPalette')}>
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-[var(--color-bg-overlay)] backdrop-blur-sm"
@@ -540,7 +548,7 @@ export function CommandPalette() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search all messages..."
+                placeholder={t('commandPalette.searchAllMessages')}
                 className="w-full py-1 text-lg bg-transparent outline-none placeholder:text-[var(--color-text-muted)] text-[var(--color-text)]"
                 data-testid="command-palette-message-search-input"
                 autoFocus
@@ -564,19 +572,19 @@ export function CommandPalette() {
               {isSearchingMessages ? (
                 <div className="flex items-center justify-center py-10">
                   <Loader2 className="w-6 h-6 animate-spin text-[var(--color-text-muted)]" />
-                  <span className="ml-2 text-[var(--color-text-muted)]">Searching...</span>
+                  <span className="ml-2 text-[var(--color-text-muted)]">{t('commandPalette.searching')}</span>
                 </div>
               ) : !searchQuery.trim() ? (
                 <div className="py-10 text-center">
                   <MessageSquare className="w-8 h-8 mx-auto mb-2 text-[var(--color-text-tertiary)]" />
-                  <div className="text-[var(--color-text-tertiary)] text-sm">Type to search messages</div>
-                  <div className="text-[var(--color-text-muted)] text-xs mt-1">Search across all channels</div>
+                  <div className="text-[var(--color-text-tertiary)] text-sm">{t('commandPalette.typeToSearch')}</div>
+                  <div className="text-[var(--color-text-muted)] text-xs mt-1">{t('commandPalette.searchAcrossChannels')}</div>
                 </div>
               ) : messageResults.length === 0 ? (
                 <div className="py-10 text-center">
                   <Search className="w-8 h-8 mx-auto mb-2 text-[var(--color-text-tertiary)]" />
-                  <div className="text-[var(--color-text-tertiary)] text-sm">No messages found</div>
-                  <div className="text-[var(--color-text-muted)] text-xs mt-1">Try a different search term</div>
+                  <div className="text-[var(--color-text-tertiary)] text-sm">{t('commandPalette.noMessagesFound')}</div>
+                  <div className="text-[var(--color-text-muted)] text-xs mt-1">{t('commandPalette.tryDifferent')}</div>
                 </div>
               ) : (
                 <div className="space-y-1">
@@ -611,10 +619,10 @@ export function CommandPalette() {
             <div className="px-4 py-2 border-t border-[var(--color-border)] text-xs text-[var(--color-text-muted)]">
               <span className="flex items-center gap-1">
                 <kbd className="px-1.5 py-0.5 bg-[var(--color-surface-hover)] rounded text-[10px] font-mono">↵</kbd>
-                to select
+                {t('commandPalette.toSelect')}
                 <span className="mx-2">·</span>
                 <kbd className="px-1.5 py-0.5 bg-[var(--color-surface-hover)] rounded text-[10px] font-mono">esc</kbd>
-                to go back
+                {t('commandPalette.toGoBack')}
               </span>
             </div>
           </div>
@@ -635,7 +643,7 @@ export function CommandPalette() {
                 <Search className="w-5 h-5" />
               </div>
               <Command.Input
-                placeholder="Search commands..."
+                placeholder={t('commandPalette.searchCommands')}
                 className="w-full py-1 text-lg bg-transparent outline-none placeholder:text-[var(--color-text-muted)] text-[var(--color-text)]"
                 data-testid="command-palette-input"
                 autoFocus
@@ -647,8 +655,8 @@ export function CommandPalette() {
 
             <Command.List className="max-h-[400px] overflow-y-auto p-2">
               <Command.Empty className="py-10 text-center">
-                <div className="text-[var(--color-text-tertiary)] text-sm">No results found.</div>
-                <div className="text-[var(--color-text-muted)] text-xs mt-1">Try a different search term</div>
+                <div className="text-[var(--color-text-tertiary)] text-sm">{t('commandPalette.noResults')}</div>
+                <div className="text-[var(--color-text-muted)] text-xs mt-1">{t('commandPalette.tryDifferent')}</div>
               </Command.Empty>
 
               {groupOrder.map((group) => {
@@ -701,16 +709,16 @@ export function CommandPalette() {
                 <span className="flex items-center gap-1">
                   <kbd className="px-1 py-0.5 bg-[var(--color-surface-hover)] rounded text-[10px] font-mono">↑</kbd>
                   <kbd className="px-1 py-0.5 bg-[var(--color-surface-hover)] rounded text-[10px] font-mono">↓</kbd>
-                  to navigate
+                  {t('commandPalette.toNavigate')}
                 </span>
                 <span className="flex items-center gap-1">
                   <kbd className="px-1.5 py-0.5 bg-[var(--color-surface-hover)] rounded text-[10px] font-mono">↵</kbd>
-                  to select
+                  {t('commandPalette.toSelect')}
                 </span>
               </div>
               <span className="flex items-center gap-1">
                 <kbd className="px-1.5 py-0.5 bg-[var(--color-surface-hover)] rounded text-[10px] font-mono">⌘K</kbd>
-                to toggle
+                {t('commandPalette.toToggle')}
               </span>
             </div>
           </Command>

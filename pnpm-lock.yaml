@@ -94,6 +94,9 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.2.8
         version: 1.2.8(@types/react-dom@19.2.3)(@types/react@19.2.9)(react-dom@19.2.4)(react@19.2.4)
+      '@stoneforge/i18n':
+        specifier: workspace:^
+        version: link:../../packages/i18n
       '@stoneforge/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -6062,7 +6065,7 @@ packages:
       '@vitest/spy': 4.0.18
       estree-walker: 3.0.3
       magic-string: 0.30.21
-      vite: 6.4.1(@types/node@20.19.30)
+      vite: 6.4.1(tsx@4.21.0)
     dev: true
 
   /@vitest/pretty-format@4.0.18:

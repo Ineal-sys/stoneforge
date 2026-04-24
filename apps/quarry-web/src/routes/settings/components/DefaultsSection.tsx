@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { List, LayoutGrid, Home, GitBranch, Clock, ArrowUp, Calendar, FileText } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { DefaultsSettings } from '../types';
 import { DEFAULT_SETTINGS } from '../constants';
 import { getStoredDefaults, setStoredDefaults } from '../utils';
@@ -14,6 +15,7 @@ interface DefaultsSectionProps {
 }
 
 export function DefaultsSection({ isMobile: _isMobile }: DefaultsSectionProps) {
+  const { t } = useTranslation('quarry');
   const [defaults, setDefaults] = useState<DefaultsSettings>(DEFAULT_SETTINGS);
 
   // Load settings on mount
@@ -29,22 +31,22 @@ export function DefaultsSection({ isMobile: _isMobile }: DefaultsSectionProps) {
 
   return (
     <div data-testid="settings-defaults-section">
-      <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Default Views</h3>
+      <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{t('defaultsSection.title')}</h3>
       <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4 sm:mb-6">
-        Set default view preferences that will be applied when you first load pages.
+        {t('defaultsSection.description')}
       </p>
 
       {/* Tasks Default View */}
       <div className="mb-6 sm:mb-8">
-        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">Tasks View</h4>
+        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">{t('defaultsSection.tasksView')}</h4>
         <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mb-2 sm:mb-3">
-          Choose the default view when opening the Tasks page.
+          {t('defaultsSection.tasksViewDescription')}
         </p>
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
           <OptionCard
             value="list"
-            label="List View"
-            description="Traditional list layout with sorting"
+            label={t('defaultsSection.listView')}
+            description={t('defaultsSection.listViewDescription')}
             icon={List}
             isSelected={defaults.tasksView === 'list'}
             onSelect={() => updateSetting('tasksView', 'list')}
@@ -52,8 +54,8 @@ export function DefaultsSection({ isMobile: _isMobile }: DefaultsSectionProps) {
           />
           <OptionCard
             value="kanban"
-            label="Kanban View"
-            description="Drag-and-drop board by status"
+            label={t('defaultsSection.kanbanView')}
+            description={t('defaultsSection.kanbanViewDescription')}
             icon={LayoutGrid}
             isSelected={defaults.tasksView === 'kanban'}
             onSelect={() => updateSetting('tasksView', 'kanban')}
@@ -64,15 +66,15 @@ export function DefaultsSection({ isMobile: _isMobile }: DefaultsSectionProps) {
 
       {/* Dashboard Default Lens */}
       <div className="mb-6 sm:mb-8">
-        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">Dashboard Lens</h4>
+        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">{t('defaultsSection.dashboardLens')}</h4>
         <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mb-2 sm:mb-3">
-          Choose the default dashboard view when navigating to the Dashboard.
+          {t('defaultsSection.dashboardLensDescription')}
         </p>
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
           <OptionCard
             value="overview"
-            label="Overview"
-            description="Key metrics and quick actions"
+            label={t('defaultsSection.overview')}
+            description={t('defaultsSection.overviewDescription')}
             icon={Home}
             isSelected={defaults.dashboardLens === 'overview'}
             onSelect={() => updateSetting('dashboardLens', 'overview')}
@@ -80,8 +82,8 @@ export function DefaultsSection({ isMobile: _isMobile }: DefaultsSectionProps) {
           />
           <OptionCard
             value="dependencies"
-            label="Dependencies"
-            description="Visual dependency graph"
+            label={t('defaultsSection.dependencies')}
+            description={t('defaultsSection.dependenciesDescription')}
             icon={GitBranch}
             isSelected={defaults.dashboardLens === 'dependencies'}
             onSelect={() => updateSetting('dashboardLens', 'dependencies')}
@@ -89,8 +91,8 @@ export function DefaultsSection({ isMobile: _isMobile }: DefaultsSectionProps) {
           />
           <OptionCard
             value="timeline"
-            label="Timeline"
-            description="Chronological event feed"
+            label={t('defaultsSection.timeline')}
+            description={t('defaultsSection.timelineDescription')}
             icon={Clock}
             isSelected={defaults.dashboardLens === 'timeline'}
             onSelect={() => updateSetting('dashboardLens', 'timeline')}
@@ -101,15 +103,15 @@ export function DefaultsSection({ isMobile: _isMobile }: DefaultsSectionProps) {
 
       {/* Default Sort Order */}
       <div className="mb-6 sm:mb-8">
-        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">Default Sort Order</h4>
+        <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-3">{t('defaultsSection.defaultSort')}</h4>
         <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mb-2 sm:mb-3">
-          Choose how lists are sorted by default across the application.
+          {t('defaultsSection.defaultSortDescription')}
         </p>
         <div className="grid grid-cols-2 gap-2 sm:gap-3">
           <OptionCard
             value="updated_at"
-            label="Last Updated"
-            description="Most recently modified first"
+            label={t('defaultsSection.lastUpdated')}
+            description={t('defaultsSection.lastUpdatedDescription')}
             icon={Clock}
             isSelected={defaults.sortOrder === 'updated_at'}
             onSelect={() => updateSetting('sortOrder', 'updated_at')}
@@ -117,8 +119,8 @@ export function DefaultsSection({ isMobile: _isMobile }: DefaultsSectionProps) {
           />
           <OptionCard
             value="created_at"
-            label="Date Created"
-            description="Newest items first"
+            label={t('defaultsSection.dateCreated')}
+            description={t('defaultsSection.dateCreatedDescription')}
             icon={Calendar}
             isSelected={defaults.sortOrder === 'created_at'}
             onSelect={() => updateSetting('sortOrder', 'created_at')}
@@ -126,8 +128,8 @@ export function DefaultsSection({ isMobile: _isMobile }: DefaultsSectionProps) {
           />
           <OptionCard
             value="priority"
-            label="Priority"
-            description="Highest priority first"
+            label={t('defaultsSection.priority')}
+            description={t('defaultsSection.priorityDescription')}
             icon={ArrowUp}
             isSelected={defaults.sortOrder === 'priority'}
             onSelect={() => updateSetting('sortOrder', 'priority')}
@@ -135,8 +137,8 @@ export function DefaultsSection({ isMobile: _isMobile }: DefaultsSectionProps) {
           />
           <OptionCard
             value="title"
-            label="Title"
-            description="Alphabetical order"
+            label={t('defaultsSection.title')}
+            description={t('defaultsSection.titleDescription')}
             icon={FileText}
             isSelected={defaults.sortOrder === 'title'}
             onSelect={() => updateSetting('sortOrder', 'title')}
@@ -147,7 +149,7 @@ export function DefaultsSection({ isMobile: _isMobile }: DefaultsSectionProps) {
 
       {/* Note */}
       <p className="text-xs text-gray-400 dark:text-gray-500 mt-6 text-center">
-        These defaults apply when you first load a page. You can still change views temporarily at any time.
+        {t('defaultsSection.footer')}
       </p>
     </div>
   );

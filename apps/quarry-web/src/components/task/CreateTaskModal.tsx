@@ -3,6 +3,7 @@ import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { X, Loader2, Plus, ChevronLeft } from 'lucide-react';
 import { TagInput } from '@stoneforge/ui';
 import { useIsMobile } from '../../hooks';
+import { useTranslation } from '@stoneforge/i18n';
 import { useCurrentUser } from '../../contexts';
 
 interface Entity {
@@ -74,32 +75,36 @@ function useCreateTask() {
   });
 }
 
+// Labels are i18n keys — use t(key) at render time
 const PRIORITY_OPTIONS = [
-  { value: 1, label: 'Critical' },
-  { value: 2, label: 'High' },
-  { value: 3, label: 'Medium' },
-  { value: 4, label: 'Low' },
-  { value: 5, label: 'Trivial' },
+  { value: 1, label: 'tasks.priority.critical' },
+  { value: 2, label: 'tasks.priority.high' },
+  { value: 3, label: 'tasks.priority.medium' },
+  { value: 4, label: 'tasks.priority.low' },
+  { value: 5, label: 'tasks.priority.trivial' },
 ];
 
+// Labels are i18n keys — use t(key) at render time
 const COMPLEXITY_OPTIONS = [
-  { value: 1, label: 'Trivial' },
-  { value: 2, label: 'Simple' },
-  { value: 3, label: 'Moderate' },
-  { value: 4, label: 'Complex' },
-  { value: 5, label: 'Very Complex' },
+  { value: 1, label: 'createTask.complexityLevels.trivial' },
+  { value: 2, label: 'createTask.complexityLevels.simple' },
+  { value: 3, label: 'createTask.complexityLevels.moderate' },
+  { value: 4, label: 'createTask.complexityLevels.complex' },
+  { value: 5, label: 'createTask.complexityLevels.veryComplex' },
 ];
 
+// Labels are i18n keys — use t(key) at render time
 const TASK_TYPE_OPTIONS = [
-  { value: 'task', label: 'Task' },
-  { value: 'bug', label: 'Bug' },
-  { value: 'feature', label: 'Feature' },
-  { value: 'chore', label: 'Chore' },
-  { value: 'research', label: 'Research' },
-  { value: 'documentation', label: 'Documentation' },
+  { value: 'task', label: 'createTask.taskTypes.task' },
+  { value: 'bug', label: 'createTask.taskTypes.bug' },
+  { value: 'feature', label: 'createTask.taskTypes.feature' },
+  { value: 'chore', label: 'createTask.taskTypes.chore' },
+  { value: 'research', label: 'createTask.taskTypes.research' },
+  { value: 'documentation', label: 'createTask.taskTypes.documentation' },
 ];
 
 export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog = false }: CreateTaskModalProps) {
+  const { t } = useTranslation('quarry');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState(3);
@@ -192,19 +197,19 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
           <button
             onClick={onClose}
             className="p-2 -ml-2 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors duration-150 touch-target"
-            aria-label="Cancel"
+            aria-label={t('createTask.cancel')}
             data-testid="create-task-modal-close"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <h2 className="flex-1 text-lg font-semibold text-[var(--color-text)]">Create Task</h2>
+          <h2 className="flex-1 text-lg font-semibold text-[var(--color-text)]">{t('createTask.title')}</h2>
           <button
             onClick={handleSubmit as unknown as () => void}
             disabled={createTask.isPending || !title.trim() || !currentUser}
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors touch-target"
             data-testid="create-task-submit-mobile"
           >
-            {createTask.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create'}
+            {createTask.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t('createTask.create')}
           </button>
         </div>
 
@@ -213,14 +218,14 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
           {/* Error display */}
           {createTask.isError && (
             <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-600 dark:text-red-400">
-              {createTask.error?.message || 'Failed to create task'}
+              {createTask.error?.message || t('createTask.failedToCreate')}
             </div>
           )}
 
           {/* Title */}
           <div className="mb-4">
             <label htmlFor="task-title" className="block text-sm font-medium text-[var(--color-text)] mb-1">
-              Title <span className="text-red-500">*</span>
+              {t('createTask.titleLabel')} <span className="text-red-500">*</span>
             </label>
             <input
               ref={titleInputRef}
@@ -228,7 +233,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter task title..."
+              placeholder={t('createTask.titlePlaceholder')}
               className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               data-testid="create-task-title-input"
               required
@@ -238,13 +243,13 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
           {/* Description */}
           <div className="mb-4">
             <label htmlFor="task-description" className="block text-sm font-medium text-[var(--color-text)] mb-1">
-              Description <span className="text-[var(--color-text-muted)] text-xs font-normal">(optional)</span>
+              {t('createTask.description')} <span className="text-[var(--color-text-muted)] text-xs font-normal">{t('createTask.optional')}</span>
             </label>
             <textarea
               id="task-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Add a description..."
+              placeholder={t('createTask.descriptionPlaceholder')}
               rows={4}
               className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
               data-testid="create-task-description-input"
@@ -254,7 +259,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
           {/* Priority */}
           <div className="mb-4">
             <label htmlFor="task-priority" className="block text-sm font-medium text-[var(--color-text)] mb-1">
-              Priority
+              {t('createTask.priority')}
             </label>
             <select
               id="task-priority"
@@ -274,7 +279,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
           {/* Complexity */}
           <div className="mb-4">
             <label htmlFor="task-complexity" className="block text-sm font-medium text-[var(--color-text)] mb-1">
-              Complexity
+              {t('createTask.complexity')}
             </label>
             <select
               id="task-complexity"
@@ -294,7 +299,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
           {/* Task Type */}
           <div className="mb-4">
             <label htmlFor="task-type" className="block text-sm font-medium text-[var(--color-text)] mb-1">
-              Type
+              {t('createTask.taskType')}
             </label>
             <select
               id="task-type"
@@ -314,7 +319,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
           {/* Assignee */}
           <div className="mb-4">
             <label htmlFor="task-assignee" className="block text-sm font-medium text-[var(--color-text)] mb-1">
-              Assignee <span className="text-[var(--color-text-muted)] text-xs font-normal">(optional)</span>
+              {t('createTask.assignee')} <span className="text-[var(--color-text-muted)] text-xs font-normal">{t('createTask.optional')}</span>
             </label>
             <select
               id="task-assignee"
@@ -323,10 +328,10 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
               className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent touch-target"
               data-testid="create-task-assignee-select"
             >
-              <option value="">Unassigned</option>
+              <option value="">{t('createTask.unassigned')}</option>
               {entities?.map((entity) => (
                 <option key={entity.id} value={entity.id}>
-                  {entity.name} ({entity.entityType})
+                  {t('createTask.nameWithType', { name: entity.name, type: entity.entityType })}
                 </option>
               ))}
             </select>
@@ -335,12 +340,12 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
           {/* Tags */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-[var(--color-text)] mb-1">
-              Tags <span className="text-[var(--color-text-muted)] text-xs font-normal">(optional)</span>
+              {t('createTask.tags')} <span className="text-[var(--color-text-muted)] text-xs font-normal">{t('createTask.optional')}</span>
             </label>
             <TagInput
               tags={tags}
               onChange={setTags}
-              placeholder="Add tags..."
+              placeholder={t('createTask.tagsPlaceholder')}
             />
           </div>
 
@@ -378,11 +383,11 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
         <div className="bg-white dark:bg-[var(--color-surface)] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Create Task</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('createTask.title')}</h2>
             <button
               onClick={onClose}
               className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-              aria-label="Close"
+              aria-label={t('createTask.cancel')}
               data-testid="create-task-modal-close"
             >
               <X className="w-5 h-5" />
@@ -394,7 +399,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
             {/* Title */}
             <div className="mb-4">
               <label htmlFor="task-title" className="block text-sm font-medium text-gray-700 mb-1">
-                Title <span className="text-red-500">*</span>
+                {t('createTask.titleLabel')} <span className="text-red-500">*</span>
               </label>
               <input
                 ref={titleInputRef}
@@ -402,7 +407,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter task title..."
+                placeholder={t('createTask.titlePlaceholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 data-testid="create-task-title-input"
                 required
@@ -412,13 +417,13 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
             {/* Description (TB124) */}
             <div className="mb-4">
               <label htmlFor="task-description" className="block text-sm font-medium text-gray-700 mb-1">
-                Description <span className="text-gray-400 text-xs font-normal">(optional, supports Markdown)</span>
+                {t('createTask.description')} <span className="text-gray-400 text-xs font-normal">{t('createTask.optionalMarkdown')}</span>
               </label>
               <textarea
                 id="task-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Add a description..."
+                placeholder={t('createTask.descriptionPlaceholder')}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
                 data-testid="create-task-description-input"
@@ -429,7 +434,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <label htmlFor="task-priority" className="block text-sm font-medium text-gray-700 mb-1">
-                  Priority
+                  {t('createTask.priority')}
                 </label>
                 <select
                   id="task-priority"
@@ -447,7 +452,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
               </div>
               <div>
                 <label htmlFor="task-complexity" className="block text-sm font-medium text-gray-700 mb-1">
-                  Complexity
+                  {t('createTask.complexity')}
                 </label>
                 <select
                   id="task-complexity"
@@ -469,7 +474,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <label htmlFor="task-type" className="block text-sm font-medium text-gray-700 mb-1">
-                  Type
+                  {t('createTask.taskType')}
                 </label>
                 <select
                   id="task-type"
@@ -487,7 +492,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
               </div>
               <div>
                 <label htmlFor="task-assignee" className="block text-sm font-medium text-gray-700 mb-1">
-                  Assignee
+                  {t('createTask.assignee')}
                 </label>
                 <select
                   id="task-assignee"
@@ -496,7 +501,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   data-testid="create-task-assignee-select"
                 >
-                  <option value="">Unassigned</option>
+                  <option value="">{t('createTask.unassigned')}</option>
                   {entities?.map((entity) => (
                     <option key={entity.id} value={entity.id}>
                       {entity.name}
@@ -509,12 +514,12 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
             {/* Tags */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tags
+                {t('createTask.tags')}
               </label>
               <TagInput
                 tags={tags}
                 onChange={setTags}
-                placeholder="Type and press comma to add tags"
+                placeholder={t('createTask.tagsHint')}
                 data-testid="create-task-tags-input"
               />
             </div>
@@ -537,7 +542,7 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
             {/* Error display */}
             {createTask.isError && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700" data-testid="create-task-error">
-                {(createTask.error as Error)?.message || 'Failed to create task'}
+                {(createTask.error as Error)?.message || t('createTask.failedToCreate')}
               </div>
             )}
 
@@ -560,12 +565,12 @@ export function CreateTaskModal({ isOpen, onClose, onSuccess, defaultToBacklog =
                 {createTask.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Creating...
+                    {t('createTask.creating')}
                   </>
                 ) : (
                   <>
                     <Plus className="w-4 h-4" />
-                    Create Task
+                    {t('createTask.createTask')}
                   </>
                 )}
               </button>

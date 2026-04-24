@@ -8,6 +8,8 @@ import { MarkdownRenderer } from '../shared/MarkdownRenderer';
 import { BlockEditor } from '../editor/BlockEditor';
 import { useAllEntities } from '../../api/hooks/useAllElements';
 import { type MentionEntity } from '../editor/MentionAutocomplete';
+import { useTranslation } from '@stoneforge/i18n';
+
 
 interface Dependency {
   blockedId: string;
@@ -346,31 +348,34 @@ function useCreateBlockerTask() {
   });
 }
 
+// Labels are i18n keys — use t(key) at render time
 const PRIORITY_LABELS: Record<number, { label: string; color: string }> = {
-  1: { label: 'Critical', color: 'bg-red-100 text-red-800 border-red-200' },
-  2: { label: 'High', color: 'bg-orange-100 text-orange-800 border-orange-200' },
-  3: { label: 'Medium', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
-  4: { label: 'Low', color: 'bg-green-100 text-green-800 border-green-200' },
-  5: { label: 'Trivial', color: 'bg-gray-100 text-gray-800 border-gray-200' },
+  1: { label: 'tasks.priority.critical', color: 'bg-red-100 text-red-800 border-red-200' },
+  2: { label: 'tasks.priority.high', color: 'bg-orange-100 text-orange-800 border-orange-200' },
+  3: { label: 'tasks.priority.medium', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+  4: { label: 'tasks.priority.low', color: 'bg-green-100 text-green-800 border-green-200' },
+  5: { label: 'tasks.priority.trivial', color: 'bg-gray-100 text-gray-800 border-gray-200' },
 };
 
+// Labels are i18n keys — use t(key) at render time
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  open: { label: 'Open', color: 'bg-blue-100 text-blue-800', icon: null },
-  in_progress: { label: 'In Progress', color: 'bg-yellow-100 text-yellow-800', icon: null },
-  blocked: { label: 'Blocked', color: 'bg-red-100 text-red-800', icon: <AlertTriangle className="w-3 h-3" /> },
-  review: { label: 'Review', color: 'bg-purple-100 text-purple-800', icon: <Eye className="w-3 h-3" /> },
-  completed: { label: 'Completed', color: 'bg-green-100 text-green-800', icon: <CheckCircle2 className="w-3 h-3" /> },
-  cancelled: { label: 'Cancelled', color: 'bg-gray-100 text-gray-800', icon: null },
-  deferred: { label: 'Deferred', color: 'bg-purple-100 text-purple-800', icon: null },
-  backlog: { label: 'Backlog', color: 'bg-slate-100 text-slate-800', icon: <Inbox className="w-3 h-3" /> },
+  open: { label: 'tasks.status.open', color: 'bg-blue-100 text-blue-800', icon: null },
+  in_progress: { label: 'tasks.status.inProgress', color: 'bg-yellow-100 text-yellow-800', icon: null },
+  blocked: { label: 'tasks.status.blocked', color: 'bg-red-100 text-red-800', icon: <AlertTriangle className="w-3 h-3" /> },
+  review: { label: 'tasks.status.review', color: 'bg-purple-100 text-purple-800', icon: <Eye className="w-3 h-3" /> },
+  completed: { label: 'tasks.status.closed', color: 'bg-green-100 text-green-800', icon: <CheckCircle2 className="w-3 h-3" /> },
+  cancelled: { label: 'tasks.status.deferred', color: 'bg-gray-100 text-gray-800', icon: null },
+  deferred: { label: 'tasks.status.deferred', color: 'bg-purple-100 text-purple-800', icon: null },
+  backlog: { label: 'tasks.status.backlog', color: 'bg-slate-100 text-slate-800', icon: <Inbox className="w-3 h-3" /> },
 };
 
+// Labels are i18n keys — use t(key) at render time
 const COMPLEXITY_LABELS: Record<number, string> = {
-  1: 'Trivial',
-  2: 'Simple',
-  3: 'Moderate',
-  4: 'Complex',
-  5: 'Very Complex',
+  1: 'createTask.complexityLevels.trivial',
+  2: 'createTask.complexityLevels.simple',
+  3: 'createTask.complexityLevels.moderate',
+  4: 'createTask.complexityLevels.complex',
+  5: 'createTask.complexityLevels.veryComplex',
 };
 
 const STATUS_OPTIONS = ['open', 'in_progress', 'blocked', 'review', 'completed', 'cancelled', 'deferred', 'backlog'];
@@ -391,6 +396,7 @@ function DeleteConfirmDialog({
   onCancel: () => void;
   isDeleting: boolean;
 }) {
+  const { t } = useTranslation('quarry');
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -427,11 +433,9 @@ function DeleteConfirmDialog({
             <Trash2 className="w-5 h-5 text-red-600" />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900">Delete Task</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{t('taskDetail.deleteTask')}</h3>
             <p className="mt-2 text-sm text-gray-600">
-              Are you sure you want to delete{' '}
-              <span className="font-medium text-gray-900">"{taskTitle}"</span>?
-              This action cannot be undone.
+              {t('taskDetail.deleteConfirm', { title: taskTitle })}
             </p>
           </div>
         </div>
@@ -442,7 +446,7 @@ function DeleteConfirmDialog({
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
             data-testid="delete-cancel-button"
           >
-            Cancel
+            {t('createTask.cancel')}
           </button>
           <button
             onClick={onConfirm}
@@ -453,12 +457,12 @@ function DeleteConfirmDialog({
             {isDeleting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Deleting...
+                {t('taskDetail.deleting')}
               </>
             ) : (
               <>
                 <Trash2 className="w-4 h-4" />
-                Delete
+                {t('bulkActions.delete')}
               </>
             )}
           </button>
@@ -536,6 +540,7 @@ function SubIssueCard({
   dependencyType: string;
   onClick: () => void;
 }) {
+  const { t } = useTranslation('quarry');
   const statusConfig = SUB_ISSUE_STATUS_CONFIG[task.status] || SUB_ISSUE_STATUS_CONFIG.open;
   const priorityConfig = PRIORITY_LABELS[task.priority] || PRIORITY_LABELS[3];
   const isResolved = ['closed', 'completed', 'tombstone', 'cancelled', 'failed'].includes(task.status);
@@ -568,7 +573,7 @@ function SubIssueCard({
       {/* Priority badge (compact) */}
       <span
         className={`flex-shrink-0 px-1.5 py-0.5 text-[10px] font-medium rounded ${priorityConfig.color}`}
-        title={`Priority: ${priorityConfig.label}`}
+        title={t('taskDetail.priorityLabel', { defaultValue: 'Priority: {{label}}', label: t(priorityConfig.label) })}
       >
         P{task.priority}
       </span>
@@ -593,6 +598,7 @@ function CreateBlockerModal({
   isCreating: boolean;
   blockedTaskTitle: string;
 }) {
+  const { t } = useTranslation('quarry');
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState(3);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -637,7 +643,7 @@ function CreateBlockerModal({
       />
       <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Create Blocker Task</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('taskDetail.createBlockerTitle')}</h3>
           <button
             onClick={onClose}
             disabled={isCreating}
@@ -648,21 +654,21 @@ function CreateBlockerModal({
         </div>
 
         <p className="text-sm text-gray-600 mb-4">
-          This will create a new task that blocks:{' '}
+          {t('taskDetail.createBlockerInfo')}{' '}
           <span className="font-medium text-gray-900">"{blockedTaskTitle}"</span>
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Blocker Task Title
+              {t('taskDetail.blockerTitle', { defaultValue: 'Blocker Task Title' })}
             </label>
             <input
               ref={inputRef}
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter task title..."
+              placeholder={t('taskDetail.blockerTitlePlaceholder', { defaultValue: 'Enter task title...' })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isCreating}
               data-testid="blocker-title-input"
@@ -671,7 +677,7 @@ function CreateBlockerModal({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Priority
+              {t('taskDetail.blockerPriority')}
             </label>
             <div className="flex gap-2">
               {PRIORITY_OPTIONS.map((p) => {
@@ -689,7 +695,7 @@ function CreateBlockerModal({
                     }`}
                     data-testid={`blocker-priority-${p}`}
                   >
-                    {config.label}
+                    {t(config.label)}
                   </button>
                 );
               })}
@@ -703,7 +709,7 @@ function CreateBlockerModal({
               disabled={isCreating}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
             >
-              Cancel
+              {t('createTask.cancel')}
             </button>
             <button
               type="submit"
@@ -714,12 +720,12 @@ function CreateBlockerModal({
               {isCreating ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Creating...
+                  {t('taskDetail.creating')}
                 </>
               ) : (
                 <>
                   <Plus className="w-4 h-4" />
-                  Create Blocker
+                  {t('taskDetail.createBlocker')}
                 </>
               )}
             </button>
@@ -740,6 +746,7 @@ function DependencySubIssues({
   taskTitle: string;
   taskCreatedBy: string;
 }) {
+  const { t } = useTranslation('quarry');
   const navigate = useNavigate();
   const { data, isLoading, isError } = useDependencyTasks(taskId);
   const createBlocker = useCreateBlockerTask();
@@ -772,7 +779,7 @@ function DependencySubIssues({
       <div className="mt-4" data-testid="dependency-sub-issues-loading">
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Loader2 className="w-4 h-4 animate-spin" />
-          Loading dependencies...
+          {t('taskDetail.loadingDependencies')}
         </div>
       </div>
     );
@@ -795,7 +802,7 @@ function DependencySubIssues({
           data-testid="create-blocker-btn"
         >
           <Plus className="w-4 h-4" />
-          Create Blocker Task
+          {t('taskDetail.createBlocker')}
         </button>
         <CreateBlockerModal
           isOpen={showCreateBlocker}
@@ -824,7 +831,7 @@ function DependencySubIssues({
               <ChevronRight className="w-3 h-3" />
             )}
             <Link2 className="w-3 h-3" />
-            Blocked By ({data.progress.resolved} of {data.progress.total} resolved)
+            {t('taskDetail.blockedBy', { resolved: data.progress.resolved, total: data.progress.total })}
           </button>
           {isBlockedByExpanded && (
             <div className="space-y-1.5 ml-4" data-testid="blocked-by-list">
@@ -855,7 +862,7 @@ function DependencySubIssues({
               <ChevronRight className="w-3 h-3" />
             )}
             <Link2 className="w-3 h-3" />
-            Blocks ({data.blocks.length})
+            {t('taskDetail.blocks', { count: data.blocks.length })}
           </button>
           {isBlocksExpanded && (
             <div className="space-y-1.5 ml-4" data-testid="blocks-list">
@@ -879,7 +886,7 @@ function DependencySubIssues({
         data-testid="create-blocker-btn"
       >
         <Plus className="w-4 h-4" />
-        Create Blocker Task
+        {t('taskDetail.createBlocker')}
       </button>
 
       <CreateBlockerModal
@@ -907,6 +914,7 @@ function DocumentPickerModal({
   alreadyAttachedIds: string[];
   isAttaching: boolean;
 }) {
+  const { t } = useTranslation('quarry');
   const [searchQuery, setSearchQuery] = useState('');
   const { data: documents, isLoading } = useDocuments(searchQuery);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -947,7 +955,7 @@ function DocumentPickerModal({
       <div className="relative bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[80vh] flex flex-col">
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-gray-900">Attach Document</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{t('taskDetail.attachDocumentTitle')}</h3>
             <button
               onClick={onClose}
               disabled={isAttaching}
@@ -962,7 +970,7 @@ function DocumentPickerModal({
             <input
               ref={inputRef}
               type="text"
-              placeholder="Search documents..."
+              placeholder={t('taskDetail.searchDocuments')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -978,10 +986,10 @@ function DocumentPickerModal({
           ) : availableDocs.length === 0 ? (
             <div className="text-center py-8 text-gray-500" data-testid="document-picker-empty">
               {documents?.length === 0
-                ? 'No documents available'
+                ? t('taskDetail.noDocumentsAvailable')
                 : searchQuery
-                ? 'No documents match your search'
-                : 'All documents are already attached'}
+                ? t('taskDetail.noDocumentsMatch')
+                : t('taskDetail.allDocumentsAttached')}
             </div>
           ) : (
             <div className="space-y-2">
@@ -996,7 +1004,7 @@ function DocumentPickerModal({
                   <FileText className="w-5 h-5 text-gray-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-gray-900 truncate">
-                      {doc.title || 'Untitled Document'}
+                      {doc.title || t('taskDetail.untitledDocument')}
                     </div>
                     <div className="text-xs text-gray-500 flex items-center gap-2">
                       <span className="font-mono">{doc.id}</span>
@@ -1066,6 +1074,7 @@ function ExpandableDocumentCard({
   onRemove: () => void;
   isRemoving: boolean;
 }) {
+  const { t } = useTranslation('quarry');
   const [isExpanded, setIsExpanded] = useState(false);
   const preview = getContentPreview(doc.content);
 
@@ -1081,7 +1090,7 @@ function ExpandableDocumentCard({
           onClick={() => setIsExpanded(!isExpanded)}
           className="p-1 hover:bg-gray-200 rounded flex-shrink-0"
           data-testid={`attachment-expand-${doc.id}`}
-          aria-label={isExpanded ? 'Collapse' : 'Expand'}
+          aria-label={isExpanded ? t('taskDetail.collapse') : t('taskDetail.expand')}
         >
           {isExpanded ? (
             <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -1097,7 +1106,7 @@ function ExpandableDocumentCard({
               className="text-sm font-medium text-blue-600 hover:text-blue-800 truncate"
               data-testid={`attachment-link-${doc.id}`}
             >
-              {doc.title || 'Untitled Document'}
+              {doc.title || t('taskDetail.untitledDocument')}
             </a>
             <span className="px-1.5 py-0.5 bg-gray-200 text-gray-600 rounded text-[10px] flex-shrink-0">
               {doc.contentType}
@@ -1113,7 +1122,7 @@ function ExpandableDocumentCard({
           onClick={onRemove}
           disabled={isRemoving}
           className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
-          aria-label="Remove attachment"
+          aria-label={t('taskDetail.removeAttachment')}
           data-testid={`attachment-remove-${doc.id}`}
         >
           {isRemoving ? (
@@ -1134,7 +1143,7 @@ function ExpandableDocumentCard({
       {/* Expanded but no content */}
       {isExpanded && !doc.content && (
         <div className="p-3 border-t border-gray-200 bg-white text-sm text-gray-500 italic" data-testid={`attachment-content-${doc.id}`}>
-          No content available
+          {t('taskDetail.noContentAvailable')}
         </div>
       )}
     </div>
@@ -1147,6 +1156,7 @@ function AttachmentsSection({
 }: {
   taskId: string;
 }) {
+  const { t } = useTranslation('quarry');
   const [isExpanded, setIsExpanded] = useState(true);
   const [showPicker, setShowPicker] = useState(false);
   const { data: attachments, isLoading } = useTaskAttachments(taskId);
@@ -1188,7 +1198,7 @@ function AttachmentsSection({
           <ChevronRight className="w-3 h-3" />
         )}
         <Paperclip className="w-3 h-3" />
-        Attachments ({attachments?.length || 0})
+        {t('taskDetail.attachments', { count: attachments?.length || 0 })}
       </button>
 
       {isExpanded && (
@@ -1196,7 +1206,7 @@ function AttachmentsSection({
           {isLoading ? (
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <Loader2 className="w-4 h-4 animate-spin" />
-              Loading attachments...
+              {t('taskDetail.loadingAttachments')}
             </div>
           ) : attachments && attachments.length > 0 ? (
             attachments.map((doc) => (
@@ -1209,7 +1219,7 @@ function AttachmentsSection({
             ))
           ) : (
             <div className="text-sm text-gray-500" data-testid="attachments-empty">
-              No documents attached
+              {t('taskDetail.noAttachments')}
             </div>
           )}
 
@@ -1219,7 +1229,7 @@ function AttachmentsSection({
             data-testid="attach-document-btn"
           >
             <Plus className="w-4 h-4" />
-            Attach Document
+            {t('taskDetail.attachDocument')}
           </button>
         </div>
       )}
@@ -1246,6 +1256,7 @@ function TaskDescriptionSection({
   onUpdate: (description: string) => void;
   isUpdating: boolean;
 }) {
+  const { t } = useTranslation('quarry');
   const [isEditing, setIsEditing] = useState(false);
   const [editedDescription, setEditedDescription] = useState(description || '');
   const [isExpanded, setIsExpanded] = useState(true);
@@ -1295,9 +1306,9 @@ function TaskDescriptionSection({
           <ChevronRight className="w-3 h-3" />
         )}
         <FileText className="w-3 h-3" />
-        Description
+        {t('taskDetail.description')}
         {!hasDescription && (
-          <span className="text-xs text-gray-400 normal-case tracking-normal font-normal">(none)</span>
+          <span className="text-xs text-gray-400 normal-case tracking-normal font-normal">{t('taskDetail.descriptionNone')}</span>
         )}
       </button>
 
@@ -1309,7 +1320,7 @@ function TaskDescriptionSection({
                 content={editedDescription}
                 contentType="markdown"
                 onChange={setEditedDescription}
-                placeholder="Add a description with @mentions..."
+                placeholder={t('taskDetail.descriptionPlaceholder')}
                 mentionEntities={mentionEntities}
               />
               <div className="flex items-center gap-2 justify-end">
@@ -1318,7 +1329,7 @@ function TaskDescriptionSection({
                   className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
                   data-testid="description-cancel-btn"
                 >
-                  Cancel
+                  {t('createTask.cancel')}
                 </button>
                 <button
                   onClick={handleSave}
@@ -1329,12 +1340,12 @@ function TaskDescriptionSection({
                   {isUpdating ? (
                     <>
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      Saving...
+                      {t('tasks.detail.saving')}
                     </>
                   ) : (
                     <>
                       <Save className="w-3.5 h-3.5" />
-                      Save
+                      {t('tasks.detail.saveChanges')}
                     </>
                   )}
                 </button>
@@ -1353,7 +1364,7 @@ function TaskDescriptionSection({
               />
               <div className="mt-2 flex items-center gap-1 text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Pencil className="w-3 h-3" />
-                Click to edit
+                {t('taskDetail.clickToEdit')}
               </div>
             </div>
           ) : (
@@ -1363,7 +1374,7 @@ function TaskDescriptionSection({
               data-testid="add-description-btn"
             >
               <Plus className="w-4 h-4" />
-              Add Description
+              {t('taskDetail.addDescription')}
             </button>
           )}
         </div>
@@ -1393,6 +1404,7 @@ function MentionedEntitiesSection({
 }: {
   description?: string;
 }) {
+  const { t } = useTranslation('quarry');
   const { data: entitiesData } = useAllEntities();
   const [isExpanded, setIsExpanded] = useState(true);
   const { onNavigate, renderProfileLink } = useEntityNavigation();
@@ -1429,7 +1441,7 @@ function MentionedEntitiesSection({
           <ChevronRight className="w-3 h-3" />
         )}
         <Users className="w-3 h-3" />
-        Mentioned Entities ({mentionedEntities.length})
+        {t('taskDetail.mentionedEntities', { count: mentionedEntities.length })}
       </button>
 
       {isExpanded && (
@@ -1462,6 +1474,7 @@ function EditableTitle({
   onSave: (value: string) => void;
   isUpdating: boolean;
 }) {
+  const { t } = useTranslation('quarry');
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -1523,7 +1536,7 @@ function EditableTitle({
       <button
         onClick={() => setIsEditing(true)}
         className="p-1 opacity-0 group-hover:opacity-100 hover:bg-gray-100 rounded transition-opacity"
-        aria-label="Edit title"
+        aria-label={t('taskDetail.editTitle')}
         data-testid="task-title-edit-button"
       >
         <Pencil className="w-3.5 h-3.5 text-gray-400" />
@@ -1556,6 +1569,7 @@ function StatusDropdown({
   onSave: (value: string) => void;
   isUpdating: boolean;
 }) {
+  const { t } = useTranslation('quarry');
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -1586,7 +1600,7 @@ function StatusDropdown({
         data-testid="task-status-dropdown"
       >
         {status.icon}
-        {status.label}
+        {t(status.label)}
         {isUpdating && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
       </button>
       {isOpen && (
@@ -1607,7 +1621,7 @@ function StatusDropdown({
               >
                 <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded ${config.color}`}>
                   {config.icon}
-                  {config.label}
+                  {t(config.label)}
                 </span>
                 {statusOption === value && <Check className="w-3 h-3 text-blue-600 ml-auto" />}
               </button>
@@ -1629,6 +1643,7 @@ function PriorityDropdown({
   onSave: (value: number) => void;
   isUpdating: boolean;
 }) {
+  const { t } = useTranslation('quarry');
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -1652,7 +1667,7 @@ function PriorityDropdown({
         disabled={isUpdating}
         data-testid="task-priority-dropdown"
       >
-        {priority.label}
+        {t(priority.label)}
         {isUpdating && <Loader2 className="w-3 h-3 animate-spin ml-1 inline" />}
       </button>
       {isOpen && (
@@ -1672,7 +1687,7 @@ function PriorityDropdown({
                 data-testid={`task-priority-option-${priorityOption}`}
               >
                 <span className={`px-2 py-0.5 rounded border ${config.color}`}>
-                  {config.label}
+                  {t(config.label)}
                 </span>
                 {priorityOption === value && <Check className="w-3 h-3 text-blue-600 ml-auto" />}
               </button>
@@ -1694,6 +1709,7 @@ function ComplexityDropdown({
   onSave: (value: number) => void;
   isUpdating: boolean;
 }) {
+  const { t } = useTranslation('quarry');
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -1717,7 +1733,7 @@ function ComplexityDropdown({
         disabled={isUpdating}
         data-testid="task-complexity-dropdown"
       >
-        {complexity}
+        {t(complexity)}
         {isUpdating && <Loader2 className="w-3 h-3 animate-spin ml-1 inline" />}
       </button>
       {isOpen && (
@@ -1736,7 +1752,7 @@ function ComplexityDropdown({
                 className={`w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 flex items-center justify-between ${complexityOption === value ? 'bg-gray-50' : ''}`}
                 data-testid={`task-complexity-option-${complexityOption}`}
               >
-                <span>{label}</span>
+                <span>{t(label)}</span>
                 {complexityOption === value && <Check className="w-3 h-3 text-blue-600" />}
               </button>
             );
@@ -1764,6 +1780,7 @@ function AssigneeDropdown({
   onSave: (value: string | null) => void;
   isUpdating: boolean;
 }) {
+  const { t } = useTranslation('quarry');
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -1805,7 +1822,7 @@ function AssigneeDropdown({
     return entities.find(e => e.id === value) ?? null;
   }, [value, entities]);
 
-  const displayText = currentAssignee?.name ?? 'Unassigned';
+  const displayText = currentAssignee?.name ?? t('taskDetail.unassigned');
   const entityTypeConfig = currentAssignee
     ? ENTITY_TYPE_ICONS[currentAssignee.entityType] ?? ENTITY_TYPE_ICONS.human
     : null;
@@ -1841,7 +1858,7 @@ function AssigneeDropdown({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search entities..."
+                placeholder={t('taskDetail.searchEntities')}
                 className="w-full pl-7 pr-3 py-1.5 text-xs border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 data-testid="assignee-search-input"
               />
@@ -1865,7 +1882,7 @@ function AssigneeDropdown({
               data-testid="assignee-option-unassigned"
             >
               <User className="w-3.5 h-3.5 text-gray-400" />
-              <span className="text-gray-500 italic">Unassigned</span>
+              <span className="text-gray-500 italic">{t('taskDetail.unassigned')}</span>
               {!value && <Check className="w-3 h-3 text-blue-600 ml-auto" />}
             </button>
 
@@ -1875,7 +1892,7 @@ function AssigneeDropdown({
             {/* Entity options */}
             {filteredEntities.length === 0 ? (
               <div className="px-3 py-2 text-xs text-gray-500 text-center">
-                {searchQuery ? 'No entities match your search' : 'No entities available'}
+                {searchQuery ? t('taskDetail.noMatchingEntities') : t('taskDetail.noEntities')}
               </div>
             ) : (
               filteredEntities.map((entity) => {
@@ -1916,6 +1933,7 @@ function AssigneeDropdown({
 }
 
 export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
+  const { t } = useTranslation('quarry');
   const { data: task, isLoading, isError, error } = useTaskDetail(taskId);
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
@@ -1945,7 +1963,7 @@ export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
   if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center" data-testid="task-detail-loading">
-        <div className="text-gray-500">Loading task...</div>
+        <div className="text-gray-500">{t('taskDetail.loadingTask')}</div>
       </div>
     );
   }
@@ -1953,7 +1971,7 @@ export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
   if (isError) {
     return (
       <div className="h-full flex flex-col items-center justify-center" data-testid="task-detail-error">
-        <div className="text-red-600 mb-2">Failed to load task</div>
+        <div className="text-red-600 mb-2">{t('taskDetail.failedToLoad')}</div>
         <div className="text-sm text-gray-500">{(error as Error)?.message}</div>
       </div>
     );
@@ -1962,7 +1980,7 @@ export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
   if (!task) {
     return (
       <div className="h-full flex items-center justify-center" data-testid="task-detail-not-found">
-        <div className="text-gray-500">Task not found</div>
+        <div className="text-gray-500">{t('tasks.detail.notFound')}</div>
       </div>
     );
   }
@@ -2006,7 +2024,7 @@ export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
           <button
             onClick={() => setShowDeleteConfirm(true)}
             className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
-            aria-label="Delete task"
+            aria-label={t('taskDetail.deleteTask')}
             data-testid="task-delete-button"
           >
             <Trash2 className="w-5 h-5" />
@@ -2014,7 +2032,7 @@ export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
           <button
             onClick={onClose}
             className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
-            aria-label="Close panel"
+            aria-label={t('taskDetail.closePanel')}
             data-testid="task-detail-close"
           >
             <X className="w-5 h-5" />
@@ -2027,11 +2045,11 @@ export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
         {/* Metadata grid */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>
-            <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Type</div>
+            <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{t('taskDetail.type')}</div>
             <div className="text-sm text-gray-900 capitalize">{task.taskType}</div>
           </div>
           <div>
-            <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Complexity</div>
+            <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{t('taskDetail.complexity')}</div>
             <ComplexityDropdown
               value={task.complexity}
               onSave={(complexity) => handleUpdate({ complexity }, 'complexity')}
@@ -2041,7 +2059,7 @@ export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
           <div>
             <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-1">
               <User className="w-3 h-3" />
-              Assignee
+              {t('taskDetail.assignee')}
             </div>
             <AssigneeDropdown
               value={task.assignee}
@@ -2051,7 +2069,7 @@ export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
           </div>
           {task.owner && (
             <div>
-              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Owner</div>
+              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{t('taskDetail.owner')}</div>
               <div className="text-sm">
                 <EntityLink
                   entityRef={task.owner}
@@ -2069,7 +2087,7 @@ export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
             <div>
               <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-1">
                 <Calendar className="w-3 h-3" />
-                Deadline
+                {t('taskDetail.deadline')}
               </div>
               <div className="text-sm text-gray-900">{formatDate(task.deadline)}</div>
             </div>
@@ -2078,7 +2096,7 @@ export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
             <div>
               <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 flex items-center gap-1">
                 <Clock className="w-3 h-3" />
-                Scheduled For
+                {t('taskDetail.scheduledFor')}
               </div>
               <div className="text-sm text-gray-900">{formatDate(task.scheduledFor)}</div>
             </div>
@@ -2090,7 +2108,7 @@ export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
           <div className="mb-6">
             <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1">
               <Tag className="w-3 h-3" />
-              Tags
+              {t('taskDetail.tags')}
             </div>
             <div className="flex flex-wrap gap-1">
               {task.tags.map((tag) => (
@@ -2132,15 +2150,15 @@ export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
         <div className="mt-6 pt-4 border-t border-gray-100">
           <div className="grid grid-cols-2 gap-4 text-xs text-gray-500">
             <div>
-              <span className="font-medium">Created:</span>{' '}
+              <span className="font-medium">{t('taskDetail.created')}</span>{' '}
               <span title={formatDate(task.createdAt)}>{formatRelativeTime(task.createdAt)}</span>
             </div>
             <div>
-              <span className="font-medium">Updated:</span>{' '}
+              <span className="font-medium">{t('taskDetail.updated')}</span>{' '}
               <span title={formatDate(task.updatedAt)}>{formatRelativeTime(task.updatedAt)}</span>
             </div>
             <div>
-              <span className="font-medium">Created by:</span>{' '}
+              <span className="font-medium">{t('taskDetail.createdBy')}</span>{' '}
               <EntityLink
                 entityRef={task.createdBy}
                 showHoverCard
@@ -2156,7 +2174,7 @@ export function TaskDetailPanel({ taskId, onClose }: TaskDetailPanelProps) {
         {/* Update error display */}
         {updateTask.isError && (
           <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700" data-testid="task-update-error">
-            Failed to update task: {(updateTask.error as Error)?.message}
+            {t('taskDetail.failedToUpdate', { message: (updateTask.error as Error)?.message })}
           </div>
         )}
       </div>

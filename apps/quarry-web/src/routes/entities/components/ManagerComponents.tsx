@@ -5,6 +5,7 @@
 
 import { useMemo, useRef, useEffect } from 'react';
 import { X, Loader2 } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useEntity, useAllEntities } from '../hooks';
 import { ENTITY_TYPE_STYLES } from '../constants';
 // Entity type is used via useAllEntities result
@@ -19,13 +20,14 @@ interface ManagerDisplayProps {
  */
 export function ManagerDisplay({ managerId, onClick }: ManagerDisplayProps) {
   const { data: manager, isLoading } = useEntity(managerId);
+  const { t } = useTranslation('quarry');
 
   if (isLoading) {
-    return <span className="text-sm text-gray-400">Loading...</span>;
+    return <span className="text-sm text-gray-400">{t('managerComponents.loading')}</span>;
   }
 
   if (!manager) {
-    return <span className="text-sm text-gray-400">Unknown manager</span>;
+    return <span className="text-sm text-gray-400">{t('managerComponents.unknownManager')}</span>;
   }
 
   const styles = ENTITY_TYPE_STYLES[manager.entityType] || ENTITY_TYPE_STYLES.system;
@@ -70,6 +72,7 @@ export function ManagerPicker({
 }: ManagerPickerProps) {
   const { data: allEntitiesData, isLoading: entitiesLoading } = useAllEntities(searchQuery);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { t } = useTranslation('quarry');
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -91,7 +94,7 @@ export function ManagerPicker({
         type="text"
         value={searchQuery}
         onChange={(e) => onSearchChange(e.target.value)}
-        placeholder="Search for an entity..."
+        placeholder={t('managerComponents.searchPlaceholder')}
         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         data-testid="manager-search-input"
       />
@@ -105,13 +108,13 @@ export function ManagerPicker({
             data-testid="manager-clear-button"
           >
             <X className="w-4 h-4 text-red-500" />
-            <span className="text-sm text-red-600">Remove manager</span>
+            <span className="text-sm text-red-600">{t('managerComponents.removeManager')}</span>
           </button>
         )}
         {entitiesLoading ? (
-          <div className="px-3 py-2 text-sm text-gray-500">Loading...</div>
+          <div className="px-3 py-2 text-sm text-gray-500">{t('managerComponents.loading')}</div>
         ) : availableEntities.length === 0 ? (
-          <div className="px-3 py-2 text-sm text-gray-500">No entities found</div>
+          <div className="px-3 py-2 text-sm text-gray-500">{t('managerComponents.noEntities')}</div>
         ) : (
           availableEntities.map((e) => {
             const styles = ENTITY_TYPE_STYLES[e.entityType] || ENTITY_TYPE_STYLES.system;
@@ -133,7 +136,7 @@ export function ManagerPicker({
                 </div>
                 <span className="text-sm text-gray-900 flex-1 truncate">{e.name}</span>
                 {isCurrentManager && (
-                  <span className="text-xs text-blue-600">Current</span>
+                  <span className="text-xs text-blue-600">{t('managerComponents.current')}</span>
                 )}
               </button>
             );
@@ -143,7 +146,7 @@ export function ManagerPicker({
       {isLoading && (
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Loader2 className="w-4 h-4 animate-spin" />
-          Updating...
+          {t('managerComponents.updating')}
         </div>
       )}
     </div>

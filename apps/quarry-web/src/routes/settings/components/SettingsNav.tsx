@@ -2,6 +2,7 @@
  * Settings Navigation components
  */
 
+import { useTranslation } from '@stoneforge/i18n';
 import { SETTINGS_SECTIONS } from '../constants';
 import type { SettingsSection } from '../types';
 
@@ -53,11 +54,12 @@ function MobileSettingsNav({ activeSection, onSectionChange }: Omit<SettingsNavP
 }
 
 function DesktopSettingsNav({ activeSection, onSectionChange }: Omit<SettingsNavProps, 'isMobile'>) {
+  const { t } = useTranslation('quarry');
   return (
     <div className="w-64 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex-shrink-0">
       <div className="p-4">
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-1">Settings</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400">Customize your experience</p>
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-1">{t('settingsPage.title')}</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{t('settingsPage.subtitle')}</p>
       </div>
       <nav className="px-2 py-2 space-y-1" data-testid="settings-nav">
         {SETTINGS_SECTIONS.map((section) => {
@@ -81,7 +83,7 @@ function DesktopSettingsNav({ activeSection, onSectionChange }: Omit<SettingsNav
               <div className="flex-1">
                 <span className="font-medium">{section.label}</span>
                 {!section.implemented && (
-                  <span className="ml-2 text-xs text-gray-400">Soon</span>
+                  <span className="ml-2 text-xs text-gray-400">{t('settingsPage.soon')}</span>
                 )}
               </div>
             </button>

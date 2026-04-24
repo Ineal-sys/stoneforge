@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useIsMobile } from '../../hooks/useBreakpoint';
 import type { Theme, SettingsSection } from './types';
 import { SETTINGS_SECTIONS } from './constants';
@@ -41,6 +42,7 @@ export {
 } from './utils';
 
 export function SettingsPage() {
+  const { t } = useTranslation('quarry');
   const isMobile = useIsMobile();
   const [currentTheme, setCurrentTheme] = useState<Theme>('system');
   const [activeSection, setActiveSection] = useState<SettingsSection>('theme');
@@ -106,7 +108,7 @@ export function SettingsPage() {
       {/* Mobile Header */}
       {isMobile && (
         <div className="p-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-          <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Settings</h1>
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{t('settingsPage.title')}</h1>
         </div>
       )}
 

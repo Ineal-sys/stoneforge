@@ -3,6 +3,7 @@
  */
 
 import { ChevronRight } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { ProgressRing } from '../../../components/shared/ProgressRing';
 import { StatusBadge } from './StatusBadge';
 import { highlightMatches, formatRelativeTime, formatDate } from '../utils';
@@ -21,6 +22,7 @@ export function PlanListItem({
   onClick,
   searchMatchIndices,
 }: PlanListItemProps) {
+  const { t } = useTranslation('quarry');
   const progress = plan._progress;
   const hasProgress = progress && progress.totalTasks > 0;
 
@@ -86,7 +88,7 @@ export function PlanListItem({
           ) : (
             <div
               className="w-8 h-8 rounded-full border-2 border-dashed border-gray-200 dark:border-gray-600 flex items-center justify-center"
-              title="No tasks in plan"
+              title={t('plans.progress.noTasks')}
               data-testid={`plan-progress-empty-${plan.id}`}
             >
               <span className="text-[8px] text-gray-400 dark:text-gray-500">--</span>

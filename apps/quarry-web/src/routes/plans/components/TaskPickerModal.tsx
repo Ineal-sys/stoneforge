@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Search, X, Plus } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { useAvailableTasks } from '../../../api/hooks/usePlanApi';
 import { PRIORITY_COLORS } from '../constants';
 
@@ -22,6 +23,7 @@ export function TaskPickerModal({
 }: TaskPickerModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const { t } = useTranslation('quarry');
 
   // Debounce search query
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -45,7 +47,7 @@ export function TaskPickerModal({
       <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Add Task to Plan</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('plans.taskPicker.title')}</h3>
           <button
             onClick={onClose}
             className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
@@ -62,7 +64,7 @@ export function TaskPickerModal({
             <input
               type="text"
               data-testid="task-picker-search"
-              placeholder="Search tasks by title or ID..."
+              placeholder={t('plans.taskPicker.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -74,10 +76,10 @@ export function TaskPickerModal({
         {/* Task List */}
         <div className="flex-1 overflow-y-auto p-4">
           {isLoading ? (
-            <div className="text-center py-8 text-gray-500">Loading tasks...</div>
+            <div className="text-center py-8 text-gray-500">{t('plans.taskPicker.loading')}</div>
           ) : availableTasks.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              {searchQuery ? 'No matching tasks found' : 'All tasks are already in this plan'}
+              {searchQuery ? t('plans.taskPicker.noMatch') : t('plans.taskPicker.allAdded')}
             </div>
           ) : (
             <div className="space-y-2">
@@ -91,7 +93,7 @@ export function TaskPickerModal({
                 >
                   <div
                     className={`w-2 h-2 rounded-full ${PRIORITY_COLORS[task.priority] || 'bg-gray-200'}`}
-                    title={`Priority ${task.priority}`}
+                    title={t('plans.tasks.priority', { priority: task.priority })}
                   />
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-gray-900 truncate">{task.title}</div>

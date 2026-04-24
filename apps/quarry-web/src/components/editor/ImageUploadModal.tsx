@@ -32,6 +32,7 @@ import {
   ChevronLeft,
 } from 'lucide-react';
 import { useIsMobile } from '../../hooks';
+import { useTranslation } from '@stoneforge/i18n';
 
 interface ImageUploadModalProps {
   isOpen: boolean;
@@ -51,6 +52,7 @@ interface UploadedFile {
 }
 
 export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModalProps) {
+  const { t } = useTranslation('quarry');
   const [mode, setMode] = useState<'upload' | 'url' | 'library'>('upload');
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -144,13 +146,13 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
     if (!allowedTypes.includes(file.type)) {
-      setError(`Invalid file type: ${file.type}. Allowed: JPEG, PNG, GIF, WebP, SVG`);
+      setError(t('imageUpload.invalidFileType', { type: file.type }));
       return null;
     }
 
     // Validate file size (10MB)
     if (file.size > 10 * 1024 * 1024) {
-      setError(`File too large: ${(file.size / (1024 * 1024)).toFixed(2)}MB. Maximum: 10MB`);
+      setError(t('imageUpload.fileTooLarge', { size: (file.size / (1024 * 1024)).toFixed(2) }));
       return null;
     }
 
@@ -168,7 +170,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(data.error?.message || `Upload failed: ${response.status}`);
+        throw new Error(data.error?.message || t('imageUpload.uploadFailed', { status: response.status }));
       }
 
       const result = await response.json();
@@ -208,10 +210,10 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
       if (file && file.type.startsWith('image/')) {
         handleFileSelect(file);
       } else {
-        setError('Please drop an image file');
+        setError(t('imageUpload.dropImageOnly'));
       }
     },
-    [handleFileSelect]
+    [handleFileSelect, t]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -227,14 +229,14 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
   const handleInsert = useCallback(async () => {
     if (mode === 'url') {
       if (!urlInput.trim()) {
-        setError('Please enter an image URL');
+        setError(t('imageUpload.enterImageUrl'));
         return;
       }
       onInsert(urlInput.trim(), altText || undefined);
       handleClose();
     } else if (mode === 'library') {
       if (!selectedLibraryImage) {
-        setError('Please select an image');
+        setError(t('imageUpload.selectImage'));
         return;
       }
       onInsert(selectedLibraryImage.url, altText || undefined);
@@ -246,7 +248,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
         handleClose();
       }
     }
-  }, [mode, urlInput, preview, altText, selectedLibraryImage, onInsert, handleClose]);
+  }, [mode, urlInput, preview, altText, selectedLibraryImage, onInsert, handleClose, t]);
 
   const handleUrlPreview = useCallback(() => {
     if (urlInput.trim()) {
@@ -266,7 +268,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
 
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
-          throw new Error(data.error?.message || 'Failed to delete image');
+          throw new Error(data.error?.message || t('imageUpload.failedToDelete'));
         }
 
         // Remove from local state
@@ -283,7 +285,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
         setDeleting(false);
       }
     },
-    [selectedLibraryImage]
+    [selectedLibraryImage, t]
   );
 
   const formatFileSize = (bytes: number): string => {
@@ -318,12 +320,12 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
               <button
                 onClick={handleClose}
                 className="p-2 -ml-2 rounded-md text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-hover)] transition-colors touch-target"
-                aria-label="Close"
+                aria-label={t('imageUpload.close')}
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <Dialog.Title className="flex-1 text-lg font-semibold text-[var(--color-text)]">
-                Insert Image
+                {t('imageUpload.insertImage')}
               </Dialog.Title>
             </div>
 
@@ -344,7 +346,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                   data-testid="image-upload-tab"
                 >
                   <Upload className="w-4 h-4" />
-                  Upload
+                  {t('imageUpload.upload')}
                 </button>
                 <button
                   onClick={() => {
@@ -359,7 +361,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                   data-testid="image-url-tab"
                 >
                   <Link className="w-4 h-4" />
-                  URL
+                  {t('imageUpload.url')}
                 </button>
                 <button
                   onClick={() => {
@@ -374,7 +376,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                   data-testid="image-library-tab"
                 >
                   <Grid className="w-4 h-4" />
-                  Library
+                  {t('imageUpload.library')}
                 </button>
               </div>
 
@@ -392,7 +394,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                       <button
                         onClick={() => setPreview(null)}
                         className="absolute top-2 right-2 p-2 bg-white dark:bg-gray-700 rounded-full shadow hover:bg-gray-100 dark:hover:bg-gray-600 touch-target"
-                        title="Remove"
+                        title={t('imageUpload.remove')}
                       >
                         <X className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                       </button>
@@ -412,10 +414,10 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                     >
                       <ImageIcon className="w-12 h-12 text-gray-400 mb-3" />
                       <p className="text-sm text-gray-600 dark:text-gray-400 mb-1 text-center px-4">
-                        Tap to select an image
+                        {t('imageUpload.tapToSelect')}
                       </p>
                       <p className="text-xs text-gray-400 dark:text-gray-500 text-center px-4">
-                        JPEG, PNG, GIF, WebP, SVG up to 10MB
+                        {t('imageUpload.fileTypes')}
                       </p>
                     </div>
                   )}
@@ -436,7 +438,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Image URL
+                      {t('imageUpload.imageUrl')}
                     </label>
                     <input
                       type="url"
@@ -455,7 +457,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                         src={preview.url}
                         alt="Preview"
                         className="w-full h-48 object-contain bg-gray-100 dark:bg-gray-800 rounded-lg"
-                        onError={() => setError('Failed to load image from URL')}
+                        onError={() => setError(t('imageUpload.failedToLoadUrl'))}
                         data-testid="image-url-preview"
                       />
                     </div>
@@ -472,7 +474,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                       type="text"
                       value={librarySearch}
                       onChange={(e) => setLibrarySearch(e.target.value)}
-                      placeholder="Search images..."
+                      placeholder={t('imageUpload.searchImages')}
                       className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 touch-target"
                       data-testid="library-search-input"
                     />
@@ -487,13 +489,13 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                       <ImageIcon className="w-12 h-12 mb-3 opacity-50" />
                       {libraryImages.length === 0 ? (
                         <>
-                          <p className="text-sm font-medium">No images uploaded yet</p>
-                          <p className="text-xs mt-1">Upload images to see them here</p>
+                          <p className="text-sm font-medium">{t('imageUpload.noImagesYet')}</p>
+                          <p className="text-xs mt-1">{t('imageUpload.uploadToSee')}</p>
                         </>
                       ) : (
                         <>
-                          <p className="text-sm font-medium">No images match your search</p>
-                          <p className="text-xs mt-1">Try a different search term</p>
+                          <p className="text-sm font-medium">{t('imageUpload.noMatchingImages')}</p>
+                          <p className="text-xs mt-1">{t('imageUpload.tryDifferentSearch')}</p>
                         </>
                       )}
                     </div>
@@ -539,7 +541,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                                 ? 'bg-red-500 text-white'
                                 : 'bg-black/50 text-white hover:bg-red-500'
                             }`}
-                            title={deleteConfirm === image.filename ? 'Tap again to confirm' : 'Delete image'}
+                            title={deleteConfirm === image.filename ? t('imageUpload.tapToConfirm') : t('imageUpload.deleteImage')}
                             data-testid={`delete-image-${image.filename}`}
                           >
                             {deleting && deleteConfirm === image.filename ? (
@@ -568,8 +570,9 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                       {selectedLibraryImage.usageCount !== undefined && selectedLibraryImage.usageCount > 0 && (
                         <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1 mt-1">
                           <AlertCircle className="w-3 h-3" />
-                          Used in {selectedLibraryImage.usageCount} document
-                          {selectedLibraryImage.usageCount !== 1 ? 's' : ''}
+                          {selectedLibraryImage.usageCount === 1
+                            ? t('imageUpload.usedInDocuments', { count: 1 })
+                            : t('imageUpload.usedInDocuments', { count: selectedLibraryImage.usageCount })}
                         </p>
                       )}
                     </div>
@@ -580,13 +583,13 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
               {/* Alt text input */}
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Alt Text <span className="text-gray-400 text-xs font-normal">(optional)</span>
+                  {t('imageUpload.altText')} <span className="text-gray-400 text-xs font-normal">{t('imageUpload.optional')}</span>
                 </label>
                 <input
                   type="text"
                   value={altText}
                   onChange={(e) => setAltText(e.target.value)}
-                  placeholder="Describe the image..."
+                  placeholder={t('imageUpload.altTextPlaceholder')}
                   className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 touch-target"
                   data-testid="image-alt-input"
                 />
@@ -609,7 +612,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                 onClick={handleClose}
                 className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors touch-target"
               >
-                Cancel
+                {t('imageUpload.cancel')}
               </button>
               <button
                 onClick={handleInsert}
@@ -625,10 +628,10 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                 {uploading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Uploading...
+                    {t('imageUpload.uploading')}
                   </>
                 ) : (
-                  'Insert'
+                  t('imageUpload.insert')
                 )}
               </button>
             </div>
@@ -650,7 +653,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
           data-testid="image-upload-modal"
         >
           <Dialog.Title className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            Insert Image
+            {t('imageUpload.insertImage')}
           </Dialog.Title>
 
           {/* Mode tabs */}
@@ -668,7 +671,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
               data-testid="image-upload-tab"
             >
               <Upload className="w-4 h-4" />
-              Upload
+              {t('imageUpload.upload')}
             </button>
             <button
               onClick={() => {
@@ -683,7 +686,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
               data-testid="image-url-tab"
             >
               <Link className="w-4 h-4" />
-              URL
+              {t('imageUpload.url')}
             </button>
             <button
               onClick={() => {
@@ -698,7 +701,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
               data-testid="image-library-tab"
             >
               <Grid className="w-4 h-4" />
-              Library
+              {t('imageUpload.library')}
             </button>
           </div>
 
@@ -717,7 +720,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                   <button
                     onClick={() => setPreview(null)}
                     className="absolute top-2 right-2 p-1 bg-white dark:bg-gray-700 rounded-full shadow hover:bg-gray-100 dark:hover:bg-gray-600"
-                    title="Remove"
+                    title={t('imageUpload.remove')}
                   >
                     <X className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                   </button>
@@ -737,10 +740,10 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                 >
                   <ImageIcon className="w-12 h-12 text-gray-400 mb-3" />
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                    Drop an image here or click to browse
+                    {t('imageUpload.dropOrBrowse')}
                   </p>
                   <p className="text-xs text-gray-400 dark:text-gray-500">
-                    JPEG, PNG, GIF, WebP, SVG up to 10MB
+                    {t('imageUpload.fileTypes')}
                   </p>
                 </div>
               )}
@@ -761,7 +764,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Image URL
+                  {t('imageUpload.imageUrl')}
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -783,7 +786,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                     src={preview.url}
                     alt="Preview"
                     className="w-full h-48 object-contain bg-gray-100 dark:bg-gray-800 rounded-lg"
-                    onError={() => setError('Failed to load image from URL')}
+                    onError={() => setError(t('imageUpload.failedToLoadUrl'))}
                     data-testid="image-url-preview"
                   />
                 </div>
@@ -801,7 +804,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                   type="text"
                   value={librarySearch}
                   onChange={(e) => setLibrarySearch(e.target.value)}
-                  placeholder="Search images..."
+                  placeholder={t('imageUpload.searchImages')}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   data-testid="library-search-input"
                 />
@@ -818,13 +821,13 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                     <ImageIcon className="w-12 h-12 mb-3 opacity-50" />
                     {libraryImages.length === 0 ? (
                       <>
-                        <p className="text-sm font-medium">No images uploaded yet</p>
-                        <p className="text-xs mt-1">Upload images to see them here</p>
+                        <p className="text-sm font-medium">{t('imageUpload.noImagesYet')}</p>
+                        <p className="text-xs mt-1">{t('imageUpload.uploadToSee')}</p>
                       </>
                     ) : (
                       <>
-                        <p className="text-sm font-medium">No images match your search</p>
-                        <p className="text-xs mt-1">Try a different search term</p>
+                        <p className="text-sm font-medium">{t('imageUpload.noMatchingImages')}</p>
+                        <p className="text-xs mt-1">{t('imageUpload.tryDifferentSearch')}</p>
                       </>
                     )}
                   </div>
@@ -870,7 +873,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                                   }}
                                   disabled={deleting}
                                   className="p-1.5 bg-red-500 rounded text-white hover:bg-red-600 disabled:opacity-50"
-                                  title="Confirm delete"
+                                  title={t('imageUpload.confirmDelete')}
                                 >
                                   {deleting ? (
                                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -884,7 +887,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                                     setDeleteConfirm(null);
                                   }}
                                   className="p-1.5 bg-gray-500 rounded text-white hover:bg-gray-600"
-                                  title="Cancel"
+                                  title={t('imageUpload.cancel')}
                                 >
                                   <X className="w-3.5 h-3.5" />
                                 </button>
@@ -896,7 +899,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                                   setDeleteConfirm(image.filename);
                                 }}
                                 className="p-1.5 bg-red-500/80 rounded text-white hover:bg-red-600"
-                                title="Delete image"
+                                title={t('imageUpload.deleteImage')}
                                 data-testid={`delete-image-${image.filename}`}
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -909,7 +912,9 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                             <p className="opacity-75">{formatFileSize(image.size)}</p>
                             {image.usageCount !== undefined && (
                               <p className="opacity-75">
-                                Used in {image.usageCount} document{image.usageCount !== 1 ? 's' : ''}
+                                {image.usageCount === 1
+                                  ? t('imageUpload.usedInDocuments', { count: 1 })
+                                  : t('imageUpload.usedInDocuments', { count: image.usageCount })}
                               </p>
                             )}
                           </div>
@@ -934,14 +939,15 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
                         {selectedLibraryImage.filename}
                       </p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {formatFileSize(selectedLibraryImage.size)} • Uploaded{' '}
+                        {formatFileSize(selectedLibraryImage.size)} • {t('imageUpload.uploaded')}{' '}
                         {formatDate(selectedLibraryImage.createdAt)}
                       </p>
                       {selectedLibraryImage.usageCount !== undefined && selectedLibraryImage.usageCount > 0 && (
                         <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1 mt-1">
                           <AlertCircle className="w-3 h-3" />
-                          Used in {selectedLibraryImage.usageCount} document
-                          {selectedLibraryImage.usageCount !== 1 ? 's' : ''}
+                          {selectedLibraryImage.usageCount === 1
+                            ? t('imageUpload.usedInDocuments', { count: 1 })
+                            : t('imageUpload.usedInDocuments', { count: selectedLibraryImage.usageCount })}
                         </p>
                       )}
                     </div>
@@ -954,18 +960,18 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
           {/* Alt text input */}
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Alt Text (optional)
+              {t('imageUpload.altText')} ({t('imageUpload.optional')})
             </label>
             <input
               type="text"
               value={altText}
               onChange={(e) => setAltText(e.target.value)}
-              placeholder="Describe the image..."
+              placeholder={t('imageUpload.altTextPlaceholder')}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               data-testid="image-alt-input"
             />
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-              Alt text helps with accessibility and SEO
+              {t('imageUpload.altTextHelp')}
             </p>
           </div>
 
@@ -985,7 +991,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
               onClick={handleClose}
               className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             >
-              Cancel
+              {t('imageUpload.cancel')}
             </button>
             <button
               onClick={handleInsert}
@@ -1001,10 +1007,10 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
               {uploading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Uploading...
+                  {t('imageUpload.uploading')}
                 </>
               ) : (
-                'Insert Image'
+                t('imageUpload.insertImageBtn')
               )}
             </button>
           </div>
@@ -1013,7 +1019,7 @@ export function ImageUploadModal({ isOpen, onClose, onInsert }: ImageUploadModal
           <Dialog.Close asChild>
             <button
               className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded"
-              aria-label="Close"
+              aria-label={t('imageUpload.close')}
             >
               <X className="w-5 h-5" />
             </button>

@@ -2,20 +2,24 @@
  * StatusFilter - Tab-based filter for plan statuses
  */
 
+import { useTranslation } from '@stoneforge/i18n';
+
 interface StatusFilterProps {
   selectedStatus: string | null;
   onStatusChange: (status: string | null) => void;
 }
 
 const STATUSES = [
-  { value: null, label: 'All' },
-  { value: 'active', label: 'Active' },
-  { value: 'draft', label: 'Draft' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'cancelled', label: 'Cancelled' },
+  { value: null, labelKey: 'plans.filter.all' },
+  { value: 'active', labelKey: 'plans.status.active' },
+  { value: 'draft', labelKey: 'plans.status.draft' },
+  { value: 'completed', labelKey: 'plans.status.completed' },
+  { value: 'cancelled', labelKey: 'plans.status.cancelled' },
 ] as const;
 
 export function StatusFilter({ selectedStatus, onStatusChange }: StatusFilterProps) {
+  const { t } = useTranslation('quarry');
+
   return (
     <div data-testid="status-filter" className="flex gap-1 p-1 bg-gray-100 rounded-lg">
       {STATUSES.map((status) => (
@@ -29,7 +33,7 @@ export function StatusFilter({ selectedStatus, onStatusChange }: StatusFilterPro
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          {status.label}
+          {t(status.labelKey)}
         </button>
       ))}
     </div>

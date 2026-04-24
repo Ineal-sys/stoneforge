@@ -3,6 +3,7 @@
  */
 
 import { CheckCircle2, CircleDot, AlertCircle, ListTodo } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import type { PlanProgress } from '../types';
 
 interface TaskStatusSummaryProps {
@@ -10,24 +11,25 @@ interface TaskStatusSummaryProps {
 }
 
 export function TaskStatusSummary({ progress }: TaskStatusSummaryProps) {
+  const { t } = useTranslation('quarry');
   const items = [
     {
-      label: 'Completed',
+      label: t('plans.taskStatus.completed'),
       count: progress.completedTasks,
       icon: <CheckCircle2 className="w-4 h-4 text-green-500" />,
     },
     {
-      label: 'In Progress',
+      label: t('plans.taskStatus.inProgress'),
       count: progress.inProgressTasks,
       icon: <CircleDot className="w-4 h-4 text-blue-500" />,
     },
     {
-      label: 'Blocked',
+      label: t('plans.taskStatus.blocked'),
       count: progress.blockedTasks,
       icon: <AlertCircle className="w-4 h-4 text-red-500" />,
     },
     {
-      label: 'Remaining',
+      label: t('plans.taskStatus.remaining'),
       count: progress.remainingTasks,
       icon: <ListTodo className="w-4 h-4 text-gray-400" />,
     },

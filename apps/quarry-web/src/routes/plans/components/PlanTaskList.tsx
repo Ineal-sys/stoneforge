@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { Trash2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from '@stoneforge/i18n';
 import { PRIORITY_COLORS } from '../constants';
 import type { TaskType } from '../types';
 
@@ -22,6 +23,7 @@ export function PlanTaskList({
   removingTaskId,
 }: PlanTaskListProps) {
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
+  const { t } = useTranslation('quarry');
 
   if (tasks.length === 0) {
     return (
@@ -29,7 +31,7 @@ export function PlanTaskList({
         data-testid="plan-tasks-empty"
         className="text-center py-8 text-gray-500 text-sm"
       >
-        No tasks in this plan
+        {t('plans.tasks.empty')}
       </div>
     );
   }
@@ -40,7 +42,7 @@ export function PlanTaskList({
   const handleRemoveClick = (taskId: string) => {
     // Prevent removing the last task
     if (isLastTask) {
-      toast.error('Cannot remove the last task. Plans must have at least one task.');
+      toast.error(t('plans.tasks.lastTaskWarning'));
       return;
     }
 
@@ -63,7 +65,7 @@ export function PlanTaskList({
           className="flex items-center gap-2 p-2 mb-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-700"
         >
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
-          <span>This is the only task. Plans must have at least one task.</span>
+          <span>{t('plans.tasks.lastTaskWarning')}</span>
         </div>
       )}
       {tasks.map((task) => (
@@ -76,7 +78,7 @@ export function PlanTaskList({
         >
           <div
             className={`w-2 h-2 rounded-full ${PRIORITY_COLORS[task.priority] || 'bg-gray-200'}`}
-            title={`Priority ${task.priority}`}
+            title={t('plans.tasks.priority', { priority: task.priority })}
           />
           <a
             href={`/tasks?selected=${task.id}`}
@@ -112,10 +114,10 @@ export function PlanTaskList({
               } ${removingTaskId === task.id ? 'opacity-50 cursor-not-allowed' : ''}`}
               title={
                 isLastTask
-                  ? 'Cannot remove - plans must have at least one task'
+                  ? t('plans.tasks.removeNotAllowed')
                   : confirmRemoveId === task.id
-                    ? 'Click again to confirm removal'
-                    : 'Remove from plan'
+                    ? t('plans.tasks.confirmRemoval')
+                    : t('plans.tasks.removeFromPlan')
               }
             >
               {removingTaskId === task.id ? (

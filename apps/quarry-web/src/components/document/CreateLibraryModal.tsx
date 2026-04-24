@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { Loader2, Plus, FolderPlus } from 'lucide-react';
+import { useTranslation } from '@stoneforge/i18n';
 import { TagInput, ResponsiveModal } from '@stoneforge/ui';
 import { useCurrentUser } from '../../contexts';
 
@@ -76,6 +77,7 @@ export function CreateLibraryModal({
   const createLibrary = useCreateLibrary();
   const { data: libraries } = useLibraries();
   const { currentUser } = useCurrentUser();
+  const { t } = useTranslation('quarry');
 
   // Focus name input when modal opens
   useEffect(() => {
@@ -143,7 +145,7 @@ export function CreateLibraryModal({
         className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors touch-target"
         data-testid="create-library-cancel-button"
       >
-        Cancel
+        {t('documents.createLibrary.cancel', { defaultValue: 'Cancel' })}
       </button>
       <button
         type="button"
@@ -155,12 +157,12 @@ export function CreateLibraryModal({
         {createLibrary.isPending ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin" />
-            Creating...
+            {t('documents.createLibrary.creating', { defaultValue: 'Creating...' })}
           </>
         ) : (
           <>
             <Plus className="w-4 h-4" />
-            Create
+            {t('documents.createLibrary.create', { defaultValue: 'Create' })}
           </>
         )}
       </button>
@@ -171,7 +173,7 @@ export function CreateLibraryModal({
     <ResponsiveModal
       open={isOpen}
       onClose={onClose}
-      title="Create Library"
+      title={t('documents.createLibrary.title')}
       icon={<FolderPlus className="w-5 h-5 text-purple-500" />}
       size="md"
       data-testid="create-library-modal"
@@ -182,7 +184,7 @@ export function CreateLibraryModal({
         {/* Name */}
         <div className="mb-4">
           <label htmlFor="library-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Name <span className="text-red-500">*</span>
+            {t('documents.createLibrary.libraryName', { defaultValue: 'Name' })} <span className="text-red-500">*</span>
           </label>
           <input
             ref={nameInputRef}
@@ -190,19 +192,19 @@ export function CreateLibraryModal({
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Enter library name..."
+            placeholder={t('documents.createLibrary.libraryNamePlaceholder', { defaultValue: 'Enter library name...' })}
             className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent touch-target"
             data-testid="create-library-name-input"
             required
             maxLength={100}
           />
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">1-100 characters</p>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t('documents.createLibrary.nameHint', { defaultValue: '1-100 characters' })}</p>
         </div>
 
         {/* Parent Library */}
         <div className="mb-4">
           <label htmlFor="library-parent" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Parent Library <span className="text-gray-400 dark:text-gray-500 text-xs font-normal">(optional)</span>
+            {t('documents.createLibrary.parentLibrary', { defaultValue: 'Parent Library' })} <span className="text-gray-400 dark:text-gray-500 text-xs font-normal">({t('documents.createLibrary.optional', { defaultValue: 'optional' })})</span>
           </label>
           <select
             id="library-parent"
@@ -211,25 +213,25 @@ export function CreateLibraryModal({
             className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent touch-target"
             data-testid="create-library-parent-select"
           >
-            <option value="">No parent (root library)</option>
+            <option value="">{t('documents.createLibrary.noParent', { defaultValue: 'No parent (root library)' })}</option>
             {libraries?.map((library) => (
               <option key={library.id} value={library.id}>
                 {library.name}
               </option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Nest this library under another library</p>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t('documents.createLibrary.nestHint', { defaultValue: 'Nest this library under another library' })}</p>
         </div>
 
         {/* Tags */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Tags <span className="text-gray-400 dark:text-gray-500 text-xs font-normal">(optional)</span>
+            {t('documents.createLibrary.tags', { defaultValue: 'Tags' })} <span className="text-gray-400 dark:text-gray-500 text-xs font-normal">({t('documents.createLibrary.optional', { defaultValue: 'optional' })})</span>
           </label>
           <TagInput
             tags={tags}
             onChange={setTags}
-            placeholder="Type and press comma to add tags"
+            placeholder={t('documents.createLibrary.tagsPlaceholder', { defaultValue: 'Type and press comma to add tags' })}
             data-testid="create-library-tags-input"
           />
         </div>
@@ -240,7 +242,7 @@ export function CreateLibraryModal({
             className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-400"
             data-testid="create-library-error"
           >
-            {(createLibrary.error as Error)?.message || 'Failed to create library'}
+            {(createLibrary.error as Error)?.message || t('documents.createLibrary.failedToCreate', { defaultValue: 'Failed to create library' })}
           </div>
         )}
       </form>

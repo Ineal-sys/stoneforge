@@ -10,6 +10,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Layers, ChevronDown } from 'lucide-react';
 import type { GroupByField } from '../../lib/task-constants';
 import { GROUP_BY_OPTIONS } from '../../lib/task-constants';
+import { useTranslation } from '@stoneforge/i18n';
 
 interface GroupByDropdownProps {
   groupBy: GroupByField;
@@ -20,6 +21,7 @@ export function GroupByDropdown({
   groupBy,
   onGroupByChange,
 }: GroupByDropdownProps) {
+  const { t } = useTranslation('quarry');
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -43,7 +45,7 @@ export function GroupByDropdown({
         data-testid="group-by-dropdown"
       >
         <Layers className="w-4 h-4" />
-        <span>Group: {selectedOption.label}</span>
+        <span>{t('groupBy.label', { label: t(selectedOption.label) })}</span>
         <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       {isOpen && (
