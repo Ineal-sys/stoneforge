@@ -18,7 +18,7 @@ import {
   type ShortcutDefinition,
   type ShortcutCategory,
 } from '../../hooks/useKeyboardShortcuts';
-import { formatShortcutDisplay, CATEGORY_LABELS, getCategoryLabel, groupShortcutsByCategory } from './utils';
+import { formatShortcutDisplay, getCategoryLabel, groupShortcutsByCategory } from './utils';
 
 interface ShortcutEditModalProps {
   actionId: string;

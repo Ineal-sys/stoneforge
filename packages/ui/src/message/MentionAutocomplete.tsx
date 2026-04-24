@@ -186,17 +186,6 @@ function getEntityIcon(entityType: string) {
   }
 }
 
-function getEntityTypeLabel(entityType: string) {
-  switch (entityType) {
-    case 'agent':
-      return 'Agent';
-    case 'system':
-      return 'System';
-    case 'human':
-    default:
-      return 'Human';
-  }
-}
 
 export const MentionMenu = forwardRef<MentionMenuRef, MentionMenuProps>(
   ({ items, command }, ref) => {
